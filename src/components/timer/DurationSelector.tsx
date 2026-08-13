@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useI18n } from '../../useI18n'
 
 interface DurationSelectorProps {
   duration: number
@@ -18,10 +19,14 @@ export default function DurationSelector({
   onSelect,
   disabled = false,
 }: DurationSelectorProps) {
+  const { t } = useI18n()
+
   const [showCustom, setShowCustom] = useState(false)
   const [customMinutes, setCustomMinutes] = useState('')
 
-  const isPreset = durations.some((item) => item.value === duration)
+  const isPreset = durations.some(
+    (item) => item.value === duration
+  )
 
   const handleCustom = () => {
     const minutes = Number(customMinutes)
@@ -41,6 +46,7 @@ export default function DurationSelector({
         flexDirection: 'column',
         alignItems: 'center',
         gap: '10px',
+        width: '100%',
       }}
     >
       <div
@@ -58,20 +64,29 @@ export default function DurationSelector({
             onClick={() => onSelect(item.value)}
             disabled={disabled}
             style={{
-              opacity: duration === item.value ? 1 : 0.55,
+              opacity:
+                duration === item.value ? 1 : 0.55,
               borderColor:
                 duration === item.value
                   ? 'var(--energy)'
                   : 'var(--void-border)',
             }}
           >
-            {item.label}
+            {item.value === 10
+              ? t('tenSec')
+              : item.value === 25 * 60
+                ? t('minutes25')
+                : item.value === 45 * 60
+                  ? t('minutes45')
+                  : t('minutes60')}
           </button>
         ))}
 
         <button
           className="cyber-btn"
-          onClick={() => setShowCustom((value) => !value)}
+          onClick={() =>
+            setShowCustom((value) => !value)
+          }
           disabled={disabled}
           style={{
             opacity: !isPreset ? 1 : 0.55,
@@ -80,7 +95,7 @@ export default function DurationSelector({
               : 'var(--void-border)',
           }}
         >
-          CUSTOM
+          {t('custom')}
         </button>
       </div>
 
@@ -90,6 +105,8 @@ export default function DurationSelector({
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
           }}
         >
           <input
@@ -103,10 +120,15 @@ export default function DurationSelector({
               setCustomMinutes(event.target.value)
             }
             onKeyDown={(event) => {
-              if (event.key === 'Enter') handleCustom()
-              if (event.key === 'Escape') setShowCustom(false)
+              if (event.key === 'Enter') {
+                handleCustom()
+              }
+
+              if (event.key === 'Escape') {
+                setShowCustom(false)
+              }
             }}
-            placeholder="Minutes"
+            placeholder={t('minutes')}
             style={{
               width: '110px',
               padding: '10px 12px',
@@ -123,7 +145,7 @@ export default function DurationSelector({
             onClick={handleCustom}
             disabled={!customMinutes}
           >
-            SET
+            {t('set')}
           </button>
         </div>
       )}
