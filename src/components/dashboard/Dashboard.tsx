@@ -5,6 +5,7 @@ import Timer from '../timer/Timer'
 import StatCard from './StatCard'
 import RecentSessions from './RecentSessions'
 import { useI18n } from '../../useI18n'
+import { getStreakStats } from '../../utils/goalHistory'
 
 const WeeklyTrend = lazy(() => import('./WeeklyTrend'))
 const SubjectBalance = lazy(() => import('./SubjectBalance'))
@@ -142,31 +143,19 @@ export default function Dashboard({
   const weeklyGoalReached =
     weeklyGoal > 0 && weekMinutes >= weeklyGoal
 
-  const getStreak = (): number => {
-    let streak = 0
-    const checkDate = getStartOfDay(new Date())
+  const streakStats = getStreakStats(
+    sessions,
+    {},
+    weeklyGoal
+  )
 
-    while (true) {
-      const hasSession = completedSessions.some((session) => {
-        const sessionDate = getStartOfDay(
-          new Date(session.completedAt)
-        )
+  const streak =
+    streakStats.currentDailyStreak
 
-        return sessionDate.getTime() === checkDate.getTime()
-      })
+  const bestStreak =
+    streakStats.bestDailyStreak
 
-      if (!hasSession) {
-        break
-      }
 
-      streak += 1
-      checkDate.setDate(checkDate.getDate() - 1)
-    }
-
-    return streak
-  }
-
-  const streak = getStreak()
 
   useEffect(() => {
     const card = timerCardRef.current
@@ -323,6 +312,13 @@ export default function Dashboard({
           label={t('streak')}
           value={`${streak} ${t('days')}`}
           accentColor="var(--energy)"
+        />
+
+        <StatCard
+          icon={Flame}
+          label="BEST STREAK"
+          value={`${bestStreak} ${t('days')}`}
+          accentColor="var(--teal)"
         />
       </div>
 
