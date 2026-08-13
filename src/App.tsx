@@ -602,10 +602,10 @@ onWeeklyGoalChange={setWeeklyGoal}
             >
               {t('statistics')}
             </h1>
-
-            <Statistics
-              sessions={sessions}
-            />
+<Statistics
+  sessions={sessions}
+  weeklyGoal={weeklyGoal}
+/>
           </div>
         )}
 
