@@ -6,6 +6,7 @@ import {
   X,
   Settings as SettingsIcon,
   BarChart3,
+  Menu,
 } from 'lucide-react'
 import type { Subject } from '../../types'
 
@@ -42,37 +43,40 @@ export default function Sidebar({
   onDeleteSubject,
 }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
   const [name, setName] = useState('')
   const [color, setColor] = useState(colors[0])
 
+  const closeMobile = () => {
+    setMobileOpen(false)
+  }
+
+  const handlePageChange = (nextPage: Page) => {
+    onPageChange(nextPage)
+    closeMobile()
+  }
+
+  const handleSubjectSelect = (
+    id: string | null
+  ) => {
+    onSelectSubject(id)
+    closeMobile()
+  }
+
   const handleAdd = () => {
     if (!name.trim()) return
 
-    onAddSubject(name, color)
+    onAddSubject(name.trim(), color)
 
     setName('')
     setColor(colors[0])
     setShowAdd(false)
+    closeMobile()
   }
 
-  return (
-    <aside className="app-sidebar"
-      style={{
-        width: collapsed ? '60px' : '240px',
-        minHeight: '100vh',
-        background: 'var(--void-surface)',
-        borderRight: '1px solid var(--void-border)',
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '20px 0',
-        transition: 'width 0.3s ease',
-        position: 'relative',
-        flexShrink: 0,
-      }}
-    >
-      
-      {/* Logo */}
+  const sidebarContent = (
+    <>
       <div
         style={{
           display: 'flex',
@@ -89,7 +93,7 @@ export default function Sidebar({
           fillOpacity={0.2}
         />
 
-        {!collapsed && (
+        {(!collapsed || mobileOpen) && (
           <span
             style={{
               fontFamily: 'Orbitron, sans-serif',
@@ -102,11 +106,31 @@ export default function Sidebar({
             FOCUS
           </span>
         )}
+
+        <button
+          className="mobile-sidebar-close"
+          onClick={closeMobile}
+          aria-label="Close navigation"
+          style={{
+            marginLeft: 'auto',
+            display: 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '36px',
+            height: '36px',
+            border: '1px solid var(--void-border)',
+            borderRadius: '8px',
+            background: 'transparent',
+            color: 'var(--text-secondary)',
+            cursor: 'pointer',
+          }}
+        >
+          <X size={18} />
+        </button>
       </div>
 
-      {/* Overview */}
       <button
-        onClick={() => onPageChange('overview')}
+        onClick={() => handlePageChange('overview')}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -138,9 +162,8 @@ export default function Sidebar({
         {!collapsed && 'Overview'}
       </button>
 
-      {/* Statistics */}
       <button
-        onClick={() => onPageChange('statistics')}
+        onClick={() => handlePageChange('statistics')}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -172,9 +195,8 @@ export default function Sidebar({
         {!collapsed && 'Statistics'}
       </button>
 
-      {/* Settings */}
       <button
-        onClick={() => onPageChange('settings')}
+        onClick={() => handlePageChange('settings')}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -221,9 +243,9 @@ export default function Sidebar({
         </span>
       )}
 
-      {/* Subjects */}
       {subjects.map((subject) => {
-        const isActive = activeSubjectId === subject.id
+        const isActive =
+          activeSubjectId === subject.id
 
         return (
           <div
@@ -235,7 +257,9 @@ export default function Sidebar({
             }}
           >
             <button
-              onClick={() => onSelectSubject(subject.id)}
+              onClick={() =>
+                handleSubjectSelect(subject.id)
+              }
               style={{
                 flex: 1,
                 display: 'flex',
@@ -257,6 +281,7 @@ export default function Sidebar({
                 fontFamily: 'Inter, sans-serif',
                 fontSize: '14px',
                 textAlign: 'left',
+                minWidth: 0,
               }}
             >
               <span
@@ -272,12 +297,24 @@ export default function Sidebar({
                 }}
               />
 
-              {!collapsed && subject.name}
+              {!collapsed && (
+                <span
+                  style={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {subject.name}
+                </span>
+              )}
             </button>
 
             {!collapsed && (
               <button
-                onClick={() => onDeleteSubject(subject.id)}
+                onClick={() =>
+                  onDeleteSubject(subject.id)
+                }
                 title={`Delete ${subject.name}`}
                 style={{
                   width: '28px',
@@ -290,6 +327,7 @@ export default function Sidebar({
                   color: 'var(--text-muted)',
                   cursor: 'pointer',
                   opacity: 0.5,
+                  flexShrink: 0,
                 }}
               >
                 <Trash2 size={13} />
@@ -299,7 +337,6 @@ export default function Sidebar({
         )
       })}
 
-      {/* Add Subject */}
       <button
         onClick={() => setShowAdd(true)}
         style={{
@@ -321,9 +358,9 @@ export default function Sidebar({
         {!collapsed && 'Add Subject'}
       </button>
 
-      {/* Collapse */}
       <button
         onClick={() => setCollapsed(!collapsed)}
+        className="desktop-collapse-button"
         style={{
           marginTop: 'auto',
           padding: '10px',
@@ -337,7 +374,6 @@ export default function Sidebar({
         {collapsed ? '▶' : '◀'}
       </button>
 
-      {/* Add subject dialog */}
       {showAdd && !collapsed && (
         <div
           style={{
@@ -349,7 +385,8 @@ export default function Sidebar({
             background: 'rgba(12, 12, 30, 0.98)',
             border: '1px solid var(--void-border)',
             borderRadius: '12px',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+            boxShadow:
+              '0 20px 60px rgba(0,0,0,0.5)',
             zIndex: 20,
           }}
         >
@@ -363,7 +400,8 @@ export default function Sidebar({
           >
             <span
               style={{
-                fontFamily: 'Orbitron, sans-serif',
+                fontFamily:
+                  'Orbitron, sans-serif',
                 fontSize: '11px',
                 color: 'var(--text-primary)',
                 letterSpacing: '0.08em',
@@ -388,18 +426,27 @@ export default function Sidebar({
           <input
             autoFocus
             value={name}
-            onChange={(event) => setName(event.target.value)}
+            onChange={(event) =>
+              setName(event.target.value)
+            }
             onKeyDown={(event) => {
-              if (event.key === 'Enter') handleAdd()
-              if (event.key === 'Escape') setShowAdd(false)
+              if (event.key === 'Enter') {
+                handleAdd()
+              }
+
+              if (event.key === 'Escape') {
+                setShowAdd(false)
+              }
             }}
             placeholder="Subject name"
             style={{
               width: '100%',
               boxSizing: 'border-box',
               padding: '10px 12px',
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid var(--void-border)',
+              background:
+                'rgba(255,255,255,0.04)',
+              border:
+                '1px solid var(--void-border)',
               borderRadius: '8px',
               color: 'var(--text-primary)',
               outline: 'none',
@@ -453,13 +500,62 @@ export default function Sidebar({
             className="cyber-btn"
             onClick={handleAdd}
             disabled={!name.trim()}
-            style={{ width: '100%' }}
+            style={{
+              width: '100%',
+            }}
           >
             <Plus size={15} />
             CREATE SUBJECT
           </button>
         </div>
       )}
-    </aside>
+    </>
+  )
+
+  return (
+    <>
+      <button
+        className="mobile-menu-button"
+        onClick={() => setMobileOpen(true)}
+        aria-label="Open navigation"
+      >
+        <Menu size={22} />
+      </button>
+
+      {mobileOpen && (
+        <div
+          className="mobile-sidebar-overlay"
+          onClick={closeMobile}
+        />
+      )}
+
+      <aside
+        className={`app-sidebar ${
+          mobileOpen ? 'mobile-open' : ''
+        }`}
+        style={{
+          width: collapsed
+            ? '60px'
+            : '240px',
+          minHeight: '100vh',
+          height: '100vh',
+          overflowY: 'auto',
+          background:
+            'var(--void-surface)',
+          borderRight:
+            '1px solid var(--void-border)',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '20px 0',
+          transition:
+            'width 0.3s ease, transform 0.3s ease',
+          position: 'relative',
+          flexShrink: 0,
+          zIndex: 1000,
+        }}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   )
 }

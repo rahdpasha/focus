@@ -269,3 +269,149 @@ h6 {
     border-radius: 10px;
   }
 }
+.app-sidebar {
+  transition: width 0.3s ease;
+}
+
+.dashboard {
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .app-sidebar {
+    width: 64px !important;
+  }
+
+  .app-sidebar .cyber-btn,
+  .app-sidebar button {
+    white-space: nowrap;
+  }
+
+  .dashboard {
+    padding: 20px !important;
+  }
+
+  .dashboard .glass-panel {
+    padding: 20px !important;
+  }
+
+  .dashboard svg {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .dashboard {
+    padding: 14px !important;
+    gap: 14px !important;
+  }
+
+  .dashboard .glass-panel {
+    padding: 16px !important;
+  }
+}
+
+/* Mobile navigation */
+.mobile-menu-button {
+  display: none;
+}
+
+.mobile-sidebar-overlay {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-button {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 1200;
+
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--void-border);
+    border-radius: 10px;
+
+    background: var(--card-bg);
+    backdrop-filter: blur(14px);
+
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+
+  .mobile-menu-button:hover {
+    border-color: var(--primary);
+  }
+
+  .mobile-sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(3px);
+    z-index: 900;
+  }
+
+  .app-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    bottom: 0;
+
+    width: 280px !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+
+    transform: translateX(-100%);
+    box-shadow: 20px 0 60px rgba(0, 0, 0, 0.45);
+
+    overflow-y: auto;
+  }
+
+  .app-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .mobile-sidebar-close {
+    display: flex !important;
+  }
+
+  .desktop-collapse-button {
+    display: none !important;
+  }
+
+  .dashboard {
+    width: 100%;
+    padding: 72px 14px 24px !important;
+    gap: 16px !important;
+  }
+
+  .dashboard > .glass-panel {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .dashboard .glass-panel {
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .dashboard h1 {
+    font-size: 17px !important;
+  }
+
+  .dashboard .glass-panel {
+    padding: 16px !important;
+  }
+}
