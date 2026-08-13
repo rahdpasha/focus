@@ -7,10 +7,37 @@ import BackgroundEffects from './components/effects/BackgroundEffects'
 import { subjects as defaultSubjects } from './data/subjects'
 import type { Subject, StudySession } from './types'
 import { useI18n } from './useI18n'
+const GOAL_KEY = 'focus-daily-goal'
+const WEEKLY_GOAL_KEY = 'focus-weekly-goal'
 
 const STORAGE_KEY = 'focus-sessions'
 const SUBJECTS_KEY = 'focus-subjects'
-const GOAL_KEY = 'focus-daily-goal'
+function loadWeeklyGoal(): number {
+  try {
+    const value = Number(
+      localStorage.getItem(WEEKLY_GOAL_KEY)
+    )
+
+    if (!Number.isFinite(value) || value <= 0) {
+      return 600
+    }
+
+    return value
+  } catch {
+    return 600
+  }
+}
+
+function saveWeeklyGoal(goal: number) {
+  try {
+    localStorage.setItem(
+      WEEKLY_GOAL_KEY,
+      String(goal)
+    )
+  } catch {
+    // Ignore storage errors.
+  }
+}
 const ACTIVE_SUBJECT_KEY = 'focus-active-subject'
 const SETTINGS_KEY = 'focus-settings'
 
@@ -199,6 +226,8 @@ function saveSettings(
 }
 
 function App() {
+  const [weeklyGoal, setWeeklyGoal] =
+  useState<number>(loadWeeklyGoal)
   const { t } = useI18n()
 
   const [page, setPage] =
@@ -230,6 +259,9 @@ function App() {
     useState<AppSettings>(
       loadSettings
     )
+  useEffect(() => {
+  saveWeeklyGoal(weeklyGoal)
+}, [weeklyGoal])
 
   useEffect(() => {
     saveSessions(sessions)
@@ -545,6 +577,8 @@ function App() {
             autoStartBreak={
               settings.autoStartBreak
             }
+            weeklyGoal={weeklyGoal}
+onWeeklyGoalChange={setWeeklyGoal}
           />
         )}
 

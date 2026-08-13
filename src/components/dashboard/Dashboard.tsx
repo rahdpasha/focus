@@ -14,7 +14,9 @@ interface DashboardProps {
   activeSubjectId: string | null
   sessions: StudySession[]
   dailyGoal: number
+  weeklyGoal: number
   onDailyGoalChange: (goal: number) => void
+  onWeeklyGoalChange: (goal: number) => void
   onAddSession: (session: StudySession) => void
   onDeleteSession: (id: string) => void
   shortBreak: number
@@ -26,6 +28,16 @@ interface DashboardProps {
 function getStartOfDay(date: Date): Date {
   const result = new Date(date)
   result.setHours(0, 0, 0, 0)
+  return result
+}
+
+function getStartOfWeek(date: Date): Date {
+  const result = getStartOfDay(date)
+  const day = result.getDay()
+  const daysSinceMonday = day === 0 ? 6 : day - 1
+
+  result.setDate(result.getDate() - daysSinceMonday)
+
   return result
 }
 
@@ -58,7 +70,9 @@ export default function Dashboard({
   activeSubjectId,
   sessions,
   dailyGoal,
+  weeklyGoal,
   onDailyGoalChange,
+  onWeeklyGoalChange,
   onAddSession,
   onDeleteSession,
   shortBreak,
@@ -74,6 +88,7 @@ export default function Dashboard({
   )
 
   const today = getStartOfDay(new Date())
+  const weekStart = getStartOfWeek(new Date())
 
   const completedSessions = sessions.filter(
     (session) => session.completed
@@ -87,6 +102,14 @@ export default function Dashboard({
     return sessionDate.getTime() === today.getTime()
   })
 
+  const weekSessions = completedSessions.filter((session) => {
+    const sessionDate = getStartOfDay(
+      new Date(session.completedAt)
+    )
+
+    return sessionDate.getTime() >= weekStart.getTime()
+  })
+
   const todayMinutes = Math.floor(
     todaySessions.reduce(
       (sum, session) => sum + session.actualDuration,
@@ -94,15 +117,30 @@ export default function Dashboard({
     ) / 60
   )
 
+  const weekMinutes = Math.floor(
+    weekSessions.reduce(
+      (sum, session) => sum + session.actualDuration,
+      0
+    ) / 60
+  )
+
   const totalSessions = completedSessions.length
 
-  const goalProgress =
+  const dailyGoalProgress =
     dailyGoal > 0
       ? Math.min(100, (todayMinutes / dailyGoal) * 100)
       : 0
 
-  const goalReached =
+  const weeklyGoalProgress =
+    weeklyGoal > 0
+      ? Math.min(100, (weekMinutes / weeklyGoal) * 100)
+      : 0
+
+  const dailyGoalReached =
     dailyGoal > 0 && todayMinutes >= dailyGoal
+
+  const weeklyGoalReached =
+    weeklyGoal > 0 && weekMinutes >= weeklyGoal
 
   const getStreak = (): number => {
     let streak = 0
@@ -114,17 +152,14 @@ export default function Dashboard({
           new Date(session.completedAt)
         )
 
-        return (
-          sessionDate.getTime() ===
-          checkDate.getTime()
-        )
+        return sessionDate.getTime() === checkDate.getTime()
       })
 
       if (!hasSession) {
         break
       }
 
-      streak++
+      streak += 1
       checkDate.setDate(checkDate.getDate() - 1)
     }
 
@@ -135,6 +170,7 @@ export default function Dashboard({
 
   useEffect(() => {
     const card = timerCardRef.current
+
     if (!card) return
 
     const handleMouseMove = (event: MouseEvent) => {
@@ -213,7 +249,6 @@ export default function Dashboard({
         gap: '24px',
       }}
     >
-      {/* Header */}
       <div
         style={{
           display: 'flex',
@@ -262,7 +297,6 @@ export default function Dashboard({
         </span>
       </div>
 
-      {/* Stats */}
       <div
         style={{
           display: 'flex',
@@ -286,13 +320,12 @@ export default function Dashboard({
 
         <StatCard
           icon={Flame}
-          label="Streak"
+          label={t('streak')}
           value={`${streak} ${t('days')}`}
           accentColor="var(--energy)"
         />
       </div>
 
-      {/* Daily Goal */}
       <div
         className="glass-panel"
         style={{
@@ -327,7 +360,7 @@ export default function Dashboard({
               className="mono"
               style={{
                 fontSize: '22px',
-                color: goalReached
+                color: dailyGoalReached
                   ? 'var(--success)'
                   : 'var(--text-primary)',
               }}
@@ -349,9 +382,7 @@ export default function Dashboard({
           <select
             value={dailyGoal}
             onChange={(event) =>
-              onDailyGoalChange(
-                Number(event.target.value)
-              )
+              onDailyGoalChange(Number(event.target.value))
             }
             style={{
               padding: '8px 10px',
@@ -383,14 +414,14 @@ export default function Dashboard({
         >
           <div
             style={{
-              width: `${goalProgress}%`,
+              width: `${dailyGoalProgress}%`,
               height: '100%',
-              background: goalReached
+              background: dailyGoalReached
                 ? 'var(--success)'
                 : 'linear-gradient(90deg, var(--primary), var(--cyber-blue))',
               borderRadius: '999px',
               transition: 'width 0.5s ease',
-              boxShadow: goalReached
+              boxShadow: dailyGoalReached
                 ? '0 0 15px rgba(34,197,94,0.4)'
                 : '0 0 15px rgba(139,92,246,0.3)',
             }}
@@ -402,18 +433,132 @@ export default function Dashboard({
           style={{
             marginTop: '8px',
             fontSize: '10px',
-            color: goalReached
+            color: dailyGoalReached
               ? 'var(--success)'
               : 'var(--text-muted)',
           }}
         >
-          {goalReached
+          {dailyGoalReached
             ? t('dailyObjectiveComplete')
-            : `${Math.round(goalProgress)}${t('completePercent')}`}
+            : `${Math.round(dailyGoalProgress)}${t(
+                'completePercent'
+              )}`}
         </div>
       </div>
 
-      {/* Timer */}
+      <div
+        className="glass-panel"
+        style={{
+          padding: '20px',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '16px',
+            marginBottom: '14px',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: '11px',
+                fontFamily: 'Orbitron, sans-serif',
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                marginBottom: '6px',
+              }}
+            >
+              WEEKLY FOCUS GOAL
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                fontSize: '22px',
+                color: weeklyGoalReached
+                  ? 'var(--success)'
+                  : 'var(--text-primary)',
+              }}
+            >
+              {formatHoursMinutes(weekMinutes)}
+
+              <span
+                style={{
+                  color: 'var(--text-muted)',
+                  fontSize: '14px',
+                }}
+              >
+                {' '}
+                / {formatGoal(weeklyGoal)}
+              </span>
+            </div>
+          </div>
+
+          <select
+            value={weeklyGoal}
+            onChange={(event) =>
+              onWeeklyGoalChange(Number(event.target.value))
+            }
+            style={{
+              padding: '8px 10px',
+              background: 'var(--void-surface-hover)',
+              border: '1px solid var(--void-border)',
+              borderRadius: '8px',
+              color: 'var(--text-primary)',
+              outline: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            <option value={300}>5 HOURS</option>
+            <option value={600}>10 HOURS</option>
+            <option value={900}>15 HOURS</option>
+            <option value={1200}>20 HOURS</option>
+            <option value={1500}>25 HOURS</option>
+          </select>
+        </div>
+
+        <div
+          style={{
+            height: '8px',
+            background: 'var(--void-border)',
+            borderRadius: '999px',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              width: `${weeklyGoalProgress}%`,
+              height: '100%',
+              background: weeklyGoalReached
+                ? 'var(--success)'
+                : 'linear-gradient(90deg, var(--cyber-blue), var(--teal))',
+              borderRadius: '999px',
+              transition: 'width 0.5s ease',
+            }}
+          />
+        </div>
+
+        <div
+          className="mono"
+          style={{
+            marginTop: '8px',
+            fontSize: '10px',
+            color: weeklyGoalReached
+              ? 'var(--success)'
+              : 'var(--text-muted)',
+          }}
+        >
+          {weeklyGoalReached
+            ? 'WEEKLY OBJECTIVE COMPLETE'
+            : `${Math.round(weeklyGoalProgress)}% COMPLETE`}
+        </div>
+      </div>
+
       <div
         ref={timerCardRef}
         className="glass-panel"
@@ -426,10 +571,12 @@ export default function Dashboard({
       >
         <Timer
           subjectName={
-            activeSubject?.name || t('selectSubject')
+            activeSubject?.name ||
+            t('selectSubject')
           }
           subjectColor={
-            activeSubject?.color || '#8b5cf6'
+            activeSubject?.color ||
+            '#8b5cf6'
           }
           shortBreakMinutes={shortBreak}
           longBreakMinutes={longBreak}
@@ -442,7 +589,6 @@ export default function Dashboard({
         />
       </div>
 
-      {/* Analytics */}
       <div
         style={{
           display: 'flex',
@@ -475,7 +621,6 @@ export default function Dashboard({
         </Suspense>
       </div>
 
-      {/* Recent Sessions */}
       <RecentSessions
         sessions={sessions.slice(0, 10)}
         onDeleteSession={onDeleteSession}
