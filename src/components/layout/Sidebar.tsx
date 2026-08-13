@@ -529,7 +529,7 @@ export default function Sidebar({
       <button
         className="mobile-menu-button"
         onClick={() => setMobileOpen(true)}
-        aria-label={t('settings')}
+      aria-label={t('overview')}
       >
         <Menu size={22} />
       </button>
