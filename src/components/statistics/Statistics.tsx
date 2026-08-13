@@ -4,6 +4,7 @@ import {
   getStartOfWeek,
   getWeeklyMinutes,
   getWeekKey,
+  getStreakStats,
 } from '../../utils/goalHistory'
 
 interface StatisticsProps {
@@ -191,9 +192,11 @@ export default function Statistics({
           weeklyGoal > 0
             ? Math.min(
                 100,
-                (minutes /
-                  weeklyGoal) *
-                  100
+                Math.round(
+                  (minutes /
+                    weeklyGoal) *
+                    100
+                )
               )
             : 0
 
@@ -212,6 +215,12 @@ export default function Statistics({
       }
     )
 
+  const streakStats =
+    getStreakStats(
+      sessions,
+      weeklyGoal
+    )
+
   return (
     <div
       style={{
@@ -220,6 +229,7 @@ export default function Statistics({
         gap: '16px',
       }}
     >
+      {/* Overview */}
       <div
         className="glass-panel"
         style={{
@@ -250,8 +260,10 @@ export default function Statistics({
             <div
               className="mono"
               style={{
-                marginTop: '8px',
-                fontSize: '22px',
+                marginTop:
+                  '8px',
+                fontSize:
+                  '22px',
                 color:
                   'var(--primary-glow)',
               }}
@@ -278,8 +290,10 @@ export default function Statistics({
             <div
               className="mono"
               style={{
-                marginTop: '8px',
-                fontSize: '22px',
+                marginTop:
+                  '8px',
+                fontSize:
+                  '22px',
                 color:
                   'var(--cyber-blue)',
               }}
@@ -306,8 +320,10 @@ export default function Statistics({
             <div
               className="mono"
               style={{
-                marginTop: '8px',
-                fontSize: '22px',
+                marginTop:
+                  '8px',
+                fontSize:
+                  '22px',
                 color:
                   'var(--teal)',
               }}
@@ -334,8 +350,10 @@ export default function Statistics({
             <div
               className="mono"
               style={{
-                marginTop: '8px',
-                fontSize: '22px',
+                marginTop:
+                  '8px',
+                fontSize:
+                  '22px',
                 color:
                   'var(--energy)',
               }}
@@ -360,8 +378,10 @@ export default function Statistics({
             <div
               className="mono"
               style={{
-                marginTop: '8px',
-                fontSize: '22px',
+                marginTop:
+                  '8px',
+                fontSize:
+                  '22px',
                 color:
                   'var(--text-primary)',
               }}
@@ -388,8 +408,10 @@ export default function Statistics({
             <div
               className="mono"
               style={{
-                marginTop: '8px',
-                fontSize: '22px',
+                marginTop:
+                  '8px',
+                fontSize:
+                  '22px',
                 color:
                   'var(--text-primary)',
               }}
@@ -402,6 +424,254 @@ export default function Statistics({
         </div>
       </div>
 
+      {/* Streaks */}
+      <div
+        className="glass-panel"
+        style={{
+          padding: '24px',
+        }}
+      >
+        <div
+          style={{
+            fontSize: '11px',
+            fontFamily:
+              'Orbitron, sans-serif',
+            color:
+              'var(--text-muted)',
+            textTransform:
+              'uppercase',
+            letterSpacing:
+              '0.12em',
+            marginBottom:
+              '18px',
+          }}
+        >
+          STREAKS
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns:
+              'repeat(auto-fit, minmax(150px, 1fr))',
+            gap: '12px',
+          }}
+        >
+          <div
+            style={{
+              padding:
+                '16px',
+              borderRadius:
+                '10px',
+              background:
+                'rgba(139,92,246,0.08)',
+              border:
+                '1px solid var(--void-border)',
+            }}
+          >
+            <div
+              style={{
+                fontSize:
+                  '10px',
+                color:
+                  'var(--text-muted)',
+              }}
+            >
+              CURRENT DAILY
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                marginTop:
+                  '8px',
+                fontSize:
+                  '26px',
+                color:
+                  'var(--primary-glow)',
+              }}
+            >
+              {
+                streakStats.currentDailyStreak
+              }
+            </div>
+
+            <div
+              style={{
+                marginTop:
+                  '4px',
+                fontSize:
+                  '10px',
+                color:
+                  'var(--text-muted)',
+              }}
+            >
+              {t('days')}
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding:
+                '16px',
+              borderRadius:
+                '10px',
+              background:
+                'rgba(6,182,212,0.08)',
+              border:
+                '1px solid var(--void-border)',
+            }}
+          >
+            <div
+              style={{
+                fontSize:
+                  '10px',
+                color:
+                  'var(--text-muted)',
+              }}
+            >
+              BEST DAILY
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                marginTop:
+                  '8px',
+                fontSize:
+                  '26px',
+                color:
+                  'var(--cyber-glow)',
+              }}
+            >
+              {
+                streakStats.bestDailyStreak
+              }
+            </div>
+
+            <div
+              style={{
+                marginTop:
+                  '4px',
+                fontSize:
+                  '10px',
+                color:
+                  'var(--text-muted)',
+              }}
+            >
+              {t('days')}
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding:
+                '16px',
+              borderRadius:
+                '10px',
+              background:
+                'rgba(20,184,166,0.08)',
+              border:
+                '1px solid var(--void-border)',
+            }}
+          >
+            <div
+              style={{
+                fontSize:
+                  '10px',
+                color:
+                  'var(--text-muted)',
+              }}
+            >
+              CURRENT WEEKLY
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                marginTop:
+                  '8px',
+                fontSize:
+                  '26px',
+                color:
+                  'var(--teal-glow)',
+              }}
+            >
+              {
+                streakStats.currentWeeklyStreak
+              }
+            </div>
+
+            <div
+              style={{
+                marginTop:
+                  '4px',
+                fontSize:
+                  '10px',
+                color:
+                  'var(--text-muted)',
+              }}
+            >
+              WEEKS
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding:
+                '16px',
+              borderRadius:
+                '10px',
+              background:
+                'rgba(245,158,11,0.08)',
+              border:
+                '1px solid var(--void-border)',
+            }}
+          >
+            <div
+              style={{
+                fontSize:
+                  '10px',
+                color:
+                  'var(--text-muted)',
+              }}
+            >
+              BEST WEEKLY
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                marginTop:
+                  '8px',
+                fontSize:
+                  '26px',
+                color:
+                  'var(--energy-glow)',
+              }}
+            >
+              {
+                streakStats.bestWeeklyStreak
+              }
+            </div>
+
+            <div
+              style={{
+                marginTop:
+                  '4px',
+                fontSize:
+                  '10px',
+                color:
+                  'var(--text-muted)',
+              }}
+            >
+              WEEKS
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Weekly History */}
       <div
         className="glass-panel"
         style={{
@@ -415,13 +685,16 @@ export default function Statistics({
             justifyContent:
               'space-between',
             gap: '12px',
-            marginBottom: '20px',
-            flexWrap: 'wrap',
+            marginBottom:
+              '20px',
+            flexWrap:
+              'wrap',
           }}
         >
           <span
             style={{
-              fontSize: '11px',
+              fontSize:
+                '11px',
               fontFamily:
                 'Orbitron, sans-serif',
               color:
@@ -438,7 +711,8 @@ export default function Statistics({
           <span
             className="mono"
             style={{
-              fontSize: '11px',
+              fontSize:
+                '11px',
               color:
                 'var(--text-secondary)',
             }}
@@ -449,21 +723,31 @@ export default function Statistics({
 
         <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
+            display:
+              'flex',
+            flexDirection:
+              'column',
+            gap:
+              '12px',
           }}
         >
           {weeklyHistory.map(
-            (item, index) => (
+            (
+              item,
+              index
+            ) => (
               <div
-                key={item.weekKey}
+                key={
+                  item.weekKey
+                }
                 style={{
                   padding:
                     '14px 16px',
-                  borderRadius: '10px',
+                  borderRadius:
+                    '10px',
                   background:
-                    index === 0
+                    index ===
+                    0
                       ? 'rgba(139,92,246,0.08)'
                       : 'rgba(255,255,255,0.02)',
                   border:
@@ -472,12 +756,14 @@ export default function Statistics({
               >
                 <div
                   style={{
-                    display: 'flex',
+                    display:
+                      'flex',
                     justifyContent:
                       'space-between',
                     alignItems:
                       'center',
-                    gap: '12px',
+                    gap:
+                      '12px',
                     marginBottom:
                       '10px',
                     flexWrap:
@@ -497,7 +783,8 @@ export default function Statistics({
                     {formatWeekLabel(
                       item.week,
                       locale,
-                      index === 0
+                      index ===
+                        0
                     )}
                   </span>
 
@@ -512,14 +799,19 @@ export default function Statistics({
                           : 'var(--text-primary)',
                     }}
                   >
-                    {item.minutes}m /{' '}
-                    {weeklyGoal}m
+                    {
+                      item.minutes
+                    }m /{' '}
+                    {
+                      weeklyGoal
+                    }m
                   </span>
                 </div>
 
                 <div
                   style={{
-                    height: '7px',
+                    height:
+                      '7px',
                     background:
                       'var(--void-border)',
                     borderRadius:
@@ -530,8 +822,10 @@ export default function Statistics({
                 >
                   <div
                     style={{
-                      width: `${item.progress}%`,
-                      height: '100%',
+                      width:
+                        `${item.progress}%`,
+                      height:
+                        '100%',
                       background:
                         item.completedGoal
                           ? 'var(--success)'
@@ -557,9 +851,11 @@ export default function Statistics({
                         : 'var(--text-muted)',
                   }}
                 >
-                  {Math.round(
-                    item.progress
-                  )}
+                  {
+                    Math.round(
+                      item.progress
+                    )
+                  }
                   %
                 </div>
               </div>
