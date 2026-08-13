@@ -6,6 +6,7 @@ import {
   Coffee,
 } from 'lucide-react'
 import DurationSelector from './DurationSelector'
+import { useI18n } from '../../useI18n'
 
 interface TimerProps {
   subjectName: string
@@ -27,7 +28,10 @@ interface TimerProps {
   ) => void
 }
 
-type TimerMode = 'focus' | 'shortBreak' | 'longBreak'
+type TimerMode =
+  | 'focus'
+  | 'shortBreak'
+  | 'longBreak'
 
 export default function Timer({
   subjectName,
@@ -39,25 +43,51 @@ export default function Timer({
   onComplete,
   onSessionEnd,
 }: TimerProps) {
-  const [focusDuration, setFocusDuration] = useState(1500)
-  const [duration, setDuration] = useState(1500)
-  const [timeRemaining, setTimeRemaining] = useState(1500)
+  const { t } = useI18n()
 
-  const [mode, setMode] = useState<TimerMode>('focus')
-  const [completedFocusSessions, setCompletedFocusSessions] =
+  const [focusDuration, setFocusDuration] =
+    useState(1500)
+
+  const [duration, setDuration] =
+    useState(1500)
+
+  const [timeRemaining, setTimeRemaining] =
+    useState(1500)
+
+  const [mode, setMode] =
+    useState<TimerMode>('focus')
+
+  const [
+    completedFocusSessions,
+    setCompletedFocusSessions,
+  ] = useState(0)
+
+  const [isStudying, setIsStudying] =
+    useState(false)
+
+  const [isPaused, setIsPaused] =
+    useState(false)
+
+  const [isCompleted, setIsCompleted] =
+    useState(false)
+
+  const [showComplete, setShowComplete] =
+    useState(false)
+
+  const [pausedSeconds, setPausedSeconds] =
     useState(0)
 
-  const [isStudying, setIsStudying] = useState(false)
-  const [isPaused, setIsPaused] = useState(false)
-  const [isCompleted, setIsCompleted] = useState(false)
-  const [showComplete, setShowComplete] = useState(false)
+  const [interruptionCount, setInterruptionCount] =
+    useState(0)
 
-  const [pausedSeconds, setPausedSeconds] = useState(0)
-  const [interruptionCount, setInterruptionCount] = useState(0)
+  const intervalRef =
+    useRef<number | null>(null)
 
-  const intervalRef = useRef<number | null>(null)
-  const pauseIntervalRef = useRef<number | null>(null)
-  const finishedRef = useRef(false)
+  const pauseIntervalRef =
+    useRef<number | null>(null)
+
+  const finishedRef =
+    useRef(false)
 
   const isFocus = mode === 'focus'
 
@@ -66,27 +96,38 @@ export default function Timer({
     focusDuration - timeRemaining
   )
 
-  const minutes = Math.floor(timeRemaining / 60)
+  const minutes = Math.floor(
+    timeRemaining / 60
+  )
+
   const seconds = timeRemaining % 60
 
   const displayTime =
     `${String(minutes).padStart(2, '0')}:` +
     `${String(seconds).padStart(2, '0')}`
 
-  const pauseMinutes = Math.floor(pausedSeconds / 60)
-  const pauseSecs = pausedSeconds % 60
+  const pauseMinutes =
+    Math.floor(pausedSeconds / 60)
 
-  const durationMinutes = Math.floor(duration / 60)
+  const pauseSecs =
+    pausedSeconds % 60
 
-  const circumference = 2 * Math.PI * 135
+  const durationMinutes =
+    Math.floor(duration / 60)
+
+  const circumference =
+    2 * Math.PI * 135
 
   const progress =
     duration > 0
-      ? ((duration - timeRemaining) / duration) * 100
+      ? ((duration - timeRemaining) /
+          duration) *
+        100
       : 0
 
   const dashOffset =
-    circumference - (progress / 100) * circumference
+    circumference -
+    (progress / 100) * circumference
 
   const clearTimer = useCallback(() => {
     if (intervalRef.current !== null) {
@@ -95,7 +136,10 @@ export default function Timer({
     }
 
     if (pauseIntervalRef.current !== null) {
-      clearInterval(pauseIntervalRef.current)
+      clearInterval(
+        pauseIntervalRef.current
+      )
+
       pauseIntervalRef.current = null
     }
   }, [])
@@ -106,8 +150,14 @@ export default function Timer({
     finishedRef.current = false
   }, [])
 
-  const handleDurationChange = (newDuration: number) => {
-    if (isStudying || isPaused || !isFocus) {
+  const handleDurationChange = (
+    newDuration: number
+  ) => {
+    if (
+      isStudying ||
+      isPaused ||
+      !isFocus
+    ) {
       return
     }
 
@@ -125,7 +175,9 @@ export default function Timer({
   }
 
   const startTimer = () => {
-    if (timeRemaining <= 0) return
+    if (timeRemaining <= 0) {
+      return
+    }
 
     setIsStudying(true)
     setIsPaused(false)
@@ -134,19 +186,28 @@ export default function Timer({
   }
 
   const pauseTimer = () => {
-    if (!isStudying) return
+    if (!isStudying) {
+      return
+    }
 
     setIsStudying(false)
     setIsPaused(true)
 
     if (isFocus) {
-      setInterruptionCount((count) => count + 1)
+      setInterruptionCount(
+        (count) => count + 1
+      )
     }
 
-    if (pauseIntervalRef.current === null) {
-      pauseIntervalRef.current = window.setInterval(() => {
-        setPausedSeconds((value) => value + 1)
-      }, 1000)
+    if (
+      pauseIntervalRef.current === null
+    ) {
+      pauseIntervalRef.current =
+        window.setInterval(() => {
+          setPausedSeconds(
+            (value) => value + 1
+          )
+        }, 1000)
     }
   }
 
@@ -154,8 +215,13 @@ export default function Timer({
     setIsPaused(false)
     setIsStudying(true)
 
-    if (pauseIntervalRef.current !== null) {
-      clearInterval(pauseIntervalRef.current)
+    if (
+      pauseIntervalRef.current !== null
+    ) {
+      clearInterval(
+        pauseIntervalRef.current
+      )
+
       pauseIntervalRef.current = null
     }
   }
@@ -176,7 +242,11 @@ export default function Timer({
   }
 
   const startBreak = useCallback(
-    (breakMode: 'shortBreak' | 'longBreak') => {
+    (
+      breakMode:
+        | 'shortBreak'
+        | 'longBreak'
+    ) => {
       const breakDuration =
         breakMode === 'longBreak'
           ? longBreakMinutes * 60
@@ -203,44 +273,50 @@ export default function Timer({
     ]
   )
 
-  const finishFocusSession = useCallback(() => {
-    if (finishedRef.current) return
+  const finishFocusSession =
+    useCallback(() => {
+      if (finishedRef.current) {
+        return
+      }
 
-    finishedRef.current = true
+      finishedRef.current = true
 
-    const actualDuration = Math.max(
-      0,
-      focusDuration - pausedSeconds
-    )
+      const actualDuration =
+        Math.max(
+          0,
+          focusDuration -
+            pausedSeconds
+        )
 
-    onComplete()
+      onComplete()
 
-    onSessionEnd(
+      onSessionEnd(
+        focusDuration,
+        actualDuration,
+        true,
+        interruptionCount,
+        pausedSeconds
+      )
+
+      setCompletedFocusSessions(
+        (previous) => previous + 1
+      )
+
+      setIsStudying(false)
+      setIsPaused(false)
+      setIsCompleted(true)
+      setShowComplete(true)
+    }, [
       focusDuration,
-      actualDuration,
-      true,
+      pausedSeconds,
       interruptionCount,
-      pausedSeconds
-    )
-
-    setCompletedFocusSessions(
-      (previous) => previous + 1
-    )
-
-    setIsStudying(false)
-    setIsPaused(false)
-    setIsCompleted(true)
-    setShowComplete(true)
-  }, [
-    focusDuration,
-    pausedSeconds,
-    interruptionCount,
-    onComplete,
-    onSessionEnd,
-  ])
+      onComplete,
+      onSessionEnd,
+    ])
 
   const finishBreak = useCallback(() => {
-    const wasLongBreak = mode === 'longBreak'
+    const wasLongBreak =
+      mode === 'longBreak'
 
     clearTimer()
 
@@ -265,54 +341,73 @@ export default function Timer({
     resetTracking,
   ])
 
-  const handleTimerFinished = useCallback(() => {
-    if (finishedRef.current) return
+  const handleTimerFinished =
+    useCallback(() => {
+      if (finishedRef.current) {
+        return
+      }
 
-    finishedRef.current = true
-    clearTimer()
+      finishedRef.current = true
+      clearTimer()
 
-    if (isFocus) {
-      finishedRef.current = false
-      finishFocusSession()
-    } else {
-      finishedRef.current = false
-      finishBreak()
-    }
-  }, [
-    clearTimer,
-    isFocus,
-    finishFocusSession,
-    finishBreak,
-  ])
+      if (isFocus) {
+        finishedRef.current = false
+        finishFocusSession()
+      } else {
+        finishedRef.current = false
+        finishBreak()
+      }
+    }, [
+      clearTimer,
+      isFocus,
+      finishFocusSession,
+      finishBreak,
+    ])
 
   useEffect(() => {
-    if (!isStudying) return
+    if (!isStudying) {
+      return
+    }
 
-    intervalRef.current = window.setInterval(() => {
-      setTimeRemaining((previous) => {
-        if (previous <= 1) {
-          return 0
-        }
+    intervalRef.current =
+      window.setInterval(() => {
+        setTimeRemaining(
+          (previous) => {
+            if (previous <= 1) {
+              return 0
+            }
 
-        return previous - 1
-      })
-    }, 1000)
+            return previous - 1
+          }
+        )
+      }, 1000)
 
     return () => {
-      if (intervalRef.current !== null) {
-        clearInterval(intervalRef.current)
+      if (
+        intervalRef.current !== null
+      ) {
+        clearInterval(
+          intervalRef.current
+        )
+
         intervalRef.current = null
       }
     }
   }, [isStudying])
 
   useEffect(() => {
-    if (!isStudying) return
-    if (timeRemaining !== 0) return
+    if (!isStudying) {
+      return
+    }
 
-    const timeout = window.setTimeout(() => {
-      handleTimerFinished()
-    }, 0)
+    if (timeRemaining !== 0) {
+      return
+    }
+
+    const timeout =
+      window.setTimeout(() => {
+        handleTimerFinished()
+      }, 0)
 
     return () => {
       clearTimeout(timeout)
@@ -324,21 +419,32 @@ export default function Timer({
   ])
 
   useEffect(() => {
-    if (!showComplete) return
-    if (!isFocus) return
-    if (!autoStartBreak) return
+    if (!showComplete) {
+      return
+    }
 
-    const nextCount = completedFocusSessions
+    if (!isFocus) {
+      return
+    }
+
+    if (!autoStartBreak) {
+      return
+    }
+
+    const nextCount =
+      completedFocusSessions
 
     const nextBreak =
-      nextCount >= sessionsBeforeLongBreak
+      nextCount >=
+      sessionsBeforeLongBreak
         ? 'longBreak'
         : 'shortBreak'
 
-    const timeout = window.setTimeout(() => {
-      setShowComplete(false)
-      startBreak(nextBreak)
-    }, 1200)
+    const timeout =
+      window.setTimeout(() => {
+        setShowComplete(false)
+        startBreak(nextBreak)
+      }, 1200)
 
     return () => {
       clearTimeout(timeout)
@@ -359,8 +465,13 @@ export default function Timer({
   }, [clearTimer])
 
   const getTimerColor = () => {
-    if (isCompleted) return 'var(--success)'
-    if (isPaused) return 'var(--energy)'
+    if (isCompleted) {
+      return 'var(--success)'
+    }
+
+    if (isPaused) {
+      return 'var(--energy)'
+    }
 
     if (!isFocus) {
       return mode === 'longBreak'
@@ -379,19 +490,25 @@ export default function Timer({
     return subjectColor
   }
 
-  const timerColor = getTimerColor()
+  const timerColor =
+    getTimerColor()
 
   const modeLabel =
     mode === 'focus'
       ? subjectName
       : mode === 'shortBreak'
-        ? 'SHORT BREAK'
-        : 'LONG BREAK'
+        ? t('shortBreak')
+        : t('longBreak')
 
   const canTakeLongBreak =
-    completedFocusSessions >= sessionsBeforeLongBreak
+    completedFocusSessions >=
+    sessionsBeforeLongBreak
 
-  if (showComplete && isFocus && !autoStartBreak) {
+  if (
+    showComplete &&
+    isFocus &&
+    !autoStartBreak
+  ) {
     return (
       <div
         style={{
@@ -400,44 +517,59 @@ export default function Timer({
           flexDirection: 'column',
           alignItems: 'center',
           gap: '24px',
-          animation: 'fadeIn 0.5s ease',
+          animation:
+            'fadeIn 0.5s ease',
         }}
       >
-        <div style={{ fontSize: '56px' }}>
+        <div
+          style={{
+            fontSize: '56px',
+          }}
+        >
           ⬡
         </div>
 
         <h2
           style={{
-            fontFamily: 'Orbitron, sans-serif',
+            fontFamily:
+              'Orbitron, sans-serif',
             fontSize: '18px',
-            color: 'var(--success)',
-            letterSpacing: '0.1em',
+            color:
+              'var(--success)',
+            letterSpacing:
+              '0.1em',
           }}
         >
-          SEQUENCE COMPLETE
+          {t('sequenceComplete')}
         </h2>
 
         <span
           className="mono"
           style={{
             fontSize: '40px',
-            color: 'var(--text-primary)',
+            color:
+              'var(--text-primary)',
           }}
         >
           {durationMinutes}:
-          {String(duration % 60).padStart(2, '0')}
+          {String(
+            duration % 60
+          ).padStart(2, '0')}
         </span>
 
         <span
           style={{
             fontSize: '12px',
-            color: 'var(--text-muted)',
+            color:
+              'var(--text-muted)',
           }}
         >
-          {subjectName} · {interruptionCount}{' '}
-          interruptions · {pauseMinutes}m {pauseSecs}s
-          {' '}paused
+          {subjectName} ·{' '}
+          {interruptionCount}{' '}
+          {t('interruptions')} ·{' '}
+          {pauseMinutes}m{' '}
+          {pauseSecs}s{' '}
+          {t('paused')}
         </span>
 
         <div
@@ -445,7 +577,8 @@ export default function Timer({
             display: 'flex',
             gap: '10px',
             flexWrap: 'wrap',
-            justifyContent: 'center',
+            justifyContent:
+              'center',
           }}
         >
           <button
@@ -461,16 +594,19 @@ export default function Timer({
             <Coffee size={16} />
 
             {canTakeLongBreak
-              ? 'TAKE LONG BREAK'
-              : 'TAKE SHORT BREAK'}
+              ? t('takeLongBreak')
+              : t('takeShortBreak')}
           </button>
 
           <button
             className="cyber-btn"
             onClick={resetTimer}
           >
-            <RotateCcw size={16} />
-            NEW SEQUENCE
+            <RotateCcw
+              size={16}
+            />
+
+            {t('newSequence')}
           </button>
         </div>
       </div>
@@ -481,20 +617,27 @@ export default function Timer({
     <div
       style={{
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
+        flexDirection:
+          'column',
+        alignItems:
+          'center',
         gap: '24px',
+        width: '100%',
       }}
     >
       <div
         style={{
           display: 'flex',
-          alignItems: 'center',
+          alignItems:
+            'center',
           gap: '8px',
           padding: '6px 12px',
-          borderRadius: '999px',
-          border: `1px solid ${timerColor}40`,
-          background: `${timerColor}10`,
+          borderRadius:
+            '999px',
+          border:
+            `1px solid ${timerColor}40`,
+          background:
+            `${timerColor}10`,
         }}
       >
         <span
@@ -502,34 +645,46 @@ export default function Timer({
           style={{
             fontSize: '10px',
             color: timerColor,
-            letterSpacing: '0.08em',
+            letterSpacing:
+              '0.08em',
           }}
         >
           {isFocus
-            ? `FOCUS ${completedFocusSessions}/${sessionsBeforeLongBreak}`
-            : mode === 'shortBreak'
-              ? 'SHORT BREAK'
-              : 'LONG BREAK'}
+            ? `${t('focus')} ${completedFocusSessions}/${sessionsBeforeLongBreak}`
+            : mode ===
+                'shortBreak'
+              ? t('shortBreak')
+              : t('longBreak')}
         </span>
       </div>
 
       {isFocus &&
         !isStudying &&
         !isPaused &&
-        timeRemaining === duration && (
+        timeRemaining ===
+          duration && (
           <DurationSelector
-            duration={focusDuration}
-            onSelect={handleDurationChange}
-            disabled={isStudying || isPaused}
+            duration={
+              focusDuration
+            }
+            onSelect={
+              handleDurationChange
+            }
+            disabled={
+              isStudying ||
+              isPaused
+            }
           />
         )}
 
       <div
         style={{
-          position: 'relative',
+          position:
+            'relative',
           width: '340px',
           height: '340px',
-          maxWidth: '100%',
+          maxWidth:
+            '100%',
         }}
       >
         {isStudying && (
@@ -538,7 +693,8 @@ export default function Timer({
             height="340"
             viewBox="0 0 340 340"
             style={{
-              position: 'absolute',
+              position:
+                'absolute',
               inset: 0,
               width: '100%',
               height: '100%',
@@ -550,7 +706,9 @@ export default function Timer({
               cx="170"
               cy="40"
               r="2"
-              fill={timerColor}
+              fill={
+                timerColor
+              }
               opacity="0.6"
             />
 
@@ -558,7 +716,9 @@ export default function Timer({
               cx="300"
               cy="170"
               r="1.5"
-              fill={timerColor}
+              fill={
+                timerColor
+              }
               opacity="0.4"
             />
 
@@ -566,7 +726,9 @@ export default function Timer({
               cx="170"
               cy="300"
               r="2"
-              fill={timerColor}
+              fill={
+                timerColor
+              }
               opacity="0.5"
             />
 
@@ -574,7 +736,9 @@ export default function Timer({
               cx="40"
               cy="170"
               r="1.5"
-              fill={timerColor}
+              fill={
+                timerColor
+              }
               opacity="0.4"
             />
           </svg>
@@ -587,7 +751,8 @@ export default function Timer({
           style={{
             width: '100%',
             height: '100%',
-            transform: 'rotate(-90deg)',
+            transform:
+              'rotate(-90deg)',
           }}
         >
           <circle
@@ -595,7 +760,9 @@ export default function Timer({
             cy="170"
             r="135"
             fill="none"
-            stroke="var(--void-border)"
+            stroke={
+              'var(--void-border)'
+            }
             strokeWidth="3"
             opacity={0.3}
           />
@@ -605,16 +772,23 @@ export default function Timer({
             cy="170"
             r="135"
             fill="none"
-            stroke={timerColor}
+            stroke={
+              timerColor
+            }
             strokeWidth="3"
             strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={dashOffset}
+            strokeDasharray={
+              circumference
+            }
+            strokeDashoffset={
+              dashOffset
+            }
             style={{
               transition:
                 'stroke-dashoffset 1s linear, stroke 0.5s ease',
               filter:
-                isStudying || isPaused
+                isStudying ||
+                isPaused
                   ? `drop-shadow(0 0 15px ${timerColor}50) drop-shadow(0 0 30px ${timerColor}20)`
                   : 'none',
             }}
@@ -623,7 +797,8 @@ export default function Timer({
 
         <div
           style={{
-            position: 'absolute',
+            position:
+              'absolute',
             top: '50%',
             left: '50%',
             transform:
@@ -632,13 +807,16 @@ export default function Timer({
             width: '80%',
           }}
         >
-          {(isStudying || isPaused) && (
+          {(isStudying ||
+            isPaused) && (
             <div
               style={{
-                position: 'absolute',
+                position:
+                  'absolute',
                 width: '100px',
                 height: '100px',
-                borderRadius: '50%',
+                borderRadius:
+                  '50%',
                 background:
                   `radial-gradient(circle, ${timerColor}20, transparent 70%)`,
                 top: '50%',
@@ -656,12 +834,16 @@ export default function Timer({
             style={{
               fontSize: '56px',
               fontWeight: '500',
-              color: 'var(--text-primary)',
-              letterSpacing: '0.05em',
-              textShadow: isStudying
-                ? `0 0 30px ${timerColor}40`
-                : 'none',
-              position: 'relative',
+              color:
+                'var(--text-primary)',
+              letterSpacing:
+                '0.05em',
+              textShadow:
+                isStudying
+                  ? `0 0 30px ${timerColor}40`
+                  : 'none',
+              position:
+                'relative',
             }}
           >
             {displayTime}
@@ -669,13 +851,19 @@ export default function Timer({
 
           <span
             style={{
-              display: 'block',
+              display:
+                'block',
               fontSize: '11px',
-              color: 'var(--text-secondary)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              fontFamily: 'Orbitron, sans-serif',
-              marginTop: '8px',
+              color:
+                'var(--text-secondary)',
+              textTransform:
+                'uppercase',
+              letterSpacing:
+                '0.1em',
+              fontFamily:
+                'Orbitron, sans-serif',
+              marginTop:
+                '8px',
             }}
           >
             {modeLabel}
@@ -685,13 +873,17 @@ export default function Timer({
             <span
               className="mono"
               style={{
-                display: 'block',
+                display:
+                  'block',
                 fontSize: '12px',
-                color: 'var(--energy)',
-                marginTop: '6px',
+                color:
+                  'var(--energy)',
+                marginTop:
+                  '6px',
               }}
             >
-              PAUSED · {pauseMinutes}m{' '}
+              {t('paused')} ·{' '}
+              {pauseMinutes}m{' '}
               {pauseSecs}s
             </span>
           )}
@@ -699,19 +891,30 @@ export default function Timer({
           {isFocus &&
             !isStudying &&
             !isPaused &&
-            timeRemaining < duration &&
-            timeRemaining > 0 && (
+            timeRemaining <
+              duration &&
+            timeRemaining >
+              0 && (
               <span
                 className="mono"
                 style={{
-                  display: 'block',
+                  display:
+                    'block',
                   fontSize: '12px',
-                  color: 'var(--text-muted)',
-                  marginTop: '6px',
+                  color:
+                    'var(--text-muted)',
+                  marginTop:
+                    '6px',
                 }}
               >
-                {Math.floor(focusedSeconds / 60)}m{' '}
-                {focusedSeconds % 60}s focused
+                {Math.floor(
+                  focusedSeconds /
+                    60
+                )}
+                m{' '}
+                {focusedSeconds %
+                  60}
+                s {t('focused')}
               </span>
             )}
         </div>
@@ -721,65 +924,93 @@ export default function Timer({
         style={{
           display: 'flex',
           gap: '10px',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
+          flexWrap:
+            'wrap',
+          justifyContent:
+            'center',
         }}
       >
         {!isStudying &&
         !isPaused &&
-        timeRemaining === duration ? (
+        timeRemaining ===
+          duration ? (
           <button
             className="cyber-btn"
-            onClick={startTimer}
+            onClick={
+              startTimer
+            }
           >
             <Play size={16} />
+
             {isFocus
-              ? 'INITIATE SEQUENCE'
-              : 'START BREAK'}
+              ? t(
+                  'initiateSequence'
+                )
+              : t(
+                  'startBreak'
+                )}
           </button>
         ) : isPaused ? (
           <button
             className="cyber-btn"
-            onClick={resumeTimer}
+            onClick={
+              resumeTimer
+            }
           >
             <Play size={16} />
-            RESUME
+            {t('resume')}
           </button>
         ) : !isStudying &&
-          timeRemaining > 0 ? (
+          timeRemaining >
+            0 ? (
           <button
             className="cyber-btn"
-            onClick={startTimer}
+            onClick={
+              startTimer
+            }
           >
             <Play size={16} />
-            RESUME
+            {t('resume')}
           </button>
         ) : (
           <button
             className="cyber-btn"
-            onClick={pauseTimer}
+            onClick={
+              pauseTimer
+            }
             style={{
               borderColor:
                 'rgba(245,158,11,0.3)',
-              color: 'var(--energy)',
+              color:
+                'var(--energy)',
             }}
           >
-            <Pause size={16} />
-            PAUSE
+            <Pause
+              size={16}
+            />
+
+            {t('pause')}
           </button>
         )}
 
         {!isStudying &&
-          timeRemaining < duration &&
-          timeRemaining > 0 && (
-            <button
-              className="cyber-btn"
-              onClick={resetTimer}
-            >
-              <RotateCcw size={16} />
-              RESET
-            </button>
-          )}
+          timeRemaining <
+            duration &&
+          timeRemaining >
+            0 && (
+          <button
+            className="cyber-btn"
+            onClick={
+              resetTimer
+            }
+          >
+            <RotateCcw
+              size={16}
+            />
+
+            {t('reset')}
+          </button>
+        )}
       </div>
 
       <style>{`

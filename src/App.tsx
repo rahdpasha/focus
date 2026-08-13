@@ -6,6 +6,7 @@ import Settings from './components/settings/Settings'
 import BackgroundEffects from './components/effects/BackgroundEffects'
 import { subjects as defaultSubjects } from './data/subjects'
 import type { Subject, StudySession } from './types'
+import { useI18n } from './useI18n'
 
 const STORAGE_KEY = 'focus-sessions'
 const SUBJECTS_KEY = 'focus-subjects'
@@ -32,16 +33,20 @@ const defaultSettings: AppSettings = {
 function loadSessions(): StudySession[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
+
     if (!raw) return []
 
     const parsed = JSON.parse(raw)
 
-    if (!Array.isArray(parsed)) return []
+    if (!Array.isArray(parsed)) {
+      return []
+    }
 
     return parsed.map((session: StudySession) => ({
       ...session,
       completedAt: new Date(session.completedAt),
-      totalPausedSeconds: session.totalPausedSeconds ?? 0,
+      totalPausedSeconds:
+        session.totalPausedSeconds ?? 0,
     }))
   } catch {
     return []
@@ -52,11 +57,16 @@ function loadSubjects(): Subject[] {
   try {
     const raw = localStorage.getItem(SUBJECTS_KEY)
 
-    if (!raw) return defaultSubjects
+    if (!raw) {
+      return defaultSubjects
+    }
 
     const parsed = JSON.parse(raw)
 
-    if (!Array.isArray(parsed) || parsed.length === 0) {
+    if (
+      !Array.isArray(parsed) ||
+      parsed.length === 0
+    ) {
       return defaultSubjects
     }
 
@@ -68,9 +78,14 @@ function loadSubjects(): Subject[] {
 
 function loadDailyGoal(): number {
   try {
-    const value = Number(localStorage.getItem(GOAL_KEY))
+    const value = Number(
+      localStorage.getItem(GOAL_KEY)
+    )
 
-    if (!Number.isFinite(value) || value <= 0) {
+    if (
+      !Number.isFinite(value) ||
+      value <= 0
+    ) {
       return 120
     }
 
@@ -82,7 +97,9 @@ function loadDailyGoal(): number {
 
 function loadActiveSubject(): string | null {
   try {
-    return localStorage.getItem(ACTIVE_SUBJECT_KEY)
+    return localStorage.getItem(
+      ACTIVE_SUBJECT_KEY
+    )
   } catch {
     return null
   }
@@ -90,9 +107,14 @@ function loadActiveSubject(): string | null {
 
 function loadSettings(): AppSettings {
   try {
-    const raw = localStorage.getItem(SETTINGS_KEY)
+    const raw =
+      localStorage.getItem(
+        SETTINGS_KEY
+      )
 
-    if (!raw) return defaultSettings
+    if (!raw) {
+      return defaultSettings
+    }
 
     const parsed = JSON.parse(raw)
 
@@ -105,70 +127,109 @@ function loadSettings(): AppSettings {
   }
 }
 
-function saveSessions(sessions: StudySession[]) {
+function saveSessions(
+  sessions: StudySession[]
+) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions))
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(sessions)
+    )
   } catch {
-    // Ignore storage errors
+    // Ignore storage errors.
   }
 }
 
-function saveSubjects(subjects: Subject[]) {
+function saveSubjects(
+  subjects: Subject[]
+) {
   try {
-    localStorage.setItem(SUBJECTS_KEY, JSON.stringify(subjects))
+    localStorage.setItem(
+      SUBJECTS_KEY,
+      JSON.stringify(subjects)
+    )
   } catch {
-    // Ignore storage errors
+    // Ignore storage errors.
   }
 }
 
-function saveDailyGoal(goal: number) {
+function saveDailyGoal(
+  goal: number
+) {
   try {
-    localStorage.setItem(GOAL_KEY, String(goal))
+    localStorage.setItem(
+      GOAL_KEY,
+      String(goal)
+    )
   } catch {
-    // Ignore storage errors
+    // Ignore storage errors.
   }
 }
 
-function saveActiveSubject(id: string | null) {
+function saveActiveSubject(
+  id: string | null
+) {
   try {
     if (id) {
-      localStorage.setItem(ACTIVE_SUBJECT_KEY, id)
+      localStorage.setItem(
+        ACTIVE_SUBJECT_KEY,
+        id
+      )
     } else {
-      localStorage.removeItem(ACTIVE_SUBJECT_KEY)
+      localStorage.removeItem(
+        ACTIVE_SUBJECT_KEY
+      )
     }
   } catch {
-    // Ignore storage errors
+    // Ignore storage errors.
   }
 }
 
-function saveSettings(settings: AppSettings) {
+function saveSettings(
+  settings: AppSettings
+) {
   try {
     localStorage.setItem(
       SETTINGS_KEY,
       JSON.stringify(settings)
     )
   } catch {
-    // Ignore storage errors
+    // Ignore storage errors.
   }
 }
 
 function App() {
-  const [page, setPage] = useState<Page>('overview')
+  const { t } = useI18n()
+
+  const [page, setPage] =
+    useState<Page>('overview')
 
   const [subjects, setSubjects] =
-    useState<Subject[]>(loadSubjects)
+    useState<Subject[]>(
+      loadSubjects
+    )
 
-  const [activeSubjectId, setActiveSubjectId] =
-    useState<string | null>(loadActiveSubject)
+  const [
+    activeSubjectId,
+    setActiveSubjectId,
+  ] = useState<string | null>(
+    loadActiveSubject
+  )
 
   const [sessions, setSessions] =
-    useState<StudySession[]>(loadSessions)
+    useState<StudySession[]>(
+      loadSessions
+    )
 
   const [dailyGoal, setDailyGoal] =
-    useState<number>(loadDailyGoal)
+    useState<number>(
+      loadDailyGoal
+    )
 
   const [settings, setSettings] =
-    useState<AppSettings>(loadSettings)
+    useState<AppSettings>(
+      loadSettings
+    )
 
   useEffect(() => {
     saveSessions(sessions)
@@ -183,27 +244,45 @@ function App() {
   }, [dailyGoal])
 
   useEffect(() => {
-    saveActiveSubject(activeSubjectId)
+    saveActiveSubject(
+      activeSubjectId
+    )
   }, [activeSubjectId])
 
   useEffect(() => {
     saveSettings(settings)
   }, [settings])
 
-  const addSession = (session: StudySession) => {
-    setSessions((previous) => [session, ...previous])
+  const addSession = (
+    session: StudySession
+  ) => {
+    setSessions((previous) => [
+      session,
+      ...previous,
+    ])
   }
 
-  const deleteSession = (id: string) => {
+  const deleteSession = (
+    id: string
+  ) => {
     setSessions((previous) =>
-      previous.filter((session) => session.id !== id)
+      previous.filter(
+        (session) =>
+          session.id !== id
+      )
     )
   }
 
-  const addSubject = (name: string, color: string) => {
-    const trimmedName = name.trim()
+  const addSubject = (
+    name: string,
+    color: string
+  ) => {
+    const trimmedName =
+      name.trim()
 
-    if (!trimmedName) return
+    if (!trimmedName) {
+      return
+    }
 
     const newSubject: Subject = {
       id: `subject-${Date.now()}`,
@@ -216,21 +295,33 @@ function App() {
       newSubject,
     ])
 
-    setActiveSubjectId(newSubject.id)
+    setActiveSubjectId(
+      newSubject.id
+    )
+
     setPage('overview')
   }
 
-  const deleteSubject = (id: string) => {
+  const deleteSubject = (
+    id: string
+  ) => {
     setSubjects((previous) =>
-      previous.filter((subject) => subject.id !== id)
+      previous.filter(
+        (subject) =>
+          subject.id !== id
+      )
     )
 
-    if (activeSubjectId === id) {
+    if (
+      activeSubjectId === id
+    ) {
       setActiveSubjectId(null)
     }
   }
 
-  const handleSelectSubject = (id: string | null) => {
+  const handleSelectSubject = (
+    id: string | null
+  ) => {
     setActiveSubjectId(id)
     setPage('overview')
   }
@@ -238,7 +329,8 @@ function App() {
   const exportData = () => {
     const backup = {
       version: 1,
-      exportedAt: new Date().toISOString(),
+      exportedAt:
+        new Date().toISOString(),
       sessions,
       subjects,
       dailyGoal,
@@ -247,16 +339,30 @@ function App() {
     }
 
     const blob = new Blob(
-      [JSON.stringify(backup, null, 2)],
-      { type: 'application/json' }
+      [
+        JSON.stringify(
+          backup,
+          null,
+          2
+        ),
+      ],
+      {
+        type: 'application/json',
+      }
     )
 
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
+    const url =
+      URL.createObjectURL(blob)
+
+    const link =
+      document.createElement('a')
 
     link.href = url
+
     link.download =
-      `focus-backup-${new Date().toISOString().slice(0, 10)}.json`
+      `focus-backup-${new Date()
+        .toISOString()
+        .slice(0, 10)}.json`
 
     document.body.appendChild(link)
     link.click()
@@ -265,48 +371,79 @@ function App() {
     URL.revokeObjectURL(url)
   }
 
-  const importData = (file: File) => {
-    const reader = new FileReader()
+  const importData = (
+    file: File
+  ) => {
+    const reader =
+      new FileReader()
 
     reader.onload = () => {
       try {
-        const backup = JSON.parse(
-          String(reader.result)
-        )
+        const backup =
+          JSON.parse(
+            String(
+              reader.result
+            )
+          )
 
-        if (!Array.isArray(backup.sessions)) {
-          throw new Error('Invalid sessions')
+        if (
+          !Array.isArray(
+            backup.sessions
+          )
+        ) {
+          throw new Error(
+            'Invalid sessions'
+          )
         }
 
-        if (!Array.isArray(backup.subjects)) {
-          throw new Error('Invalid subjects')
+        if (
+          !Array.isArray(
+            backup.subjects
+          )
+        ) {
+          throw new Error(
+            'Invalid subjects'
+          )
         }
 
         const importedSessions: StudySession[] =
           backup.sessions.map(
-            (session: StudySession) => ({
+            (
+              session: StudySession
+            ) => ({
               ...session,
-              completedAt: new Date(
-                session.completedAt
-              ),
+              completedAt:
+                new Date(
+                  session.completedAt
+                ),
               totalPausedSeconds:
-                session.totalPausedSeconds ?? 0,
+                session.totalPausedSeconds ??
+                0,
             })
           )
 
-        setSessions(importedSessions)
-        setSubjects(backup.subjects)
+        setSessions(
+          importedSessions
+        )
+
+        setSubjects(
+          backup.subjects
+        )
 
         if (
-          typeof backup.dailyGoal === 'number' &&
+          typeof backup.dailyGoal ===
+            'number' &&
           backup.dailyGoal > 0
         ) {
-          setDailyGoal(backup.dailyGoal)
+          setDailyGoal(
+            backup.dailyGoal
+          )
         }
 
         if (
           backup.settings &&
-          typeof backup.settings === 'object'
+          typeof backup.settings ===
+            'object'
         ) {
           setSettings({
             ...defaultSettings,
@@ -315,22 +452,30 @@ function App() {
         }
 
         if (
-          typeof backup.activeSubjectId === 'string' ||
-          backup.activeSubjectId === null
+          typeof backup.activeSubjectId ===
+            'string' ||
+          backup.activeSubjectId ===
+            null
         ) {
           setActiveSubjectId(
             backup.activeSubjectId
           )
         }
 
-        alert('FOCUS DATA IMPORTED')
+        alert(
+          t('dataImported')
+        )
       } catch {
-        alert('INVALID FOCUS BACKUP FILE')
+        alert(
+          t('invalidBackup')
+        )
       }
     }
 
     reader.onerror = () => {
-      alert('FAILED TO READ BACKUP FILE')
+      alert(
+        t('backupReadFailed')
+      )
     }
 
     reader.readAsText(file)
@@ -344,8 +489,10 @@ function App() {
         style={{
           display: 'flex',
           minHeight: '100vh',
-          background: 'transparent',
-          position: 'relative',
+          background:
+            'transparent',
+          position:
+            'relative',
           zIndex: 2,
         }}
       >
@@ -353,23 +500,45 @@ function App() {
           page={page}
           onPageChange={setPage}
           subjects={subjects}
-          activeSubjectId={activeSubjectId}
-          onSelectSubject={handleSelectSubject}
-          onAddSubject={addSubject}
-          onDeleteSubject={deleteSubject}
+          activeSubjectId={
+            activeSubjectId
+          }
+          onSelectSubject={
+            handleSelectSubject
+          }
+          onAddSubject={
+            addSubject
+          }
+          onDeleteSubject={
+            deleteSubject
+          }
         />
 
         {page === 'overview' && (
           <Dashboard
             subjects={subjects}
-            activeSubjectId={activeSubjectId}
+            activeSubjectId={
+              activeSubjectId
+            }
             sessions={sessions}
-            dailyGoal={dailyGoal}
-            onDailyGoalChange={setDailyGoal}
-            onAddSession={addSession}
-            onDeleteSession={deleteSession}
-            shortBreak={settings.shortBreak}
-            longBreak={settings.longBreak}
+            dailyGoal={
+              dailyGoal
+            }
+            onDailyGoalChange={
+              setDailyGoal
+            }
+            onAddSession={
+              addSession
+            }
+            onDeleteSession={
+              deleteSession
+            }
+            shortBreak={
+              settings.shortBreak
+            }
+            longBreak={
+              settings.longBreak
+            }
             sessionsBeforeLongBreak={
               settings.sessionsBeforeLongBreak
             }
@@ -384,20 +553,25 @@ function App() {
             style={{
               flex: 1,
               padding: '32px',
-              overflowY: 'auto',
+              overflowY:
+                'auto',
             }}
           >
             <h1
               style={{
                 fontSize: '22px',
-                color: 'var(--text-primary)',
-                marginBottom: '24px',
+                color:
+                  'var(--text-primary)',
+                marginBottom:
+                  '24px',
               }}
             >
-              STATISTICS
+              {t('statistics')}
             </h1>
 
-            <Statistics sessions={sessions} />
+            <Statistics
+              sessions={sessions}
+            />
           </div>
         )}
 
@@ -406,58 +580,91 @@ function App() {
             style={{
               flex: 1,
               padding: '32px',
-              overflowY: 'auto',
+              overflowY:
+                'auto',
             }}
           >
             <h1
               style={{
                 fontSize: '22px',
-                color: 'var(--text-primary)',
-                marginBottom: '24px',
+                color:
+                  'var(--text-primary)',
+                marginBottom:
+                  '24px',
               }}
             >
-              SETTINGS
+              {t('settings')}
             </h1>
 
             <Settings
-              dailyGoal={dailyGoal}
-              shortBreak={settings.shortBreak}
-              longBreak={settings.longBreak}
+              dailyGoal={
+                dailyGoal
+              }
+              shortBreak={
+                settings.shortBreak
+              }
+              longBreak={
+                settings.longBreak
+              }
               sessionsBeforeLongBreak={
                 settings.sessionsBeforeLongBreak
               }
               autoStartBreak={
                 settings.autoStartBreak
               }
-              onDailyGoalChange={setDailyGoal}
-              onShortBreakChange={(value) =>
-                setSettings((previous) => ({
-                  ...previous,
-                  shortBreak: value,
-                }))
+              onDailyGoalChange={
+                setDailyGoal
               }
-              onLongBreakChange={(value) =>
-                setSettings((previous) => ({
-                  ...previous,
-                  longBreak: value,
-                }))
+              onShortBreakChange={(
+                value
+              ) =>
+                setSettings(
+                  (previous) => ({
+                    ...previous,
+                    shortBreak:
+                      value,
+                  })
+                )
               }
-              onSessionsBeforeLongBreakChange={
-                (value) =>
-                  setSettings((previous) => ({
+              onLongBreakChange={(
+                value
+              ) =>
+                setSettings(
+                  (previous) => ({
+                    ...previous,
+                    longBreak:
+                      value,
+                  })
+                )
+              }
+              onSessionsBeforeLongBreakChange={(
+                value
+              ) =>
+                setSettings(
+                  (previous) => ({
                     ...previous,
                     sessionsBeforeLongBreak:
                       value,
-                  }))
+                  })
+                )
               }
-              onAutoStartBreakChange={(value) =>
-                setSettings((previous) => ({
-                  ...previous,
-                  autoStartBreak: value,
-                }))
+              onAutoStartBreakChange={(
+                value
+              ) =>
+                setSettings(
+                  (previous) => ({
+                    ...previous,
+                    autoStartBreak:
+                      value,
+                  })
+                )
               }
-              onExportData={exportData}
-              onImportData={importData}
+              onExportData={
+                exportData
+              }
+              onImportData={
+                importData
+              }
             />
           </div>
         )}

@@ -1,21 +1,45 @@
 import type { StudySession } from '../../types'
+import { useI18n } from '../../useI18n'
 
 interface StatisticsProps {
   sessions: StudySession[]
 }
 
-function startOfDay(date: Date) {
+function startOfDay(
+  date: Date
+): Date {
   const result = new Date(date)
-  result.setHours(0, 0, 0, 0)
+
+  result.setHours(
+    0,
+    0,
+    0,
+    0
+  )
+
   return result
 }
 
-function formatDuration(seconds: number) {
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
+function formatDuration(
+  seconds: number
+): string {
+  const minutes =
+    Math.floor(
+      seconds / 60
+    )
 
-  if (minutes === 0) return `${remainingSeconds}s`
-  if (remainingSeconds === 0) return `${minutes}m`
+  const remainingSeconds =
+    seconds % 60
+
+  if (minutes === 0) {
+    return `${remainingSeconds}s`
+  }
+
+  if (
+    remainingSeconds === 0
+  ) {
+    return `${minutes}m`
+  }
 
   return `${minutes}m ${remainingSeconds}s`
 }
@@ -23,50 +47,91 @@ function formatDuration(seconds: number) {
 export default function Statistics({
   sessions,
 }: StatisticsProps) {
-  const completed = sessions.filter((session) => session.completed)
+  const { t } = useI18n()
 
-  const today = startOfDay(new Date())
-
-  const todaySessions = completed.filter((session) => {
-    return (
-      startOfDay(new Date(session.completedAt)).getTime() ===
-      today.getTime()
+  const completed =
+    sessions.filter(
+      (session) =>
+        session.completed
     )
-  })
 
-  const weekStart = new Date(today)
-  weekStart.setDate(weekStart.getDate() - 6)
+  const today =
+    startOfDay(new Date())
 
-  const weekSessions = completed.filter((session) => {
-    const date = startOfDay(new Date(session.completedAt))
+  const todaySessions =
+    completed.filter(
+      (session) =>
+        startOfDay(
+          new Date(
+            session.completedAt
+          )
+        ).getTime() ===
+        today.getTime()
+    )
 
-    return date >= weekStart && date <= today
-  })
+  const weekStart =
+    new Date(today)
 
-  const totalFocusSeconds = completed.reduce(
-    (sum, session) => sum + session.actualDuration,
-    0
+  weekStart.setDate(
+    weekStart.getDate() - 6
   )
 
-  const todayFocusSeconds = todaySessions.reduce(
-    (sum, session) => sum + session.actualDuration,
-    0
-  )
+  const weekSessions =
+    completed.filter(
+      (session) => {
+        const date =
+          startOfDay(
+            new Date(
+              session.completedAt
+            )
+          )
 
-  const weekFocusSeconds = weekSessions.reduce(
-    (sum, session) => sum + session.actualDuration,
-    0
-  )
+        return (
+          date >= weekStart &&
+          date <= today
+        )
+      }
+    )
+
+  const totalFocusSeconds =
+    completed.reduce(
+      (sum, session) =>
+        sum +
+        session.actualDuration,
+      0
+    )
+
+  const todayFocusSeconds =
+    todaySessions.reduce(
+      (sum, session) =>
+        sum +
+        session.actualDuration,
+      0
+    )
+
+  const weekFocusSeconds =
+    weekSessions.reduce(
+      (sum, session) =>
+        sum +
+        session.actualDuration,
+      0
+    )
 
   const averageSession =
     completed.length > 0
-      ? Math.round(totalFocusSeconds / completed.length)
+      ? Math.round(
+          totalFocusSeconds /
+            completed.length
+        )
       : 0
 
   const longestSession =
     completed.length > 0
       ? Math.max(
-          ...completed.map((session) => session.actualDuration)
+          ...completed.map(
+            (session) =>
+              session.actualDuration
+          )
         )
       : 0
 
@@ -89,21 +154,29 @@ export default function Statistics({
           <span
             style={{
               fontSize: '10px',
-              color: 'var(--text-muted)',
-              fontFamily: 'Orbitron, sans-serif',
+              color:
+                'var(--text-muted)',
+              fontFamily:
+                'Orbitron, sans-serif',
             }}
           >
-            TODAY
+            {t('today')}
           </span>
+
           <div
             className="mono"
             style={{
-              marginTop: '8px',
-              fontSize: '22px',
-              color: 'var(--primary-glow)',
+              marginTop:
+                '8px',
+              fontSize:
+                '22px',
+              color:
+                'var(--primary-glow)',
             }}
           >
-            {formatDuration(todayFocusSeconds)}
+            {formatDuration(
+              todayFocusSeconds
+            )}
           </div>
         </div>
 
@@ -111,21 +184,29 @@ export default function Statistics({
           <span
             style={{
               fontSize: '10px',
-              color: 'var(--text-muted)',
-              fontFamily: 'Orbitron, sans-serif',
+              color:
+                'var(--text-muted)',
+              fontFamily:
+                'Orbitron, sans-serif',
             }}
           >
-            LAST 7 DAYS
+            {t('last7Days')}
           </span>
+
           <div
             className="mono"
             style={{
-              marginTop: '8px',
-              fontSize: '22px',
-              color: 'var(--cyber-blue)',
+              marginTop:
+                '8px',
+              fontSize:
+                '22px',
+              color:
+                'var(--cyber-blue)',
             }}
           >
-            {formatDuration(weekFocusSeconds)}
+            {formatDuration(
+              weekFocusSeconds
+            )}
           </div>
         </div>
 
@@ -133,21 +214,29 @@ export default function Statistics({
           <span
             style={{
               fontSize: '10px',
-              color: 'var(--text-muted)',
-              fontFamily: 'Orbitron, sans-serif',
+              color:
+                'var(--text-muted)',
+              fontFamily:
+                'Orbitron, sans-serif',
             }}
           >
-            TOTAL FOCUS
+            {t('totalFocus')}
           </span>
+
           <div
             className="mono"
             style={{
-              marginTop: '8px',
-              fontSize: '22px',
-              color: 'var(--teal)',
+              marginTop:
+                '8px',
+              fontSize:
+                '22px',
+              color:
+                'var(--teal)',
             }}
           >
-            {formatDuration(totalFocusSeconds)}
+            {formatDuration(
+              totalFocusSeconds
+            )}
           </div>
         </div>
 
@@ -155,21 +244,29 @@ export default function Statistics({
           <span
             style={{
               fontSize: '10px',
-              color: 'var(--text-muted)',
-              fontFamily: 'Orbitron, sans-serif',
+              color:
+                'var(--text-muted)',
+              fontFamily:
+                'Orbitron, sans-serif',
             }}
           >
-            SESSIONS
+            {t('sessions')}
           </span>
+
           <div
             className="mono"
             style={{
-              marginTop: '8px',
-              fontSize: '22px',
-              color: 'var(--energy)',
+              marginTop:
+                '8px',
+              fontSize:
+                '22px',
+              color:
+                'var(--energy)',
             }}
           >
-            {completed.length}
+            {
+              completed.length
+            }
           </div>
         </div>
 
@@ -177,21 +274,29 @@ export default function Statistics({
           <span
             style={{
               fontSize: '10px',
-              color: 'var(--text-muted)',
-              fontFamily: 'Orbitron, sans-serif',
+              color:
+                'var(--text-muted)',
+              fontFamily:
+                'Orbitron, sans-serif',
             }}
           >
-            AVG SESSION
+            {t('avgSession')}
           </span>
+
           <div
             className="mono"
             style={{
-              marginTop: '8px',
-              fontSize: '22px',
-              color: 'var(--text-primary)',
+              marginTop:
+                '8px',
+              fontSize:
+                '22px',
+              color:
+                'var(--text-primary)',
             }}
           >
-            {formatDuration(averageSession)}
+            {formatDuration(
+              averageSession
+            )}
           </div>
         </div>
 
@@ -199,21 +304,29 @@ export default function Statistics({
           <span
             style={{
               fontSize: '10px',
-              color: 'var(--text-muted)',
-              fontFamily: 'Orbitron, sans-serif',
+              color:
+                'var(--text-muted)',
+              fontFamily:
+                'Orbitron, sans-serif',
             }}
           >
-            LONGEST
+            {t('longest')}
           </span>
+
           <div
             className="mono"
             style={{
-              marginTop: '8px',
-              fontSize: '22px',
-              color: 'var(--text-primary)',
+              marginTop:
+                '8px',
+              fontSize:
+                '22px',
+              color:
+                'var(--text-primary)',
             }}
           >
-            {formatDuration(longestSession)}
+            {formatDuration(
+              longestSession
+            )}
           </div>
         </div>
       </div>

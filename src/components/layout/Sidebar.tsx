@@ -9,6 +9,7 @@ import {
   Menu,
 } from 'lucide-react'
 import type { Subject } from '../../types'
+import { useI18n } from '../../useI18n'
 
 export type Page = 'overview' | 'statistics' | 'settings'
 
@@ -42,6 +43,8 @@ export default function Sidebar({
   onAddSubject,
   onDeleteSubject,
 }: SidebarProps) {
+  const { t } = useI18n()
+
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
@@ -57,17 +60,17 @@ export default function Sidebar({
     closeMobile()
   }
 
-  const handleSubjectSelect = (
-    id: string | null
-  ) => {
+  const handleSubjectSelect = (id: string | null) => {
     onSelectSubject(id)
     closeMobile()
   }
 
   const handleAdd = () => {
-    if (!name.trim()) return
+    const trimmedName = name.trim()
 
-    onAddSubject(name.trim(), color)
+    if (!trimmedName) return
+
+    onAddSubject(trimmedName, color)
 
     setName('')
     setColor(colors[0])
@@ -77,6 +80,7 @@ export default function Sidebar({
 
   const sidebarContent = (
     <>
+      {/* Logo */}
       <div
         style={{
           display: 'flex',
@@ -129,6 +133,7 @@ export default function Sidebar({
         </button>
       </div>
 
+      {/* Overview */}
       <button
         onClick={() => handlePageChange('overview')}
         style={{
@@ -159,9 +164,10 @@ export default function Sidebar({
         }}
       >
         <Hexagon size={18} />
-        {!collapsed && 'Overview'}
+        {!collapsed && t('overview')}
       </button>
 
+      {/* Statistics */}
       <button
         onClick={() => handlePageChange('statistics')}
         style={{
@@ -192,9 +198,10 @@ export default function Sidebar({
         }}
       >
         <BarChart3 size={18} />
-        {!collapsed && 'Statistics'}
+        {!collapsed && t('statistics')}
       </button>
 
+      {/* Settings */}
       <button
         onClick={() => handlePageChange('settings')}
         style={{
@@ -225,9 +232,10 @@ export default function Sidebar({
         }}
       >
         <SettingsIcon size={18} />
-        {!collapsed && 'Settings'}
+        {!collapsed && t('settings')}
       </button>
 
+      {/* Subject heading */}
       {!collapsed && (
         <span
           style={{
@@ -239,10 +247,11 @@ export default function Sidebar({
             letterSpacing: '0.1em',
           }}
         >
-          Subjects
+          {t('subjects')}
         </span>
       )}
 
+      {/* Subjects */}
       {subjects.map((subject) => {
         const isActive =
           activeSubjectId === subject.id
@@ -315,7 +324,7 @@ export default function Sidebar({
                 onClick={() =>
                   onDeleteSubject(subject.id)
                 }
-                title={`Delete ${subject.name}`}
+                title={`${t('deleteSubject')} ${subject.name}`}
                 style={{
                   width: '28px',
                   height: '28px',
@@ -337,6 +346,7 @@ export default function Sidebar({
         )
       })}
 
+      {/* Add Subject */}
       <button
         onClick={() => setShowAdd(true)}
         style={{
@@ -355,9 +365,10 @@ export default function Sidebar({
         }}
       >
         <Plus size={18} />
-        {!collapsed && 'Add Subject'}
+        {!collapsed && t('addSubject')}
       </button>
 
+      {/* Collapse */}
       <button
         onClick={() => setCollapsed(!collapsed)}
         className="desktop-collapse-button"
@@ -374,6 +385,7 @@ export default function Sidebar({
         {collapsed ? '▶' : '◀'}
       </button>
 
+      {/* Add Subject Dialog */}
       {showAdd && !collapsed && (
         <div
           style={{
@@ -407,7 +419,7 @@ export default function Sidebar({
                 letterSpacing: '0.08em',
               }}
             >
-              NEW SUBJECT
+              {t('newSubject')}
             </span>
 
             <button
@@ -438,7 +450,7 @@ export default function Sidebar({
                 setShowAdd(false)
               }
             }}
-            placeholder="Subject name"
+            placeholder={t('subjectName')}
             style={{
               width: '100%',
               boxSizing: 'border-box',
@@ -462,7 +474,7 @@ export default function Sidebar({
               marginBottom: '8px',
             }}
           >
-            COLOR
+            {t('color')}
           </span>
 
           <div
@@ -505,7 +517,7 @@ export default function Sidebar({
             }}
           >
             <Plus size={15} />
-            CREATE SUBJECT
+            {t('createSubject')}
           </button>
         </div>
       )}
@@ -517,7 +529,7 @@ export default function Sidebar({
       <button
         className="mobile-menu-button"
         onClick={() => setMobileOpen(true)}
-        aria-label="Open navigation"
+        aria-label={t('settings')}
       >
         <Menu size={22} />
       </button>
