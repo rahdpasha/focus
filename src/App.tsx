@@ -7,41 +7,25 @@ import BackgroundEffects from './components/effects/BackgroundEffects'
 import { subjects as defaultSubjects } from './data/subjects'
 import type { Subject, StudySession } from './types'
 import { useI18n } from './useI18n'
-const GOAL_KEY = 'focus-daily-goal'
-const WEEKLY_GOAL_KEY = 'focus-weekly-goal'
+import {
+  getWeekKey,
+  type WeeklyGoalMap,
+} from './utils/goalHistory'
 
 const STORAGE_KEY = 'focus-sessions'
 const SUBJECTS_KEY = 'focus-subjects'
-function loadWeeklyGoal(): number {
-  try {
-    const value = Number(
-      localStorage.getItem(WEEKLY_GOAL_KEY)
-    )
-
-    if (!Number.isFinite(value) || value <= 0) {
-      return 600
-    }
-
-    return value
-  } catch {
-    return 600
-  }
-}
-
-function saveWeeklyGoal(goal: number) {
-  try {
-    localStorage.setItem(
-      WEEKLY_GOAL_KEY,
-      String(goal)
-    )
-  } catch {
-    // Ignore storage errors.
-  }
-}
-const ACTIVE_SUBJECT_KEY = 'focus-active-subject'
+const GOAL_KEY = 'focus-daily-goal'
+const WEEKLY_GOAL_KEY = 'focus-weekly-goal'
+const WEEKLY_GOALS_HISTORY_KEY =
+  'focus-weekly-goals-history'
+const ACTIVE_SUBJECT_KEY =
+  'focus-active-subject'
 const SETTINGS_KEY = 'focus-settings'
 
-type Page = 'overview' | 'statistics' | 'settings'
+type Page =
+  | 'overview'
+  | 'statistics'
+  | 'settings'
 
 interface AppSettings {
   shortBreak: number
@@ -59,7 +43,10 @@ const defaultSettings: AppSettings = {
 
 function loadSessions(): StudySession[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw =
+      localStorage.getItem(
+        STORAGE_KEY
+      )
 
     if (!raw) return []
 
@@ -69,12 +56,18 @@ function loadSessions(): StudySession[] {
       return []
     }
 
-    return parsed.map((session: StudySession) => ({
-      ...session,
-      completedAt: new Date(session.completedAt),
-      totalPausedSeconds:
-        session.totalPausedSeconds ?? 0,
-    }))
+    return parsed.map(
+      (session: StudySession) => ({
+        ...session,
+        completedAt:
+          new Date(
+            session.completedAt
+          ),
+        totalPausedSeconds:
+          session.totalPausedSeconds ??
+          0,
+      })
+    )
   } catch {
     return []
   }
@@ -82,7 +75,10 @@ function loadSessions(): StudySession[] {
 
 function loadSubjects(): Subject[] {
   try {
-    const raw = localStorage.getItem(SUBJECTS_KEY)
+    const raw =
+      localStorage.getItem(
+        SUBJECTS_KEY
+      )
 
     if (!raw) {
       return defaultSubjects
@@ -106,7 +102,9 @@ function loadSubjects(): Subject[] {
 function loadDailyGoal(): number {
   try {
     const value = Number(
-      localStorage.getItem(GOAL_KEY)
+      localStorage.getItem(
+        GOAL_KEY
+      )
     )
 
     if (
@@ -119,6 +117,69 @@ function loadDailyGoal(): number {
     return value
   } catch {
     return 120
+  }
+}
+
+function loadWeeklyGoal(): number {
+  try {
+    const value = Number(
+      localStorage.getItem(
+        WEEKLY_GOAL_KEY
+      )
+    )
+
+    if (
+      !Number.isFinite(value) ||
+      value <= 0
+    ) {
+      return 600
+    }
+
+    return value
+  } catch {
+    return 600
+  }
+}
+
+function loadWeeklyGoalsHistory(): WeeklyGoalMap {
+  try {
+    const raw =
+      localStorage.getItem(
+        WEEKLY_GOALS_HISTORY_KEY
+      )
+
+    if (!raw) {
+      return {}
+    }
+
+    const parsed = JSON.parse(raw)
+
+    if (
+      !parsed ||
+      typeof parsed !== 'object' ||
+      Array.isArray(parsed)
+    ) {
+      return {}
+    }
+
+    const result: WeeklyGoalMap = {}
+
+    Object.entries(parsed).forEach(
+      ([weekKey, value]) => {
+        if (
+          typeof value ===
+            'number' &&
+          Number.isFinite(value) &&
+          value > 0
+        ) {
+          result[weekKey] = value
+        }
+      }
+    )
+
+    return result
+  } catch {
+    return {}
   }
 }
 
@@ -193,6 +254,32 @@ function saveDailyGoal(
   }
 }
 
+function saveWeeklyGoal(
+  goal: number
+) {
+  try {
+    localStorage.setItem(
+      WEEKLY_GOAL_KEY,
+      String(goal)
+    )
+  } catch {
+    // Ignore storage errors.
+  }
+}
+
+function saveWeeklyGoalsHistory(
+  goals: WeeklyGoalMap
+) {
+  try {
+    localStorage.setItem(
+      WEEKLY_GOALS_HISTORY_KEY,
+      JSON.stringify(goals)
+    )
+  } catch {
+    // Ignore storage errors.
+  }
+}
+
 function saveActiveSubject(
   id: string | null
 ) {
@@ -226,8 +313,6 @@ function saveSettings(
 }
 
 function App() {
-  const [weeklyGoal, setWeeklyGoal] =
-  useState<number>(loadWeeklyGoal)
   const { t } = useI18n()
 
   const [page, setPage] =
@@ -255,13 +340,24 @@ function App() {
       loadDailyGoal
     )
 
+  const [
+    weeklyGoal,
+    setWeeklyGoalState,
+  ] = useState<number>(
+    loadWeeklyGoal
+  )
+
+  const [
+    weeklyGoalsHistory,
+    setWeeklyGoalsHistory,
+  ] = useState<WeeklyGoalMap>(
+    loadWeeklyGoalsHistory
+  )
+
   const [settings, setSettings] =
     useState<AppSettings>(
       loadSettings
     )
-  useEffect(() => {
-  saveWeeklyGoal(weeklyGoal)
-}, [weeklyGoal])
 
   useEffect(() => {
     saveSessions(sessions)
@@ -276,6 +372,16 @@ function App() {
   }, [dailyGoal])
 
   useEffect(() => {
+    saveWeeklyGoal(weeklyGoal)
+  }, [weeklyGoal])
+
+  useEffect(() => {
+    saveWeeklyGoalsHistory(
+      weeklyGoalsHistory
+    )
+  }, [weeklyGoalsHistory])
+
+  useEffect(() => {
     saveActiveSubject(
       activeSubjectId
     )
@@ -284,6 +390,29 @@ function App() {
   useEffect(() => {
     saveSettings(settings)
   }, [settings])
+
+  const setWeeklyGoal = (
+    goal: number
+  ) => {
+    if (
+      !Number.isFinite(goal) ||
+      goal <= 0
+    ) {
+      return
+    }
+
+    setWeeklyGoalState(goal)
+
+    const weekKey =
+      getWeekKey(new Date())
+
+    setWeeklyGoalsHistory(
+      (previous) => ({
+        ...previous,
+        [weekKey]: goal,
+      })
+    )
+  }
 
   const addSession = (
     session: StudySession
@@ -360,12 +489,14 @@ function App() {
 
   const exportData = () => {
     const backup = {
-      version: 1,
+      version: 3,
       exportedAt:
         new Date().toISOString(),
       sessions,
       subjects,
       dailyGoal,
+      weeklyGoal,
+      weeklyGoalsHistory,
       settings,
       activeSubjectId,
     }
@@ -438,7 +569,8 @@ function App() {
           )
         }
 
-        const importedSessions: StudySession[] =
+        const importedSessions:
+          StudySession[] =
           backup.sessions.map(
             (
               session: StudySession
@@ -469,6 +601,29 @@ function App() {
         ) {
           setDailyGoal(
             backup.dailyGoal
+          )
+        }
+
+        if (
+          typeof backup.weeklyGoal ===
+            'number' &&
+          backup.weeklyGoal > 0
+        ) {
+          setWeeklyGoal(
+            backup.weeklyGoal
+          )
+        }
+
+        if (
+          backup.weeklyGoalsHistory &&
+          typeof backup.weeklyGoalsHistory ===
+            'object' &&
+          !Array.isArray(
+            backup.weeklyGoalsHistory
+          )
+        ) {
+          setWeeklyGoalsHistory(
+            backup.weeklyGoalsHistory
           )
         }
 
@@ -556,8 +711,14 @@ function App() {
             dailyGoal={
               dailyGoal
             }
+            weeklyGoal={
+              weeklyGoal
+            }
             onDailyGoalChange={
               setDailyGoal
+            }
+            onWeeklyGoalChange={
+              setWeeklyGoal
             }
             onAddSession={
               addSession
@@ -577,8 +738,6 @@ function App() {
             autoStartBreak={
               settings.autoStartBreak
             }
-            weeklyGoal={weeklyGoal}
-onWeeklyGoalChange={setWeeklyGoal}
           />
         )}
 
@@ -602,10 +761,16 @@ onWeeklyGoalChange={setWeeklyGoal}
             >
               {t('statistics')}
             </h1>
-<Statistics
-  sessions={sessions}
-  weeklyGoal={weeklyGoal}
-/>
+
+            <Statistics
+              sessions={sessions}
+              weeklyGoal={
+                weeklyGoal
+              }
+              weeklyGoalsHistory={
+                weeklyGoalsHistory
+              }
+            />
           </div>
         )}
 

@@ -2,14 +2,15 @@ import type { StudySession } from '../../types'
 import { useI18n } from '../../useI18n'
 import {
   getStartOfWeek,
-  getWeeklyMinutes,
-  getWeekKey,
   getStreakStats,
+  getWeeklyGoalHistory,
+  type WeeklyGoalMap,
 } from '../../utils/goalHistory'
 
 interface StatisticsProps {
   sessions: StudySession[]
   weeklyGoal: number
+  weeklyGoalsHistory: WeeklyGoalMap
 }
 
 function startOfDay(date: Date): Date {
@@ -20,15 +21,24 @@ function startOfDay(date: Date): Date {
   return result
 }
 
-function formatDuration(seconds: number): string {
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
+function formatDuration(
+  seconds: number
+): string {
+  const minutes =
+    Math.floor(
+      seconds / 60
+    )
+
+  const remainingSeconds =
+    seconds % 60
 
   if (minutes === 0) {
     return `${remainingSeconds}s`
   }
 
-  if (remainingSeconds === 0) {
+  if (
+    remainingSeconds === 0
+  ) {
     return `${minutes}m`
   }
 
@@ -46,24 +56,30 @@ function formatWeekLabel(
       : 'THIS WEEK'
   }
 
-  const end = new Date(date)
-  end.setDate(end.getDate() + 6)
+  const end =
+    new Date(date)
 
-  const startLabel = date.toLocaleDateString(
-    locale,
-    {
-      month: 'short',
-      day: 'numeric',
-    }
+  end.setDate(
+    end.getDate() + 6
   )
 
-  const endLabel = end.toLocaleDateString(
-    locale,
-    {
-      month: 'short',
-      day: 'numeric',
-    }
-  )
+  const startLabel =
+    date.toLocaleDateString(
+      locale,
+      {
+        month: 'short',
+        day: 'numeric',
+      }
+    )
+
+  const endLabel =
+    end.toLocaleDateString(
+      locale,
+      {
+        month: 'short',
+        day: 'numeric',
+      }
+    )
 
   return `${startLabel} - ${endLabel}`
 }
@@ -71,8 +87,10 @@ function formatWeekLabel(
 export default function Statistics({
   sessions,
   weeklyGoal,
+  weeklyGoalsHistory,
 }: StatisticsProps) {
-  const { language, t } = useI18n()
+  const { language, t } =
+    useI18n()
 
   const locale =
     language === 'ku'
@@ -81,12 +99,14 @@ export default function Statistics({
 
   const completed =
     sessions.filter(
-      (session) => session.completed
+      (session) =>
+        session.completed
     )
 
-  const today = startOfDay(
-    new Date()
-  )
+  const today =
+    startOfDay(
+      new Date()
+    )
 
   const todaySessions =
     completed.filter(
@@ -103,7 +123,8 @@ export default function Statistics({
     new Date(today)
 
   last7Start.setDate(
-    last7Start.getDate() - 6
+    last7Start.getDate() -
+      6
   )
 
   const last7Sessions =
@@ -117,7 +138,8 @@ export default function Statistics({
           )
 
         return (
-          date >= last7Start &&
+          date >=
+            last7Start &&
           date <= today
         )
       }
@@ -165,59 +187,18 @@ export default function Statistics({
         )
       : 0
 
-  const currentWeek =
-    getStartOfWeek(new Date())
-
   const weeklyHistory =
-    Array.from(
-      { length: 4 },
-      (_, index) => {
-        const week =
-          new Date(
-            currentWeek
-          )
-
-        week.setDate(
-          week.getDate() -
-            index * 7
-        )
-
-        const minutes =
-          getWeeklyMinutes(
-            sessions,
-            week
-          )
-
-        const progress =
-          weeklyGoal > 0
-            ? Math.min(
-                100,
-                Math.round(
-                  (minutes /
-                    weeklyGoal) *
-                    100
-                )
-              )
-            : 0
-
-        const completedGoal =
-          weeklyGoal > 0 &&
-          minutes >= weeklyGoal
-
-        return {
-          week,
-          weekKey:
-            getWeekKey(week),
-          minutes,
-          progress,
-          completedGoal,
-        }
-      }
+    getWeeklyGoalHistory(
+      sessions,
+      weeklyGoalsHistory,
+      weeklyGoal,
+      4
     )
 
   const streakStats =
     getStreakStats(
       sessions,
+      weeklyGoalsHistory,
       weeklyGoal
     )
 
@@ -260,10 +241,8 @@ export default function Statistics({
             <div
               className="mono"
               style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '22px',
+                marginTop: '8px',
+                fontSize: '22px',
                 color:
                   'var(--primary-glow)',
               }}
@@ -290,10 +269,8 @@ export default function Statistics({
             <div
               className="mono"
               style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '22px',
+                marginTop: '8px',
+                fontSize: '22px',
                 color:
                   'var(--cyber-blue)',
               }}
@@ -320,10 +297,8 @@ export default function Statistics({
             <div
               className="mono"
               style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '22px',
+                marginTop: '8px',
+                fontSize: '22px',
                 color:
                   'var(--teal)',
               }}
@@ -350,10 +325,8 @@ export default function Statistics({
             <div
               className="mono"
               style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '22px',
+                marginTop: '8px',
+                fontSize: '22px',
                 color:
                   'var(--energy)',
               }}
@@ -378,10 +351,8 @@ export default function Statistics({
             <div
               className="mono"
               style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '22px',
+                marginTop: '8px',
+                fontSize: '22px',
                 color:
                   'var(--text-primary)',
               }}
@@ -408,10 +379,8 @@ export default function Statistics({
             <div
               className="mono"
               style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '22px',
+                marginTop: '8px',
+                fontSize: '22px',
                 color:
                   'var(--text-primary)',
               }}
@@ -458,21 +427,16 @@ export default function Statistics({
           }}
         >
           <div
+            className="glass-panel"
             style={{
-              padding:
-                '16px',
-              borderRadius:
-                '10px',
+              padding: '16px',
               background:
                 'rgba(139,92,246,0.08)',
-              border:
-                '1px solid var(--void-border)',
             }}
           >
             <div
               style={{
-                fontSize:
-                  '10px',
+                fontSize: '10px',
                 color:
                   'var(--text-muted)',
               }}
@@ -483,10 +447,8 @@ export default function Statistics({
             <div
               className="mono"
               style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '26px',
+                marginTop: '8px',
+                fontSize: '26px',
                 color:
                   'var(--primary-glow)',
               }}
@@ -498,10 +460,8 @@ export default function Statistics({
 
             <div
               style={{
-                marginTop:
-                  '4px',
-                fontSize:
-                  '10px',
+                marginTop: '4px',
+                fontSize: '10px',
                 color:
                   'var(--text-muted)',
               }}
@@ -511,21 +471,16 @@ export default function Statistics({
           </div>
 
           <div
+            className="glass-panel"
             style={{
-              padding:
-                '16px',
-              borderRadius:
-                '10px',
+              padding: '16px',
               background:
                 'rgba(6,182,212,0.08)',
-              border:
-                '1px solid var(--void-border)',
             }}
           >
             <div
               style={{
-                fontSize:
-                  '10px',
+                fontSize: '10px',
                 color:
                   'var(--text-muted)',
               }}
@@ -536,10 +491,8 @@ export default function Statistics({
             <div
               className="mono"
               style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '26px',
+                marginTop: '8px',
+                fontSize: '26px',
                 color:
                   'var(--cyber-glow)',
               }}
@@ -551,10 +504,8 @@ export default function Statistics({
 
             <div
               style={{
-                marginTop:
-                  '4px',
-                fontSize:
-                  '10px',
+                marginTop: '4px',
+                fontSize: '10px',
                 color:
                   'var(--text-muted)',
               }}
@@ -564,21 +515,16 @@ export default function Statistics({
           </div>
 
           <div
+            className="glass-panel"
             style={{
-              padding:
-                '16px',
-              borderRadius:
-                '10px',
+              padding: '16px',
               background:
                 'rgba(20,184,166,0.08)',
-              border:
-                '1px solid var(--void-border)',
             }}
           >
             <div
               style={{
-                fontSize:
-                  '10px',
+                fontSize: '10px',
                 color:
                   'var(--text-muted)',
               }}
@@ -589,10 +535,8 @@ export default function Statistics({
             <div
               className="mono"
               style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '26px',
+                marginTop: '8px',
+                fontSize: '26px',
                 color:
                   'var(--teal-glow)',
               }}
@@ -604,10 +548,8 @@ export default function Statistics({
 
             <div
               style={{
-                marginTop:
-                  '4px',
-                fontSize:
-                  '10px',
+                marginTop: '4px',
+                fontSize: '10px',
                 color:
                   'var(--text-muted)',
               }}
@@ -617,21 +559,16 @@ export default function Statistics({
           </div>
 
           <div
+            className="glass-panel"
             style={{
-              padding:
-                '16px',
-              borderRadius:
-                '10px',
+              padding: '16px',
               background:
                 'rgba(245,158,11,0.08)',
-              border:
-                '1px solid var(--void-border)',
             }}
           >
             <div
               style={{
-                fontSize:
-                  '10px',
+                fontSize: '10px',
                 color:
                   'var(--text-muted)',
               }}
@@ -642,10 +579,8 @@ export default function Statistics({
             <div
               className="mono"
               style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '26px',
+                marginTop: '8px',
+                fontSize: '26px',
                 color:
                   'var(--energy-glow)',
               }}
@@ -657,10 +592,8 @@ export default function Statistics({
 
             <div
               style={{
-                marginTop:
-                  '4px',
-                fontSize:
-                  '10px',
+                marginTop: '4px',
+                fontSize: '10px',
                 color:
                   'var(--text-muted)',
               }}
@@ -693,8 +626,7 @@ export default function Statistics({
         >
           <span
             style={{
-              fontSize:
-                '11px',
+              fontSize: '11px',
               fontFamily:
                 'Orbitron, sans-serif',
               color:
@@ -711,8 +643,7 @@ export default function Statistics({
           <span
             className="mono"
             style={{
-              fontSize:
-                '11px',
+              fontSize: '11px',
               color:
                 'var(--text-secondary)',
             }}
@@ -723,12 +654,10 @@ export default function Statistics({
 
         <div
           style={{
-            display:
-              'flex',
+            display: 'flex',
             flexDirection:
               'column',
-            gap:
-              '12px',
+            gap: '12px',
           }}
         >
           {weeklyHistory.map(
@@ -738,7 +667,7 @@ export default function Statistics({
             ) => (
               <div
                 key={
-                  item.weekKey
+                  item.weekStart
                 }
                 style={{
                   padding:
@@ -746,8 +675,7 @@ export default function Statistics({
                   borderRadius:
                     '10px',
                   background:
-                    index ===
-                    0
+                    index === 0
                       ? 'rgba(139,92,246,0.08)'
                       : 'rgba(255,255,255,0.02)',
                   border:
@@ -756,14 +684,12 @@ export default function Statistics({
               >
                 <div
                   style={{
-                    display:
-                      'flex',
+                    display: 'flex',
                     justifyContent:
                       'space-between',
                     alignItems:
                       'center',
-                    gap:
-                      '12px',
+                    gap: '12px',
                     marginBottom:
                       '10px',
                     flexWrap:
@@ -781,10 +707,13 @@ export default function Statistics({
                     }}
                   >
                     {formatWeekLabel(
-                      item.week,
+                      getStartOfWeek(
+                        new Date(
+                          `${item.weekStart}T00:00:00`
+                        )
+                      ),
                       locale,
-                      index ===
-                        0
+                      index === 0
                     )}
                   </span>
 
@@ -794,24 +723,25 @@ export default function Statistics({
                       fontSize:
                         '11px',
                       color:
-                        item.completedGoal
+                        item.completed
                           ? 'var(--success)'
                           : 'var(--text-primary)',
                     }}
                   >
                     {
-                      item.minutes
-                    }m /{' '}
+                      item.completedMinutes
+                    }
+                    m /{' '}
                     {
-                      weeklyGoal
-                    }m
+                      item.goalMinutes
+                    }
+                    m
                   </span>
                 </div>
 
                 <div
                   style={{
-                    height:
-                      '7px',
+                    height: '7px',
                     background:
                       'var(--void-border)',
                     borderRadius:
@@ -823,11 +753,10 @@ export default function Statistics({
                   <div
                     style={{
                       width:
-                        `${item.progress}%`,
-                      height:
-                        '100%',
+                        `${item.progressPercent}%`,
+                      height: '100%',
                       background:
-                        item.completedGoal
+                        item.completed
                           ? 'var(--success)'
                           : 'linear-gradient(90deg, var(--cyber-blue), var(--teal))',
                       borderRadius:
@@ -841,20 +770,16 @@ export default function Statistics({
                 <div
                   className="mono"
                   style={{
-                    marginTop:
-                      '8px',
-                    fontSize:
-                      '10px',
+                    marginTop: '8px',
+                    fontSize: '10px',
                     color:
-                      item.completedGoal
+                      item.completed
                         ? 'var(--success)'
                         : 'var(--text-muted)',
                   }}
                 >
                   {
-                    Math.round(
-                      item.progress
-                    )
+                    item.progressPercent
                   }
                   %
                 </div>

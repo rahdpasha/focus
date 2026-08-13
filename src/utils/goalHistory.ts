@@ -15,17 +15,16 @@ export interface StreakStats {
   bestWeeklyStreak: number
 }
 
+export type WeeklyGoalMap = Record<string, number>
+
 export function getStartOfDay(date: Date): Date {
   const result = new Date(date)
-
   result.setHours(0, 0, 0, 0)
-
   return result
 }
 
 export function getStartOfWeek(date: Date): Date {
   const result = getStartOfDay(date)
-
   const day = result.getDay()
   const daysSinceMonday = day === 0 ? 6 : day - 1
 
@@ -49,9 +48,8 @@ export function getWeeklyMinutes(
   const weekStart =
     getStartOfWeek(date).getTime()
 
-  const nextWeek = new Date(
-    getStartOfWeek(date)
-  )
+  const nextWeek =
+    new Date(getStartOfWeek(date))
 
   nextWeek.setDate(
     nextWeek.getDate() + 7
@@ -78,8 +76,7 @@ export function getWeeklyMinutes(
       })
       .reduce(
         (total, session) =>
-          total +
-          session.actualDuration,
+          total + session.actualDuration,
         0
       ) / 60
   )
@@ -193,7 +190,8 @@ export function getBestDailyStreak(
 
 export function getWeeklyGoalHistory(
   sessions: StudySession[],
-  goalMinutes: number,
+  goalMap: WeeklyGoalMap,
+  fallbackGoalMinutes: number,
   numberOfWeeks = 4
 ): WeeklyGoalRecord[] {
   const currentWeek =
@@ -209,6 +207,13 @@ export function getWeeklyGoalHistory(
         week.getDate() -
           index * 7
       )
+
+      const weekStart =
+        getWeekKey(week)
+
+      const goalMinutes =
+        goalMap[weekStart] ??
+        fallbackGoalMinutes
 
       const completedMinutes =
         getWeeklyMinutes(
@@ -229,8 +234,7 @@ export function getWeeklyGoalHistory(
           : 0
 
       return {
-        weekStart:
-          getWeekKey(week),
+        weekStart,
         goalMinutes,
         completedMinutes,
         progressPercent,
@@ -245,22 +249,28 @@ export function getWeeklyGoalHistory(
 
 export function getCurrentWeeklyStreak(
   sessions: StudySession[],
-  goalMinutes: number
+  goalMap: WeeklyGoalMap,
+  fallbackGoalMinutes: number
 ): number {
-  if (goalMinutes <= 0) {
-    return 0
-  }
-
   let streak = 0
   const week =
     getStartOfWeek(new Date())
 
-  while (
-    getWeeklyMinutes(
-      sessions,
-      week
-    ) >= goalMinutes
-  ) {
+  while (true) {
+    const goal =
+      goalMap[getWeekKey(week)] ??
+      fallbackGoalMinutes
+
+    if (
+      goal <= 0 ||
+      getWeeklyMinutes(
+        sessions,
+        week
+      ) < goal
+    ) {
+      break
+    }
+
     streak += 1
 
     week.setDate(
@@ -273,27 +283,28 @@ export function getCurrentWeeklyStreak(
 
 export function getBestWeeklyStreak(
   sessions: StudySession[],
-  goalMinutes: number
+  goalMap: WeeklyGoalMap,
+  fallbackGoalMinutes: number
 ): number {
-  if (goalMinutes <= 0) {
+  const completedSessions =
+    sessions.filter(
+      (session) => session.completed
+    )
+
+  if (completedSessions.length === 0) {
     return 0
   }
 
   const firstSession =
-    sessions
-      .filter(
-        (session) =>
-          session.completed
-      )
-      .sort(
-        (a, b) =>
-          new Date(
-            a.completedAt
-          ).getTime() -
-          new Date(
-            b.completedAt
-          ).getTime()
-      )[0]
+    [...completedSessions].sort(
+      (a, b) =>
+        new Date(
+          a.completedAt
+        ).getTime() -
+        new Date(
+          b.completedAt
+        ).getTime()
+    )[0]
 
   if (!firstSession) {
     return 0
@@ -309,37 +320,29 @@ export function getBestWeeklyStreak(
   const currentWeek =
     getStartOfWeek(new Date())
 
-  const weeks: Date[] = []
-
   const cursor =
     new Date(firstWeek)
+
+  let best = 0
+  let current = 0
 
   while (
     cursor.getTime() <=
     currentWeek.getTime()
   ) {
-    weeks.push(
-      new Date(cursor)
-    )
+    const goal =
+      goalMap[getWeekKey(cursor)] ??
+      fallbackGoalMinutes
 
-    cursor.setDate(
-      cursor.getDate() + 7
-    )
-  }
-
-  let best = 0
-  let current = 0
-
-  weeks.forEach((week) => {
     const completedMinutes =
       getWeeklyMinutes(
         sessions,
-        week
+        cursor
       )
 
     if (
-      completedMinutes >=
-      goalMinutes
+      goal > 0 &&
+      completedMinutes >= goal
     ) {
       current += 1
       best = Math.max(
@@ -349,14 +352,19 @@ export function getBestWeeklyStreak(
     } else {
       current = 0
     }
-  })
+
+    cursor.setDate(
+      cursor.getDate() + 7
+    )
+  }
 
   return best
 }
 
 export function getStreakStats(
   sessions: StudySession[],
-  weeklyGoalMinutes: number
+  goalMap: WeeklyGoalMap,
+  fallbackGoalMinutes: number
 ): StreakStats {
   return {
     currentDailyStreak:
@@ -368,13 +376,15 @@ export function getStreakStats(
     currentWeeklyStreak:
       getCurrentWeeklyStreak(
         sessions,
-        weeklyGoalMinutes
+        goalMap,
+        fallbackGoalMinutes
       ),
 
     bestWeeklyStreak:
       getBestWeeklyStreak(
         sessions,
-        weeklyGoalMinutes
+        goalMap,
+        fallbackGoalMinutes
       ),
   }
 }
@@ -403,7 +413,8 @@ export function createWeeklyGoalRecord(
       : 0
 
   return {
-    weekStart: getWeekKey(date),
+    weekStart:
+      getWeekKey(date),
     goalMinutes,
     completedMinutes,
     progressPercent,
