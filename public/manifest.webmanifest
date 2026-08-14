@@ -1,0 +1,18 @@
+{
+  "name": "FOCUS",
+  "short_name": "FOCUS",
+  "description": "A focused study and Pomodoro tracker.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#030312",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
