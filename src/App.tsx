@@ -623,9 +623,37 @@ function App() {
             backup.weeklyGoalsHistory
           )
         ) {
-          setWeeklyGoalsHistory(
+          const importedWeeklyGoals: WeeklyGoalMap = {}
+
+          Object.entries(
             backup.weeklyGoalsHistory
+          ).forEach(
+            ([weekKey, value]) => {
+              if (
+                typeof value === 'number' &&
+                Number.isFinite(value) &&
+                value > 0
+              ) {
+                importedWeeklyGoals[weekKey] =
+                  value
+              }
+            }
           )
+
+          setWeeklyGoalsHistory(
+            importedWeeklyGoals
+          )
+        } else if (
+          typeof backup.weeklyGoal ===
+            'number' &&
+          backup.weeklyGoal > 0
+        ) {
+          setWeeklyGoalsHistory({
+            [getWeekKey(new Date())]:
+              backup.weeklyGoal,
+          })
+        } else {
+          setWeeklyGoalsHistory({})
         }
 
         if (
