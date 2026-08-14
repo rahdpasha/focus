@@ -799,6 +799,12 @@ function App() {
               dailyGoal={
                 dailyGoal
               }
+              weeklyGoal={
+                weeklyGoal
+              }
+              onWeeklyGoalChange={
+                setWeeklyGoal
+              }
               shortBreak={
                 settings.shortBreak
               }

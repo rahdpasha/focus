@@ -3,11 +3,13 @@ import { useI18n } from '../../useI18n'
 
 interface SettingsProps {
   dailyGoal: number
+  weeklyGoal: number
   shortBreak: number
   longBreak: number
   sessionsBeforeLongBreak: number
   autoStartBreak: boolean
   onDailyGoalChange: (value: number) => void
+  onWeeklyGoalChange: (value: number) => void
   onShortBreakChange: (value: number) => void
   onLongBreakChange: (value: number) => void
   onSessionsBeforeLongBreakChange: (value: number) => void
@@ -18,11 +20,13 @@ interface SettingsProps {
 
 export default function Settings({
   dailyGoal,
+  weeklyGoal,
   shortBreak,
   longBreak,
   sessionsBeforeLongBreak,
   autoStartBreak,
   onDailyGoalChange,
+  onWeeklyGoalChange,
   onShortBreakChange,
   onLongBreakChange,
   onSessionsBeforeLongBreakChange,
@@ -33,6 +37,25 @@ export default function Settings({
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { language, setLanguage, t } = useI18n()
+
+  const selectStyle = {
+    padding: '9px',
+    background: 'var(--void-surface-hover)',
+    border: '1px solid var(--void-border)',
+    borderRadius: '8px',
+    color: 'var(--text-primary)',
+    outline: 'none',
+    cursor: 'pointer',
+  }
+
+  const inputStyle = {
+    padding: '9px',
+    background: 'var(--void-surface-hover)',
+    border: '1px solid var(--void-border)',
+    borderRadius: '8px',
+    color: 'var(--text-primary)',
+    outline: 'none',
+  }
 
   return (
     <div
@@ -72,15 +95,7 @@ export default function Settings({
           style={{
             width: '220px',
             maxWidth: '100%',
-            padding: '9px',
-            background:
-              'var(--void-surface-hover)',
-            border:
-              '1px solid var(--void-border)',
-            borderRadius: '8px',
-            color: 'var(--text-primary)',
-            outline: 'none',
-            cursor: 'pointer',
+            ...selectStyle,
           }}
         >
           <option value="en">
@@ -109,65 +124,106 @@ export default function Settings({
           {t('studyGoals')}
         </h2>
 
-        <label
+        <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            color: 'var(--text-secondary)',
-            fontSize: '13px',
+            display: 'grid',
+            gridTemplateColumns:
+              'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '16px',
           }}
         >
-          {t('dailyFocusGoal')}
-
-          <select
-            value={dailyGoal}
-            onChange={(event) =>
-              onDailyGoalChange(
-                Number(event.target.value)
-              )
-            }
+          <label
             style={{
-              width: '180px',
-              padding: '9px',
-              background:
-                'var(--void-surface-hover)',
-              border:
-                '1px solid var(--void-border)',
-              borderRadius: '8px',
-              color: 'var(--text-primary)',
-              outline: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              color: 'var(--text-secondary)',
+              fontSize: '13px',
             }}
           >
-            <option value={30}>
-              {t('minutes30')}
-            </option>
+            {t('dailyFocusGoal')}
 
-            <option value={60}>
-              {t('hour1')}
-            </option>
+            <select
+              value={dailyGoal}
+              onChange={(event) =>
+                onDailyGoalChange(
+                  Number(event.target.value)
+                )
+              }
+              style={selectStyle}
+            >
+              <option value={30}>
+                {t('minutes30')}
+              </option>
 
-            <option value={90}>
-              {t('hours15')}
-            </option>
+              <option value={60}>
+                {t('hour1')}
+              </option>
 
-            <option value={120}>
-              {t('hours2')}
-            </option>
+              <option value={90}>
+                {t('hours15')}
+              </option>
 
-            <option value={180}>
-              {t('hours3')}
-            </option>
+              <option value={120}>
+                {t('hours2')}
+              </option>
 
-            <option value={240}>
-              {t('hours4')}
-            </option>
+              <option value={180}>
+                {t('hours3')}
+              </option>
 
-            <option value={300}>
-              {t('hours5')}
-            </option>
-          </select>
-        </label>
+              <option value={240}>
+                {t('hours4')}
+              </option>
+
+              <option value={300}>
+                {t('hours5')}
+              </option>
+            </select>
+          </label>
+
+          <label
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              color: 'var(--text-secondary)',
+              fontSize: '13px',
+            }}
+          >
+            WEEKLY FOCUS GOAL
+
+            <select
+              value={weeklyGoal}
+              onChange={(event) =>
+                onWeeklyGoalChange(
+                  Number(event.target.value)
+                )
+              }
+              style={selectStyle}
+            >
+              <option value={300}>
+                5 HOURS
+              </option>
+
+              <option value={600}>
+                10 HOURS
+              </option>
+
+              <option value={900}>
+                15 HOURS
+              </option>
+
+              <option value={1200}>
+                20 HOURS
+              </option>
+
+              <option value={1500}>
+                25 HOURS
+              </option>
+            </select>
+          </label>
+        </div>
       </div>
 
       {/* Pomodoro */}
@@ -214,20 +270,13 @@ export default function Settings({
                 onShortBreakChange(
                   Math.max(
                     1,
-                    Number(event.target.value)
+                    Number(
+                      event.target.value
+                    )
                   )
                 )
               }
-              style={{
-                padding: '9px',
-                background:
-                  'var(--void-surface-hover)',
-                border:
-                  '1px solid var(--void-border)',
-                borderRadius: '8px',
-                color: 'var(--text-primary)',
-                outline: 'none',
-              }}
+              style={inputStyle}
             />
           </label>
 
@@ -251,20 +300,13 @@ export default function Settings({
                 onLongBreakChange(
                   Math.max(
                     1,
-                    Number(event.target.value)
+                    Number(
+                      event.target.value
+                    )
                   )
                 )
               }
-              style={{
-                padding: '9px',
-                background:
-                  'var(--void-surface-hover)',
-                border:
-                  '1px solid var(--void-border)',
-                borderRadius: '8px',
-                color: 'var(--text-primary)',
-                outline: 'none',
-              }}
+              style={inputStyle}
             />
           </label>
 
@@ -290,20 +332,13 @@ export default function Settings({
                 onSessionsBeforeLongBreakChange(
                   Math.max(
                     1,
-                    Number(event.target.value)
+                    Number(
+                      event.target.value
+                    )
                   )
                 )
               }
-              style={{
-                padding: '9px',
-                background:
-                  'var(--void-surface-hover)',
-                border:
-                  '1px solid var(--void-border)',
-                borderRadius: '8px',
-                color: 'var(--text-primary)',
-                outline: 'none',
-              }}
+              style={inputStyle}
             />
           </label>
         </div>
