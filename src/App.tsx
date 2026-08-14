@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import Sidebar from './components/layout/Sidebar'
 import Dashboard from './components/dashboard/Dashboard'
-import Statistics from './components/statistics/Statistics'
 import Settings from './components/settings/Settings'
 import BackgroundEffects from './components/effects/BackgroundEffects'
 import { subjects as defaultSubjects } from './data/subjects'
 import type { Subject, StudySession } from './types'
 import { useI18n } from './useI18n'
+
+const Statistics = lazy(() => import('./components/statistics/Statistics'))
 import {
   getWeekKey,
   type WeeklyGoalMap,
@@ -762,15 +763,33 @@ function App() {
               {t('statistics')}
             </h1>
 
-            <Statistics
-              sessions={sessions}
-              weeklyGoal={
-                weeklyGoal
+            <Suspense
+              fallback={
+                <div
+                  className="glass-panel"
+                  style={{
+                    padding: '24px',
+                    minHeight: '240px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'var(--text-muted)',
+                    fontFamily: 'Orbitron, sans-serif',
+                    fontSize: '11px',
+                  }}
+                >
+                  {t('loadingAnalytics')}
+                </div>
               }
-              weeklyGoalsHistory={
-                weeklyGoalsHistory
-              }
-            />
+            >
+              <Statistics
+                sessions={sessions}
+                weeklyGoal={weeklyGoal}
+                weeklyGoalsHistory={
+                  weeklyGoalsHistory
+                }
+              />
+            </Suspense>
           </div>
         )}
 
