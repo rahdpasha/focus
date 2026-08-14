@@ -92,6 +92,9 @@ export default function Timer({
   const pauseIntervalRef =
     useRef<number | null>(null)
 
+  const timerEndRef =
+    useRef<number | null>(null)
+
   const finishedRef =
     useRef(false)
 
@@ -286,6 +289,10 @@ export default function Timer({
       void Notification.requestPermission()
     }
 
+    timerEndRef.current =
+      Date.now() +
+      timeRemaining * 1000
+
     setIsStudying(true)
     setIsPaused(false)
     setIsCompleted(false)
@@ -295,6 +302,20 @@ export default function Timer({
   const pauseTimer = () => {
     if (!isStudying) {
       return
+    }
+
+    if (timerEndRef.current !== null) {
+      const remaining = Math.max(
+        0,
+        Math.ceil(
+          (timerEndRef.current -
+            Date.now()) /
+            1000
+        )
+      )
+
+      setTimeRemaining(remaining)
+      timerEndRef.current = null
     }
 
     setIsStudying(false)
@@ -319,6 +340,14 @@ export default function Timer({
   }
 
   const resumeTimer = () => {
+    if (timeRemaining <= 0) {
+      return
+    }
+
+    timerEndRef.current =
+      Date.now() +
+      timeRemaining * 1000
+
     setIsPaused(false)
     setIsStudying(true)
 
@@ -486,22 +515,60 @@ export default function Timer({
       return
     }
 
-    intervalRef.current =
-      window.setInterval(() => {
-        setTimeRemaining(
-          (previous) => {
-            if (previous <= 1) {
-              return 0
-            }
+    if (timerEndRef.current === null) {
+      timerEndRef.current =
+        Date.now() +
+        timeRemaining * 1000
+    }
 
-            return previous - 1
-          }
+    const updateRemaining =
+      () => {
+        if (
+          timerEndRef.current === null
+        ) {
+          return
+        }
+
+        const remaining =
+          Math.max(
+            0,
+            Math.ceil(
+              (timerEndRef.current -
+                Date.now()) /
+                1000
+            )
+          )
+
+        setTimeRemaining(
+          remaining
         )
-      }, 1000)
+
+        if (remaining <= 0) {
+          if (
+            intervalRef.current !==
+            null
+          ) {
+            clearInterval(
+              intervalRef.current
+            )
+
+            intervalRef.current = null
+          }
+        }
+      }
+
+    updateRemaining()
+
+    intervalRef.current =
+      window.setInterval(
+        updateRemaining,
+        250
+      )
 
     return () => {
       if (
-        intervalRef.current !== null
+        intervalRef.current !==
+        null
       ) {
         clearInterval(
           intervalRef.current
@@ -510,7 +577,8 @@ export default function Timer({
         intervalRef.current = null
       }
     }
-  }, [isStudying])
+  }, [isStudying, timeRemaining])
+
 
   useEffect(() => {
     if (!isStudying) {
