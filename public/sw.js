@@ -1,6 +1,6 @@
-const CACHE_NAME = 'focus-v2'
+const CACHE_NAME = 'focus-v3'
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', () => {
   self.skipWaiting()
 })
 
@@ -19,9 +19,8 @@ self.addEventListener('activate', (event) => {
             )
         )
       )
+      .then(() => self.clients.claim())
   )
-
-  self.clients.claim()
 })
 
 self.addEventListener('fetch', (event) => {
@@ -46,10 +45,9 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          const copy =
-            response.clone()
+          const copy = response.clone()
 
-          caches
+          void caches
             .open(CACHE_NAME)
             .then((cache) =>
               cache.put(
@@ -61,9 +59,7 @@ self.addEventListener('fetch', (event) => {
           return response
         })
         .catch(() =>
-          caches.match(
-            '/index.html'
-          )
+          caches.match('/index.html')
         )
     )
 
@@ -77,7 +73,7 @@ self.addEventListener('fetch', (event) => {
           const copy =
             response.clone()
 
-          caches
+          void caches
             .open(CACHE_NAME)
             .then((cache) =>
               cache.put(
@@ -90,9 +86,7 @@ self.addEventListener('fetch', (event) => {
         return response
       })
       .catch(() =>
-        caches.match(
-          event.request
-        )
+        caches.match(event.request)
       )
   )
 })
