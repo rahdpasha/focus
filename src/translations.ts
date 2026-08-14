@@ -61,6 +61,17 @@ export const translations = {
     avgSession: 'AVG SESSION',
     longest: 'LONGEST',
 
+    // Productivity insights
+    studyInsights: 'Study Insights',
+    vsLastWeek: 'vs last week',
+    thisWeek: 'This Week',
+    studyDays: 'Study Days',
+    consistency: 'Consistency',
+    strongestSubject: 'Strongest Subject',
+    leastStudied: 'Least Studied',
+    noCompletedSessions:
+      'No completed sessions yet',
+
     // Analytics
     weeklyFocusTrend: 'Weekly Focus Trend',
     subjectBalance: 'Subject Balance',
@@ -200,6 +211,17 @@ export const translations = {
     totalFocus: 'کۆی سەرنج',
     avgSession: 'ناوەندی سێشن',
     longest: 'درێژترین',
+
+    // Productivity insights
+    studyInsights: 'تێڕوانینی خوێندن',
+    vsLastWeek: 'بەراورد بە هەفتەی ڕابردوو',
+    thisWeek: 'ئەم هەفتەیە',
+    studyDays: 'ڕۆژەکانی خوێندن',
+    consistency: 'بەردەوامی',
+    strongestSubject: 'بەهێزترین بابەت',
+    leastStudied: 'کەمتر خوێندراوترین بابەت',
+    noCompletedSessions:
+      'هێشتا هیچ سێشنێکی تەواوکراو نییە',
 
     // Analytics
     weeklyFocusTrend:

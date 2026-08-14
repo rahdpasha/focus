@@ -1,14 +1,31 @@
 import { lazy, Suspense, useEffect, useRef } from 'react'
-import { Clock, Target, Flame } from 'lucide-react'
-import type { Subject, StudySession } from '../../types'
+import {
+  Clock,
+  Target,
+  Flame,
+} from 'lucide-react'
+import type {
+  Subject,
+  StudySession,
+} from '../../types'
 import Timer from '../timer/Timer'
 import StatCard from './StatCard'
 import RecentSessions from './RecentSessions'
 import { useI18n } from '../../useI18n'
-import { getStreakStats } from '../../utils/goalHistory'
+import {
+  getStreakStats,
+} from '../../utils/goalHistory'
+import {
+  getProductivityInsights,
+} from '../../utils/productivityInsights'
 
-const WeeklyTrend = lazy(() => import('./WeeklyTrend'))
-const SubjectBalance = lazy(() => import('./SubjectBalance'))
+const WeeklyTrend = lazy(
+  () => import('./WeeklyTrend')
+)
+
+const SubjectBalance = lazy(
+  () => import('./SubjectBalance')
+)
 
 interface DashboardProps {
   subjects: Subject[]
@@ -16,10 +33,18 @@ interface DashboardProps {
   sessions: StudySession[]
   dailyGoal: number
   weeklyGoal: number
-  onDailyGoalChange: (goal: number) => void
-  onWeeklyGoalChange: (goal: number) => void
-  onAddSession: (session: StudySession) => void
-  onDeleteSession: (id: string) => void
+  onDailyGoalChange: (
+    goal: number
+  ) => void
+  onWeeklyGoalChange: (
+    goal: number
+  ) => void
+  onAddSession: (
+    session: StudySession
+  ) => void
+  onDeleteSession: (
+    id: string
+  ) => void
   shortBreak: number
   longBreak: number
   sessionsBeforeLongBreak: number
@@ -29,25 +54,48 @@ interface DashboardProps {
   notificationsEnabled: boolean
 }
 
-function getStartOfDay(date: Date): Date {
+function getStartOfDay(
+  date: Date
+): Date {
   const result = new Date(date)
+
   result.setHours(0, 0, 0, 0)
-  return result
-}
-
-function getStartOfWeek(date: Date): Date {
-  const result = getStartOfDay(date)
-  const day = result.getDay()
-  const daysSinceMonday = day === 0 ? 6 : day - 1
-
-  result.setDate(result.getDate() - daysSinceMonday)
 
   return result
 }
 
-function formatHoursMinutes(minutes: number): string {
-  const hours = Math.floor(minutes / 60)
-  const remainingMinutes = minutes % 60
+function getStartOfWeek(
+  date: Date
+): Date {
+  const result =
+    getStartOfDay(date)
+
+  const day =
+    result.getDay()
+
+  const daysSinceMonday =
+    day === 0
+      ? 6
+      : day - 1
+
+  result.setDate(
+    result.getDate() -
+      daysSinceMonday
+  )
+
+  return result
+}
+
+function formatHoursMinutes(
+  minutes: number
+): string {
+  const hours =
+    Math.floor(
+      minutes / 60
+    )
+
+  const remainingMinutes =
+    minutes % 60
 
   if (hours > 0) {
     return `${hours}h ${remainingMinutes}m`
@@ -56,10 +104,17 @@ function formatHoursMinutes(minutes: number): string {
   return `${remainingMinutes}m`
 }
 
-function formatGoal(minutes: number): string {
+function formatGoal(
+  minutes: number
+): string {
   if (minutes >= 60) {
-    const hours = Math.floor(minutes / 60)
-    const remainingMinutes = minutes % 60
+    const hours =
+      Math.floor(
+        minutes / 60
+      )
+
+    const remainingMinutes =
+      minutes % 60
 
     return remainingMinutes > 0
       ? `${hours}h ${remainingMinutes}m`
@@ -67,6 +122,16 @@ function formatGoal(minutes: number): string {
   }
 
   return `${minutes}m`
+}
+
+function formatChange(
+  percent: number
+): string {
+  if (percent > 0) {
+    return `+${percent}%`
+  }
+
+  return `${percent}%`
 }
 
 export default function Dashboard({
@@ -87,73 +152,132 @@ export default function Dashboard({
   soundVolume,
   notificationsEnabled,
 }: DashboardProps) {
-  const { t } = useI18n()
-  const timerCardRef = useRef<HTMLDivElement>(null)
+  const { t } =
+    useI18n()
 
-  const activeSubject = subjects.find(
-    (subject) => subject.id === activeSubjectId
-  )
+  const timerCardRef =
+    useRef<HTMLDivElement>(null)
 
-  const today = getStartOfDay(new Date())
-  const weekStart = getStartOfWeek(new Date())
-
-  const completedSessions = sessions.filter(
-    (session) => session.completed
-  )
-
-  const todaySessions = completedSessions.filter((session) => {
-    const sessionDate = getStartOfDay(
-      new Date(session.completedAt)
+  const activeSubject =
+    subjects.find(
+      (subject) =>
+        subject.id ===
+        activeSubjectId
     )
 
-    return sessionDate.getTime() === today.getTime()
-  })
-
-  const weekSessions = completedSessions.filter((session) => {
-    const sessionDate = getStartOfDay(
-      new Date(session.completedAt)
+  const today =
+    getStartOfDay(
+      new Date()
     )
 
-    return sessionDate.getTime() >= weekStart.getTime()
-  })
+  const weekStart =
+    getStartOfWeek(
+      new Date()
+    )
 
-  const todayMinutes = Math.floor(
-    todaySessions.reduce(
-      (sum, session) => sum + session.actualDuration,
-      0
-    ) / 60
-  )
+  const completedSessions =
+    sessions.filter(
+      (session) =>
+        session.completed
+    )
 
-  const weekMinutes = Math.floor(
-    weekSessions.reduce(
-      (sum, session) => sum + session.actualDuration,
-      0
-    ) / 60
-  )
+  const todaySessions =
+    completedSessions.filter(
+      (session) => {
+        const sessionDate =
+          getStartOfDay(
+            new Date(
+              session.completedAt
+            )
+          )
 
-  const totalSessions = completedSessions.length
+        return (
+          sessionDate.getTime() ===
+          today.getTime()
+        )
+      }
+    )
+
+  const weekSessions =
+    completedSessions.filter(
+      (session) => {
+        const sessionDate =
+          getStartOfDay(
+            new Date(
+              session.completedAt
+            )
+          )
+
+        return (
+          sessionDate.getTime() >=
+          weekStart.getTime()
+        )
+      }
+    )
+
+  const todayMinutes =
+    Math.floor(
+      todaySessions.reduce(
+        (
+          sum,
+          session
+        ) =>
+          sum +
+          session.actualDuration,
+        0
+      ) / 60
+    )
+
+  const weekMinutes =
+    Math.floor(
+      weekSessions.reduce(
+        (
+          sum,
+          session
+        ) =>
+          sum +
+          session.actualDuration,
+        0
+      ) / 60
+    )
+
+  const totalSessions =
+    completedSessions.length
 
   const dailyGoalProgress =
     dailyGoal > 0
-      ? Math.min(100, (todayMinutes / dailyGoal) * 100)
+      ? Math.min(
+          100,
+          (todayMinutes /
+            dailyGoal) *
+            100
+        )
       : 0
 
   const weeklyGoalProgress =
     weeklyGoal > 0
-      ? Math.min(100, (weekMinutes / weeklyGoal) * 100)
+      ? Math.min(
+          100,
+          (weekMinutes /
+            weeklyGoal) *
+            100
+        )
       : 0
 
   const dailyGoalReached =
-    dailyGoal > 0 && todayMinutes >= dailyGoal
+    dailyGoal > 0 &&
+    todayMinutes >= dailyGoal
 
   const weeklyGoalReached =
-    weeklyGoal > 0 && weekMinutes >= weeklyGoal
+    weeklyGoal > 0 &&
+    weekMinutes >= weeklyGoal
 
-  const streakStats = getStreakStats(
-    sessions,
-    {},
-    weeklyGoal
-  )
+  const streakStats =
+    getStreakStats(
+      sessions,
+      {},
+      weeklyGoal
+    )
 
   const streak =
     streakStats.currentDailyStreak
@@ -161,50 +285,88 @@ export default function Dashboard({
   const bestStreak =
     streakStats.bestDailyStreak
 
-
+  const insights =
+    getProductivityInsights(
+      sessions
+    )
 
   useEffect(() => {
-    const card = timerCardRef.current
+    const card =
+      timerCardRef.current
 
-    if (!card) return
+    if (!card) {
+      return
+    }
 
-    const handleMouseMove = (event: MouseEvent) => {
-      const rect = card.getBoundingClientRect()
+    const handleMouseMove =
+      (event: MouseEvent) => {
+        const rect =
+          card.getBoundingClientRect()
 
-      if (rect.width === 0 || rect.height === 0) {
-        return
+        if (
+          rect.width === 0 ||
+          rect.height === 0
+        ) {
+          return
+        }
+
+        const x =
+          event.clientX -
+          rect.left
+
+        const y =
+          event.clientY -
+          rect.top
+
+        const rotateX =
+          ((y -
+            rect.height / 2) /
+            rect.height) *
+          -4
+
+        const rotateY =
+          ((x -
+            rect.width / 2) /
+            rect.width) *
+          4
+
+        card.style.transform =
+          `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`
       }
 
-      const x = event.clientX - rect.left
-      const y = event.clientY - rect.top
+    const handleMouseLeave =
+      () => {
+        card.style.transform =
+          'perspective(1000px) rotateX(0deg) rotateY(0deg)'
+      }
 
-      const rotateX =
-        ((y - rect.height / 2) / rect.height) * -4
+    card.addEventListener(
+      'mousemove',
+      handleMouseMove
+    )
 
-      const rotateY =
-        ((x - rect.width / 2) / rect.width) * 4
-
-      card.style.transform =
-        `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`
-    }
-
-    const handleMouseLeave = () => {
-      card.style.transform =
-        'perspective(1000px) rotateX(0deg) rotateY(0deg)'
-    }
-
-    card.addEventListener('mousemove', handleMouseMove)
-    card.addEventListener('mouseleave', handleMouseLeave)
+    card.addEventListener(
+      'mouseleave',
+      handleMouseLeave
+    )
 
     return () => {
-      card.removeEventListener('mousemove', handleMouseMove)
-      card.removeEventListener('mouseleave', handleMouseLeave)
+      card.removeEventListener(
+        'mousemove',
+        handleMouseMove
+      )
+
+      card.removeEventListener(
+        'mouseleave',
+        handleMouseLeave
+      )
     }
   }, [])
 
-  const handleTimerComplete = () => {
-    // Timer handles completion internally.
-  }
+  const handleTimerComplete =
+    () => {
+      // Timer handles completion internally.
+    }
 
   const handleSessionEnd = (
     duration: number,
@@ -213,22 +375,31 @@ export default function Dashboard({
     interruptions: number,
     totalPausedSeconds: number
   ) => {
-    if (!activeSubject) return
+    if (!activeSubject) {
+      return
+    }
 
-    const newSession: StudySession = {
+    const newSession:
+      StudySession = {
       id: `s${Date.now()}`,
-      subjectId: activeSubject.id,
-      subjectName: activeSubject.name,
-      subjectColor: activeSubject.color,
+      subjectId:
+        activeSubject.id,
+      subjectName:
+        activeSubject.name,
+      subjectColor:
+        activeSubject.color,
       duration,
       actualDuration,
-      completedAt: new Date(),
+      completedAt:
+        new Date(),
       completed,
       interruptions,
       totalPausedSeconds,
     }
 
-    onAddSession(newSession)
+    onAddSession(
+      newSession
+    )
   }
 
   return (
@@ -240,24 +411,30 @@ export default function Dashboard({
         padding: '32px',
         overflowY: 'auto',
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection:
+          'column',
         gap: '24px',
       }}
     >
+      {/* Header */}
       <div
         style={{
           display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
+          justifyContent:
+            'space-between',
+          alignItems:
+            'flex-start',
           gap: '16px',
-          flexWrap: 'wrap',
+          flexWrap:
+            'wrap',
         }}
       >
         <div>
           <h1
             style={{
               fontSize: '22px',
-              color: 'var(--text-primary)',
+              color:
+                'var(--text-primary)',
               marginBottom: '4px',
             }}
           >
@@ -267,10 +444,14 @@ export default function Dashboard({
           <span
             style={{
               fontSize: '11px',
-              color: 'var(--text-muted)',
-              fontFamily: 'Orbitron, sans-serif',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
+              color:
+                'var(--text-muted)',
+              fontFamily:
+                'Orbitron, sans-serif',
+              textTransform:
+                'uppercase',
+              letterSpacing:
+                '0.1em',
             }}
           >
             {t('systemStatus')}
@@ -281,17 +462,23 @@ export default function Dashboard({
           className="mono"
           style={{
             fontSize: '11px',
-            color: 'var(--text-muted)',
+            color:
+              'var(--text-muted)',
           }}
         >
-          {new Date().toLocaleDateString('en-US', {
-            weekday: 'long',
-            month: 'short',
-            day: 'numeric',
-          })}
+          {new Date().toLocaleDateString(
+            'en-US',
+            {
+              weekday:
+                'long',
+              month: 'short',
+              day: 'numeric',
+            }
+          )}
         </span>
       </div>
 
+      {/* Stats */}
       <div
         style={{
           display: 'flex',
@@ -301,33 +488,46 @@ export default function Dashboard({
       >
         <StatCard
           icon={Clock}
-          label={t('activeFocus')}
-          value={formatHoursMinutes(todayMinutes)}
+          label={t(
+            'activeFocus'
+          )}
+          value={formatHoursMinutes(
+            todayMinutes
+          )}
           accentColor="var(--primary)"
         />
 
         <StatCard
           icon={Target}
-          label={t('sessions')}
-          value={String(totalSessions)}
+          label={t(
+            'sessions'
+          )}
+          value={String(
+            totalSessions
+          )}
           accentColor="var(--cyber-blue)"
         />
 
         <StatCard
           icon={Flame}
           label={t('streak')}
-          value={`${streak} ${t('days')}`}
+          value={`${streak} ${t(
+            'days'
+          )}`}
           accentColor="var(--energy)"
         />
 
         <StatCard
           icon={Flame}
           label="BEST STREAK"
-          value={`${bestStreak} ${t('days')}`}
+          value={`${bestStreak} ${t(
+            'days'
+          )}`}
           accentColor="var(--teal)"
         />
       </div>
 
+      {/* Productivity Insights */}
       <div
         className="glass-panel"
         style={{
@@ -337,95 +537,555 @@ export default function Dashboard({
         <div
           style={{
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
+            justifyContent:
+              'space-between',
+            alignItems:
+              'center',
             gap: '16px',
-            marginBottom: '14px',
-            flexWrap: 'wrap',
+            marginBottom:
+              '16px',
+            flexWrap:
+              'wrap',
           }}
         >
           <div>
             <div
               style={{
                 fontSize: '11px',
-                fontFamily: 'Orbitron, sans-serif',
-                color: 'var(--text-muted)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em',
-                marginBottom: '6px',
+                fontFamily:
+                  'Orbitron, sans-serif',
+                color:
+                  'var(--text-muted)',
+                textTransform:
+                  'uppercase',
+                letterSpacing:
+                  '0.1em',
+                marginBottom:
+                  '4px',
               }}
             >
-              {t('dailyFocusGoal')}
+              {t(
+                'studyInsights'
+              )}
+            </div>
+
+            <div
+              style={{
+                fontSize: '11px',
+                color:
+                  'var(--text-muted)',
+              }}
+            >
+              Your study pattern
+              this week.
+            </div>
+          </div>
+
+          <div
+            className="mono"
+            style={{
+              fontSize: '11px',
+              color:
+                insights.weekChangePercent >
+                0
+                  ? 'var(--success)'
+                  : insights.weekChangePercent <
+                      0
+                    ? 'var(--danger)'
+                    : 'var(--text-muted)',
+            }}
+          >
+            {formatChange(
+              insights.weekChangePercent
+            )}{' '}
+            {t(
+              'vsLastWeek'
+            )}
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns:
+              'repeat(auto-fit, minmax(150px, 1fr))',
+            gap: '12px',
+          }}
+        >
+          {/* This week */}
+          <div
+            style={{
+              padding: '14px',
+              borderRadius:
+                '10px',
+              background:
+                'rgba(139,92,246,0.08)',
+              border:
+                '1px solid var(--void-border)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '10px',
+                color:
+                  'var(--text-muted)',
+                marginBottom:
+                  '6px',
+              }}
+            >
+              {t('thisWeek')}
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                fontSize: '20px',
+                color:
+                  'var(--primary-glow)',
+              }}
+            >
+              {formatHoursMinutes(
+                insights.thisWeekMinutes
+              )}
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                marginTop:
+                  '5px',
+                fontSize: '10px',
+                color:
+                  'var(--text-muted)',
+              }}
+            >
+              {insights.thisWeekSessions}{' '}
+              {t(
+                'sessions'
+              )}
+            </div>
+          </div>
+
+          {/* Study days */}
+          <div
+            style={{
+              padding: '14px',
+              borderRadius:
+                '10px',
+              background:
+                'rgba(6,182,212,0.08)',
+              border:
+                '1px solid var(--void-border)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '10px',
+                color:
+                  'var(--text-muted)',
+                marginBottom:
+                  '6px',
+              }}
+            >
+              {t(
+                'studyDays'
+              )}
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                fontSize: '20px',
+                color:
+                  'var(--cyber-glow)',
+              }}
+            >
+              {
+                insights.studyDaysThisWeek
+              }
+              <span
+                style={{
+                  fontSize:
+                    '12px',
+                  color:
+                    'var(--text-muted)',
+                }}
+              >
+                {' '}
+                / 7
+              </span>
+            </div>
+
+            <div
+              style={{
+                marginTop:
+                  '5px',
+                fontSize:
+                  '10px',
+                color:
+                  'var(--text-muted)',
+              }}
+            >
+              {t(
+                'consistency'
+              )}
+            </div>
+          </div>
+
+          {/* Average session */}
+          <div
+            style={{
+              padding: '14px',
+              borderRadius:
+                '10px',
+              background:
+                'rgba(20,184,166,0.08)',
+              border:
+                '1px solid var(--void-border)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '10px',
+                color:
+                  'var(--text-muted)',
+                marginBottom:
+                  '6px',
+              }}
+            >
+              {t(
+                'avgSession'
+              )}
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                fontSize: '20px',
+                color:
+                  'var(--teal-glow)',
+              }}
+            >
+              {
+                insights.averageSessionMinutes
+              }m
+            </div>
+
+            <div
+              style={{
+                marginTop:
+                  '5px',
+                fontSize:
+                  '10px',
+                color:
+                  'var(--text-muted)',
+              }}
+            >
+              this week
+            </div>
+          </div>
+
+          {/* Strongest subject */}
+          <div
+            style={{
+              padding: '14px',
+              borderRadius:
+                '10px',
+              background:
+                'rgba(245,158,11,0.08)',
+              border:
+                '1px solid var(--void-border)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '10px',
+                color:
+                  'var(--text-muted)',
+                marginBottom:
+                  '6px',
+              }}
+            >
+              {t(
+                'strongestSubject'
+              )}
+            </div>
+
+            <div
+              style={{
+                fontSize: '13px',
+                color:
+                  'var(--text-primary)',
+                overflow:
+                  'hidden',
+                textOverflow:
+                  'ellipsis',
+                whiteSpace:
+                  'nowrap',
+              }}
+              title={
+                insights.bestSubject
+                  ?.subjectName
+              }
+            >
+              {insights.bestSubject
+                ?.subjectName ??
+                '—'}
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                marginTop:
+                  '5px',
+                fontSize:
+                  '10px',
+                color:
+                  'var(--text-muted)',
+              }}
+            >
+              {insights.bestSubject
+                ? `${insights.bestSubject.minutes}m · ${insights.bestSubject.percentage}%`
+                : t(
+                    'noCompletedSessions'
+                  )}
+            </div>
+          </div>
+
+          {/* Least studied */}
+          <div
+            style={{
+              padding: '14px',
+              borderRadius:
+                '10px',
+              background:
+                'rgba(239,68,68,0.06)',
+              border:
+                '1px solid var(--void-border)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '10px',
+                color:
+                  'var(--text-muted)',
+                marginBottom:
+                  '6px',
+              }}
+            >
+              {t(
+                'leastStudied'
+              )}
+            </div>
+
+            <div
+              style={{
+                fontSize: '13px',
+                color:
+                  'var(--text-primary)',
+                overflow:
+                  'hidden',
+                textOverflow:
+                  'ellipsis',
+                whiteSpace:
+                  'nowrap',
+              }}
+              title={
+                insights
+                  .leastStudiedSubject
+                  ?.subjectName
+              }
+            >
+              {insights
+                .leastStudiedSubject
+                ?.subjectName ??
+                '—'}
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                marginTop:
+                  '5px',
+                fontSize:
+                  '10px',
+                color:
+                  'var(--text-muted)',
+              }}
+            >
+              {insights
+                .leastStudiedSubject
+                ? `${insights.leastStudiedSubject.minutes}m · ${insights.leastStudiedSubject.percentage}%`
+                : t(
+                    'noCompletedSessions'
+                  )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Daily Goal */}
+      <div
+        className="glass-panel"
+        style={{
+          padding: '20px',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent:
+              'space-between',
+            alignItems:
+              'center',
+            gap: '16px',
+            marginBottom:
+              '14px',
+            flexWrap:
+              'wrap',
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: '11px',
+                fontFamily:
+                  'Orbitron, sans-serif',
+                color:
+                  'var(--text-muted)',
+                textTransform:
+                  'uppercase',
+                letterSpacing:
+                  '0.1em',
+                marginBottom:
+                  '6px',
+              }}
+            >
+              {t(
+                'dailyFocusGoal'
+              )}
             </div>
 
             <div
               className="mono"
               style={{
                 fontSize: '22px',
-                color: dailyGoalReached
-                  ? 'var(--success)'
-                  : 'var(--text-primary)',
+                color:
+                  dailyGoalReached
+                    ? 'var(--success)'
+                    : 'var(--text-primary)',
               }}
             >
-              {formatHoursMinutes(todayMinutes)}
+              {formatHoursMinutes(
+                todayMinutes
+              )}
 
               <span
                 style={{
-                  color: 'var(--text-muted)',
-                  fontSize: '14px',
+                  color:
+                    'var(--text-muted)',
+                  fontSize:
+                    '14px',
                 }}
               >
                 {' '}
-                / {formatGoal(dailyGoal)}
+                /{' '}
+                {formatGoal(
+                  dailyGoal
+                )}
               </span>
             </div>
           </div>
 
           <select
             value={dailyGoal}
-            onChange={(event) =>
-              onDailyGoalChange(Number(event.target.value))
+            onChange={(
+              event
+            ) =>
+              onDailyGoalChange(
+                Number(
+                  event.target.value
+                )
+              )
             }
             style={{
-              padding: '8px 10px',
-              background: 'var(--void-surface-hover)',
-              border: '1px solid var(--void-border)',
-              borderRadius: '8px',
-              color: 'var(--text-primary)',
-              outline: 'none',
-              cursor: 'pointer',
+              padding:
+                '8px 10px',
+              background:
+                'var(--void-surface-hover)',
+              border:
+                '1px solid var(--void-border)',
+              borderRadius:
+                '8px',
+              color:
+                'var(--text-primary)',
+              outline:
+                'none',
+              cursor:
+                'pointer',
             }}
           >
-            <option value={30}>{t('minutes30')}</option>
-            <option value={60}>{t('hour1')}</option>
-            <option value={90}>{t('hours15')}</option>
-            <option value={120}>{t('hours2')}</option>
-            <option value={180}>{t('hours3')}</option>
-            <option value={240}>{t('hours4')}</option>
-            <option value={300}>{t('hours5')}</option>
+            <option value={30}>
+              {t(
+                'minutes30'
+              )}
+            </option>
+
+            <option value={60}>
+              {t('hour1')}
+            </option>
+
+            <option value={90}>
+              {t('hours15')}
+            </option>
+
+            <option value={120}>
+              {t('hours2')}
+            </option>
+
+            <option value={180}>
+              {t('hours3')}
+            </option>
+
+            <option value={240}>
+              {t('hours4')}
+            </option>
+
+            <option value={300}>
+              {t('hours5')}
+            </option>
           </select>
         </div>
 
         <div
           style={{
             height: '8px',
-            background: 'var(--void-border)',
-            borderRadius: '999px',
-            overflow: 'hidden',
+            background:
+              'var(--void-border)',
+            borderRadius:
+              '999px',
+            overflow:
+              'hidden',
           }}
         >
           <div
             style={{
-              width: `${dailyGoalProgress}%`,
-              height: '100%',
-              background: dailyGoalReached
-                ? 'var(--success)'
-                : 'linear-gradient(90deg, var(--primary), var(--cyber-blue))',
-              borderRadius: '999px',
-              transition: 'width 0.5s ease',
-              boxShadow: dailyGoalReached
-                ? '0 0 15px rgba(34,197,94,0.4)'
-                : '0 0 15px rgba(139,92,246,0.3)',
+              width:
+                `${dailyGoalProgress}%`,
+              height:
+                '100%',
+              background:
+                dailyGoalReached
+                  ? 'var(--success)'
+                  : 'linear-gradient(90deg, var(--primary), var(--cyber-blue))',
+              borderRadius:
+                '999px',
+              transition:
+                'width 0.5s ease',
+              boxShadow:
+                dailyGoalReached
+                  ? '0 0 15px rgba(34,197,94,0.4)'
+                  : '0 0 15px rgba(139,92,246,0.3)',
             }}
           />
         </div>
@@ -433,21 +1093,29 @@ export default function Dashboard({
         <div
           className="mono"
           style={{
-            marginTop: '8px',
-            fontSize: '10px',
-            color: dailyGoalReached
-              ? 'var(--success)'
-              : 'var(--text-muted)',
+            marginTop:
+              '8px',
+            fontSize:
+              '10px',
+            color:
+              dailyGoalReached
+                ? 'var(--success)'
+                : 'var(--text-muted)',
           }}
         >
           {dailyGoalReached
-            ? t('dailyObjectiveComplete')
-            : `${Math.round(dailyGoalProgress)}${t(
+            ? t(
+                'dailyObjectiveComplete'
+              )
+            : `${Math.round(
+                dailyGoalProgress
+              )}${t(
                 'completePercent'
               )}`}
         </div>
       </div>
 
+      {/* Weekly Goal */}
       <div
         className="glass-panel"
         style={{
@@ -457,22 +1125,31 @@ export default function Dashboard({
         <div
           style={{
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
+            justifyContent:
+              'space-between',
+            alignItems:
+              'center',
             gap: '16px',
-            marginBottom: '14px',
-            flexWrap: 'wrap',
+            marginBottom:
+              '14px',
+            flexWrap:
+              'wrap',
           }}
         >
           <div>
             <div
               style={{
                 fontSize: '11px',
-                fontFamily: 'Orbitron, sans-serif',
-                color: 'var(--text-muted)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em',
-                marginBottom: '6px',
+                fontFamily:
+                  'Orbitron, sans-serif',
+                color:
+                  'var(--text-muted)',
+                textTransform:
+                  'uppercase',
+                letterSpacing:
+                  '0.1em',
+                marginBottom:
+                  '6px',
               }}
             >
               WEEKLY FOCUS GOAL
@@ -482,65 +1159,108 @@ export default function Dashboard({
               className="mono"
               style={{
                 fontSize: '22px',
-                color: weeklyGoalReached
-                  ? 'var(--success)'
-                  : 'var(--text-primary)',
+                color:
+                  weeklyGoalReached
+                    ? 'var(--success)'
+                    : 'var(--text-primary)',
               }}
             >
-              {formatHoursMinutes(weekMinutes)}
+              {formatHoursMinutes(
+                weekMinutes
+              )}
 
               <span
                 style={{
-                  color: 'var(--text-muted)',
-                  fontSize: '14px',
+                  color:
+                    'var(--text-muted)',
+                  fontSize:
+                    '14px',
                 }}
               >
                 {' '}
-                / {formatGoal(weeklyGoal)}
+                /{' '}
+                {formatGoal(
+                  weeklyGoal
+                )}
               </span>
             </div>
           </div>
 
           <select
             value={weeklyGoal}
-            onChange={(event) =>
-              onWeeklyGoalChange(Number(event.target.value))
+            onChange={(
+              event
+            ) =>
+              onWeeklyGoalChange(
+                Number(
+                  event.target.value
+                )
+              )
             }
             style={{
-              padding: '8px 10px',
-              background: 'var(--void-surface-hover)',
-              border: '1px solid var(--void-border)',
-              borderRadius: '8px',
-              color: 'var(--text-primary)',
-              outline: 'none',
-              cursor: 'pointer',
+              padding:
+                '8px 10px',
+              background:
+                'var(--void-surface-hover)',
+              border:
+                '1px solid var(--void-border)',
+              borderRadius:
+                '8px',
+              color:
+                'var(--text-primary)',
+              outline:
+                'none',
+              cursor:
+                'pointer',
             }}
           >
-            <option value={300}>5 HOURS</option>
-            <option value={600}>10 HOURS</option>
-            <option value={900}>15 HOURS</option>
-            <option value={1200}>20 HOURS</option>
-            <option value={1500}>25 HOURS</option>
+            <option value={300}>
+              5 HOURS
+            </option>
+
+            <option value={600}>
+              10 HOURS
+            </option>
+
+            <option value={900}>
+              15 HOURS
+            </option>
+
+            <option value={1200}>
+              20 HOURS
+            </option>
+
+            <option value={1500}>
+              25 HOURS
+            </option>
           </select>
         </div>
 
         <div
           style={{
             height: '8px',
-            background: 'var(--void-border)',
-            borderRadius: '999px',
-            overflow: 'hidden',
+            background:
+              'var(--void-border)',
+            borderRadius:
+              '999px',
+            overflow:
+              'hidden',
           }}
         >
           <div
             style={{
-              width: `${weeklyGoalProgress}%`,
-              height: '100%',
-              background: weeklyGoalReached
-                ? 'var(--success)'
-                : 'linear-gradient(90deg, var(--cyber-blue), var(--teal))',
-              borderRadius: '999px',
-              transition: 'width 0.5s ease',
+              width:
+                `${weeklyGoalProgress}%`,
+              height:
+                '100%',
+              background:
+                weeklyGoalReached
+                  ? 'var(--success)'
+                  : 'linear-gradient(90deg, var(--cyber-blue), var(--teal))',
+              borderRadius:
+                '999px',
+              transition:
+                'width 0.5s ease',
             }}
           />
         </div>
@@ -548,59 +1268,85 @@ export default function Dashboard({
         <div
           className="mono"
           style={{
-            marginTop: '8px',
-            fontSize: '10px',
-            color: weeklyGoalReached
-              ? 'var(--success)'
-              : 'var(--text-muted)',
+            marginTop:
+              '8px',
+            fontSize:
+              '10px',
+            color:
+              weeklyGoalReached
+                ? 'var(--success)'
+                : 'var(--text-muted)',
           }}
         >
           {weeklyGoalReached
             ? 'WEEKLY OBJECTIVE COMPLETE'
-            : `${Math.round(weeklyGoalProgress)}% COMPLETE`}
+            : `${Math.round(
+                weeklyGoalProgress
+              )}% COMPLETE`}
         </div>
       </div>
 
+      {/* Timer */}
       <div
         ref={timerCardRef}
         className="glass-panel"
         style={{
           padding: '48px',
           display: 'flex',
-          justifyContent: 'center',
-          transition: 'transform 0.3s ease',
+          justifyContent:
+            'center',
+          transition:
+            'transform 0.3s ease',
         }}
       >
         <Timer
           subjectName={
             activeSubject?.name ||
-            t('selectSubject')
+            t(
+              'selectSubject'
+            )
           }
           subjectColor={
             activeSubject?.color ||
             '#8b5cf6'
           }
-          shortBreakMinutes={shortBreak}
-          longBreakMinutes={longBreak}
+          shortBreakMinutes={
+            shortBreak
+          }
+          longBreakMinutes={
+            longBreak
+          }
           sessionsBeforeLongBreak={
             sessionsBeforeLongBreak
           }
-          autoStartBreak={autoStartBreak}
-          soundEnabled={soundEnabled}
-          soundVolume={soundVolume}
+          autoStartBreak={
+            autoStartBreak
+          }
+          soundEnabled={
+            soundEnabled
+          }
+          soundVolume={
+            soundVolume
+          }
           notificationsEnabled={
             notificationsEnabled
           }
-          onComplete={handleTimerComplete}
-          onSessionEnd={handleSessionEnd}
+          onComplete={
+            handleTimerComplete
+          }
+          onSessionEnd={
+            handleSessionEnd
+          }
         />
       </div>
 
+      {/* Analytics */}
       <div
         style={{
           display: 'flex',
           gap: '16px',
-          flexWrap: 'wrap',
+          flexWrap:
+            'wrap',
           minWidth: 0,
         }}
       >
@@ -609,28 +1355,49 @@ export default function Dashboard({
             <div
               className="glass-panel"
               style={{
-                minHeight: '340px',
-                flex: '1 1 340px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--text-muted)',
-                fontFamily: 'Orbitron, sans-serif',
-                fontSize: '11px',
+                minHeight:
+                  '340px',
+                flex:
+                  '1 1 340px',
+                display:
+                  'flex',
+                alignItems:
+                  'center',
+                justifyContent:
+                  'center',
+                color:
+                  'var(--text-muted)',
+                fontFamily:
+                  'Orbitron, sans-serif',
+                fontSize:
+                  '11px',
               }}
             >
-              {t('loadingAnalytics')}
+              {t(
+                'loadingAnalytics'
+              )}
             </div>
           }
         >
-          <WeeklyTrend sessions={sessions} />
-          <SubjectBalance sessions={sessions} />
+          <WeeklyTrend
+            sessions={sessions}
+          />
+
+          <SubjectBalance
+            sessions={sessions}
+          />
         </Suspense>
       </div>
 
+      {/* Recent Sessions */}
       <RecentSessions
-        sessions={sessions.slice(0, 10)}
-        onDeleteSession={onDeleteSession}
+        sessions={sessions.slice(
+          0,
+          10
+        )}
+        onDeleteSession={
+          onDeleteSession
+        }
       />
     </div>
   )
