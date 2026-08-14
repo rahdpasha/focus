@@ -148,11 +148,16 @@ export default function Timer({
 
   const clearTimer = useCallback(() => {
     if (intervalRef.current !== null) {
-      clearInterval(intervalRef.current)
+      clearInterval(
+        intervalRef.current
+      )
+
       intervalRef.current = null
     }
 
-    if (pauseIntervalRef.current !== null) {
+    if (
+      pauseIntervalRef.current !== null
+    ) {
       clearInterval(
         pauseIntervalRef.current
       )
@@ -160,15 +165,7 @@ export default function Timer({
       pauseIntervalRef.current = null
     }
 
-    if (
-      completionTimeoutRef.current !== null
-    ) {
-      clearTimeout(
-        completionTimeoutRef.current
-      )
-
-      completionTimeoutRef.current = null
-    }
+    timerEndRef.current = null
   }, [])
 
   const playCompletionSound = useCallback(
@@ -399,7 +396,8 @@ export default function Timer({
     (
       breakMode:
         | 'shortBreak'
-        | 'longBreak'
+        | 'longBreak',
+      autoStart = false
     ) => {
       const breakDuration =
         breakMode === 'longBreak'
@@ -412,7 +410,7 @@ export default function Timer({
       setDuration(breakDuration)
       setTimeRemaining(breakDuration)
 
-      setIsStudying(false)
+      setIsStudying(autoStart)
       setIsPaused(false)
       setIsCompleted(false)
       setShowComplete(false)
@@ -429,12 +427,6 @@ export default function Timer({
 
   const finishFocusSession =
     useCallback(() => {
-      if (finishedRef.current) {
-        return
-      }
-
-      finishedRef.current = true
-
       const actualDuration =
         Math.max(
           0,
@@ -675,7 +667,10 @@ export default function Timer({
     const timeout =
       window.setTimeout(() => {
         setShowComplete(false)
-        startBreak(nextBreak)
+        startBreak(
+          nextBreak,
+          true
+        )
       }, 1200)
 
     return () => {
