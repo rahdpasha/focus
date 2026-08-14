@@ -415,3 +415,136 @@ h6 {
     padding: 16px !important;
   }
 }
+/* Better responsive behavior */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+button,
+select,
+input {
+  min-height: 40px;
+}
+
+select,
+input {
+  max-width: 100%;
+}
+
+/* Prevent charts and wide content from overflowing */
+.dashboard,
+.dashboard > *,
+.dashboard .glass-panel {
+  min-width: 0;
+}
+
+/* Mobile statistics/settings pages */
+@media (max-width: 768px) {
+  .dashboard {
+    padding-top: 72px !important;
+  }
+
+  .dashboard .glass-panel {
+    overflow-x: hidden;
+  }
+
+  /* Keep large timer/card content inside the viewport */
+  .dashboard > .glass-panel {
+    width: 100%;
+  }
+
+  /* Better touch targets */
+  .cyber-btn {
+    min-height: 42px;
+  }
+
+  /* Mobile sidebar */
+  .app-sidebar {
+    width: 280px !important;
+    max-width: 86vw;
+  }
+
+  /* Prevent horizontal scrolling from long subject names */
+  .app-sidebar button {
+    min-width: 0;
+  }
+
+  /* Make selects comfortable on phones */
+  select {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .dashboard {
+    padding: 70px 10px 20px !important;
+    gap: 12px !important;
+  }
+
+  .dashboard .glass-panel {
+    padding: 14px !important;
+  }
+
+  .dashboard h1 {
+    font-size: 18px !important;
+    line-height: 1.35;
+  }
+
+  .cyber-btn {
+    padding: 9px 12px;
+    font-size: 10px;
+  }
+
+  .theme-toggle {
+    bottom: 12px;
+    right: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .dashboard {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .dashboard .glass-panel {
+    padding: 12px !important;
+  }
+
+  .cyber-btn {
+    padding: 8px 10px;
+    gap: 5px;
+    font-size: 9px;
+  }
+
+  .mobile-menu-button {
+    top: 10px;
+    left: 10px;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Sorani / RTL */
+html[dir='rtl'] .mobile-menu-button {
+  left: auto;
+  right: 14px;
+}
+
+html[dir='rtl'] .app-sidebar {
+  left: auto;
+  right: 0;
+  transform: translateX(100%);
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.45);
+}
+
+html[dir='rtl'] .app-sidebar.mobile-open {
+  transform: translateX(0);
+}
+
+@media (max-width: 380px) {
+  html[dir='rtl'] .mobile-menu-button {
+    left: auto;
+    right: 10px;
+  }
+}
