@@ -33,6 +33,9 @@ interface AppSettings {
   longBreak: number
   sessionsBeforeLongBreak: number
   autoStartBreak: boolean
+  soundEnabled: boolean
+  soundVolume: number
+  notificationsEnabled: boolean
 }
 
 const defaultSettings: AppSettings = {
@@ -40,6 +43,9 @@ const defaultSettings: AppSettings = {
   longBreak: 15,
   sessionsBeforeLongBreak: 4,
   autoStartBreak: false,
+  soundEnabled: true,
+  soundVolume: 70,
+  notificationsEnabled: true,
 }
 
 function loadSessions(): StudySession[] {
@@ -767,6 +773,15 @@ function App() {
             autoStartBreak={
               settings.autoStartBreak
             }
+            soundEnabled={
+              settings.soundEnabled
+            }
+            soundVolume={
+              settings.soundVolume
+            }
+            notificationsEnabled={
+              settings.notificationsEnabled
+            }
           />
         )}
 
@@ -864,6 +879,15 @@ function App() {
               autoStartBreak={
                 settings.autoStartBreak
               }
+              soundEnabled={
+                settings.soundEnabled
+              }
+              soundVolume={
+                settings.soundVolume
+              }
+              notificationsEnabled={
+                settings.notificationsEnabled
+              }
               onDailyGoalChange={
                 setDailyGoal
               }
@@ -907,6 +931,39 @@ function App() {
                   (previous) => ({
                     ...previous,
                     autoStartBreak:
+                      value,
+                  })
+                )
+              }
+              onSoundEnabledChange={(
+                value
+              ) =>
+                setSettings(
+                  (previous) => ({
+                    ...previous,
+                    soundEnabled:
+                      value,
+                  })
+                )
+              }
+              onSoundVolumeChange={(
+                value
+              ) =>
+                setSettings(
+                  (previous) => ({
+                    ...previous,
+                    soundVolume:
+                      value,
+                  })
+                )
+              }
+              onNotificationsEnabledChange={(
+                value
+              ) =>
+                setSettings(
+                  (previous) => ({
+                    ...previous,
+                    notificationsEnabled:
                       value,
                   })
                 )

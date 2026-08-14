@@ -16,6 +16,9 @@ interface TimerProps {
   longBreakMinutes: number
   sessionsBeforeLongBreak: number
   autoStartBreak: boolean
+  soundEnabled: boolean
+  soundVolume: number
+  notificationsEnabled: boolean
 
   onComplete: () => void
 
@@ -40,6 +43,9 @@ export default function Timer({
   longBreakMinutes,
   sessionsBeforeLongBreak,
   autoStartBreak,
+  soundEnabled,
+  soundVolume,
+  notificationsEnabled,
   onComplete,
   onSessionEnd,
 }: TimerProps) {
@@ -144,6 +150,99 @@ export default function Timer({
     }
   }, [])
 
+  const playCompletionSound = useCallback(
+    (isBreakComplete: boolean) => {
+      if (!soundEnabled) {
+        return
+      }
+
+      const AudioContextClass =
+        window.AudioContext
+
+      if (!AudioContextClass) {
+        return
+      }
+
+      const context =
+        new AudioContextClass()
+
+      const oscillator =
+        context.createOscillator()
+
+      const gain =
+        context.createGain()
+
+      oscillator.type = 'sine'
+
+      oscillator.frequency.setValueAtTime(
+        isBreakComplete ? 660 : 880,
+        context.currentTime
+      )
+
+      oscillator.frequency.linearRampToValueAtTime(
+        isBreakComplete ? 880 : 1320,
+        context.currentTime + 0.15
+      )
+
+      gain.gain.setValueAtTime(
+        Math.max(0, Math.min(1, soundVolume / 100)) * 0.18,
+        context.currentTime
+      )
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        context.currentTime + 0.7
+      )
+
+      oscillator.connect(gain)
+      gain.connect(context.destination)
+
+      oscillator.start()
+      oscillator.stop(
+        context.currentTime + 0.7
+      )
+
+      window.setTimeout(() => {
+        void context.close()
+      }, 900)
+    },
+    [soundEnabled, soundVolume]
+  )
+
+  const sendCompletionNotification = useCallback(
+    (isBreakComplete: boolean) => {
+      if (
+        !notificationsEnabled ||
+        !('Notification' in window)
+      ) {
+        return
+      }
+
+      if (
+        Notification.permission !== 'granted'
+      ) {
+        return
+      }
+
+      const title = isBreakComplete
+        ? 'Break complete'
+        : 'Focus session complete'
+
+      const body = isBreakComplete
+        ? 'Break finished. Ready to focus again.'
+        : `${subjectName} session complete. Time for a break.`
+
+      new Notification(title, {
+        body,
+        icon: '/favicon.ico',
+      })
+    },
+    [
+      notificationsEnabled,
+      subjectName,
+    ]
+  )
+
   const resetTracking = useCallback(() => {
     setPausedSeconds(0)
     setInterruptionCount(0)
@@ -177,6 +276,14 @@ export default function Timer({
   const startTimer = () => {
     if (timeRemaining <= 0) {
       return
+    }
+
+    if (
+      notificationsEnabled &&
+      'Notification' in window &&
+      Notification.permission === 'default'
+    ) {
+      void Notification.requestPermission()
     }
 
     setIsStudying(true)
@@ -288,6 +395,9 @@ export default function Timer({
             pausedSeconds
         )
 
+      playCompletionSound(false)
+      sendCompletionNotification(false)
+
       onComplete()
 
       onSessionEnd(
@@ -310,6 +420,8 @@ export default function Timer({
       focusDuration,
       pausedSeconds,
       interruptionCount,
+      playCompletionSound,
+      sendCompletionNotification,
       onComplete,
       onSessionEnd,
     ])
@@ -317,6 +429,9 @@ export default function Timer({
   const finishBreak = useCallback(() => {
     const wasLongBreak =
       mode === 'longBreak'
+
+    playCompletionSound(true)
+    sendCompletionNotification(true)
 
     clearTimer()
 
@@ -338,6 +453,8 @@ export default function Timer({
     clearTimer,
     focusDuration,
     mode,
+    playCompletionSound,
+    sendCompletionNotification,
     resetTracking,
   ])
 

@@ -24,6 +24,9 @@ interface DashboardProps {
   longBreak: number
   sessionsBeforeLongBreak: number
   autoStartBreak: boolean
+  soundEnabled: boolean
+  soundVolume: number
+  notificationsEnabled: boolean
 }
 
 function getStartOfDay(date: Date): Date {
@@ -80,6 +83,9 @@ export default function Dashboard({
   longBreak,
   sessionsBeforeLongBreak,
   autoStartBreak,
+  soundEnabled,
+  soundVolume,
+  notificationsEnabled,
 }: DashboardProps) {
   const { t } = useI18n()
   const timerCardRef = useRef<HTMLDivElement>(null)
@@ -580,6 +586,11 @@ export default function Dashboard({
             sessionsBeforeLongBreak
           }
           autoStartBreak={autoStartBreak}
+          soundEnabled={soundEnabled}
+          soundVolume={soundVolume}
+          notificationsEnabled={
+            notificationsEnabled
+          }
           onComplete={handleTimerComplete}
           onSessionEnd={handleSessionEnd}
         />

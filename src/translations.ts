@@ -113,6 +113,17 @@ export const translations = {
     focused: 'focused',
     interruptions: 'interruptions',
 
+    // Sound & Notifications
+    sound: 'Sound',
+    soundEnabled: 'Enable sounds',
+    soundVolume: 'Volume',
+    focusCompleteSound: 'Focus completion sound',
+    breakCompleteSound: 'Break completion sound',
+    notifications: 'Notifications',
+    notificationsEnabled: 'Enable notifications',
+    notificationPermission:
+      'Browser notification permission',
+
     // Data
     data: 'DATA',
     backupDescription:
@@ -244,6 +255,18 @@ export const translations = {
     paused: 'وەستاوە',
     focused: 'سەرنج دراوە',
     interruptions: 'وەستاندنەکان',
+
+    // Sound & Notifications
+    sound: 'دەنگ',
+    soundEnabled: 'چالاککردنی دەنگ',
+    soundVolume: 'قەبارەی دەنگ',
+    focusCompleteSound: 'دەنگی تەواوبوونی سەرنج',
+    breakCompleteSound: 'دەنگی تەواوبوونی پشوودان',
+    notifications: 'ئاگادارکردنەوەکان',
+    notificationsEnabled:
+      'چالاککردنی ئاگادارکردنەوەکان',
+    notificationPermission:
+      'مۆڵەتی ئاگادارکردنەوەی وێبگە',
 
     // Data
     data: 'داتا',

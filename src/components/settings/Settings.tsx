@@ -8,12 +8,28 @@ interface SettingsProps {
   longBreak: number
   sessionsBeforeLongBreak: number
   autoStartBreak: boolean
+  soundEnabled: boolean
+  soundVolume: number
+  notificationsEnabled: boolean
   onDailyGoalChange: (value: number) => void
   onWeeklyGoalChange: (value: number) => void
   onShortBreakChange: (value: number) => void
   onLongBreakChange: (value: number) => void
-  onSessionsBeforeLongBreakChange: (value: number) => void
-  onAutoStartBreakChange: (value: boolean) => void
+  onSessionsBeforeLongBreakChange: (
+    value: number
+  ) => void
+  onAutoStartBreakChange: (
+    value: boolean
+  ) => void
+  onSoundEnabledChange: (
+    value: boolean
+  ) => void
+  onSoundVolumeChange: (
+    value: number
+  ) => void
+  onNotificationsEnabledChange: (
+    value: boolean
+  ) => void
   onExportData: () => void
   onImportData: (file: File) => void
 }
@@ -25,23 +41,36 @@ export default function Settings({
   longBreak,
   sessionsBeforeLongBreak,
   autoStartBreak,
+  soundEnabled,
+  soundVolume,
+  notificationsEnabled,
   onDailyGoalChange,
   onWeeklyGoalChange,
   onShortBreakChange,
   onLongBreakChange,
   onSessionsBeforeLongBreakChange,
   onAutoStartBreakChange,
+  onSoundEnabledChange,
+  onSoundVolumeChange,
+  onNotificationsEnabledChange,
   onExportData,
   onImportData,
 }: SettingsProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef =
+    useRef<HTMLInputElement>(null)
 
-  const { language, setLanguage, t } = useI18n()
+  const {
+    language,
+    setLanguage,
+    t,
+  } = useI18n()
 
   const selectStyle = {
     padding: '9px',
-    background: 'var(--void-surface-hover)',
-    border: '1px solid var(--void-border)',
+    background:
+      'var(--void-surface-hover)',
+    border:
+      '1px solid var(--void-border)',
     borderRadius: '8px',
     color: 'var(--text-primary)',
     outline: 'none',
@@ -50,8 +79,10 @@ export default function Settings({
 
   const inputStyle = {
     padding: '9px',
-    background: 'var(--void-surface-hover)',
-    border: '1px solid var(--void-border)',
+    background:
+      'var(--void-surface-hover)',
+    border:
+      '1px solid var(--void-border)',
     borderRadius: '8px',
     color: 'var(--text-primary)',
     outline: 'none',
@@ -137,7 +168,8 @@ export default function Settings({
               display: 'flex',
               flexDirection: 'column',
               gap: '8px',
-              color: 'var(--text-secondary)',
+              color:
+                'var(--text-secondary)',
               fontSize: '13px',
             }}
           >
@@ -147,7 +179,9 @@ export default function Settings({
               value={dailyGoal}
               onChange={(event) =>
                 onDailyGoalChange(
-                  Number(event.target.value)
+                  Number(
+                    event.target.value
+                  )
                 )
               }
               style={selectStyle}
@@ -155,27 +189,21 @@ export default function Settings({
               <option value={30}>
                 {t('minutes30')}
               </option>
-
               <option value={60}>
                 {t('hour1')}
               </option>
-
               <option value={90}>
                 {t('hours15')}
               </option>
-
               <option value={120}>
                 {t('hours2')}
               </option>
-
               <option value={180}>
                 {t('hours3')}
               </option>
-
               <option value={240}>
                 {t('hours4')}
               </option>
-
               <option value={300}>
                 {t('hours5')}
               </option>
@@ -187,7 +215,8 @@ export default function Settings({
               display: 'flex',
               flexDirection: 'column',
               gap: '8px',
-              color: 'var(--text-secondary)',
+              color:
+                'var(--text-secondary)',
               fontSize: '13px',
             }}
           >
@@ -197,7 +226,9 @@ export default function Settings({
               value={weeklyGoal}
               onChange={(event) =>
                 onWeeklyGoalChange(
-                  Number(event.target.value)
+                  Number(
+                    event.target.value
+                  )
                 )
               }
               style={selectStyle}
@@ -205,19 +236,15 @@ export default function Settings({
               <option value={300}>
                 5 HOURS
               </option>
-
               <option value={600}>
                 10 HOURS
               </option>
-
               <option value={900}>
                 15 HOURS
               </option>
-
               <option value={1200}>
                 20 HOURS
               </option>
-
               <option value={1500}>
                 25 HOURS
               </option>
@@ -256,7 +283,8 @@ export default function Settings({
               flexDirection: 'column',
               gap: '8px',
               fontSize: '13px',
-              color: 'var(--text-secondary)',
+              color:
+                'var(--text-secondary)',
             }}
           >
             {t('shortBreakMinutes')}
@@ -286,7 +314,8 @@ export default function Settings({
               flexDirection: 'column',
               gap: '8px',
               fontSize: '13px',
-              color: 'var(--text-secondary)',
+              color:
+                'var(--text-secondary)',
             }}
           >
             {t('longBreakMinutes')}
@@ -316,7 +345,8 @@ export default function Settings({
               flexDirection: 'column',
               gap: '8px',
               fontSize: '13px',
-              color: 'var(--text-secondary)',
+              color:
+                'var(--text-secondary)',
             }}
           >
             {t(
@@ -327,7 +357,9 @@ export default function Settings({
               type="number"
               min="1"
               max="10"
-              value={sessionsBeforeLongBreak}
+              value={
+                sessionsBeforeLongBreak
+              }
               onChange={(event) =>
                 onSessionsBeforeLongBreakChange(
                   Math.max(
@@ -349,7 +381,8 @@ export default function Settings({
             alignItems: 'center',
             gap: '10px',
             marginTop: '20px',
-            color: 'var(--text-secondary)',
+            color:
+              'var(--text-secondary)',
             fontSize: '13px',
             cursor: 'pointer',
           }}
@@ -367,6 +400,131 @@ export default function Settings({
           {t(
             'automaticallyStartNextBreak'
           )}
+        </label>
+      </div>
+
+      {/* Sound */}
+      <div
+        className="glass-panel"
+        style={{
+          padding: '24px',
+        }}
+      >
+        <h2
+          style={{
+            fontSize: '16px',
+            marginBottom: '20px',
+          }}
+        >
+          {t('sound')}
+        </h2>
+
+        <label
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            color:
+              'var(--text-secondary)',
+            fontSize: '13px',
+            cursor: 'pointer',
+            marginBottom: '18px',
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={soundEnabled}
+            onChange={(event) =>
+              onSoundEnabledChange(
+                event.target.checked
+              )
+            }
+          />
+
+          {t('soundEnabled')}
+        </label>
+
+        <label
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+            color:
+              'var(--text-secondary)',
+            fontSize: '13px',
+          }}
+        >
+          {t('soundVolume')}
+
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            value={soundVolume}
+            disabled={!soundEnabled}
+            onChange={(event) =>
+              onSoundVolumeChange(
+                Number(
+                  event.target.value
+                )
+              )
+            }
+          />
+
+          <span
+            className="mono"
+            style={{
+              fontSize: '11px',
+              color:
+                'var(--text-muted)',
+            }}
+          >
+            {soundVolume}%
+          </span>
+        </label>
+      </div>
+
+      {/* Notifications */}
+      <div
+        className="glass-panel"
+        style={{
+          padding: '24px',
+        }}
+      >
+        <h2
+          style={{
+            fontSize: '16px',
+            marginBottom: '20px',
+          }}
+        >
+          {t('notifications')}
+        </h2>
+
+        <label
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            color:
+              'var(--text-secondary)',
+            fontSize: '13px',
+            cursor: 'pointer',
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={
+              notificationsEnabled
+            }
+            onChange={(event) =>
+              onNotificationsEnabledChange(
+                event.target.checked
+              )
+            }
+          />
+
+          {t('notificationsEnabled')}
         </label>
       </div>
 
@@ -389,8 +547,10 @@ export default function Settings({
         <p
           style={{
             fontSize: '12px',
-            color: 'var(--text-muted)',
-            marginBottom: '18px',
+            color:
+              'var(--text-muted)',
+            marginBottom:
+              '18px',
           }}
         >
           {t('backupDescription')}
@@ -405,7 +565,9 @@ export default function Settings({
         >
           <button
             className="cyber-btn"
-            onClick={onExportData}
+            onClick={
+              onExportData
+            }
           >
             {t('exportData')}
           </button>
