@@ -18,6 +18,9 @@ import {
 import {
   getProductivityInsights,
 } from '../../utils/productivityInsights'
+import {
+  getStudyRecommendation,
+} from '../../utils/studyRecommendations'
 
 const WeeklyTrend = lazy(
   () => import('./WeeklyTrend')
@@ -288,6 +291,13 @@ export default function Dashboard({
   const insights =
     getProductivityInsights(
       sessions
+    )
+
+  const recommendation =
+    getStudyRecommendation(
+      sessions,
+      subjects,
+      weeklyGoal
     )
 
   useEffect(() => {
@@ -922,6 +932,110 @@ export default function Dashboard({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Recommendation */}
+      <div
+        className="glass-panel"
+        style={{
+          padding: '20px',
+          borderColor: 'rgba(245,158,11,0.18)',
+          background: 'rgba(245,158,11,0.05)',
+        }}
+      >
+        <div
+          style={{
+            fontSize: '11px',
+            fontFamily: 'Orbitron, sans-serif',
+            color: 'var(--energy)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            marginBottom: '8px',
+          }}
+        >
+          {t('recommendationTitle')}
+        </div>
+
+        {recommendation.type === 'noData' && (
+          <div>
+            <div
+              style={{
+                fontSize: '15px',
+                color: 'var(--text-primary)',
+                marginBottom: '6px',
+              }}
+            >
+              {t('recommendNoData')}
+            </div>
+            <div className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              {recommendation.minutes}m
+            </div>
+          </div>
+        )}
+
+        {recommendation.type === 'unstudiedSubject' && (
+          <div>
+            <div
+              style={{
+                fontSize: '15px',
+                color: 'var(--text-primary)',
+                marginBottom: '6px',
+              }}
+            >
+              {t('recommendUnstudied')}{' '}
+              <strong>{recommendation.subjectName}</strong>
+            </div>
+            <div className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              {recommendation.minutes}m
+            </div>
+          </div>
+        )}
+
+        {recommendation.type === 'shortSessions' && (
+          <div>
+            <div style={{ fontSize: '15px', color: 'var(--text-primary)', marginBottom: '6px' }}>
+              {t('recommendShortSessions')}
+            </div>
+            <div className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              {recommendation.minutes}m
+            </div>
+          </div>
+        )}
+
+        {recommendation.type === 'weeklyGoal' && (
+          <div>
+            <div style={{ fontSize: '15px', color: 'var(--text-primary)', marginBottom: '6px' }}>
+              {t('recommendWeeklyGoal')}{' '}
+              <strong>{recommendation.remainingMinutes}m</strong>
+            </div>
+            <div className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              {recommendation.minutes}m
+            </div>
+          </div>
+        )}
+
+        {recommendation.type === 'maintain' && (
+          <div>
+            <div style={{ fontSize: '15px', color: 'var(--text-primary)', marginBottom: '6px' }}>
+              {t('recommendMaintain')}
+            </div>
+            <div
+              className="mono"
+              style={{
+                fontSize: '11px',
+                color:
+                  (recommendation.changePercent ?? 0) > 0
+                    ? 'var(--success)'
+                    : 'var(--text-muted)',
+              }}
+            >
+              {(recommendation.changePercent ?? 0) > 0
+                ? `+${recommendation.changePercent}%`
+                : `${recommendation.changePercent ?? 0}%`}{' '}
+              {t('vsLastWeek')}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Daily Goal */}

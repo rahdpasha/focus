@@ -71,6 +71,12 @@ export const translations = {
     leastStudied: 'Least Studied',
     noCompletedSessions:
       'No completed sessions yet',
+    recommendationTitle: 'FOCUS RECOMMENDATION',
+    recommendNoData: 'Start with one focused 25-minute session.',
+    recommendUnstudied: "You haven't studied this subject this week:",
+    recommendShortSessions: 'Your sessions are very short. Try one uninterrupted focus session.',
+    recommendWeeklyGoal: 'You still need',
+    recommendMaintain: "You've covered your weekly goal. Keep the rhythm going.",
 
     // Analytics
     weeklyFocusTrend: 'Weekly Focus Trend',
@@ -222,6 +228,12 @@ export const translations = {
     leastStudied: 'کەمتر خوێندراوترین بابەت',
     noCompletedSessions:
       'هێشتا هیچ سێشنێکی تەواوکراو نییە',
+    recommendationTitle: 'پێشنیاری FOCUS',
+    recommendNoData: 'بە یەک سێشنی سەرنجی ٢٥ خولەکی دەست پێ بکە.',
+    recommendUnstudied: 'ئەم هەفتەیە ئەم بابەتەت نەخوێندووەتەوە:',
+    recommendShortSessions: 'سێشنەکانت زۆر کورتن. یەک سێشنی سەرنجی بێ‌وەستان تاقی بکەوە.',
+    recommendWeeklyGoal: 'هێشتا پێویستتە',
+    recommendMaintain: 'ئامانجی هەفتانەت تەواو کردووە. بەردەوام بە لەسەر هەمان ڕێتم.',
 
     // Analytics
     weeklyFocusTrend:
