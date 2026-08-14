@@ -80,6 +80,14 @@ export default function Timer({
   const [showComplete, setShowComplete] =
     useState(false)
 
+  const [
+    completionCountdown,
+    setCompletionCountdown,
+  ] = useState(0)
+
+  const completionTimeoutRef =
+    useRef<number | null>(null)
+
   const [pausedSeconds, setPausedSeconds] =
     useState(0)
 
@@ -150,6 +158,16 @@ export default function Timer({
       )
 
       pauseIntervalRef.current = null
+    }
+
+    if (
+      completionTimeoutRef.current !== null
+    ) {
+      clearTimeout(
+        completionTimeoutRef.current
+      )
+
+      completionTimeoutRef.current = null
     }
   }, [])
 
@@ -496,19 +514,48 @@ export default function Timer({
       finishedRef.current = true
       clearTimer()
 
-      if (isFocus) {
-        finishedRef.current = false
-        finishFocusSession()
-      } else {
-        finishedRef.current = false
-        finishBreak()
+      setCompletionCountdown(3)
+
+      let count = 3
+
+      const countdown = () => {
+        count -= 1
+
+        if (count <= 0) {
+          completionTimeoutRef.current = null
+          setCompletionCountdown(0)
+
+          if (isFocus) {
+            finishFocusSession()
+          } else {
+            finishBreak()
+          }
+
+          finishedRef.current = false
+          return
+        }
+
+        setCompletionCountdown(count)
+
+        completionTimeoutRef.current =
+          window.setTimeout(
+            countdown,
+            1000
+          )
       }
+
+      completionTimeoutRef.current =
+        window.setTimeout(
+          countdown,
+          1000
+        )
     }, [
       clearTimer,
       isFocus,
       finishFocusSession,
       finishBreak,
     ])
+
 
   useEffect(() => {
     if (!isStudying) {
@@ -646,6 +693,14 @@ export default function Timer({
   useEffect(() => {
     return () => {
       clearTimer()
+
+      if (
+        completionTimeoutRef.current !== null
+      ) {
+        clearTimeout(
+          completionTimeoutRef.current
+        )
+      }
     }
   }, [clearTimer])
 
@@ -688,6 +743,49 @@ export default function Timer({
   const canTakeLongBreak =
     completedFocusSessions >=
     sessionsBeforeLongBreak
+
+  if (completionCountdown > 0) {
+    return (
+      <div
+        style={{
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '16px',
+          animation: 'fadeIn 0.25s ease',
+        }}
+      >
+        <span
+          style={{
+            fontSize: '12px',
+            color: 'var(--text-muted)',
+            fontFamily:
+              'Orbitron, sans-serif',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+          }}
+        >
+          {isFocus
+            ? t('sequenceComplete')
+            : t('breakComplete')}
+        </span>
+
+        <span
+          className="mono"
+          style={{
+            fontSize: '72px',
+            lineHeight: 1,
+            color: 'var(--primary-glow)',
+            textShadow:
+              '0 0 35px rgba(139,92,246,0.35)',
+          }}
+        >
+          {completionCountdown}
+        </span>
+      </div>
+    )
+  }
 
   if (
     showComplete &&
