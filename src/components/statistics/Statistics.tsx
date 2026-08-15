@@ -15,6 +15,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from 'recharts'
+import { getPersonalRecords } from '../../utils/personalRecords'
 
 interface StatisticsProps {
   sessions: StudySession[]
@@ -301,6 +302,12 @@ export default function Statistics({
         actual:
           item.completedMinutes,
       }))
+
+  const personalRecords =
+    getPersonalRecords(
+      sessions,
+      weeklyGoal
+    )
 
   const streakStats =
     getStreakStats(
@@ -737,6 +744,225 @@ export default function Statistics({
               }}
             >
               WEEKS
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Personal Records */}
+      <div
+        className="glass-panel"
+        style={{
+          padding: '24px',
+        }}
+      >
+        <div
+          style={{
+            fontSize: '11px',
+            fontFamily: 'Orbitron, sans-serif',
+            color: 'var(--text-muted)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.12em',
+            marginBottom: '18px',
+          }}
+        >
+          PERSONAL RECORDS
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns:
+              'repeat(auto-fit, minmax(170px, 1fr))',
+            gap: '12px',
+          }}
+        >
+          <div
+            className="glass-panel"
+            style={{
+              padding: '16px',
+              background:
+                'rgba(139,92,246,0.06)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+              }}
+            >
+              LONGEST SESSION
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                marginTop: '8px',
+                fontSize: '24px',
+                color: 'var(--primary-glow)',
+              }}
+            >
+              {formatDuration(
+                personalRecords.longestSessionSeconds
+              )}
+            </div>
+          </div>
+
+          <div
+            className="glass-panel"
+            style={{
+              padding: '16px',
+              background:
+                'rgba(34,197,94,0.06)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+              }}
+            >
+              BEST DAY
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                marginTop: '8px',
+                fontSize: '24px',
+                color: 'var(--success)',
+              }}
+            >
+              {personalRecords.bestDayMinutes}m
+            </div>
+
+            <div
+              style={{
+                marginTop: '4px',
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+              }}
+            >
+              {personalRecords.bestDayDate ??
+                '—'}
+            </div>
+          </div>
+
+          <div
+            className="glass-panel"
+            style={{
+              padding: '16px',
+              background:
+                'rgba(6,182,212,0.06)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+              }}
+            >
+              BEST WEEK
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                marginTop: '8px',
+                fontSize: '24px',
+                color: 'var(--cyber-glow)',
+              }}
+            >
+              {formatDuration(
+                personalRecords.bestWeekMinutes *
+                  60
+              )}
+            </div>
+          </div>
+
+          <div
+            className="glass-panel"
+            style={{
+              padding: '16px',
+              background:
+                'rgba(245,158,11,0.06)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+              }}
+            >
+              BEST SUBJECT
+            </div>
+
+            <div
+              style={{
+                marginTop: '8px',
+                fontSize: '14px',
+                color: 'var(--text-primary)',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+              title={
+                personalRecords.bestSubjectName ??
+                undefined
+              }
+            >
+              {personalRecords.bestSubjectName ??
+                '—'}
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                marginTop: '4px',
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+              }}
+            >
+              {personalRecords.bestSubjectMinutes}m
+            </div>
+          </div>
+
+          <div
+            className="glass-panel"
+            style={{
+              padding: '16px',
+              background:
+                'rgba(20,184,166,0.06)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+              }}
+            >
+              BEST DAILY STREAK
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                marginTop: '8px',
+                fontSize: '24px',
+                color: 'var(--teal-glow)',
+              }}
+            >
+              {personalRecords.bestDailyStreak}
+            </div>
+
+            <div
+              style={{
+                marginTop: '4px',
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+              }}
+            >
+              {t('days')}
             </div>
           </div>
         </div>
