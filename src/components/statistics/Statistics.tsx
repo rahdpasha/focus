@@ -978,9 +978,7 @@ export default function Statistics({
                         `${item.weekStart}T00:00:00`
                       ),
                       locale,
-                      index ===
-                        weeklyHistory.length -
-                          1
+                      index === 0
                     )}
                   </span>
 
