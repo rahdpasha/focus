@@ -18,7 +18,10 @@ interface WeeklyTrendProps {
 
 interface WeeklyDataPoint {
   day: string
+  dateLabel: string
   hours: number
+  seconds: number
+  sessions: number
 }
 
 interface WeeklyTooltipProps {
@@ -44,45 +47,62 @@ function buildWeeklyData(
     const end = new Date(start)
     end.setDate(end.getDate() + 1)
 
-    const totalSeconds = sessions
-      .filter((session) => {
-        const timestamp =
-          new Date(
-            session.completedAt
-          ).getTime()
+    const daySessions = sessions.filter((session) => {
+      const timestamp =
+        new Date(
+          session.completedAt
+        ).getTime()
 
-        return (
-          session.completed &&
-          timestamp >= start.getTime() &&
-          timestamp < end.getTime()
-        )
-      })
-      .reduce(
+      return (
+        session.completed &&
+        timestamp >= start.getTime() &&
+        timestamp < end.getTime()
+      )
+    })
+
+    const totalSeconds =
+      daySessions.reduce(
         (sum, session) =>
           sum + session.actualDuration,
         0
       )
 
     result.push({
-      day: dayNames[start.getDay()],
+      day:
+        i === 0
+          ? 'Today'
+          : dayNames[start.getDay()],
+      dateLabel:
+        start.toLocaleDateString(
+          undefined,
+          {
+            weekday: 'long',
+            month: 'short',
+            day: 'numeric',
+          }
+        ),
       hours:
-        Math.round(
-          (totalSeconds / 3600) * 100
-        ) / 100,
+        totalSeconds / 3600,
+      seconds:
+        totalSeconds,
+      sessions:
+        daySessions.length,
     })
   }
 
   return result
 }
 
-function formatHours(hours: number): string {
-  const totalMinutes = Math.round(
-    hours * 60
-  )
+function formatHours(
+  hours: number
+): string {
+  const totalMinutes =
+    Math.round(hours * 60)
 
-  const wholeHours = Math.floor(
-    totalMinutes / 60
-  )
+  const wholeHours =
+    Math.floor(
+      totalMinutes / 60
+    )
 
   const minutes =
     totalMinutes % 60
@@ -94,6 +114,26 @@ function formatHours(hours: number): string {
   }
 
   return `${minutes}m`
+}
+
+function formatSeconds(
+  seconds: number
+): string {
+  const wholeMinutes =
+    Math.floor(seconds / 60)
+
+  const remainingSeconds =
+    seconds % 60
+
+  if (wholeMinutes === 0) {
+    return `${remainingSeconds}s`
+  }
+
+  if (remainingSeconds === 0) {
+    return `${wholeMinutes}m`
+  }
+
+  return `${wholeMinutes}m ${remainingSeconds}s`
 }
 
 function CustomTooltip({
@@ -118,18 +158,18 @@ function CustomTooltip({
   return (
     <div
       style={{
-        minWidth: '150px',
-        padding: '12px 14px',
+        minWidth: '180px',
+        padding: '13px 15px',
         borderRadius: '12px',
         border:
           '1px solid rgba(139,92,246,0.22)',
         background:
-          'rgba(12,14,22,0.94)',
+          'rgba(10,12,20,0.96)',
         backdropFilter: 'blur(18px)',
         WebkitBackdropFilter:
           'blur(18px)',
         boxShadow:
-          '0 14px 40px rgba(0,0,0,0.28)',
+          '0 16px 42px rgba(0,0,0,0.32)',
       }}
     >
       <div
@@ -139,29 +179,32 @@ function CustomTooltip({
           marginBottom: '5px',
         }}
       >
-        {point.day}
+        {point.dateLabel}
       </div>
 
       <div
         className="mono"
         style={{
-          fontSize: '18px',
+          fontSize: '19px',
           color: 'var(--primary-glow)',
-          marginBottom: '3px',
         }}
       >
-        {formatHours(
-          Number(point.hours ?? 0)
+        {formatSeconds(
+          point.seconds
         )}
       </div>
 
       <div
         style={{
+          marginTop: '5px',
           fontSize: '10px',
           color: 'var(--text-muted)',
         }}
       >
-        focused
+        {point.sessions}{' '}
+        {point.sessions === 1
+          ? 'session'
+          : 'sessions'}
       </div>
     </div>
   )
@@ -190,11 +233,15 @@ export default function WeeklyTrend({
       dayNames
     )
 
-  const totalHours = data.reduce(
-    (sum, item) =>
-      sum + item.hours,
-    0
-  )
+  const totalSeconds =
+    data.reduce(
+      (sum, item) =>
+        sum + item.seconds,
+      0
+    )
+
+  const totalHours =
+    totalSeconds / 3600
 
   const averageHours =
     data.length > 0
@@ -204,7 +251,7 @@ export default function WeeklyTrend({
   const bestDay =
     [...data].sort(
       (a, b) =>
-        b.hours - a.hours
+        b.seconds - a.seconds
     )[0] ?? null
 
   const hasData =
@@ -393,8 +440,8 @@ export default function WeeklyTrend({
                     'var(--primary-glow)',
                 }}
               >
-                {formatHours(
-                  totalHours
+                {formatSeconds(
+                  totalSeconds
                 )}
               </div>
             </div>
@@ -566,13 +613,7 @@ export default function WeeklyTrend({
                 stroke="#a78bfa"
                 strokeWidth={2.5}
                 fill="url(#weeklyTrendFill)"
-                dot={{
-                  r: 3,
-                  fill: '#0b0c12',
-                  stroke:
-                    '#a78bfa',
-                  strokeWidth: 2,
-                }}
+                dot={false}
                 activeDot={{
                   r: 5,
                   fill: '#b59cff',
@@ -658,7 +699,7 @@ export default function WeeklyTrend({
                 }}
               >
                 {bestDay
-                  ? `${bestDay.day} · ${formatHours(bestDay.hours)}`
+                  ? `${bestDay.day} · ${formatSeconds(bestDay.seconds)}`
                   : '—'}
               </div>
             </div>
