@@ -658,9 +658,7 @@ function App() {
                   )
 
                   const migratedKey =
-                    parsedDate
-                      .toISOString()
-                      .slice(0, 10)
+                    getWeekKey(parsedDate)
 
                   importedWeeklyGoals[
                     migratedKey
