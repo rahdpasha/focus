@@ -740,51 +740,9 @@ export default function Statistics({
           </div>
         </div>
 
-        <div
-          className="glass-panel"
-          style={{
-            padding: '24px',
-          }}
-        >
-          <div
-            style={{
-              marginBottom: '18px',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '11px',
-                fontFamily:
-                  'Space Grotesk, sans-serif',
-                fontWeight: 600,
-                color:
-                  'var(--text-muted)',
-                textTransform:
-                  'uppercase',
-                letterSpacing:
-                  '0.12em',
-              }}
-            >
-              DAILY FOCUS
-            </div>
-
-            <div
-              style={{
-                marginTop: '5px',
-                fontSize: '12px',
-                color:
-                  'var(--text-secondary)',
-              }}
-            >
-              Exact focus time for each day.
-              Hover a day to inspect the full session total.
-            </div>
-          </div>
-
-          <WeeklyTrend
-            sessions={sessions}
-          />
-        </div>
+        <WeeklyTrend
+          sessions={sessions}
+        />
 
         <div
           className="glass-panel"
