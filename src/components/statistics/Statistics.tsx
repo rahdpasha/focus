@@ -741,18 +741,57 @@ export default function Statistics({
         </div>
 
         <div
+          className="glass-panel"
           style={{
-            display: 'grid',
-            gridTemplateColumns:
-              'minmax(0, 1.55fr) minmax(280px, 0.85fr)',
-            gap: '18px',
-            alignItems: 'stretch',
+            padding: '24px',
           }}
         >
+          <div
+            style={{
+              marginBottom: '18px',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '11px',
+                fontFamily:
+                  'Space Grotesk, sans-serif',
+                fontWeight: 600,
+                color:
+                  'var(--text-muted)',
+                textTransform:
+                  'uppercase',
+                letterSpacing:
+                  '0.12em',
+              }}
+            >
+              DAILY FOCUS
+            </div>
+
+            <div
+              style={{
+                marginTop: '5px',
+                fontSize: '12px',
+                color:
+                  'var(--text-secondary)',
+              }}
+            >
+              Exact focus time for each day.
+              Hover a day to inspect the full session total.
+            </div>
+          </div>
+
           <WeeklyTrend
             sessions={sessions}
           />
+        </div>
 
+        <div
+          className="glass-panel"
+          style={{
+            padding: '24px',
+          }}
+        >
           <SubjectBalance
             sessions={sessions}
           />

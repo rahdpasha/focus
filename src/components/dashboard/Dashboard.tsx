@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef } from 'react'
+import { Suspense, useEffect, useRef } from 'react'
 import {
   Clock,
   Target,
@@ -25,14 +25,6 @@ import { getStudyPlan } from '../../utils/studyPlan'
 import {
   getStudyRecommendation,
 } from '../../utils/studyRecommendations'
-
-const WeeklyTrend = lazy(
-  () => import('./WeeklyTrend')
-)
-
-const SubjectBalance = lazy(
-  () => import('./SubjectBalance')
-)
 
 interface DashboardProps {
   subjects: Subject[]
@@ -1576,13 +1568,9 @@ export default function Dashboard({
             </div>
           }
         >
-          <WeeklyTrend
-            sessions={sessions}
-          />
 
-          <SubjectBalance
-            sessions={sessions}
-          />
+
+
         </Suspense>
       </div>
 
