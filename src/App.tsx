@@ -640,8 +640,36 @@ function App() {
                 Number.isFinite(value) &&
                 value > 0
               ) {
-                importedWeeklyGoals[weekKey] =
-                  value
+                const parsedDate =
+                  new Date(
+                    `${weekKey}T00:00:00`
+                  )
+
+                // Older backups stored week keys as Sunday.
+                // Current FOCUS weeks start on Monday.
+                if (
+                  !Number.isNaN(
+                    parsedDate.getTime()
+                  ) &&
+                  parsedDate.getDay() === 0
+                ) {
+                  parsedDate.setDate(
+                    parsedDate.getDate() + 1
+                  )
+
+                  const migratedKey =
+                    parsedDate
+                      .toISOString()
+                      .slice(0, 10)
+
+                  importedWeeklyGoals[
+                    migratedKey
+                  ] = value
+                } else {
+                  importedWeeklyGoals[
+                    weekKey
+                  ] = value
+                }
               }
             }
           )
