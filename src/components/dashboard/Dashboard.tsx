@@ -21,6 +21,7 @@ import {
 import {
   getConsistencyInsights,
 } from '../../utils/consistencyInsights'
+import { getStudyPlan } from '../../utils/studyPlan'
 import {
   getStudyRecommendation,
 } from '../../utils/studyRecommendations'
@@ -305,6 +306,13 @@ export default function Dashboard({
 
   const recommendation =
     getStudyRecommendation(
+      sessions,
+      subjects,
+      weeklyGoal
+    )
+
+  const studyPlan =
+    getStudyPlan(
       sessions,
       subjects,
       weeklyGoal
@@ -1358,6 +1366,123 @@ export default function Dashboard({
               / 7
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Study Plan */}
+      <div
+        className="glass-panel"
+        style={{
+          padding: '20px',
+          background:
+            'rgba(139,92,246,0.05)',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '12px',
+            marginBottom: '16px',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: '11px',
+                fontFamily: 'Orbitron, sans-serif',
+                color: 'var(--primary-glow)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                marginBottom: '4px',
+              }}
+            >
+              TODAY'S STUDY PLAN
+            </div>
+
+            <div
+              style={{
+                fontSize: '11px',
+                color: 'var(--text-muted)',
+              }}
+            >
+              {studyPlan.totalMinutes}m planned
+              {studyPlan.bestTime
+                ? ` · Best time ${studyPlan.bestTime}`
+                : ''}
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gap: '10px',
+          }}
+        >
+          {studyPlan.items.map(
+            (item, index) => (
+              <div
+                key={`${item.subjectId}-${index}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '14px',
+                  padding: '13px 14px',
+                  borderRadius: '10px',
+                  background:
+                    'rgba(255,255,255,0.02)',
+                  border:
+                    '1px solid var(--void-border)',
+                }}
+              >
+                <div
+                  style={{
+                    minWidth: 0,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '14px',
+                      color:
+                        'var(--text-primary)',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {index + 1}. {item.subjectName}
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: '4px',
+                      fontSize: '10px',
+                      color:
+                        'var(--text-muted)',
+                    }}
+                  >
+                    {item.reason}
+                  </div>
+                </div>
+
+                <div
+                  className="mono"
+                  style={{
+                    flexShrink: 0,
+                    fontSize: '14px',
+                    color:
+                      'var(--primary-glow)',
+                  }}
+                >
+                  {item.minutes}m
+                </div>
+              </div>
+            )
+          )}
         </div>
       </div>
 
