@@ -1,5 +1,13 @@
-import type { Subject, StudySession } from '../types'
-import { getProductivityInsights } from './productivityInsights'
+import type {
+  Subject,
+  StudySession,
+} from '../types'
+import {
+  getProductivityInsights,
+} from './productivityInsights'
+import {
+  getConsistencyInsights,
+} from './consistencyInsights'
 
 export type RecommendationType =
   | 'noData'
@@ -15,6 +23,7 @@ export interface StudyRecommendation {
   minutes?: number
   remainingMinutes?: number
   changePercent?: number
+  consistencyTrend?: string
 }
 
 export function getStudyRecommendation(
@@ -23,7 +32,15 @@ export function getStudyRecommendation(
   weeklyGoal: number
 ): StudyRecommendation {
   const insights =
-    getProductivityInsights(sessions)
+    getProductivityInsights(
+      sessions
+    )
+
+  const consistency =
+    getConsistencyInsights(
+      sessions,
+      weeklyGoal
+    )
 
   if (
     insights.thisWeekSessions === 0
@@ -31,15 +48,14 @@ export function getStudyRecommendation(
     return {
       type: 'noData',
       minutes: 25,
+      consistencyTrend:
+        consistency.trend,
     }
   }
 
-  const subjectBalance =
-    insights.subjectBalance
-
   const studiedSubjectIds =
     new Set(
-      subjectBalance.map(
+      insights.subjectBalance.map(
         (subject) =>
           subject.subjectId
       )
@@ -53,20 +69,37 @@ export function getStudyRecommendation(
         )
     )
 
+  const remainingMinutes =
+    Math.max(
+      0,
+      weeklyGoal -
+        insights.thisWeekMinutes
+    )
+
+  // Priority 1:
+  // Completely neglected subject.
   if (unstudiedSubject) {
     return {
       type: 'unstudiedSubject',
       subjectName:
         unstudiedSubject.name,
       minutes: 25,
+      remainingMinutes,
+      changePercent:
+        consistency.changePercent,
+      consistencyTrend:
+        consistency.trend,
     }
   }
 
   const lowestSubject =
-    subjectBalance[
-      subjectBalance.length - 1
+    insights.subjectBalance[
+      insights.subjectBalance.length -
+        1
     ]
 
+  // Priority 2:
+  // A subject exists but is receiving very little time.
   if (
     lowestSubject &&
     lowestSubject.minutes < 15
@@ -76,9 +109,16 @@ export function getStudyRecommendation(
       subjectName:
         lowestSubject.subjectName,
       minutes: 25,
+      remainingMinutes,
+      changePercent:
+        consistency.changePercent,
+      consistencyTrend:
+        consistency.trend,
     }
   }
 
+  // Priority 3:
+  // Sessions are too short to build a strong focus habit.
   if (
     insights.averageSessionMinutes >
       0 &&
@@ -88,17 +128,19 @@ export function getStudyRecommendation(
     return {
       type: 'shortSessions',
       minutes: 25,
+      remainingMinutes,
+      changePercent:
+        consistency.changePercent,
+      consistencyTrend:
+        consistency.trend,
     }
   }
 
-  const remainingMinutes =
-    Math.max(
-      0,
-      weeklyGoal -
-        insights.thisWeekMinutes
-    )
-
-  if (remainingMinutes > 0) {
+  // Priority 4:
+  // Weekly target is still unfinished.
+  if (
+    remainingMinutes > 0
+  ) {
     return {
       type: 'weeklyGoal',
       remainingMinutes,
@@ -109,12 +151,18 @@ export function getStudyRecommendation(
           remainingMinutes
         )
       ),
+      changePercent:
+        consistency.changePercent,
+      consistencyTrend:
+        consistency.trend,
     }
   }
 
   return {
     type: 'maintain',
     changePercent:
-      insights.weekChangePercent,
+      consistency.changePercent,
+    consistencyTrend:
+      consistency.trend,
   }
 }

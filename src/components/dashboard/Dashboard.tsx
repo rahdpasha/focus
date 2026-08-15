@@ -302,12 +302,92 @@ export default function Dashboard({
       weeklyGoal
     )
 
+
   const recommendation =
     getStudyRecommendation(
       sessions,
       subjects,
       weeklyGoal
     )
+
+
+  const recommendationReason =
+    (() => {
+      if (
+        recommendation.type ===
+        'understudiedSubject'
+      ) {
+        const subject =
+          insights.subjectBalance.find(
+            (item) =>
+              item.subjectName ===
+              recommendation.subjectName
+          )
+
+        if (
+          subject &&
+          recommendation.consistencyTrend ===
+            'declining'
+        ) {
+          return `Your consistency is declining, and ${subject.subjectName} has only ${subject.minutes} minutes this week.`
+        }
+
+        if (subject) {
+          return `${subject.subjectName} has only ${subject.minutes} minutes this week.`
+        }
+      }
+
+      if (
+        recommendation.type ===
+        'unstudiedSubject'
+      ) {
+        if (
+          recommendation.consistencyTrend ===
+          'declining'
+        ) {
+          return 'Your consistency is declining, so giving an untouched subject some attention can help rebalance your week.'
+        }
+
+        return 'You have not studied this subject yet this week.'
+      }
+
+      if (
+        recommendation.type ===
+        'shortSessions'
+      ) {
+        return `Your average session is only ${insights.averageSessionMinutes} minutes. A focused 25-minute session would strengthen the habit.`
+      }
+
+      if (
+        recommendation.type ===
+        'weeklyGoal'
+      ) {
+        return `You are ${recommendation.remainingMinutes} minutes short of your weekly goal.`
+      }
+
+      if (
+        recommendation.type ===
+        'maintain'
+      ) {
+        if (
+          recommendation.consistencyTrend ===
+          'improving'
+        ) {
+          return 'Your consistency is improving. Keep the current rhythm.'
+        }
+
+        if (
+          recommendation.consistencyTrend ===
+          'declining'
+        ) {
+          return 'Your consistency is declining. A focused session can help you get back on track.'
+        }
+
+        return 'Your study rhythm is stable. Keep it going.'
+      }
+
+      return ''
+    })()
 
   useEffect(() => {
     const card =
@@ -1360,6 +1440,19 @@ export default function Dashboard({
             >
               {recommendation.minutes}m
             </div>
+
+            {recommendationReason && (
+              <div
+                style={{
+                  marginTop: '10px',
+                  fontSize: '11px',
+                  lineHeight: 1.5,
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                {recommendationReason}
+              </div>
+            )}
           </div>
         )}
 
@@ -1371,6 +1464,19 @@ export default function Dashboard({
             <div className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
               {recommendation.minutes}m
             </div>
+
+            {recommendationReason && (
+              <div
+                style={{
+                  marginTop: '10px',
+                  fontSize: '11px',
+                  lineHeight: 1.5,
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                {recommendationReason}
+              </div>
+            )}
           </div>
         )}
 
@@ -1383,6 +1489,19 @@ export default function Dashboard({
             <div className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
               {recommendation.minutes}m
             </div>
+
+            {recommendationReason && (
+              <div
+                style={{
+                  marginTop: '10px',
+                  fontSize: '11px',
+                  lineHeight: 1.5,
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                {recommendationReason}
+              </div>
+            )}
           </div>
         )}
 
