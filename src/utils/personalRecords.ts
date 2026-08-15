@@ -6,6 +6,9 @@ export interface PersonalRecords {
   longestSessionSeconds: number
   bestDayMinutes: number
   bestDayDate: string | null
+  bestDayAverageMinutes: number
+  bestDaySessions: number
+  bestDayWeekday: string | null
   bestWeekMinutes: number
   bestWeekStart: string | null
   bestSubjectName: string | null
@@ -64,6 +67,73 @@ export function getPersonalRecords(
         ([, a], [, b]) =>
           b - a
       )[0] ?? null
+
+  const weekdayTotals =
+    new Map<
+      number,
+      {
+        minutes: number
+        sessions: number
+      }
+    >()
+
+  completed.forEach((session) => {
+    const date = new Date(
+      session.completedAt
+    )
+
+    const weekday =
+      date.getDay()
+
+    const existing =
+      weekdayTotals.get(weekday)
+
+    if (existing) {
+      existing.minutes +=
+        session.actualDuration / 60
+      existing.sessions += 1
+      return
+    }
+
+    weekdayTotals.set(
+      weekday,
+      {
+        minutes:
+          session.actualDuration / 60,
+        sessions: 1,
+      }
+    )
+  })
+
+  const bestWeekdayEntry =
+    Array.from(
+      weekdayTotals.entries()
+    )
+      .map(
+        ([weekday, value]) => ({
+          weekday,
+          averageMinutes:
+            value.minutes /
+            value.sessions,
+          sessions:
+            value.sessions,
+        })
+      )
+      .sort(
+        (a, b) =>
+          b.averageMinutes -
+          a.averageMinutes
+      )[0] ?? null
+
+  const weekdayLabels = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ]
 
   const subjectTotals = new Map<
     string,
@@ -125,6 +195,20 @@ export function getPersonalRecords(
       : 0,
     bestDayDate:
       bestDayEntry?.[0] ?? null,
+    bestDayAverageMinutes:
+      bestWeekdayEntry
+        ? Math.round(
+            bestWeekdayEntry.averageMinutes
+          )
+        : 0,
+    bestDaySessions:
+      bestWeekdayEntry?.sessions ?? 0,
+    bestDayWeekday:
+      bestWeekdayEntry
+        ? weekdayLabels[
+            bestWeekdayEntry.weekday
+          ]
+        : null,
     bestWeekMinutes:
       bestWeek?.minutes ?? 0,
     bestWeekStart:

@@ -29,6 +29,25 @@ function startOfDay(date: Date): Date {
   return result
 }
 
+function formatMinutesHuman(
+  minutes: number
+): string {
+  const hours = Math.floor(
+    minutes / 60
+  )
+
+  const remaining =
+    minutes % 60
+
+  if (hours > 0) {
+    return remaining > 0
+      ? `${hours}h ${remaining}m`
+      : `${hours}h`
+  }
+
+  return `${minutes}m`
+}
+
 function formatDuration(
   seconds: number
 ): string {
@@ -833,7 +852,9 @@ export default function Statistics({
                 color: 'var(--success)',
               }}
             >
-              {personalRecords.bestDayMinutes}m
+              {formatMinutesHuman(
+                personalRecords.bestDayMinutes
+              )}
             </div>
 
             <div
@@ -873,10 +894,54 @@ export default function Statistics({
                 color: 'var(--cyber-glow)',
               }}
             >
-              {formatDuration(
-                personalRecords.bestWeekMinutes *
-                  60
+              {formatMinutesHuman(
+                personalRecords.bestWeekMinutes
               )}
+            </div>
+          </div>
+
+          <div
+            className="glass-panel"
+            style={{
+              padding: '16px',
+              background:
+                'rgba(239,68,68,0.06)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+              }}
+            >
+              MOST PRODUCTIVE DAY
+            </div>
+
+            <div
+              style={{
+                marginTop: '8px',
+                fontSize: '15px',
+                color: 'var(--text-primary)',
+              }}
+            >
+              {personalRecords.bestDayWeekday ??
+                '—'}
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                marginTop: '5px',
+                fontSize: '11px',
+                color: 'var(--danger)',
+              }}
+            >
+              {formatMinutesHuman(
+                personalRecords.bestDayAverageMinutes
+              )}{' '}
+              avg ·{' '}
+              {personalRecords.bestDaySessions}{' '}
+              sessions
             </div>
           </div>
 
