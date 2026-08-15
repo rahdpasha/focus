@@ -19,6 +19,9 @@ import {
   getProductivityInsights,
 } from '../../utils/productivityInsights'
 import {
+  getConsistencyInsights,
+} from '../../utils/consistencyInsights'
+import {
   getStudyRecommendation,
 } from '../../utils/studyRecommendations'
 
@@ -291,6 +294,12 @@ export default function Dashboard({
   const insights =
     getProductivityInsights(
       sessions
+    )
+
+  const consistency =
+    getConsistencyInsights(
+      sessions,
+      weeklyGoal
     )
 
   const recommendation =
@@ -795,6 +804,134 @@ export default function Dashboard({
             </div>
           </div>
 
+          {/* Best study time */}
+          <div
+            style={{
+              padding: '14px',
+              borderRadius: '10px',
+              background:
+                'rgba(34,197,94,0.06)',
+              border:
+                '1px solid var(--void-border)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+                marginBottom: '6px',
+              }}
+            >
+              {t('bestStudyTime')}
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                fontSize: '18px',
+                color: 'var(--success)',
+              }}
+            >
+              {insights.bestStudyTime?.label ?? '—'}
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                marginTop: '5px',
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+              }}
+            >
+              {insights.bestStudyTime
+                ? `${insights.bestStudyTime.averageMinutes}m avg · ${insights.bestStudyTime.sessions} sessions`
+                : t('noCompletedSessions')}
+            </div>
+          </div>
+
+          {/* Study time distribution */}
+          <div
+            style={{
+              gridColumn: '1 / -1',
+              padding: '14px',
+              borderRadius: '10px',
+              background:
+                'rgba(139,92,246,0.05)',
+              border:
+                '1px solid var(--void-border)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+                marginBottom: '10px',
+              }}
+            >
+              {t('studyTimeDistribution')}
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns:
+                  'repeat(auto-fit, minmax(130px, 1fr))',
+                gap: '10px',
+              }}
+            >
+              {insights.studyTimePeriods.map(
+                (period) => (
+                  <div
+                    key={period.period}
+                    style={{
+                      padding: '10px',
+                      borderRadius: '8px',
+                      background:
+                        'rgba(255,255,255,0.02)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: '10px',
+                        color:
+                          'var(--text-muted)',
+                        marginBottom: '5px',
+                      }}
+                    >
+                      {period.label}
+                    </div>
+
+                    <div
+                      className="mono"
+                      style={{
+                        fontSize: '16px',
+                        color:
+                          period.sessions > 0
+                            ? 'var(--text-primary)'
+                            : 'var(--text-muted)',
+                      }}
+                    >
+                      {period.averageMinutes}m
+                    </div>
+
+                    <div
+                      className="mono"
+                      style={{
+                        marginTop: '4px',
+                        fontSize: '9px',
+                        color:
+                          'var(--text-muted)',
+                      }}
+                    >
+                      {period.sessions}{' '}
+                      {t('sessions')}
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+
           {/* Strongest subject */}
           <div
             style={{
@@ -934,6 +1071,216 @@ export default function Dashboard({
         </div>
       </div>
 
+      {/* Consistency */}
+      <div
+        className="glass-panel"
+        style={{
+          padding: '20px',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '12px',
+            marginBottom: '16px',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: '11px',
+                fontFamily: 'Orbitron, sans-serif',
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                marginBottom: '4px',
+              }}
+            >
+              {t('consistencyTrend')}
+            </div>
+
+            <div
+              style={{
+                fontSize: '11px',
+                color: 'var(--text-muted)',
+              }}
+            >
+              {t('consistencyDescription')}
+            </div>
+          </div>
+
+          <div
+            className="mono"
+            style={{
+              fontSize: '12px',
+              color:
+                consistency.trend === 'improving'
+                  ? 'var(--success)'
+                  : consistency.trend === 'declining'
+                    ? 'var(--danger)'
+                    : 'var(--text-muted)',
+            }}
+          >
+            {consistency.changePercent > 0
+              ? `+${consistency.changePercent}%`
+              : `${consistency.changePercent}%`}{' '}
+            {t('vsPreviousWeek')}
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns:
+              'repeat(auto-fit, minmax(150px, 1fr))',
+            gap: '12px',
+          }}
+        >
+          <div
+            style={{
+              padding: '14px',
+              borderRadius: '10px',
+              background:
+                'rgba(34,197,94,0.06)',
+              border:
+                '1px solid var(--void-border)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+                marginBottom: '6px',
+              }}
+            >
+              {t('trend')}
+            </div>
+
+            <div
+              style={{
+                fontSize: '18px',
+                color:
+                  consistency.trend === 'improving'
+                    ? 'var(--success)'
+                    : consistency.trend === 'declining'
+                      ? 'var(--danger)'
+                      : 'var(--text-primary)',
+              }}
+            >
+              {t(
+                consistency.trend === 'improving'
+                  ? 'improving'
+                  : consistency.trend === 'declining'
+                    ? 'declining'
+                    : 'stable'
+              )}
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: '14px',
+              borderRadius: '10px',
+              background:
+                'rgba(139,92,246,0.06)',
+              border:
+                '1px solid var(--void-border)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+                marginBottom: '6px',
+              }}
+            >
+              {t('weeklyAverage')}
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                fontSize: '18px',
+                color: 'var(--primary-glow)',
+              }}
+            >
+              {formatHoursMinutes(
+                consistency.averageWeeklyMinutes
+              )}
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: '14px',
+              borderRadius: '10px',
+              background:
+                'rgba(6,182,212,0.06)',
+              border:
+                '1px solid var(--void-border)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+                marginBottom: '6px',
+              }}
+            >
+              {t('bestWeek')}
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                fontSize: '18px',
+                color: 'var(--cyber-glow)',
+              }}
+            >
+              {formatHoursMinutes(
+                consistency.bestWeek?.minutes ?? 0
+              )}
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: '14px',
+              borderRadius: '10px',
+              background:
+                'rgba(245,158,11,0.06)',
+              border:
+                '1px solid var(--void-border)',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+                marginBottom: '6px',
+              }}
+            >
+              {t('strongestConsistency')}
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                fontSize: '18px',
+                color: 'var(--energy)',
+              }}
+            >
+              {consistency.strongestConsistencyWeek
+                ?.studyDays ?? 0}{' '}
+              / 7
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Recommendation */}
       <div
         className="glass-panel"
@@ -986,6 +1333,31 @@ export default function Dashboard({
               <strong>{recommendation.subjectName}</strong>
             </div>
             <div className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              {recommendation.minutes}m
+            </div>
+          </div>
+        )}
+
+        {recommendation.type === 'understudiedSubject' && (
+          <div>
+            <div
+              style={{
+                fontSize: '15px',
+                color: 'var(--text-primary)',
+                marginBottom: '6px',
+              }}
+            >
+              {t('recommendUnderstudied')}{' '}
+              <strong>{recommendation.subjectName}</strong>
+            </div>
+
+            <div
+              className="mono"
+              style={{
+                fontSize: '11px',
+                color: 'var(--text-muted)',
+              }}
+            >
               {recommendation.minutes}m
             </div>
           </div>
