@@ -16,6 +16,8 @@ import {
   CartesianGrid,
 } from 'recharts'
 import { getPersonalRecords } from '../../utils/personalRecords'
+import WeeklyTrend from '../dashboard/WeeklyTrend'
+import SubjectBalance from '../dashboard/SubjectBalance'
 
 interface StatisticsProps {
   sessions: StudySession[]
@@ -541,493 +543,419 @@ export default function Statistics({
         </div>
       </div>
 
-      {/* Streaks */}
+      {/* Analytics workspace */}
       <div
-        className="glass-panel"
         style={{
-          padding: '24px',
+          display: 'grid',
+          gap: '18px',
         }}
       >
         <div
+          className="glass-panel"
           style={{
-            fontSize: '11px',
-            fontFamily:
-              'Orbitron, sans-serif',
-            color:
-              'var(--text-muted)',
-            textTransform:
-              'uppercase',
-            letterSpacing:
-              '0.12em',
-            marginBottom:
-              '18px',
-          }}
-        >
-          STREAKS
-        </div>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns:
-              'repeat(auto-fit, minmax(150px, 1fr))',
-            gap: '12px',
+            padding: '24px',
           }}
         >
           <div
-            className="glass-panel"
             style={{
-              padding: '16px',
-              background:
-                'rgba(139,92,246,0.08)',
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'space-between',
+              gap: '20px',
+              marginBottom: '20px',
+              flexWrap: 'wrap',
             }}
           >
-            <div
-              style={{
-                fontSize: '10px',
-                color:
-                  'var(--text-muted)',
-              }}
-            >
-              CURRENT DAILY
+            <div>
+              <div
+                style={{
+                  fontSize: '11px',
+                  fontFamily: 'Space Grotesk, sans-serif',
+                  fontWeight: 600,
+                  color: 'var(--text-muted)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.12em',
+                }}
+              >
+                FOCUS ANALYTICS
+              </div>
+
+              <div
+                style={{
+                  marginTop: '5px',
+                  fontSize: '12px',
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                Your performance, rhythm, and personal records.
+              </div>
             </div>
 
             <div
               className="mono"
               style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '26px',
-                color:
-                  'var(--primary-glow)',
-              }}
-            >
-              {
-                streakStats.currentDailyStreak
-              }
-            </div>
-
-            <div
-              style={{
-                marginTop:
-                  '4px',
-                fontSize:
-                  '10px',
-                color:
-                  'var(--text-muted)',
-              }}
-            >
-              {t('days')}
-            </div>
-          </div>
-
-          <div
-            className="glass-panel"
-            style={{
-              padding: '16px',
-              background:
-                'rgba(6,182,212,0.08)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '10px',
-                color:
-                  'var(--text-muted)',
-              }}
-            >
-              BEST DAILY
-            </div>
-
-            <div
-              className="mono"
-              style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '26px',
-                color:
-                  'var(--cyber-glow)',
-              }}
-            >
-              {
-                streakStats.bestDailyStreak
-              }
-            </div>
-
-            <div
-              style={{
-                marginTop:
-                  '4px',
-                fontSize:
-                  '10px',
-                color:
-                  'var(--text-muted)',
-              }}
-            >
-              {t('days')}
-            </div>
-          </div>
-
-          <div
-            className="glass-panel"
-            style={{
-              padding: '16px',
-              background:
-                'rgba(20,184,166,0.08)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '10px',
-                color:
-                  'var(--text-muted)',
-              }}
-            >
-              CURRENT WEEKLY
-            </div>
-
-            <div
-              className="mono"
-              style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '26px',
-                color:
-                  'var(--teal-glow)',
-              }}
-            >
-              {
-                streakStats.currentWeeklyStreak
-              }
-            </div>
-
-            <div
-              style={{
-                marginTop:
-                  '4px',
-                fontSize:
-                  '10px',
-                color:
-                  'var(--text-muted)',
-              }}
-            >
-              WEEKS
-            </div>
-          </div>
-
-          <div
-            className="glass-panel"
-            style={{
-              padding: '16px',
-              background:
-                'rgba(245,158,11,0.08)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '10px',
-                color:
-                  'var(--text-muted)',
-              }}
-            >
-              BEST WEEKLY
-            </div>
-
-            <div
-              className="mono"
-              style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '26px',
-                color:
-                  'var(--energy-glow)',
-              }}
-            >
-              {
-                streakStats.bestWeeklyStreak
-              }
-            </div>
-
-            <div
-              style={{
-                marginTop:
-                  '4px',
-                fontSize:
-                  '10px',
-                color:
-                  'var(--text-muted)',
-              }}
-            >
-              WEEKS
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Personal Records */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '24px',
-        }}
-      >
-        <div
-          style={{
-            fontSize: '11px',
-            fontFamily: 'Orbitron, sans-serif',
-            color: 'var(--text-muted)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.12em',
-            marginBottom: '18px',
-          }}
-        >
-          PERSONAL RECORDS
-        </div>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns:
-              'repeat(auto-fit, minmax(170px, 1fr))',
-            gap: '12px',
-          }}
-        >
-          <div
-            className="glass-panel"
-            style={{
-              padding: '16px',
-              background:
-                'rgba(139,92,246,0.06)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '10px',
+                fontSize: '11px',
                 color: 'var(--text-muted)',
               }}
             >
-              LONGEST SESSION
+              LAST 7 DAYS
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns:
+                'repeat(auto-fit, minmax(150px, 1fr))',
+              gap: '10px',
+            }}
+          >
+            <div
+              style={{
+                padding: '14px',
+                borderRadius: '12px',
+                background: 'rgba(139,92,246,0.07)',
+                border:
+                  '1px solid rgba(139,92,246,0.10)',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '9px',
+                  color: 'var(--text-muted)',
+                  textTransform: 'uppercase',
+                }}
+              >
+                This week
+              </div>
+
+              <div
+                className="mono"
+                style={{
+                  marginTop: '6px',
+                  fontSize: '20px',
+                  color: 'var(--primary-glow)',
+                }}
+              >
+                {formatDuration(
+                  weekFocusSeconds
+                )}
+              </div>
+            </div>
+
+            <div
+              style={{
+                padding: '14px',
+                borderRadius: '12px',
+                background: 'rgba(56,189,248,0.06)',
+                border:
+                  '1px solid rgba(56,189,248,0.09)',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '9px',
+                  color: 'var(--text-muted)',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Sessions
+              </div>
+
+              <div
+                className="mono"
+                style={{
+                  marginTop: '6px',
+                  fontSize: '20px',
+                  color: 'var(--cyber-glow)',
+                }}
+              >
+                {completed.length}
+              </div>
+            </div>
+
+            <div
+              style={{
+                padding: '14px',
+                borderRadius: '12px',
+                background: 'rgba(20,184,166,0.06)',
+                border:
+                  '1px solid rgba(20,184,166,0.09)',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '9px',
+                  color: 'var(--text-muted)',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Average
+              </div>
+
+              <div
+                className="mono"
+                style={{
+                  marginTop: '6px',
+                  fontSize: '20px',
+                  color: 'var(--teal-glow)',
+                }}
+              >
+                {formatDuration(
+                  averageSession
+                )}
+              </div>
+            </div>
+
+            <div
+              style={{
+                padding: '14px',
+                borderRadius: '12px',
+                background: 'rgba(245,158,11,0.06)',
+                border:
+                  '1px solid rgba(245,158,11,0.09)',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '9px',
+                  color: 'var(--text-muted)',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Current streak
+              </div>
+
+              <div
+                className="mono"
+                style={{
+                  marginTop: '6px',
+                  fontSize: '20px',
+                  color: 'var(--energy-glow)',
+                }}
+              >
+                {streakStats.currentDailyStreak}d
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns:
+              'minmax(0, 1.55fr) minmax(280px, 0.85fr)',
+            gap: '18px',
+            alignItems: 'stretch',
+          }}
+        >
+          <WeeklyTrend
+            sessions={sessions}
+          />
+
+          <SubjectBalance
+            sessions={sessions}
+          />
+        </div>
+
+        <div
+          className="glass-panel"
+          style={{
+            padding: '24px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              marginBottom: '18px',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: '11px',
+                  fontFamily: 'Space Grotesk, sans-serif',
+                  fontWeight: 600,
+                  color: 'var(--text-muted)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.12em',
+                }}
+              >
+                PERSONAL RECORDS
+              </div>
+
+              <div
+                style={{
+                  marginTop: '4px',
+                  fontSize: '11px',
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                Your strongest performances so far.
+              </div>
             </div>
 
             <div
               className="mono"
               style={{
-                marginTop: '8px',
-                fontSize: '24px',
-                color: 'var(--primary-glow)',
+                fontSize: '10px',
+                color: 'var(--text-muted)',
               }}
             >
               {formatDuration(
-                personalRecords.longestSessionSeconds
-              )}
-            </div>
-          </div>
-
-          <div
-            className="glass-panel"
-            style={{
-              padding: '16px',
-              background:
-                'rgba(34,197,94,0.06)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '10px',
-                color: 'var(--text-muted)',
-              }}
-            >
-              BEST DAY
-            </div>
-
-            <div
-              className="mono"
-              style={{
-                marginTop: '8px',
-                fontSize: '24px',
-                color: 'var(--success)',
-              }}
-            >
-              {formatMinutesHuman(
-                personalRecords.bestDayMinutes
-              )}
-            </div>
-
-            <div
-              style={{
-                marginTop: '4px',
-                fontSize: '10px',
-                color: 'var(--text-muted)',
-              }}
-            >
-              {personalRecords.bestDayDate ??
-                '—'}
-            </div>
-          </div>
-
-          <div
-            className="glass-panel"
-            style={{
-              padding: '16px',
-              background:
-                'rgba(6,182,212,0.06)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '10px',
-                color: 'var(--text-muted)',
-              }}
-            >
-              BEST WEEK
-            </div>
-
-            <div
-              className="mono"
-              style={{
-                marginTop: '8px',
-                fontSize: '24px',
-                color: 'var(--cyber-glow)',
-              }}
-            >
-              {formatMinutesHuman(
-                personalRecords.bestWeekMinutes
-              )}
-            </div>
-          </div>
-
-          <div
-            className="glass-panel"
-            style={{
-              padding: '16px',
-              background:
-                'rgba(239,68,68,0.06)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '10px',
-                color: 'var(--text-muted)',
-              }}
-            >
-              MOST PRODUCTIVE DAY
-            </div>
-
-            <div
-              style={{
-                marginTop: '8px',
-                fontSize: '15px',
-                color: 'var(--text-primary)',
-              }}
-            >
-              {personalRecords.bestDayWeekday ??
-                '—'}
-            </div>
-
-            <div
-              className="mono"
-              style={{
-                marginTop: '5px',
-                fontSize: '11px',
-                color: 'var(--danger)',
-              }}
-            >
-              {formatMinutesHuman(
-                personalRecords.bestDayAverageMinutes
+                longestSession
               )}{' '}
-              avg ·{' '}
-              {personalRecords.bestDaySessions}{' '}
-              sessions
+              LONGEST
             </div>
           </div>
 
           <div
-            className="glass-panel"
             style={{
-              padding: '16px',
-              background:
-                'rgba(245,158,11,0.06)',
+              display: 'grid',
+              gridTemplateColumns:
+                'repeat(auto-fit, minmax(160px, 1fr))',
+              gap: '10px',
             }}
           >
             <div
               style={{
-                fontSize: '10px',
-                color: 'var(--text-muted)',
+                padding: '14px',
+                borderRadius: '11px',
+                background:
+                  'rgba(139,92,246,0.06)',
               }}
             >
-              BEST SUBJECT
+              <div
+                style={{
+                  fontSize: '9px',
+                  color: 'var(--text-muted)',
+                }}
+              >
+                LONGEST SESSION
+              </div>
+              <div
+                className="mono"
+                style={{
+                  marginTop: '6px',
+                  fontSize: '18px',
+                  color: 'var(--primary-glow)',
+                }}
+              >
+                {formatDuration(
+                  personalRecords.longestSessionSeconds
+                )}
+              </div>
             </div>
 
             <div
               style={{
-                marginTop: '8px',
-                fontSize: '14px',
-                color: 'var(--text-primary)',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-              title={
-                personalRecords.bestSubjectName ??
-                undefined
-              }
-            >
-              {personalRecords.bestSubjectName ??
-                '—'}
-            </div>
-
-            <div
-              className="mono"
-              style={{
-                marginTop: '4px',
-                fontSize: '10px',
-                color: 'var(--text-muted)',
+                padding: '14px',
+                borderRadius: '11px',
+                background:
+                  'rgba(34,197,94,0.05)',
               }}
             >
-              {personalRecords.bestSubjectMinutes}m
-            </div>
-          </div>
-
-          <div
-            className="glass-panel"
-            style={{
-              padding: '16px',
-              background:
-                'rgba(20,184,166,0.06)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '10px',
-                color: 'var(--text-muted)',
-              }}
-            >
-              BEST DAILY STREAK
-            </div>
-
-            <div
-              className="mono"
-              style={{
-                marginTop: '8px',
-                fontSize: '24px',
-                color: 'var(--teal-glow)',
-              }}
-            >
-              {personalRecords.bestDailyStreak}
+              <div
+                style={{
+                  fontSize: '9px',
+                  color: 'var(--text-muted)',
+                }}
+              >
+                BEST DAY
+              </div>
+              <div
+                className="mono"
+                style={{
+                  marginTop: '6px',
+                  fontSize: '18px',
+                  color: 'var(--success)',
+                }}
+              >
+                {formatMinutesHuman(
+                  personalRecords.bestDayMinutes
+                )}
+              </div>
             </div>
 
             <div
               style={{
-                marginTop: '4px',
-                fontSize: '10px',
-                color: 'var(--text-muted)',
+                padding: '14px',
+                borderRadius: '11px',
+                background:
+                  'rgba(56,189,248,0.05)',
               }}
             >
-              {t('days')}
+              <div
+                style={{
+                  fontSize: '9px',
+                  color: 'var(--text-muted)',
+                }}
+              >
+                BEST WEEK
+              </div>
+              <div
+                className="mono"
+                style={{
+                  marginTop: '6px',
+                  fontSize: '18px',
+                  color: 'var(--cyber-glow)',
+                }}
+              >
+                {formatMinutesHuman(
+                  personalRecords.bestWeekMinutes
+                )}
+              </div>
+            </div>
+
+            <div
+              style={{
+                padding: '14px',
+                borderRadius: '11px',
+                background:
+                  'rgba(245,158,11,0.05)',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '9px',
+                  color: 'var(--text-muted)',
+                }}
+              >
+                BEST SUBJECT
+              </div>
+              <div
+                style={{
+                  marginTop: '6px',
+                  fontSize: '14px',
+                  color: 'var(--text-primary)',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+                title={
+                  personalRecords.bestSubjectName ??
+                  undefined
+                }
+              >
+                {personalRecords.bestSubjectName ??
+                  '—'}
+              </div>
+              <div
+                className="mono"
+                style={{
+                  marginTop: '3px',
+                  fontSize: '10px',
+                  color: 'var(--text-muted)',
+                }}
+              >
+                {formatMinutesHuman(
+                  personalRecords.bestSubjectMinutes
+                )}
+              </div>
             </div>
           </div>
         </div>
