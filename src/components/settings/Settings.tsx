@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { useI18n } from '../../useI18n'
+import { useTheme, type ThemeMode } from '../../app/theme'
 
 interface SettingsProps {
   dailyGoal: number
@@ -65,6 +66,8 @@ export default function Settings({
     t,
   } = useI18n()
 
+  const { theme, setTheme } = useTheme()
+
   const selectStyle = {
     padding: '9px',
     background:
@@ -98,6 +101,37 @@ export default function Settings({
         gap: '16px',
       }}
     >
+      {/* Appearance */}
+      <div
+        className="glass-panel"
+        style={{ padding: '24px' }}
+      >
+        <h2 style={{ fontSize: '16px', marginBottom: '20px' }}>
+          {t('appearance')}
+        </h2>
+
+        <label
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+            color: 'var(--text-secondary)',
+            fontSize: '13px',
+          }}
+        >
+          {t('theme')}
+          <select
+            value={theme}
+            onChange={(event) => setTheme(event.target.value as ThemeMode)}
+            style={{ width: '220px', maxWidth: '100%', ...selectStyle }}
+          >
+            <option value="system">{t('themeSystem')}</option>
+            <option value="dark">{t('themeDark')}</option>
+            <option value="light">{t('themeLight')}</option>
+          </select>
+        </label>
+      </div>
+
       {/* Language */}
       <div
         className="glass-panel"

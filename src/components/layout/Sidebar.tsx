@@ -4,14 +4,11 @@ import {
   Plus,
   Trash2,
   X,
-  Settings as SettingsIcon,
-  BarChart3,
   Menu,
 } from 'lucide-react'
 import type { Subject } from '../../types'
+import type { Page } from '../../app/navigation'
 import { useI18n } from '../../useI18n'
-
-export type Page = 'overview' | 'statistics' | 'settings'
 
 interface SidebarProps {
   page: Page
@@ -133,107 +130,42 @@ export default function Sidebar({
         </button>
       </div>
 
-      {/* Overview */}
-      <button
-        onClick={() => handlePageChange('overview')}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          padding: '10px 20px',
-          margin: '0 8px 4px',
-          width: 'calc(100% - 16px)',
-          background:
-            page === 'overview'
-              ? 'var(--void-surface-hover)'
-              : 'transparent',
-          border: 'none',
-          borderRadius: '8px',
-          color:
-            page === 'overview'
-              ? 'var(--text-primary)'
-              : 'var(--text-secondary)',
-          cursor: 'pointer',
-          fontFamily: 'Inter, sans-serif',
-          fontSize: '14px',
-          textAlign: 'left',
-          borderLeft:
-            page === 'overview'
-              ? '2px solid var(--primary)'
-              : '2px solid transparent',
-        }}
-      >
-        <Hexagon size={18} />
-        {!collapsed && t('overview')}
-      </button>
-
-      {/* Statistics */}
-      <button
-        onClick={() => handlePageChange('statistics')}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          padding: '10px 20px',
-          margin: '0 8px 4px',
-          width: 'calc(100% - 16px)',
-          background:
-            page === 'statistics'
-              ? 'var(--void-surface-hover)'
-              : 'transparent',
-          border: 'none',
-          borderRadius: '8px',
-          color:
-            page === 'statistics'
-              ? 'var(--text-primary)'
-              : 'var(--text-secondary)',
-          cursor: 'pointer',
-          fontFamily: 'Inter, sans-serif',
-          fontSize: '14px',
-          textAlign: 'left',
-          borderLeft:
-            page === 'statistics'
-              ? '2px solid var(--cyber-blue)'
-              : '2px solid transparent',
-        }}
-      >
-        <BarChart3 size={18} />
-        {!collapsed && t('statistics')}
-      </button>
-
-      {/* Settings */}
-      <button
-        onClick={() => handlePageChange('settings')}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          padding: '10px 20px',
-          margin: '0 8px 12px',
-          width: 'calc(100% - 16px)',
-          background:
-            page === 'settings'
-              ? 'var(--void-surface-hover)'
-              : 'transparent',
-          border: 'none',
-          borderRadius: '8px',
-          color:
-            page === 'settings'
-              ? 'var(--text-primary)'
-              : 'var(--text-secondary)',
-          cursor: 'pointer',
-          fontFamily: 'Inter, sans-serif',
-          fontSize: '14px',
-          textAlign: 'left',
-          borderLeft:
-            page === 'settings'
-              ? '2px solid var(--energy)'
-              : '2px solid transparent',
-        }}
-      >
-        <SettingsIcon size={18} />
-        {!collapsed && t('settings')}
-      </button>
+      {([
+        ['dashboard', 'dashboard'],
+        ['focus', 'focus'],
+        ['subjects', 'subjects'],
+        ['study-plan', 'studyPlan'],
+        ['statistics', 'statistics'],
+        ['records', 'records'],
+        ['settings', 'settings'],
+      ] as const).map(([item, labelKey]) => (
+        <button
+          key={item}
+          onClick={() => handlePageChange(item)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '10px 20px',
+            margin: '0 8px 4px',
+            width: 'calc(100% - 16px)',
+            background: page === item ? 'var(--void-surface-hover)' : 'transparent',
+            border: 'none',
+            borderRadius: '8px',
+            color: page === item ? 'var(--text-primary)' : 'var(--text-secondary)',
+            cursor: 'pointer',
+            fontFamily: 'Inter, sans-serif',
+            fontSize: '14px',
+            textAlign: 'left',
+            borderLeft: page === item ? '2px solid var(--primary)' : '2px solid transparent',
+          }}
+        >
+          <span style={{ width: '18px', textAlign: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: '11px' }}>
+            {item === 'dashboard' ? '⌂' : item === 'focus' ? '◎' : item === 'subjects' ? '○' : item === 'study-plan' ? '□' : item === 'statistics' ? '▥' : item === 'records' ? '★' : '⚙'}
+          </span>
+          {!collapsed && t(labelKey)}
+        </button>
+      ))}
 
       {/* Subject heading */}
       {!collapsed && (
@@ -529,7 +461,7 @@ export default function Sidebar({
       <button
         className="mobile-menu-button"
         onClick={() => setMobileOpen(true)}
-      aria-label={t('overview')}
+      aria-label={t('dashboard')}
       >
         <Menu size={22} />
       </button>

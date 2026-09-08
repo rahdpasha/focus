@@ -6,12 +6,26 @@ export const translations = {
     english: 'English',
     kurdishSorani: 'کوردی',
     language: 'Language',
+    appearance: 'Appearance',
+    theme: 'Theme',
+    themeSystem: 'System',
+    themeDark: 'Dark',
+    themeLight: 'Light',
 
     // Navigation
+    dashboard: 'Dashboard',
     overview: 'Overview',
     statistics: 'Statistics',
     settings: 'Settings',
     subjects: 'Subjects',
+    studyPlan: 'Study Plan',
+    records: 'Records',
+
+    focusPageQuestion: 'What am I studying right now?',
+    subjectsPageQuestion: 'What am I studying?',
+    studyPlanPageQuestion: 'What should I study today and this week?',
+    recordsPageQuestion: 'What have I achieved?',
+    weeklyFocusGoal: 'Weekly Focus Goal',
 
     // Subjects
     addSubject: 'Add Subject',
@@ -174,12 +188,26 @@ export const translations = {
     english: 'English',
     kurdishSorani: 'کوردی',
     language: 'زمان',
+    appearance: 'ڕووکار',
+    theme: 'بابەتی ڕووکار',
+    themeSystem: 'سیستەم',
+    themeDark: 'تاریک',
+    themeLight: 'ڕووناک',
 
     // Navigation
+    dashboard: 'سەرەکی',
     overview: 'سەرەکی',
     statistics: 'ئامار',
     settings: 'ڕێکخستنەکان',
     subjects: 'بابەتەکان',
+    studyPlan: 'پلانێ خوێندن',
+    records: 'تۆمارەکان',
+
+    focusPageQuestion: 'لە ئێستادا چی دەخوێنم؟',
+    subjectsPageQuestion: 'چی دەخوێنم؟',
+    studyPlanPageQuestion: 'ئەمڕۆ و ئەم هەفتەیە چی بخوێنم؟',
+    recordsPageQuestion: 'چی بەدەستهێناوم؟',
+    weeklyFocusGoal: 'ئامانجی سەرنجی هەفتانە',
 
     // Subjects
     addSubject: 'زیادکردنی بابەت',
