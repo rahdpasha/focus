@@ -65,6 +65,13 @@ export default function StudyPlanPage({ sessions, subjects, weeklyGoal, dailyGoa
       <div className="glass-panel" style={{ padding: '20px' }}>
         <div style={{ color: 'var(--primary-glow)', fontFamily: 'Orbitron, sans-serif', fontSize: '11px', letterSpacing: '0.08em', marginBottom: '12px' }}>TODAY'S PLAN</div>
         <div style={{ color: 'var(--text-muted)', fontSize: '11px', marginBottom: '16px' }}>{plan.totalMinutes}m planned{plan.bestTime ? ` · ${plan.bestTime}` : ''}</div>
+        <div style={{ marginBottom: '14px', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--void-border)', background: 'var(--void-surface-hover)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '10px', letterSpacing: '0.08em' }}>WHY THIS PLAN</div>
+            <div style={{ color: 'var(--primary-glow)', fontSize: '10px', textTransform: 'uppercase' }}>{plan.priority}</div>
+          </div>
+          <div style={{ color: 'var(--text-primary)', fontSize: '12px', marginTop: '7px', lineHeight: 1.5 }}>{plan.rationale}</div>
+        </div>
         <div style={{ display: 'grid', gap: '10px' }}>
           {plan.items.length === 0 ? <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>No plan yet. Start a session to build your study rhythm.</div> : plan.items.map((item, index) => (
             <div key={`${item.subjectId}-${index}`} style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', padding: '14px', borderRadius: '10px', border: '1px solid var(--void-border)' }}>

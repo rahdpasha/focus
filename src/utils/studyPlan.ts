@@ -2,6 +2,7 @@ import type { Subject, StudySession } from '../types'
 import { getProductivityInsights } from './productivityInsights'
 import { getConsistencyInsights } from './consistencyInsights'
 import { getStudyRecommendation } from './studyRecommendations'
+import { getStudyAdvisor } from './studyAdvisor'
 
 export interface StudyPlanItem {
   subjectId: string
@@ -14,6 +15,8 @@ export interface StudyPlan {
   totalMinutes: number
   bestTime: string | null
   items: StudyPlanItem[]
+  rationale: string
+  priority: 'high' | 'medium' | 'low'
 }
 
 export function getStudyPlan(
@@ -32,6 +35,7 @@ export function getStudyPlan(
     subjects,
     weeklyGoal
   )
+  const advisor = getStudyAdvisor(sessions, subjects, weeklyGoal)
 
   const remainingWeekly = Math.max(0, weeklyGoal - insights.thisWeekMinutes)
   const todayMinutes = sessions.reduce((total, session) => {
@@ -59,14 +63,17 @@ export function getStudyPlan(
       : null
 
   if (recommendedSubject) {
+    const recommendedMinutes = Math.min(
+      25,
+      Math.max(15, advisor.action.minutes || 25),
+      target
+    )
+
     items.push({
       subjectId: recommendedSubject.id,
       subjectName:
         recommendedSubject.name,
-      minutes: Math.min(
-        25,
-        target
-      ),
+      minutes: recommendedMinutes,
       reason:
         recommendation.type ===
         'unstudiedSubject'
@@ -146,15 +153,10 @@ export function getStudyPlan(
   }
 
   return {
-    totalMinutes:
-      items.reduce(
-        (sum, item) =>
-          sum + item.minutes,
-        0
-      ),
-    bestTime:
-      insights.bestStudyTime?.label ??
-      null,
+    totalMinutes: items.reduce((sum, item) => sum + item.minutes, 0),
+    bestTime: insights.bestStudyTime?.label ?? null,
     items,
+    rationale: advisor.summary,
+    priority: advisor.priority,
   }
 }
