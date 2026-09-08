@@ -23,8 +23,8 @@ import {
 } from '../../utils/consistencyInsights'
 import { getStudyPlan } from '../../utils/studyPlan'
 import {
-  getStudyRecommendation,
-} from '../../utils/studyRecommendations'
+  getStudyAdvisor,
+} from '../../utils/studyAdvisor'
 
 interface DashboardProps {
   subjects: Subject[]
@@ -287,12 +287,14 @@ export default function Dashboard({
     )
 
 
-  const recommendation =
-    getStudyRecommendation(
+  const advisor =
+    getStudyAdvisor(
       sessions,
       subjects,
       weeklyGoal
     )
+
+  const recommendation = advisor.recommendation
 
   const studyPlan =
     getStudyPlan(

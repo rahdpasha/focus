@@ -201,7 +201,6 @@ export default function Statistics({
       ? 'ku-IQ'
       : 'en-US'
 
-
   const overview = getStatisticsOverview(sessions)
   const completed = sessions.filter((session) => session.completed)
   const todayFocusSeconds = overview.todayFocusSeconds
