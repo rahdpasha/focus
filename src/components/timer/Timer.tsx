@@ -21,13 +21,15 @@ interface TimerProps {
   notificationsEnabled: boolean
 
   onComplete: () => void
+  onSessionStart?: (startedAt: Date) => void
 
   onSessionEnd: (
     duration: number,
     actualDuration: number,
     completed: boolean,
     interruptions: number,
-    totalPausedSeconds: number
+    totalPausedSeconds: number,
+    startedAt: Date
   ) => void
 }
 
@@ -47,6 +49,7 @@ export default function Timer({
   soundVolume,
   notificationsEnabled,
   onComplete,
+  onSessionStart,
   onSessionEnd,
 }: TimerProps) {
   const { t } = useI18n()
@@ -105,6 +108,9 @@ export default function Timer({
 
   const finishedRef =
     useRef(false)
+
+  const sessionStartedAtRef =
+    useRef<Date | null>(null)
 
   const isFocus = mode === 'focus'
 
@@ -265,6 +271,7 @@ export default function Timer({
     setPausedSeconds(0)
     setInterruptionCount(0)
     finishedRef.current = false
+    sessionStartedAtRef.current = null
   }, [])
 
   const handleDurationChange = (
@@ -307,6 +314,12 @@ export default function Timer({
     timerEndRef.current =
       Date.now() +
       timeRemaining * 1000
+
+    if (isFocus && sessionStartedAtRef.current === null) {
+      const startedAt = new Date()
+      sessionStartedAtRef.current = startedAt
+      onSessionStart?.(startedAt)
+    }
 
     setIsStudying(true)
     setIsPaused(false)
@@ -444,7 +457,8 @@ export default function Timer({
         actualDuration,
         true,
         interruptionCount,
-        pausedSeconds
+        pausedSeconds,
+        sessionStartedAtRef.current ?? new Date()
       )
 
       setCompletedFocusSessions(

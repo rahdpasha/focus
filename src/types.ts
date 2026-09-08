@@ -12,6 +12,7 @@ export interface StudySession {
   subjectColor: string
   duration: number
   actualDuration: number
+  startedAt?: Date
   completedAt: Date
   completed: boolean
   interruptions: number

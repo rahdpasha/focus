@@ -51,7 +51,7 @@ export default function FocusPage({
           soundVolume={soundVolume}
           notificationsEnabled={notificationsEnabled}
           onComplete={() => {}}
-          onSessionEnd={(duration, actualDuration, completed, interruptions, totalPausedSeconds) => {
+          onSessionEnd={(duration, actualDuration, completed, interruptions, totalPausedSeconds, startedAt) => {
             if (!activeSubject) return
             onAddSession({
               id: `s${Date.now()}`,
@@ -60,6 +60,7 @@ export default function FocusPage({
               subjectColor: activeSubject.color,
               duration,
               actualDuration,
+              startedAt,
               completedAt: new Date(),
               completed,
               interruptions,

@@ -463,7 +463,8 @@ export default function Dashboard({
     actualDuration: number,
     completed: boolean,
     interruptions: number,
-    totalPausedSeconds: number
+    totalPausedSeconds: number,
+    startedAt: Date
   ) => {
     if (!activeSubject) {
       return
@@ -480,6 +481,7 @@ export default function Dashboard({
         activeSubject.color,
       duration,
       actualDuration,
+      startedAt,
       completedAt:
         new Date(),
       completed,
