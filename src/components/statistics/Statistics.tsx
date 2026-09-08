@@ -3,7 +3,6 @@ import { useI18n } from '../../useI18n'
 import {
   getStartOfWeek,
   getStreakStats,
-  getWeeklyGoalHistory,
   type WeeklyGoalMap,
 } from '../../utils/goalHistory'
 import {
@@ -16,6 +15,7 @@ import {
   CartesianGrid,
 } from 'recharts'
 import { getPersonalRecords } from '../../utils/personalRecords'
+import { getStatisticsOverview, getStatisticsWeeklyHistory } from '../../utils/statisticsInsights'
 import WeeklyTrend from '../dashboard/WeeklyTrend'
 import SubjectBalance from '../dashboard/SubjectBalance'
 
@@ -23,12 +23,6 @@ interface StatisticsProps {
   sessions: StudySession[]
   weeklyGoal: number
   weeklyGoalsHistory: WeeklyGoalMap
-}
-
-function startOfDay(date: Date): Date {
-  const result = new Date(date)
-  result.setHours(0, 0, 0, 0)
-  return result
 }
 
 function formatMinutesHuman(
@@ -207,135 +201,39 @@ export default function Statistics({
       ? 'ku-IQ'
       : 'en-US'
 
-  const completed =
-    sessions.filter(
-      (session) =>
-        session.completed
-    )
 
-  const today =
-    startOfDay(
-      new Date()
-    )
+  const overview = getStatisticsOverview(sessions)
+  const completed = sessions.filter((session) => session.completed)
+  const todayFocusSeconds = overview.todayFocusSeconds
+  const weekFocusSeconds = overview.weekFocusSeconds
+  const totalFocusSeconds = overview.totalFocusSeconds
+  const averageSession = overview.averageSessionSeconds
+  const longestSession = overview.longestSessionSeconds
 
-  const todaySessions =
-    completed.filter(
-      (session) =>
-        startOfDay(
-          new Date(
-            session.completedAt
-          )
-        ).getTime() ===
-        today.getTime()
-    )
-
-  const last7Start =
-    new Date(today)
-
-  last7Start.setDate(
-    last7Start.getDate() -
-      6
+  const weeklyHistory = getStatisticsWeeklyHistory(
+    sessions,
+    weeklyGoalsHistory,
+    weeklyGoal,
+    4
   )
 
-  const last7Sessions =
-    completed.filter(
-      (session) => {
-        const date =
-          startOfDay(
-            new Date(
-              session.completedAt
-            )
-          )
+  const chartData = [...weeklyHistory].reverse().map((item) => ({
+    week: formatWeekLabel(
+      new Date(`${item.weekStart}T00:00:00`),
+      locale,
+      item.weekStart === getWeekKeySafe()
+    ),
+    goal: item.goalMinutes,
+    actual: item.completedMinutes,
+  }))
 
-        return (
-          date >=
-            last7Start &&
-          date <= today
-        )
-      }
-    )
+  const personalRecords = getPersonalRecords(sessions, weeklyGoal)
 
-  const totalFocusSeconds =
-    completed.reduce(
-      (sum, session) =>
-        sum +
-        session.actualDuration,
-      0
-    )
-
-  const todayFocusSeconds =
-    todaySessions.reduce(
-      (sum, session) =>
-        sum +
-        session.actualDuration,
-      0
-    )
-
-  const weekFocusSeconds =
-    last7Sessions.reduce(
-      (sum, session) =>
-        sum +
-        session.actualDuration,
-      0
-    )
-
-  const averageSession =
-    completed.length > 0
-      ? Math.round(
-          totalFocusSeconds /
-            completed.length
-        )
-      : 0
-
-  const longestSession =
-    completed.length > 0
-      ? Math.max(
-          ...completed.map(
-            (session) =>
-              session.actualDuration
-          )
-        )
-      : 0
-
-  const weeklyHistory =
-    getWeeklyGoalHistory(
-      sessions,
-      weeklyGoalsHistory,
-      weeklyGoal,
-      4
-    )
-
-  const chartData =
-    [...weeklyHistory]
-      .reverse()
-      .map((item) => ({
-        week:
-          formatWeekLabel(
-            new Date(
-              `${item.weekStart}T00:00:00`
-            ),
-            locale,
-            item.weekStart ===
-              getWeekKeySafe()
-          ),
-        goal:
-          item.goalMinutes,
-        actual:
-          item.completedMinutes,
-      }))
-
-  const personalRecords =
-    getPersonalRecords(
-      sessions,
-      weeklyGoal
-    )
-
-  const streakStats =
-    getStreakStats(
-      sessions,
-      weeklyGoalsHistory,
-      weeklyGoal
-    )
+  const streakStats = getStreakStats(
+    sessions,
+    weeklyGoalsHistory,
+    weeklyGoal
+  )
 
   return (
     <div

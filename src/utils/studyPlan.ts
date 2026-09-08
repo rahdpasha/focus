@@ -19,7 +19,8 @@ export interface StudyPlan {
 export function getStudyPlan(
   sessions: StudySession[],
   subjects: Subject[],
-  weeklyGoal: number
+  weeklyGoal: number,
+  dailyGoal = 60
 ): StudyPlan {
   const insights = getProductivityInsights(sessions)
   const consistency = getConsistencyInsights(
@@ -32,15 +33,19 @@ export function getStudyPlan(
     weeklyGoal
   )
 
-  const remaining = Math.max(
-    0,
-    weeklyGoal - insights.thisWeekMinutes
-  )
-
-  const target = Math.min(
-    60,
-    Math.max(25, remaining || 25)
-  )
+  const remainingWeekly = Math.max(0, weeklyGoal - insights.thisWeekMinutes)
+  const todayMinutes = sessions.reduce((total, session) => {
+    const timestamp = new Date(session.completedAt).getTime()
+    const now = new Date()
+    const start = new Date(now)
+    start.setHours(0, 0, 0, 0)
+    const end = start.getTime() + 24 * 60 * 60 * 1000
+    return timestamp >= start.getTime() && timestamp < end && session.completed
+      ? total + session.actualDuration / 60
+      : total
+  }, 0)
+  const remainingDaily = Math.max(0, dailyGoal - todayMinutes)
+  const target = Math.min(60, Math.max(25, remainingDaily || (remainingWeekly ? Math.min(remainingWeekly, 60) : 25)))
 
   const items: StudyPlanItem[] = []
 

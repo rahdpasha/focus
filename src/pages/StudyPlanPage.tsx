@@ -1,6 +1,7 @@
 import type { Subject, StudySession } from '../types'
 import { useI18n } from '../useI18n'
 import { getStudyPlan } from '../utils/studyPlan'
+import { getDailyGoalProgress, getWeeklyGoalProgress } from '../utils/goalProgress'
 import PageContainer from './PageContainer'
 
 interface StudyPlanPageProps {
@@ -14,7 +15,9 @@ interface StudyPlanPageProps {
 
 export default function StudyPlanPage({ sessions, subjects, weeklyGoal, dailyGoal, onDailyGoalChange, onWeeklyGoalChange }: StudyPlanPageProps) {
   const { t } = useI18n()
-  const plan = getStudyPlan(sessions, subjects, weeklyGoal)
+  const plan = getStudyPlan(sessions, subjects, weeklyGoal, dailyGoal)
+  const dailyProgress = getDailyGoalProgress(sessions, dailyGoal)
+  const weeklyProgress = getWeeklyGoalProgress(sessions, weeklyGoal)
 
   return (
     <PageContainer>
@@ -37,6 +40,25 @@ export default function StudyPlanPage({ sessions, subjects, weeklyGoal, dailyGoa
               <option value={300}>5h</option><option value={600}>10h</option><option value={900}>15h</option><option value={1200}>20h</option><option value={1500}>25h</option>
             </select>
           </label>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', marginTop: '16px' }}>
+          {[['TODAY', dailyProgress], ['THIS WEEK', weeklyProgress]].map(([label, progress]) => {
+            const value = progress as typeof dailyProgress
+            return (
+              <div key={label as string} style={{ padding: '14px', borderRadius: '10px', border: '1px solid var(--void-border)', background: 'var(--void-surface-hover)' }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: '10px', letterSpacing: '0.08em' }}>{label as string}</div>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '12px', marginTop: '8px' }}>
+                  <div className="mono" style={{ color: 'var(--primary-glow)', fontSize: '18px' }}>{value.minutes}m <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>/ {value.goal}m</span></div>
+                  <div style={{ color: 'var(--text-primary)', fontSize: '11px' }}>{value.percent}%</div>
+                </div>
+                <div style={{ height: '6px', marginTop: '10px', borderRadius: '999px', background: 'var(--void-border)', overflow: 'hidden' }}>
+                  <div style={{ width: `${value.percent}%`, height: '100%', background: 'var(--primary-glow)', transition: 'width 300ms ease' }} />
+                </div>
+                <div style={{ color: 'var(--text-muted)', fontSize: '10px', marginTop: '7px' }}>{value.remaining}m remaining</div>
+              </div>
+            )
+          })}
         </div>
       </div>
 
