@@ -51,6 +51,7 @@ interface DashboardProps {
   soundEnabled: boolean
   soundVolume: number
   notificationsEnabled: boolean
+  onStartRecommendedSession: (subjectId?: string, minutes?: number) => void
 }
 
 function getStartOfDay(
@@ -141,6 +142,7 @@ export default function Dashboard({
   soundEnabled,
   soundVolume,
   notificationsEnabled,
+  onStartRecommendedSession,
 }: DashboardProps) {
   const { t } =
     useI18n()
@@ -1115,6 +1117,23 @@ export default function Dashboard({
             </div>
           </div>
         )}
+        <button
+          type="button"
+          onClick={() => onStartRecommendedSession(advisor.action.subjectId, advisor.action.minutes)}
+          style={{
+            marginTop: '14px',
+            border: '1px solid var(--primary-border)',
+            background: 'var(--primary-soft)',
+            color: 'var(--text-primary)',
+            borderRadius: '10px',
+            padding: '9px 12px',
+            cursor: 'pointer',
+            fontSize: '11px',
+            fontWeight: 600,
+          }}
+        >
+          Start recommended session
+        </button>
       </div>
 
       {/* Daily Goal */}

@@ -22,6 +22,7 @@ interface TimerProps {
 
   onComplete: () => void
   onSessionStart?: (startedAt: Date) => void
+  initialFocusMinutes?: number
 
   onSessionEnd: (
     duration: number,
@@ -51,17 +52,14 @@ export default function Timer({
   onComplete,
   onSessionStart,
   onSessionEnd,
+  initialFocusMinutes = 25,
 }: TimerProps) {
   const { t } = useI18n()
 
-  const [focusDuration, setFocusDuration] =
-    useState(1500)
-
-  const [duration, setDuration] =
-    useState(1500)
-
-  const [timeRemaining, setTimeRemaining] =
-    useState(1500)
+  const initialSeconds = Math.max(1, initialFocusMinutes) * 60
+  const [focusDuration, setFocusDuration] = useState(initialSeconds)
+  const [duration, setDuration] = useState(initialSeconds)
+  const [timeRemaining, setTimeRemaining] = useState(initialSeconds)
 
   const [mode, setMode] =
     useState<TimerMode>('focus')

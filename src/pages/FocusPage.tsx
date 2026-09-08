@@ -12,6 +12,7 @@ interface FocusPageProps {
   soundEnabled: boolean
   soundVolume: number
   notificationsEnabled: boolean
+  initialFocusMinutes?: number
   onAddSession: (session: StudySession) => void
 }
 
@@ -24,6 +25,7 @@ export default function FocusPage({
   soundEnabled,
   soundVolume,
   notificationsEnabled,
+  initialFocusMinutes,
   onAddSession,
 }: FocusPageProps) {
   const { t } = useI18n()
@@ -50,6 +52,7 @@ export default function FocusPage({
           soundEnabled={soundEnabled}
           soundVolume={soundVolume}
           notificationsEnabled={notificationsEnabled}
+          initialFocusMinutes={initialFocusMinutes}
           onComplete={() => {}}
           onSessionEnd={(duration, actualDuration, completed, interruptions, totalPausedSeconds, startedAt) => {
             if (!activeSubject) return

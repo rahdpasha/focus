@@ -17,11 +17,18 @@ const Statistics = lazy(() => import('./components/statistics/Statistics'))
 function App() {
   const { t } = useI18n()
   const [page, setPage] = useState<Page>('dashboard')
+  const [recommendedMinutes, setRecommendedMinutes] = useState<number | undefined>()
   const data = useFocusData(t)
 
   const activeSubject = data.subjects.find(
     (subject) => subject.id === data.activeSubjectId,
   )
+
+  const startRecommendedSession = (subjectId?: string, minutes?: number) => {
+    if (subjectId) data.selectSubject(subjectId)
+    setRecommendedMinutes(minutes)
+    setPage('focus')
+  }
 
   const handleAddSubject = (name: string, color: string) => {
     data.addSubject(name, color)
@@ -74,6 +81,7 @@ function App() {
             soundEnabled={data.settings.soundEnabled}
             soundVolume={data.settings.soundVolume}
             notificationsEnabled={data.settings.notificationsEnabled}
+            onStartRecommendedSession={startRecommendedSession}
           />
         )}
 
@@ -87,6 +95,7 @@ function App() {
             soundEnabled={data.settings.soundEnabled}
             soundVolume={data.settings.soundVolume}
             notificationsEnabled={data.settings.notificationsEnabled}
+            initialFocusMinutes={recommendedMinutes}
             onAddSession={data.addSession}
           />
         )}
