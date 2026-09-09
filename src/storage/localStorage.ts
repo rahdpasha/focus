@@ -74,15 +74,15 @@ export function loadSettings(): AppSettings {
   } catch { return defaultSettings }
 }
 
-export function saveSessions(sessions: StudySession[]) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions)) } catch {} }
-export function saveSubjects(subjects: Subject[]) { try { localStorage.setItem(SUBJECTS_KEY, JSON.stringify(subjects)) } catch {} }
-export function saveDailyGoal(goal: number) { try { localStorage.setItem(GOAL_KEY, String(goal)) } catch {} }
-export function saveWeeklyGoal(goal: number) { try { localStorage.setItem(WEEKLY_GOAL_KEY, String(goal)) } catch {} }
-export function saveWeeklyGoalsHistory(goals: WeeklyGoalMap) { try { localStorage.setItem(WEEKLY_GOALS_HISTORY_KEY, JSON.stringify(goals)) } catch {} }
+export function saveSessions(sessions: StudySession[]) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions)) } catch { /* Ignore storage errors. */ } }
+export function saveSubjects(subjects: Subject[]) { try { localStorage.setItem(SUBJECTS_KEY, JSON.stringify(subjects)) } catch { /* Ignore storage errors. */ } }
+export function saveDailyGoal(goal: number) { try { localStorage.setItem(GOAL_KEY, String(goal)) } catch { /* Ignore storage errors. */ } }
+export function saveWeeklyGoal(goal: number) { try { localStorage.setItem(WEEKLY_GOAL_KEY, String(goal)) } catch { /* Ignore storage errors. */ } }
+export function saveWeeklyGoalsHistory(goals: WeeklyGoalMap) { try { localStorage.setItem(WEEKLY_GOALS_HISTORY_KEY, JSON.stringify(goals)) } catch { /* Ignore storage errors. */ } }
 export function saveActiveSubject(id: string | null) {
-  try { if (id) localStorage.setItem(ACTIVE_SUBJECT_KEY, id); else localStorage.removeItem(ACTIVE_SUBJECT_KEY) } catch {}
+  try { if (id) localStorage.setItem(ACTIVE_SUBJECT_KEY, id); else localStorage.removeItem(ACTIVE_SUBJECT_KEY) } catch { /* Ignore storage errors. */ }
 }
-export function saveSettings(settings: AppSettings) { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch {} }
+export function saveSettings(settings: AppSettings) { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch { /* Ignore storage errors. */ } }
 
 export const localStorageStore: FocusDataStore = {
   load(): FocusDataSnapshot {

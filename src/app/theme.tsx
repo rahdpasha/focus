@@ -1,6 +1,6 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
   createContext,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -15,7 +15,7 @@ type ThemeContextValue = {
 }
 
 const THEME_KEY = 'focus-theme'
-const ThemeContext = createContext<ThemeContextValue | null>(null)
+export const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 function loadTheme(): ThemeMode {
   try {
@@ -68,8 +68,3 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }
 
-export function useTheme() {
-  const context = useContext(ThemeContext)
-  if (!context) throw new Error('useTheme must be used inside ThemeProvider')
-  return context
-}

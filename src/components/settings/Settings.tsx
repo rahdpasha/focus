@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { useI18n } from '../../useI18n'
-import { useTheme, type ThemeMode } from '../../app/theme'
+import { type ThemeMode } from '../../app/theme'
+import { useTheme } from '../../app/useTheme'
 import type { AppSettings } from '../../app/settings'
 
 interface SettingsProps {
