@@ -2,6 +2,7 @@ import Timer from '../components/timer/Timer'
 import type { Subject, StudySession } from '../types'
 import { useI18n } from '../useI18n'
 import PageContainer from './PageContainer'
+import PageHeader from '../components/layout/PageHeader'
 
 interface FocusPageProps {
   activeSubject: Subject | undefined
@@ -32,14 +33,7 @@ export default function FocusPage({
 
   return (
     <PageContainer>
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '24px' }}>
-          {t('focus')}
-        </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '6px' }}>
-          {t('focusPageQuestion')}
-        </p>
-      </div>
+      <PageHeader title={t('focus')} description={t('focusPageQuestion')} />
 
       <div className="glass-panel" style={{ padding: '48px', display: 'flex', justifyContent: 'center' }}>
         <Timer

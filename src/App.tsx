@@ -1,8 +1,8 @@
 import { lazy, Suspense, useState } from 'react'
-import Sidebar from './components/layout/Sidebar'
+import AppShell from './components/layout/AppShell'
 import Dashboard from './components/dashboard/Dashboard'
 import Settings from './components/settings/Settings'
-import BackgroundEffects from './components/effects/BackgroundEffects'
+import PageHeader from './components/layout/PageHeader'
 import { useI18n } from './useI18n'
 import type { Page } from './app/navigation'
 import FocusPage from './pages/FocusPage'
@@ -41,27 +41,16 @@ function App() {
   }
 
   return (
-    <>
-      <BackgroundEffects />
+    <AppShell
+      page={page}
+      onPageChange={setPage}
+      subjects={data.subjects}
+      activeSubjectId={data.activeSubjectId}
+      onSelectSubject={handleSelectSubject}
+      onAddSubject={handleAddSubject}
+      onDeleteSubject={data.deleteSubject}
+    >
 
-      <div
-        style={{
-          display: 'flex',
-          minHeight: '100vh',
-          background: 'transparent',
-          position: 'relative',
-          zIndex: 2,
-        }}
-      >
-        <Sidebar
-          page={page}
-          onPageChange={setPage}
-          subjects={data.subjects}
-          activeSubjectId={data.activeSubjectId}
-          onSelectSubject={handleSelectSubject}
-          onAddSubject={handleAddSubject}
-          onDeleteSubject={data.deleteSubject}
-        />
 
         {page === 'dashboard' && (
           <Dashboard
@@ -130,11 +119,7 @@ function App() {
 
         {page === 'statistics' && (
           <PageContainer>
-            <div style={{ marginBottom: '24px' }}>
-              <h1 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '24px' }}>
-                {t('statistics')}
-              </h1>
-            </div>
+            <PageHeader title={t('statistics')} />
             <Suspense
               fallback={
                 <div
@@ -165,11 +150,7 @@ function App() {
 
         {page === 'settings' && (
           <PageContainer>
-            <div style={{ marginBottom: '24px' }}>
-              <h1 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '24px' }}>
-                {t('settings')}
-              </h1>
-            </div>
+            <PageHeader title={t('settings')} />
             <Settings
               settings={data.settings}
               dailyGoal={data.dailyGoal}
@@ -182,8 +163,7 @@ function App() {
             />
           </PageContainer>
         )}
-      </div>
-    </>
+    </AppShell>
   )
 }
 

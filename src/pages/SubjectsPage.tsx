@@ -1,4 +1,5 @@
 import { Plus, Trash2 } from 'lucide-react'
+import PageHeader from '../components/layout/PageHeader'
 import type { Subject } from '../types'
 import { useI18n } from '../useI18n'
 import PageContainer from './PageContainer'
@@ -28,13 +29,7 @@ export default function SubjectsPage({
 
   return (
     <PageContainer>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-        <div>
-          <h1 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '24px' }}>{t('subjects')}</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '6px' }}>{t('subjectsPageQuestion')}</p>
-        </div>
-        <button className="cyber-btn" onClick={addSubject}><Plus size={15} />{t('addSubject')}</button>
-      </div>
+      <PageHeader title={t('subjects')} description={t('subjectsPageQuestion')} action={<button className="cyber-btn" onClick={addSubject}><Plus size={15} />{t('addSubject')}</button>} />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
         {subjects.map((subject) => {

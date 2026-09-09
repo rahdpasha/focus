@@ -3,6 +3,7 @@ import { useI18n } from '../useI18n'
 import { getStudyPlan } from '../utils/studyPlan'
 import { getDailyGoalProgress, getWeeklyGoalProgress } from '../utils/goalProgress'
 import PageContainer from './PageContainer'
+import PageHeader from '../components/layout/PageHeader'
 
 interface StudyPlanPageProps {
   sessions: StudySession[]
@@ -21,10 +22,7 @@ export default function StudyPlanPage({ sessions, subjects, weeklyGoal, dailyGoa
 
   return (
     <PageContainer>
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '24px' }}>{t('studyPlan')}</h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '6px' }}>{t('studyPlanPageQuestion')}</p>
-      </div>
+      <PageHeader title={t('studyPlan')} description={t('studyPlanPageQuestion')} />
 
       <div className="glass-panel" style={{ padding: '20px', marginBottom: '16px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px' }}>

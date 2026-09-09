@@ -9,6 +9,7 @@ import {
 import type { Subject } from '../../types'
 import type { Page } from '../../app/navigation'
 import { useI18n } from '../../useI18n'
+import { SUBJECT_COLORS } from '../../utils/subjectManager'
 
 interface SidebarProps {
   page: Page
@@ -20,16 +21,7 @@ interface SidebarProps {
   onDeleteSubject: (id: string) => void
 }
 
-const colors = [
-  '#8b5cf6',
-  '#3b82f6',
-  '#f59e0b',
-  '#14b8a6',
-  '#ef4444',
-  '#ec4899',
-  '#22c55e',
-  '#06b6d4',
-]
+const colors = SUBJECT_COLORS
 
 export default function Sidebar({
   page,
@@ -46,7 +38,7 @@ export default function Sidebar({
   const [mobileOpen, setMobileOpen] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
   const [name, setName] = useState('')
-  const [color, setColor] = useState(colors[0])
+  const [color, setColor] = useState<string>(colors[0])
 
   const closeMobile = () => {
     setMobileOpen(false)
