@@ -73,3 +73,7 @@ export default defineConfig([
 ])
 
 ```
+
+
+## V2 database architecture
+The provider-neutral database model is documented in `docs/DATABASE_ARCHITECTURE.md`. No database SDK is required by this phase.
