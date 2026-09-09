@@ -16,3 +16,6 @@ export interface FocusDataStore {
   load(): FocusDataSnapshot
   save(snapshot: FocusDataSnapshot): void
 }
+
+/** Current browser-backed implementation used by the app in V1. */
+export type LocalStorageDataStore = FocusDataStore
