@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react"
 import type { Subject, StudySession } from "../types"
 import type { AppSettings } from "../app/settings"
-import { defaultSettings } from "../app/settings"
+import { normalizeSettings } from "../app/settings"
 import { getWeekKey, type WeeklyGoalMap } from "../utils/goalHistory"
+import { createSubject } from "../utils/subjectManager"
 import { localStorageStore } from "../storage/localStorage"
 import type { FocusDataStore } from "../storage/types"
 import type { TranslationKey } from "../translations"
@@ -33,11 +34,12 @@ export function useFocusData(t: Translate, store: FocusDataStore = localStorageS
   const deleteSession = (id: string) => setSessions((previous) => previous.filter((session) => session.id !== id))
 
   const addSubject = (name: string, color: string) => {
-    const trimmedName = name.trim()
-    if (!trimmedName) return
-    const newSubject: Subject = { id: `subject-${Date.now()}`, name: trimmedName, color }
-    setSubjects((previous) => [...previous, newSubject])
-    setActiveSubjectId(newSubject.id)
+    setSubjects((previous) => {
+      const newSubject = createSubject(previous, name, color)
+      if (!newSubject) return previous
+      setActiveSubjectId(newSubject.id)
+      return [...previous, newSubject]
+    })
   }
 
   const deleteSubject = (id: string) => {
@@ -46,7 +48,7 @@ export function useFocusData(t: Translate, store: FocusDataStore = localStorageS
   }
 
   const selectSubject = (id: string | null) => setActiveSubjectId(id)
-  const updateSettings = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => setSettings((previous) => ({ ...previous, [key]: value }))
+  const updateSettings = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => setSettings((previous) => normalizeSettings({ ...previous, [key]: value }))
 
   const exportData = () => {
     const backup = {
@@ -86,7 +88,7 @@ export function useFocusData(t: Translate, store: FocusDataStore = localStorageS
           setWeeklyGoalsHistory(importedWeeklyGoals)
         } else if (typeof data.weeklyGoal === "number" && data.weeklyGoal > 0) setWeeklyGoalsHistory({ [getWeekKey(new Date())]: data.weeklyGoal })
         else setWeeklyGoalsHistory({})
-        if (data.settings && typeof data.settings === "object" && !Array.isArray(data.settings)) setSettings({ ...defaultSettings, ...(data.settings as Partial<AppSettings>) })
+        if (data.settings && typeof data.settings === "object" && !Array.isArray(data.settings)) setSettings(normalizeSettings(data.settings as Partial<AppSettings>))
         if (typeof data.activeSubjectId === "string" || data.activeSubjectId === null) setActiveSubjectId(data.activeSubjectId)
         alert(t("dataImported"))
       } catch { alert(t("invalidBackup")) }

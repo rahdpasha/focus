@@ -1,59 +1,26 @@
 import { useRef } from 'react'
 import { useI18n } from '../../useI18n'
 import { useTheme, type ThemeMode } from '../../app/theme'
+import type { AppSettings } from '../../app/settings'
 
 interface SettingsProps {
+  settings: AppSettings
   dailyGoal: number
   weeklyGoal: number
-  shortBreak: number
-  longBreak: number
-  sessionsBeforeLongBreak: number
-  autoStartBreak: boolean
-  soundEnabled: boolean
-  soundVolume: number
-  notificationsEnabled: boolean
   onDailyGoalChange: (value: number) => void
   onWeeklyGoalChange: (value: number) => void
-  onShortBreakChange: (value: number) => void
-  onLongBreakChange: (value: number) => void
-  onSessionsBeforeLongBreakChange: (
-    value: number
-  ) => void
-  onAutoStartBreakChange: (
-    value: boolean
-  ) => void
-  onSoundEnabledChange: (
-    value: boolean
-  ) => void
-  onSoundVolumeChange: (
-    value: number
-  ) => void
-  onNotificationsEnabledChange: (
-    value: boolean
-  ) => void
+  onSettingChange: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => void
   onExportData: () => void
   onImportData: (file: File) => void
 }
 
 export default function Settings({
+  settings,
   dailyGoal,
   weeklyGoal,
-  shortBreak,
-  longBreak,
-  sessionsBeforeLongBreak,
-  autoStartBreak,
-  soundEnabled,
-  soundVolume,
-  notificationsEnabled,
   onDailyGoalChange,
   onWeeklyGoalChange,
-  onShortBreakChange,
-  onLongBreakChange,
-  onSessionsBeforeLongBreakChange,
-  onAutoStartBreakChange,
-  onSoundEnabledChange,
-  onSoundVolumeChange,
-  onNotificationsEnabledChange,
+  onSettingChange,
   onExportData,
   onImportData,
 }: SettingsProps) {
@@ -327,15 +294,11 @@ export default function Settings({
               type="number"
               min="1"
               max="60"
-              value={shortBreak}
+              value={settings.shortBreak}
               onChange={(event) =>
-                onShortBreakChange(
-                  Math.max(
-                    1,
-                    Number(
-                      event.target.value
-                    )
-                  )
+                onSettingChange(
+                  'shortBreak',
+                  Number(event.target.value)
                 )
               }
               style={inputStyle}
@@ -358,15 +321,11 @@ export default function Settings({
               type="number"
               min="1"
               max="120"
-              value={longBreak}
+              value={settings.longBreak}
               onChange={(event) =>
-                onLongBreakChange(
-                  Math.max(
-                    1,
-                    Number(
-                      event.target.value
-                    )
-                  )
+                onSettingChange(
+                  'longBreak',
+                  Number(event.target.value)
                 )
               }
               style={inputStyle}
@@ -391,17 +350,11 @@ export default function Settings({
               type="number"
               min="1"
               max="10"
-              value={
-                sessionsBeforeLongBreak
-              }
+              value={settings.sessionsBeforeLongBreak}
               onChange={(event) =>
-                onSessionsBeforeLongBreakChange(
-                  Math.max(
-                    1,
-                    Number(
-                      event.target.value
-                    )
-                  )
+                onSettingChange(
+                  'sessionsBeforeLongBreak',
+                  Number(event.target.value)
                 )
               }
               style={inputStyle}
@@ -423,9 +376,10 @@ export default function Settings({
         >
           <input
             type="checkbox"
-            checked={autoStartBreak}
+            checked={settings.autoStartBreak}
             onChange={(event) =>
-              onAutoStartBreakChange(
+              onSettingChange(
+                'autoStartBreak',
                 event.target.checked
               )
             }
@@ -467,9 +421,10 @@ export default function Settings({
         >
           <input
             type="checkbox"
-            checked={soundEnabled}
+            checked={settings.soundEnabled}
             onChange={(event) =>
-              onSoundEnabledChange(
+              onSettingChange(
+                'soundEnabled',
                 event.target.checked
               )
             }
@@ -495,13 +450,12 @@ export default function Settings({
             min="0"
             max="100"
             step="1"
-            value={soundVolume}
-            disabled={!soundEnabled}
+            value={settings.soundVolume}
+            disabled={!settings.soundEnabled}
             onChange={(event) =>
-              onSoundVolumeChange(
-                Number(
-                  event.target.value
-                )
+              onSettingChange(
+                'soundVolume',
+                Number(event.target.value)
               )
             }
           />
@@ -514,7 +468,7 @@ export default function Settings({
                 'var(--text-muted)',
             }}
           >
-            {soundVolume}%
+            {settings.soundVolume}%
           </span>
         </label>
       </div>
@@ -548,11 +502,10 @@ export default function Settings({
         >
           <input
             type="checkbox"
-            checked={
-              notificationsEnabled
-            }
+            checked={settings.notificationsEnabled}
             onChange={(event) =>
-              onNotificationsEnabledChange(
+              onSettingChange(
+                'notificationsEnabled',
                 event.target.checked
               )
             }

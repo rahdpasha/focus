@@ -171,24 +171,12 @@ function App() {
               </h1>
             </div>
             <Settings
+              settings={data.settings}
               dailyGoal={data.dailyGoal}
               weeklyGoal={data.weeklyGoal}
-              onWeeklyGoalChange={data.setWeeklyGoal}
-              shortBreak={data.settings.shortBreak}
-              longBreak={data.settings.longBreak}
-              sessionsBeforeLongBreak={data.settings.sessionsBeforeLongBreak}
-              autoStartBreak={data.settings.autoStartBreak}
-              soundEnabled={data.settings.soundEnabled}
-              soundVolume={data.settings.soundVolume}
-              notificationsEnabled={data.settings.notificationsEnabled}
               onDailyGoalChange={data.setDailyGoal}
-              onShortBreakChange={(value) => data.updateSettings('shortBreak', value)}
-              onLongBreakChange={(value) => data.updateSettings('longBreak', value)}
-              onSessionsBeforeLongBreakChange={(value) => data.updateSettings('sessionsBeforeLongBreak', value)}
-              onAutoStartBreakChange={(value) => data.updateSettings('autoStartBreak', value)}
-              onSoundEnabledChange={(value) => data.updateSettings('soundEnabled', value)}
-              onSoundVolumeChange={(value) => data.updateSettings('soundVolume', value)}
-              onNotificationsEnabledChange={(value) => data.updateSettings('notificationsEnabled', value)}
+              onWeeklyGoalChange={data.setWeeklyGoal}
+              onSettingChange={data.updateSettings}
               onExportData={data.exportData}
               onImportData={data.importData}
             />

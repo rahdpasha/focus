@@ -2,6 +2,7 @@ import { Plus, Trash2 } from 'lucide-react'
 import type { Subject } from '../types'
 import { useI18n } from '../useI18n'
 import PageContainer from './PageContainer'
+import { SUBJECT_COLORS } from '../utils/subjectManager'
 
 interface SubjectsPageProps {
   subjects: Subject[]
@@ -19,11 +20,10 @@ export default function SubjectsPage({
   onDeleteSubject,
 }: SubjectsPageProps) {
   const { t } = useI18n()
-  const colors = ['#8b5cf6', '#3b82f6', '#f59e0b', '#14b8a6', '#ef4444', '#ec4899', '#22c55e', '#06b6d4']
 
   const addSubject = () => {
     const name = window.prompt(t('subjectName'))?.trim()
-    if (name) onAddSubject(name, colors[subjects.length % colors.length])
+    if (name) onAddSubject(name, SUBJECT_COLORS[subjects.length % SUBJECT_COLORS.length])
   }
 
   return (
