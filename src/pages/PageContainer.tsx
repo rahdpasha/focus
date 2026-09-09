@@ -11,6 +11,7 @@ export default function PageContainer({ children }: PageContainerProps) {
         flex: 1,
         minWidth: 0,
         padding: '32px',
+        boxSizing: 'border-box',
         overflowY: 'auto',
       }}
     >

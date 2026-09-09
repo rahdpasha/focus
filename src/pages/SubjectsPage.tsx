@@ -1,5 +1,5 @@
-import { Plus, Trash2 } from 'lucide-react'
 import PageHeader from '../components/layout/PageHeader'
+import { Plus, Trash2 } from 'lucide-react'
 import type { Subject } from '../types'
 import { useI18n } from '../useI18n'
 import PageContainer from './PageContainer'
