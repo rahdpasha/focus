@@ -6,4 +6,7 @@ export type {
   AuthUser,
 } from './types'
 
-export { UnconfiguredAuthProvider } from './provider'
+export {
+  SupabaseAuthProvider,
+  UnconfiguredAuthProvider,
+} from './provider'

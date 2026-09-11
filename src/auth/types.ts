@@ -19,6 +19,11 @@ export interface AuthState {
 
 export interface AuthProvider {
   getSession(): Promise<AuthSession | null>
-  signIn(): Promise<AuthSession>
+  signIn(email: string, password: string): Promise<AuthSession>
+  signUp(
+    email: string,
+    password: string,
+    displayName?: string,
+  ): Promise<AuthSession | null>
   signOut(): Promise<void>
 }
