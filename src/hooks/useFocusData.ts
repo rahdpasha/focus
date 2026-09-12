@@ -28,6 +28,9 @@ export function useFocusData(
   const cloudHydrated = useRef(false)
   const cloudSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const cloudHydrationStarted = useRef(false)
+  const cloudSaveInFlight = useRef(false)
+  const queuedCloudSnapshot = useRef<typeof initial | null>(null)
+  const lastCloudFingerprint = useRef<string | null>(null)
 
   useEffect(() => {
     store.save({
@@ -57,35 +60,61 @@ export function useFocusData(
 
     void (async () => {
       try {
-        const cloudSnapshot = await loadSupabaseSnapshot(authSession.user.id)
+        const cloudSnapshot = await loadSupabaseSnapshot(
+          authSession.user.id,
+        )
 
         const cloudHasData =
           cloudSnapshot.subjects.length > 0 ||
           cloudSnapshot.sessions.length > 0 ||
-          Object.keys(cloudSnapshot.weeklyGoalsHistory).length > 0
+          Object.keys(
+            cloudSnapshot.weeklyGoalsHistory,
+          ).length > 0
 
         const localHasData =
           initial.subjects.length > 0 ||
           initial.sessions.length > 0 ||
-          Object.keys(initial.weeklyGoalsHistory).length > 0
+          Object.keys(
+            initial.weeklyGoalsHistory,
+          ).length > 0
 
         if (!cloudHasData && localHasData) {
-          await saveSupabaseSnapshot(initial, authSession.user.id)
+          await saveSupabaseSnapshot(
+            initial,
+            authSession.user.id,
+          )
+
+          lastCloudFingerprint.current =
+            JSON.stringify(initial)
+
           cloudHydrated.current = true
           return
         }
 
         setSubjects(cloudSnapshot.subjects)
-        setActiveSubjectId(cloudSnapshot.activeSubjectId)
+        setActiveSubjectId(
+          cloudSnapshot.activeSubjectId,
+        )
         setSessions(cloudSnapshot.sessions)
         setDailyGoal(cloudSnapshot.dailyGoal)
-        setWeeklyGoalState(cloudSnapshot.weeklyGoal)
-        setWeeklyGoalsHistory(cloudSnapshot.weeklyGoalsHistory)
+        setWeeklyGoalState(
+          cloudSnapshot.weeklyGoal,
+        )
+        setWeeklyGoalsHistory(
+          cloudSnapshot.weeklyGoalsHistory,
+        )
         setSettings(cloudSnapshot.settings)
+
+        lastCloudFingerprint.current =
+          JSON.stringify(cloudSnapshot)
 
         cloudHydrated.current = true
       } catch (error) {
-        console.error("FOCUS cloud hydration failed:", error)
+        console.error(
+          "FOCUS cloud hydration failed:",
+          error,
+        )
+
         cloudHydrated.current = true
       }
     })()
@@ -93,10 +122,6 @@ export function useFocusData(
 
   useEffect(() => {
     if (!authSession || !cloudHydrated.current) return
-
-    if (cloudSaveTimer.current) {
-      clearTimeout(cloudSaveTimer.current)
-    }
 
     const snapshot = {
       sessions,
@@ -108,10 +133,84 @@ export function useFocusData(
       settings,
     }
 
+    const fingerprint = JSON.stringify(snapshot)
+
+    if (
+      fingerprint ===
+      lastCloudFingerprint.current
+    ) {
+      return
+    }
+
+    queuedCloudSnapshot.current = snapshot
+
+    if (cloudSaveTimer.current) {
+      clearTimeout(cloudSaveTimer.current)
+    }
+
     cloudSaveTimer.current = setTimeout(() => {
-      void saveSupabaseSnapshot(snapshot, authSession.user.id).catch((error) => {
-        console.error("FOCUS cloud save failed:", error)
-      })
+      const saveLatest = async () => {
+        if (
+          cloudSaveInFlight.current ||
+          !queuedCloudSnapshot.current
+        ) {
+          return
+        }
+
+        cloudSaveInFlight.current = true
+
+        const latestSnapshot =
+          queuedCloudSnapshot.current
+
+        queuedCloudSnapshot.current = null
+
+        try {
+          await saveSupabaseSnapshot(
+            latestSnapshot,
+            authSession.user.id,
+          )
+
+          lastCloudFingerprint.current =
+            JSON.stringify(latestSnapshot)
+        } catch (error) {
+          console.error(
+            "FOCUS cloud save failed:",
+            error,
+          )
+
+          queuedCloudSnapshot.current =
+            latestSnapshot
+        } finally {
+          cloudSaveInFlight.current = false
+
+          if (queuedCloudSnapshot.current) {
+            const nextSnapshot =
+              queuedCloudSnapshot.current
+
+            queuedCloudSnapshot.current = null
+
+            try {
+              await saveSupabaseSnapshot(
+                nextSnapshot,
+                authSession.user.id,
+              )
+
+              lastCloudFingerprint.current =
+                JSON.stringify(nextSnapshot)
+            } catch (error) {
+              console.error(
+                "FOCUS cloud retry failed:",
+                error,
+              )
+
+              queuedCloudSnapshot.current =
+                nextSnapshot
+            }
+          }
+        }
+      }
+
+      void saveLatest()
     }, 800)
 
     return () => {
