@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import type { Subject, StudySession } from "../types"
 import type { AppSettings } from "../app/settings"
 import { normalizeSettings } from "../app/settings"
@@ -7,10 +7,16 @@ import { createSubject } from "../utils/subjectManager"
 import { localStorageStore } from "../storage/localStorage"
 import type { FocusDataStore } from "../storage/types"
 import type { TranslationKey } from "../translations"
+import type { AuthSession } from "../auth/types"
+import { loadSupabaseSnapshot, saveSupabaseSnapshot } from "../storage/supabaseStore"
 
 type Translate = (key: TranslationKey) => string
 
-export function useFocusData(t: Translate, store: FocusDataStore = localStorageStore) {
+export function useFocusData(
+  t: Translate,
+  store: FocusDataStore = localStorageStore,
+  authSession: AuthSession | null = null,
+) {
   const initial = useMemo(() => store.load(), [store])
   const [subjects, setSubjects] = useState<Subject[]>(initial.subjects)
   const [activeSubjectId, setActiveSubjectId] = useState<string | null>(initial.activeSubjectId)
@@ -19,10 +25,110 @@ export function useFocusData(t: Translate, store: FocusDataStore = localStorageS
   const [weeklyGoal, setWeeklyGoalState] = useState(initial.weeklyGoal)
   const [weeklyGoalsHistory, setWeeklyGoalsHistory] = useState<WeeklyGoalMap>(initial.weeklyGoalsHistory)
   const [settings, setSettings] = useState<AppSettings>(initial.settings)
+  const cloudHydrated = useRef(false)
+  const cloudSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const cloudHydrationStarted = useRef(false)
 
   useEffect(() => {
-    store.save({ sessions, subjects, dailyGoal, weeklyGoal, weeklyGoalsHistory, activeSubjectId, settings })
-  }, [store, sessions, subjects, dailyGoal, weeklyGoal, weeklyGoalsHistory, activeSubjectId, settings])
+    store.save({
+      sessions,
+      subjects,
+      dailyGoal,
+      weeklyGoal,
+      weeklyGoalsHistory,
+      activeSubjectId,
+      settings,
+    })
+  }, [
+    store,
+    sessions,
+    subjects,
+    dailyGoal,
+    weeklyGoal,
+    weeklyGoalsHistory,
+    activeSubjectId,
+    settings,
+  ])
+
+  useEffect(() => {
+    if (!authSession || cloudHydrationStarted.current) return
+
+    cloudHydrationStarted.current = true
+
+    void (async () => {
+      try {
+        const cloudSnapshot = await loadSupabaseSnapshot(authSession.user.id)
+
+        const cloudHasData =
+          cloudSnapshot.subjects.length > 0 ||
+          cloudSnapshot.sessions.length > 0 ||
+          Object.keys(cloudSnapshot.weeklyGoalsHistory).length > 0
+
+        const localHasData =
+          initial.subjects.length > 0 ||
+          initial.sessions.length > 0 ||
+          Object.keys(initial.weeklyGoalsHistory).length > 0
+
+        if (!cloudHasData && localHasData) {
+          await saveSupabaseSnapshot(initial, authSession.user.id)
+          cloudHydrated.current = true
+          return
+        }
+
+        setSubjects(cloudSnapshot.subjects)
+        setActiveSubjectId(cloudSnapshot.activeSubjectId)
+        setSessions(cloudSnapshot.sessions)
+        setDailyGoal(cloudSnapshot.dailyGoal)
+        setWeeklyGoalState(cloudSnapshot.weeklyGoal)
+        setWeeklyGoalsHistory(cloudSnapshot.weeklyGoalsHistory)
+        setSettings(cloudSnapshot.settings)
+
+        cloudHydrated.current = true
+      } catch (error) {
+        console.error("FOCUS cloud hydration failed:", error)
+        cloudHydrated.current = true
+      }
+    })()
+  }, [initial, authSession])
+
+  useEffect(() => {
+    if (!authSession || !cloudHydrated.current) return
+
+    if (cloudSaveTimer.current) {
+      clearTimeout(cloudSaveTimer.current)
+    }
+
+    const snapshot = {
+      sessions,
+      subjects,
+      dailyGoal,
+      weeklyGoal,
+      weeklyGoalsHistory,
+      activeSubjectId,
+      settings,
+    }
+
+    cloudSaveTimer.current = setTimeout(() => {
+      void saveSupabaseSnapshot(snapshot, authSession.user.id).catch((error) => {
+        console.error("FOCUS cloud save failed:", error)
+      })
+    }, 800)
+
+    return () => {
+      if (cloudSaveTimer.current) {
+        clearTimeout(cloudSaveTimer.current)
+      }
+    }
+  }, [
+    authSession,
+    sessions,
+    subjects,
+    dailyGoal,
+    weeklyGoal,
+    weeklyGoalsHistory,
+    activeSubjectId,
+    settings,
+  ])
 
   const setWeeklyGoal = (goal: number) => {
     if (!Number.isFinite(goal) || goal <= 0) return
