@@ -7,6 +7,7 @@ import { createSubject } from "../utils/subjectManager"
 import { localStorageStore } from "../storage/localStorage"
 import type { FocusDataStore } from "../storage/types"
 import type { TranslationKey } from "../translations"
+import { supabase } from "../api/supabaseClient"
 import type { AuthSession } from "../auth/types"
 import { loadSupabaseSnapshot, saveSupabaseSnapshot } from "../storage/supabaseStore"
 
@@ -26,6 +27,7 @@ export function useFocusData(
   const [weeklyGoalsHistory, setWeeklyGoalsHistory] = useState<WeeklyGoalMap>(initial.weeklyGoalsHistory)
   const [settings, setSettings] = useState<AppSettings>(initial.settings)
   const cloudHydrated = useRef(false)
+  const [cloudReady, setCloudReady] = useState(false)
   const cloudSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const cloudHydrationStarted = useRef(false)
   const cloudSaveInFlight = useRef(false)
@@ -88,6 +90,7 @@ export function useFocusData(
             JSON.stringify(initial)
 
           cloudHydrated.current = true
+          setCloudReady(true)
           return
         }
 
@@ -109,6 +112,7 @@ export function useFocusData(
           JSON.stringify(cloudSnapshot)
 
         cloudHydrated.current = true
+        setCloudReady(true)
       } catch (error) {
         console.error(
           "FOCUS cloud hydration failed:",
@@ -301,6 +305,174 @@ export function useFocusData(
     reader.onerror = () => alert(t("backupReadFailed"))
     reader.readAsText(file)
   }
+
+  useEffect(() => {
+    console.error(
+      "FOCUS REALTIME EFFECT:",
+      "supabase=",
+      Boolean(supabase),
+      "auth=",
+      Boolean(authSession),
+      "cloudReady=",
+      cloudReady,
+      "user=",
+      authSession?.user.id ?? "none",
+    )
+
+    if (!supabase || !authSession || !cloudReady) {
+      console.error(
+        "FOCUS REALTIME BLOCKED:",
+        !supabase ? "NO SUPABASE" : "",
+        !authSession ? "NO AUTH" : "",
+        !cloudReady ? "CLOUD NOT READY" : "",
+      )
+      return
+    }
+
+    let refreshTimer: ReturnType<typeof setTimeout> | null = null
+    let refreshing = false
+
+    const refreshFromCloud = () => {
+      if (refreshTimer) {
+        clearTimeout(refreshTimer)
+      }
+
+      refreshTimer = setTimeout(() => {
+        if (refreshing) {
+          return
+        }
+
+        refreshing = true
+
+        void loadSupabaseSnapshot(authSession.user.id)
+          .then((cloudSnapshot) => {
+            const fingerprint = JSON.stringify(cloudSnapshot)
+
+            if (
+              fingerprint ===
+              lastCloudFingerprint.current
+            ) {
+              return
+            }
+
+            setSubjects(cloudSnapshot.subjects)
+            setActiveSubjectId(
+              cloudSnapshot.activeSubjectId,
+            )
+            setSessions(cloudSnapshot.sessions)
+            setDailyGoal(cloudSnapshot.dailyGoal)
+            setWeeklyGoalState(
+              cloudSnapshot.weeklyGoal,
+            )
+            setWeeklyGoalsHistory(
+              cloudSnapshot.weeklyGoalsHistory,
+            )
+            setSettings(cloudSnapshot.settings)
+
+            lastCloudFingerprint.current =
+              fingerprint
+          })
+          .catch((error) => {
+            console.error(
+              "FOCUS realtime refresh failed:",
+              error,
+            )
+          })
+          .finally(() => {
+            refreshing = false
+          })
+      }, 300)
+    }
+
+    console.warn(
+      "FOCUS realtime: creating channel",
+      authSession.user.id,
+    )
+
+    const channel = supabase
+      .channel(
+        `focus-sync-${authSession.user.id}`,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "subjects",
+          filter: `user_id=eq.${authSession.user.id}`,
+        },
+        refreshFromCloud,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "study_sessions",
+          filter: `user_id=eq.${authSession.user.id}`,
+        },
+        refreshFromCloud,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "goals",
+          filter: `user_id=eq.${authSession.user.id}`,
+        },
+        refreshFromCloud,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "weekly_goal_history",
+          filter: `user_id=eq.${authSession.user.id}`,
+        },
+        refreshFromCloud,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "user_settings",
+          filter: `user_id=eq.${authSession.user.id}`,
+        },
+        refreshFromCloud,
+      )
+      .subscribe((status, error) => {
+        console.warn(
+          "FOCUS realtime status:",
+          status,
+          error ?? "",
+        )
+
+        if (status === "CHANNEL_ERROR") {
+          console.error(
+            "FOCUS realtime channel error:",
+            error,
+          )
+        }
+
+        if (status === "TIMED_OUT") {
+          console.error(
+            "FOCUS realtime channel timed out:",
+            error,
+          )
+        }
+      })
+
+    return () => {
+      if (refreshTimer) {
+        clearTimeout(refreshTimer)
+      }
+
+      if (supabase) void supabase.removeChannel(channel)
+    }
+  }, [authSession, cloudReady])
 
   return { subjects, activeSubjectId, sessions, dailyGoal, weeklyGoal, weeklyGoalsHistory, settings, setDailyGoal, setWeeklyGoal, setSettings, updateSettings, addSession, deleteSession, addSubject, deleteSubject, selectSubject, exportData, importData }
 }

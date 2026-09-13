@@ -332,12 +332,13 @@ export async function saveSupabaseSnapshot(
                 session.actualDuration * 60,
               ),
             ),
-            started_at: (
+            started_at: new Date(
               session.startedAt ??
-              session.completedAt
+              session.completedAt,
             ).toISOString(),
-            completed_at:
-              session.completedAt.toISOString(),
+            completed_at: new Date(
+              session.completedAt,
+            ).toISOString(),
             completed: session.completed,
             interruptions: Math.max(
               0,

@@ -20,6 +20,9 @@ export function loadSessions(): StudySession[] {
     if (!Array.isArray(parsed)) return []
     return parsed.map((session: StudySession) => ({
       ...session,
+      startedAt: session.startedAt
+        ? new Date(session.startedAt)
+        : undefined,
       completedAt: new Date(session.completedAt),
       totalPausedSeconds: session.totalPausedSeconds ?? 0,
     }))

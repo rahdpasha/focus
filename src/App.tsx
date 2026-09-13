@@ -8,6 +8,8 @@ import { useAuth } from './auth/useAuth'
 import { supabase } from './api/supabaseClient'
 import { useI18n } from './useI18n'
 import type { Page } from './app/navigation'
+import type { TranslationKey } from './translations'
+import type { AuthState } from './auth/types'
 import FocusPage from './pages/FocusPage'
 import SubjectsPage from './pages/SubjectsPage'
 import StudyPlanPage from './pages/StudyPlanPage'
@@ -17,15 +19,52 @@ import PageContainer from './pages/PageContainer'
 
 const Statistics = lazy(() => import('./components/statistics/Statistics'))
 
+type Translate = (key: TranslationKey) => string
+
 function App() {
   const { t } = useI18n()
   const auth = useAuth()
 
+  if (supabase && auth.status === 'loading') {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'grid',
+          placeItems: 'center',
+          background: 'var(--void-bg)',
+          color: 'var(--text-secondary)',
+          fontFamily: 'Orbitron, sans-serif',
+        }}
+      >
+        LOADING FOCUS...
+      </div>
+    )
+  }
+
+  if (supabase && auth.status === 'signed-out') {
+    return <AuthScreen />
+  }
+
+  return <AuthenticatedApp t={t} auth={auth} />
+}
+
+function AuthenticatedApp({
+  t,
+  auth,
+}: {
+  t: Translate
+  auth: AuthState & ReturnType<typeof useAuth>
+}) {
   const [page, setPage] = useState<Page>('dashboard')
   const [recommendedMinutes, setRecommendedMinutes] =
     useState<number | undefined>()
 
-  const data = useFocusData(t)
+  const data = useFocusData(
+    t,
+    undefined,
+    auth.session,
+  )
 
   const activeSubject = data.subjects.find(
     (subject) => subject.id === data.activeSubjectId,
@@ -56,27 +95,6 @@ function App() {
   ) => {
     data.selectSubject(id)
     setPage('dashboard')
-  }
-
-  if (supabase && auth.status === 'loading') {
-    return (
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'grid',
-          placeItems: 'center',
-          background: 'var(--void-bg)',
-          color: 'var(--text-secondary)',
-          fontFamily: 'Orbitron, sans-serif',
-        }}
-      >
-        LOADING FOCUS...
-      </div>
-    )
-  }
-
-  if (supabase && auth.status === 'signed-out') {
-    return <AuthScreen />
   }
 
   return (
@@ -190,7 +208,9 @@ function App() {
             <Statistics
               sessions={data.sessions}
               weeklyGoal={data.weeklyGoal}
-              weeklyGoalsHistory={data.weeklyGoalsHistory}
+              weeklyGoalsHistory={
+                data.weeklyGoalsHistory
+              }
             />
           </Suspense>
         </PageContainer>
