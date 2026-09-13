@@ -5,7 +5,10 @@ import { normalizeSettings } from "../app/settings"
 import { getWeekKey, type WeeklyGoalMap } from "../utils/goalHistory"
 import { createSubject } from "../utils/subjectManager"
 import { localStorageStore } from "../storage/localStorage"
-import type { FocusDataStore } from "../storage/types"
+import type {
+  AdvancedGoal,
+  FocusDataStore,
+} from "../storage/types"
 import type { TranslationKey } from "../translations"
 import { supabase } from "../api/supabaseClient"
 import type { AuthSession } from "../auth/types"
@@ -24,8 +27,12 @@ export function useFocusData(
   const [sessions, setSessions] = useState<StudySession[]>(initial.sessions)
   const [dailyGoal, setDailyGoal] = useState(initial.dailyGoal)
   const [weeklyGoal, setWeeklyGoalState] = useState(initial.weeklyGoal)
-  const [weeklyGoalsHistory, setWeeklyGoalsHistory] = useState<WeeklyGoalMap>(initial.weeklyGoalsHistory)
-  const [settings, setSettings] = useState<AppSettings>(initial.settings)
+  const [weeklyGoalsHistory, setWeeklyGoalsHistory] =
+    useState<WeeklyGoalMap>(initial.weeklyGoalsHistory)
+  const [advancedGoals, setAdvancedGoals] =
+    useState<AdvancedGoal[]>(initial.advancedGoals)
+  const [settings, setSettings] =
+    useState<AppSettings>(initial.settings)
   const cloudHydrated = useRef(false)
   const [cloudReady, setCloudReady] = useState(false)
   const cloudSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -41,6 +48,7 @@ export function useFocusData(
       dailyGoal,
       weeklyGoal,
       weeklyGoalsHistory,
+      advancedGoals,
       activeSubjectId,
       settings,
     })
@@ -51,6 +59,7 @@ export function useFocusData(
     dailyGoal,
     weeklyGoal,
     weeklyGoalsHistory,
+    advancedGoals,
     activeSubjectId,
     settings,
   ])
@@ -106,6 +115,7 @@ export function useFocusData(
         setWeeklyGoalsHistory(
           cloudSnapshot.weeklyGoalsHistory,
         )
+        setAdvancedGoals(cloudSnapshot.advancedGoals)
         setSettings(cloudSnapshot.settings)
 
         lastCloudFingerprint.current =
@@ -133,6 +143,7 @@ export function useFocusData(
       dailyGoal,
       weeklyGoal,
       weeklyGoalsHistory,
+      advancedGoals,
       activeSubjectId,
       settings,
     }
@@ -229,6 +240,7 @@ export function useFocusData(
     dailyGoal,
     weeklyGoal,
     weeklyGoalsHistory,
+    advancedGoals,
     activeSubjectId,
     settings,
   ])
@@ -259,11 +271,66 @@ export function useFocusData(
   const selectSubject = (id: string | null) => setActiveSubjectId(id)
   const updateSettings = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => setSettings((previous) => normalizeSettings({ ...previous, [key]: value }))
 
+  const addAdvancedGoal = (
+    title: string,
+    targetMinutes: number,
+    deadline: string,
+    priority: AdvancedGoal["priority"],
+  ) => {
+    const cleanTitle = title.trim()
+    const safeTarget = Math.max(1, Math.round(targetMinutes))
+
+    if (!cleanTitle || !deadline || !Number.isFinite(safeTarget)) {
+      return
+    }
+
+    const goal: AdvancedGoal = {
+      id: `goal-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      title: cleanTitle,
+      targetMinutes: safeTarget,
+      deadline: new Date(deadline).toISOString(),
+      priority,
+      status: "active",
+      createdAt: new Date().toISOString(),
+    }
+
+    setAdvancedGoals((previous) => [goal, ...previous])
+  }
+
+  const updateAdvancedGoal = (
+    id: string,
+    patch: Partial<Omit<AdvancedGoal, "id" | "createdAt">>,
+  ) => {
+    setAdvancedGoals((previous) =>
+      previous.map((goal) =>
+        goal.id === id
+          ? {
+              ...goal,
+              ...patch,
+            }
+          : goal,
+      ),
+    )
+  }
+
+  const deleteAdvancedGoal = (id: string) => {
+    setAdvancedGoals((previous) =>
+      previous.filter((goal) => goal.id !== id),
+    )
+  }
+
   const exportData = () => {
     const backup = {
-      version: 3,
+      version: 4,
       exportedAt: new Date().toISOString(),
-      sessions, subjects, dailyGoal, weeklyGoal, weeklyGoalsHistory, settings, activeSubjectId,
+      sessions,
+      subjects,
+      dailyGoal,
+      weeklyGoal,
+      weeklyGoalsHistory,
+      advancedGoals,
+      settings,
+      activeSubjectId,
     }
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" })
     const url = URL.createObjectURL(blob)
@@ -284,6 +351,29 @@ export function useFocusData(
         if (!Array.isArray(data.subjects)) throw new Error("Invalid subjects")
         const importedSessions: StudySession[] = data.sessions.map((session: StudySession) => ({ ...session, completedAt: new Date(session.completedAt), totalPausedSeconds: session.totalPausedSeconds ?? 0 }))
         setSessions(importedSessions); setSubjects(data.subjects as Subject[])
+
+        if (Array.isArray(data.advancedGoals)) {
+          setAdvancedGoals(
+            data.advancedGoals.filter((goal): goal is AdvancedGoal => {
+              if (!goal || typeof goal !== "object") return false
+              const value = goal as Record<string, unknown>
+              return (
+                typeof value.id === "string" &&
+                typeof value.title === "string" &&
+                typeof value.targetMinutes === "number" &&
+                typeof value.deadline === "string" &&
+                (value.priority === "low" ||
+                  value.priority === "medium" ||
+                  value.priority === "high") &&
+                (value.status === "active" ||
+                  value.status === "completed") &&
+                typeof value.createdAt === "string"
+              )
+            }),
+          )
+        } else {
+          setAdvancedGoals([])
+        }
         if (typeof data.dailyGoal === "number" && data.dailyGoal > 0) setDailyGoal(data.dailyGoal)
         if (typeof data.weeklyGoal === "number" && data.weeklyGoal > 0) setWeeklyGoal(data.weeklyGoal)
         if (data.weeklyGoalsHistory && typeof data.weeklyGoalsHistory === "object" && !Array.isArray(data.weeklyGoalsHistory)) {
@@ -367,6 +457,7 @@ export function useFocusData(
             setWeeklyGoalsHistory(
               cloudSnapshot.weeklyGoalsHistory,
             )
+            setAdvancedGoals(cloudSnapshot.advancedGoals)
             setSettings(cloudSnapshot.settings)
 
             lastCloudFingerprint.current =
@@ -438,6 +529,16 @@ export function useFocusData(
         {
           event: "*",
           schema: "public",
+          table: "advanced_goals",
+          filter: `user_id=eq.${authSession.user.id}`,
+        },
+        refreshFromCloud,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
           table: "user_settings",
           filter: `user_id=eq.${authSession.user.id}`,
         },
@@ -474,5 +575,28 @@ export function useFocusData(
     }
   }, [authSession, cloudReady])
 
-  return { subjects, activeSubjectId, sessions, dailyGoal, weeklyGoal, weeklyGoalsHistory, settings, setDailyGoal, setWeeklyGoal, setSettings, updateSettings, addSession, deleteSession, addSubject, deleteSubject, selectSubject, exportData, importData }
+  return {
+    subjects,
+    activeSubjectId,
+    sessions,
+    dailyGoal,
+    weeklyGoal,
+    weeklyGoalsHistory,
+    advancedGoals,
+    settings,
+    setDailyGoal,
+    setWeeklyGoal,
+    setSettings,
+    updateSettings,
+    addSession,
+    deleteSession,
+    addSubject,
+    deleteSubject,
+    selectSubject,
+    addAdvancedGoal,
+    updateAdvancedGoal,
+    deleteAdvancedGoal,
+    exportData,
+    importData,
+  }
 }

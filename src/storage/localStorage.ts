@@ -1,6 +1,7 @@
 import { subjects as defaultSubjects } from "../data/subjects"
 import type { Subject, StudySession } from "../types"
 import { type WeeklyGoalMap } from "../utils/goalHistory"
+import type { AdvancedGoal } from "./types"
 import { defaultSettings, type AppSettings } from "../app/settings"
 import type { FocusDataSnapshot, FocusDataStore } from "./types"
 
@@ -9,6 +10,7 @@ export const SUBJECTS_KEY = "focus-subjects"
 export const GOAL_KEY = "focus-daily-goal"
 export const WEEKLY_GOAL_KEY = "focus-weekly-goal"
 export const WEEKLY_GOALS_HISTORY_KEY = "focus-weekly-goals-history"
+export const ADVANCED_GOALS_KEY = "focus-advanced-goals"
 export const ACTIVE_SUBJECT_KEY = "focus-active-subject"
 export const SETTINGS_KEY = "focus-settings"
 
@@ -48,6 +50,43 @@ function loadPositiveNumber(key: string, fallback: number): number {
 
 export function loadDailyGoal(): number { return loadPositiveNumber(GOAL_KEY, 120) }
 export function loadWeeklyGoal(): number { return loadPositiveNumber(WEEKLY_GOAL_KEY, 600) }
+
+export function loadAdvancedGoals(): AdvancedGoal[] {
+  try {
+    const raw = localStorage.getItem(ADVANCED_GOALS_KEY)
+    if (!raw) return []
+
+    const parsed: unknown = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+
+    return parsed.filter((goal): goal is AdvancedGoal => {
+      if (!goal || typeof goal !== "object") return false
+      const value = goal as Record<string, unknown>
+      return (
+        typeof value.id === "string" &&
+        typeof value.title === "string" &&
+        typeof value.targetMinutes === "number" &&
+        typeof value.deadline === "string" &&
+        (value.priority === "low" ||
+          value.priority === "medium" ||
+          value.priority === "high") &&
+        (value.status === "active" ||
+          value.status === "completed") &&
+        typeof value.createdAt === "string"
+      )
+    })
+  } catch {
+    return []
+  }
+}
+
+export function saveAdvancedGoals(goals: AdvancedGoal[]) {
+  try {
+    localStorage.setItem(ADVANCED_GOALS_KEY, JSON.stringify(goals))
+  } catch {
+    /* Ignore storage errors. */
+  }
+}
 
 export function loadWeeklyGoalsHistory(): WeeklyGoalMap {
   try {
@@ -95,6 +134,7 @@ export const localStorageStore: FocusDataStore = {
       dailyGoal: loadDailyGoal(),
       weeklyGoal: loadWeeklyGoal(),
       weeklyGoalsHistory: loadWeeklyGoalsHistory(),
+      advancedGoals: loadAdvancedGoals(),
       activeSubjectId: loadActiveSubject(),
       settings: loadSettings(),
     }
@@ -105,6 +145,7 @@ export const localStorageStore: FocusDataStore = {
     saveDailyGoal(snapshot.dailyGoal)
     saveWeeklyGoal(snapshot.weeklyGoal)
     saveWeeklyGoalsHistory(snapshot.weeklyGoalsHistory)
+    saveAdvancedGoals(snapshot.advancedGoals)
     saveActiveSubject(snapshot.activeSubjectId)
     saveSettings(snapshot.settings)
   },

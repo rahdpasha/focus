@@ -170,8 +170,12 @@ function AuthenticatedApp({
           subjects={data.subjects}
           weeklyGoal={data.weeklyGoal}
           dailyGoal={data.dailyGoal}
+          advancedGoals={data.advancedGoals}
           onDailyGoalChange={data.setDailyGoal}
           onWeeklyGoalChange={data.setWeeklyGoal}
+          onAddAdvancedGoal={data.addAdvancedGoal}
+          onUpdateAdvancedGoal={data.updateAdvancedGoal}
+          onDeleteAdvancedGoal={data.deleteAdvancedGoal}
         />
       )}
 

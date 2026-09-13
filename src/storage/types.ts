@@ -2,12 +2,25 @@ import type { Subject, StudySession } from "../types"
 import type { AppSettings } from "../app/settings"
 import type { WeeklyGoalMap } from "../utils/goalHistory"
 
+export type AdvancedGoalPriority = "low" | "medium" | "high"
+
+export interface AdvancedGoal {
+  id: string
+  title: string
+  targetMinutes: number
+  deadline: string
+  priority: AdvancedGoalPriority
+  status: "active" | "completed"
+  createdAt: string
+}
+
 export interface FocusDataSnapshot {
   sessions: StudySession[]
   subjects: Subject[]
   dailyGoal: number
   weeklyGoal: number
   weeklyGoalsHistory: WeeklyGoalMap
+  advancedGoals: AdvancedGoal[]
   activeSubjectId: string | null
   settings: AppSettings
 }
