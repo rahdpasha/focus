@@ -14,6 +14,7 @@ import FocusPage from './pages/FocusPage'
 import SubjectsPage from './pages/SubjectsPage'
 import StudyPlanPage from './pages/StudyPlanPage'
 import RecordsPage from './pages/RecordsPage'
+import HistoryPage from './pages/HistoryPage'
 import { useFocusData } from './hooks/useFocusData'
 import PageContainer from './pages/PageContainer'
 
@@ -179,6 +180,12 @@ function AuthenticatedApp({
         <RecordsPage
           sessions={data.sessions}
           weeklyGoal={data.weeklyGoal}
+        />
+      )}
+
+      {page === 'history' && (
+        <HistoryPage
+          sessions={data.sessions}
         />
       )}
 

@@ -20,6 +20,7 @@ export const translations = {
     subjects: 'Subjects',
     studyPlan: 'Study Plan',
     records: 'Records',
+    history: 'History',
 
     focusPageQuestion: 'What am I studying right now?',
     subjectsPageQuestion: 'What am I studying?',
@@ -202,6 +203,7 @@ export const translations = {
     subjects: 'بابەتەکان',
     studyPlan: 'پلانێ خوێندن',
     records: 'تۆمارەکان',
+    history: 'مێژوو',
 
     focusPageQuestion: 'لە ئێستادا چی دەخوێنم؟',
     subjectsPageQuestion: 'چی دەخوێنم؟',

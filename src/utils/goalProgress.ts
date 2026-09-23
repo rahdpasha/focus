@@ -37,7 +37,7 @@ export function getDailyGoalProgress(sessions: StudySession[], goal: number, now
   const end = start + 24 * 60 * 60 * 1000
   const minutes = sessions.reduce((total, session) => {
     const timestamp = new Date(session.completedAt).getTime()
-    return timestamp >= start && timestamp < end && session.completed ? total + session.actualDuration : total
+    return timestamp >= start && timestamp < end && session.completed ? total + session.actualDuration / 60 : total
   }, 0) / 60
   return toGoalProgress(minutes, goal)
 }
@@ -47,7 +47,7 @@ export function getWeeklyGoalProgress(sessions: StudySession[], goal: number, no
   const end = now.getTime()
   const minutes = sessions.reduce((total, session) => {
     const timestamp = new Date(session.completedAt).getTime()
-    return timestamp >= start && timestamp <= end && session.completed ? total + session.actualDuration : total
+    return timestamp >= start && timestamp <= end && session.completed ? total + session.actualDuration / 60 : total
   }, 0) / 60
   return toGoalProgress(minutes, goal)
 }

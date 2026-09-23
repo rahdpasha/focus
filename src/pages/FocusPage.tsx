@@ -49,6 +49,16 @@ export default function FocusPage({
           initialFocusMinutes={initialFocusMinutes}
           onComplete={() => {}}
           onSessionEnd={(duration, actualDuration, completed, interruptions, totalPausedSeconds, startedAt) => {
+            console.log(
+              "FOCUS SESSION END:",
+              {
+                activeSubject: activeSubject?.id,
+                duration,
+                actualDuration,
+                completed,
+              },
+            )
+
             if (!activeSubject) return
             onAddSession({
               id: `s${Date.now()}`,

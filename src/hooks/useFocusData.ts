@@ -5,13 +5,31 @@ import { normalizeSettings } from "../app/settings"
 import { getWeekKey, type WeeklyGoalMap } from "../utils/goalHistory"
 import { createSubject } from "../utils/subjectManager"
 import { localStorageStore } from "../storage/localStorage"
-import type { FocusDataStore } from "../storage/types"
+import type { FocusDataSnapshot, FocusDataStore } from "../storage/types"
 import type { TranslationKey } from "../translations"
 import { supabase } from "../api/supabaseClient"
 import type { AuthSession } from "../auth/types"
-import { loadSupabaseSnapshot, saveSupabaseSnapshot } from "../storage/supabaseStore"
+import {
+  deleteSupabaseSession,
+  deleteSupabaseSubject,
+  loadSupabaseSnapshot,
+  saveSupabaseSnapshot,
+} from "../storage/supabaseStore"
 
 type Translate = (key: TranslationKey) => string
+
+function getCloudFingerprint(
+  snapshot: FocusDataSnapshot,
+): string {
+  return JSON.stringify({
+    sessions: snapshot.sessions,
+    subjects: snapshot.subjects,
+    dailyGoal: snapshot.dailyGoal,
+    weeklyGoal: snapshot.weeklyGoal,
+    weeklyGoalsHistory: snapshot.weeklyGoalsHistory,
+    settings: snapshot.settings,
+  })
+}
 
 export function useFocusData(
   t: Translate,
@@ -87,7 +105,7 @@ export function useFocusData(
           )
 
           lastCloudFingerprint.current =
-            JSON.stringify(initial)
+            getCloudFingerprint(initial)
 
           cloudHydrated.current = true
           setCloudReady(true)
@@ -95,9 +113,19 @@ export function useFocusData(
         }
 
         setSubjects(cloudSnapshot.subjects)
-        setActiveSubjectId(
-          cloudSnapshot.activeSubjectId,
-        )
+        setActiveSubjectId((current) => {
+          const currentStillExists =
+            current !== null &&
+            cloudSnapshot.subjects.some(
+              (subject) => subject.id === current,
+            )
+
+          return currentStillExists
+            ? current
+            : cloudSnapshot.activeSubjectId
+        })
+        
+
         setSessions(cloudSnapshot.sessions)
         setDailyGoal(cloudSnapshot.dailyGoal)
         setWeeklyGoalState(
@@ -109,7 +137,7 @@ export function useFocusData(
         setSettings(cloudSnapshot.settings)
 
         lastCloudFingerprint.current =
-          JSON.stringify(cloudSnapshot)
+          getCloudFingerprint(cloudSnapshot)
 
         cloudHydrated.current = true
         setCloudReady(true)
@@ -137,7 +165,9 @@ export function useFocusData(
       settings,
     }
 
-    const fingerprint = JSON.stringify(snapshot)
+    const fingerprint = getCloudFingerprint(snapshot)
+
+    
 
     if (
       fingerprint ===
@@ -169,13 +199,17 @@ export function useFocusData(
         queuedCloudSnapshot.current = null
 
         try {
+          
+
           await saveSupabaseSnapshot(
             latestSnapshot,
             authSession.user.id,
           )
 
+          
+
           lastCloudFingerprint.current =
-            JSON.stringify(latestSnapshot)
+            getCloudFingerprint(latestSnapshot)
         } catch (error) {
           console.error(
             "FOCUS cloud save failed:",
@@ -199,8 +233,7 @@ export function useFocusData(
                 authSession.user.id,
               )
 
-              lastCloudFingerprint.current =
-                JSON.stringify(nextSnapshot)
+              lastCloudFingerprint.current = getCloudFingerprint(nextSnapshot)
             } catch (error) {
               console.error(
                 "FOCUS cloud retry failed:",
@@ -239,8 +272,37 @@ export function useFocusData(
     setWeeklyGoalsHistory((previous) => ({ ...previous, [getWeekKey(new Date())]: goal }))
   }
 
-  const addSession = (session: StudySession) => setSessions((previous) => [session, ...previous])
-  const deleteSession = (id: string) => setSessions((previous) => previous.filter((session) => session.id !== id))
+  const addSession = (session: StudySession) => {
+    setSessions((previous) => [session, ...previous])
+  }
+
+  const deleteSession = (id: string) => {
+    const removeLocal = () => {
+      setSessions((previous) =>
+        previous.filter(
+          (session) => session.id !== id,
+        ),
+      )
+    }
+
+    if (authSession) {
+      void deleteSupabaseSession(
+        authSession.user.id,
+        id,
+      )
+        .then(removeLocal)
+        .catch((error) => {
+          console.error(
+            "FOCUS session delete failed:",
+            error,
+          )
+        })
+
+      return
+    }
+
+    removeLocal()
+  }
 
   const addSubject = (name: string, color: string) => {
     setSubjects((previous) => {
@@ -252,8 +314,43 @@ export function useFocusData(
   }
 
   const deleteSubject = (id: string) => {
-    setSubjects((previous) => previous.filter((subject) => subject.id !== id))
-    setActiveSubjectId((current) => current === id ? null : current)
+    const removeLocal = () => {
+      setSubjects((previous) =>
+        previous.filter(
+          (subject) => subject.id !== id,
+        ),
+      )
+
+      setSessions((previous) =>
+        previous.filter(
+          (session) =>
+            session.subjectId !== id,
+        ),
+      )
+
+      setActiveSubjectId(
+        (current) =>
+          current === id ? null : current,
+      )
+    }
+
+    if (authSession) {
+      void deleteSupabaseSubject(
+        authSession.user.id,
+        id,
+      )
+        .then(removeLocal)
+        .catch((error) => {
+          console.error(
+            "FOCUS subject delete failed:",
+            error,
+          )
+        })
+
+      return
+    }
+
+    removeLocal()
   }
 
   const selectSubject = (id: string | null) => setActiveSubjectId(id)
@@ -346,7 +443,7 @@ export function useFocusData(
 
         void loadSupabaseSnapshot(authSession.user.id)
           .then((cloudSnapshot) => {
-            const fingerprint = JSON.stringify(cloudSnapshot)
+            const fingerprint = getCloudFingerprint(cloudSnapshot)
 
             if (
               fingerprint ===
@@ -356,9 +453,19 @@ export function useFocusData(
             }
 
             setSubjects(cloudSnapshot.subjects)
-            setActiveSubjectId(
-              cloudSnapshot.activeSubjectId,
-            )
+            setActiveSubjectId((current) => {
+              const currentStillExists =
+                current !== null &&
+                cloudSnapshot.subjects.some(
+                  (subject) => subject.id === current,
+                )
+
+              return currentStillExists
+                ? current
+                : cloudSnapshot.activeSubjectId
+            })
+            
+
             setSessions(cloudSnapshot.sessions)
             setDailyGoal(cloudSnapshot.dailyGoal)
             setWeeklyGoalState(
@@ -384,10 +491,7 @@ export function useFocusData(
       }, 300)
     }
 
-    console.warn(
-      "FOCUS realtime: creating channel",
-      authSession.user.id,
-    )
+    
 
     const channel = supabase
       .channel(
@@ -444,11 +548,7 @@ export function useFocusData(
         refreshFromCloud,
       )
       .subscribe((status, error) => {
-        console.warn(
-          "FOCUS realtime status:",
-          status,
-          error ?? "",
-        )
+        
 
         if (status === "CHANNEL_ERROR") {
           console.error(
@@ -472,7 +572,7 @@ export function useFocusData(
 
       if (supabase) void supabase.removeChannel(channel)
     }
-  }, [authSession, cloudReady])
+  }, [authSession?.user.id, cloudReady])
 
   return { subjects, activeSubjectId, sessions, dailyGoal, weeklyGoal, weeklyGoalsHistory, settings, setDailyGoal, setWeeklyGoal, setSettings, updateSettings, addSession, deleteSession, addSubject, deleteSubject, selectSubject, exportData, importData }
 }

@@ -5,4 +5,5 @@ export type Page =
   | 'study-plan'
   | 'statistics'
   | 'records'
+  | 'history'
   | 'settings'

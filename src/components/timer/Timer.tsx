@@ -438,17 +438,28 @@ export default function Timer({
 
   const finishFocusSession =
     useCallback(() => {
-      const actualDuration =
-        Math.max(
-          0,
-          focusDuration -
-            pausedSeconds
-        )
+      const startedAt =
+        sessionStartedAtRef.current ??
+        new Date()
+
+      const elapsedSeconds = Math.round(
+        (Date.now() - startedAt.getTime()) / 1000,
+      )
+
+      const actualDuration = Math.max(
+        0,
+        Math.min(
+          focusDuration,
+          elapsedSeconds - pausedSeconds,
+        ),
+      )
 
       playCompletionSound(false)
       sendCompletionNotification(false)
 
       onComplete()
+
+      
 
       onSessionEnd(
         focusDuration,
@@ -595,6 +606,8 @@ export default function Timer({
         )
 
         if (remaining <= 0) {
+          
+
           if (
             intervalRef.current !==
             null
@@ -639,6 +652,8 @@ export default function Timer({
     if (timeRemaining !== 0) {
       return
     }
+
+    
 
     const timeout =
       window.setTimeout(() => {

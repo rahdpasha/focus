@@ -50,8 +50,8 @@ export function migrateLocalDataToRecords(
   const sessions: StudySessionRecord[] = snapshot.sessions.map((session) => {
     const startedAt = asDate(session.startedAt, asDate(session.completedAt, now))
     const completedAt = asDate(session.completedAt, startedAt)
-    const plannedSeconds = Math.max(0, Math.round(session.duration * 60))
-    const actualSeconds = Math.max(0, Math.round(session.actualDuration * 60))
+    const plannedSeconds = Math.max(0, Math.round(session.duration))
+    const actualSeconds = Math.max(0, Math.round(session.actualDuration))
 
     return {
       id: session.id,

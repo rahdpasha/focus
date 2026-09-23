@@ -470,6 +470,8 @@ export default function Dashboard({
     totalPausedSeconds: number,
     startedAt: Date
   ) => {
+    
+
     if (!activeSubject) {
       return
     }

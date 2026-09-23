@@ -129,6 +129,7 @@ export default function Sidebar({
         ['study-plan', 'studyPlan'],
         ['statistics', 'statistics'],
         ['records', 'records'],
+        ['history', 'history'],
         ['settings', 'settings'],
       ] as const).map(([item, labelKey]) => (
         <button
@@ -153,7 +154,21 @@ export default function Sidebar({
           }}
         >
           <span style={{ width: '18px', textAlign: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: '11px' }}>
-            {item === 'dashboard' ? '⌂' : item === 'focus' ? '◎' : item === 'subjects' ? '○' : item === 'study-plan' ? '□' : item === 'statistics' ? '▥' : item === 'records' ? '★' : '⚙'}
+            {item === 'dashboard'
+              ? '⌂'
+              : item === 'focus'
+                ? '◎'
+                : item === 'subjects'
+                  ? '○'
+                  : item === 'study-plan'
+                    ? '□'
+                    : item === 'statistics'
+                      ? '▥'
+                      : item === 'records'
+                        ? '★'
+                        : item === 'history'
+                          ? '◷'
+                          : '⚙'}
           </span>
           {!collapsed && t(labelKey)}
         </button>

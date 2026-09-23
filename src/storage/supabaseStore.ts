@@ -101,8 +101,8 @@ function toStudySession(
     subjectId: clientSubjectId,
     subjectName: subject?.name ?? 'Unknown',
     subjectColor: subject?.color ?? '#8b5cf6',
-    duration: Math.round(row.planned_seconds / 60),
-    actualDuration: Math.round(row.actual_seconds / 60),
+    duration: row.planned_seconds,
+    actualDuration: row.actual_seconds,
     startedAt: row.started_at
       ? new Date(row.started_at)
       : undefined,
@@ -256,37 +256,88 @@ export async function saveSupabaseSnapshot(
   const cloudSubjectByClientId =
     new Map<string, string>()
 
-  if (snapshot.subjects.length > 0) {
-    const subjectRows = snapshot.subjects.map(
-      (subject) => ({
-        client_id: subject.id,
-        user_id: userId,
-        name: subject.name,
-        color: subject.color,
-        icon: subject.icon ?? null,
-        updated_at: now,
-      }),
-    )
+  const {
+    data: cloudSubjectRows,
+    error: cloudSubjectReadError,
+  } = await client
+    .from('subjects')
+    .select('id, client_id')
+    .eq('user_id', userId)
 
-    const { error } = await client
-      .from('subjects')
-      .upsert(subjectRows, {
-        onConflict: 'user_id,client_id',
-      })
+  if (cloudSubjectReadError) {
+    throw cloudSubjectReadError
+  }
+
+  const cloudSubjects =
+    (cloudSubjectRows ?? []) as Array<{
+      id: string
+      client_id: string | null
+    }>
+
+  for (const row of cloudSubjects) {
+    if (row.client_id) {
+      cloudSubjectByClientId.set(
+        row.client_id,
+        row.id,
+      )
+    }
+  }
+
+  const currentSubjectIds = new Set(
+    snapshot.subjects.map(
+      (subject) => subject.id,
+    ),
+  )
+
+  const staleSubjectCloudIds =
+    cloudSubjects
+      .filter(
+        (row) =>
+          !row.client_id ||
+          !currentSubjectIds.has(
+            row.client_id,
+          ),
+      )
+      .map((row) => row.id)
+
+  if (snapshot.subjects.length > 0) {
+    const subjectRows =
+      snapshot.subjects.map(
+        (subject) => ({
+          client_id: subject.id,
+          user_id: userId,
+          name: subject.name,
+          color: subject.color,
+          icon: subject.icon ?? null,
+          updated_at: now,
+        }),
+      )
+
+    const { error } =
+      await client
+        .from('subjects')
+        .upsert(subjectRows, {
+          onConflict:
+            'user_id,client_id',
+        })
 
     if (error) throw error
 
-    const { data, error: subjectReadError } =
-      await client
-        .from('subjects')
-        .select('id, client_id')
-        .eq('user_id', userId)
+    const {
+      data: refreshedSubjectRows,
+      error: refreshedSubjectReadError,
+    } = await client
+      .from('subjects')
+      .select('id, client_id')
+      .eq('user_id', userId)
 
-    if (subjectReadError) {
-      throw subjectReadError
+    if (refreshedSubjectReadError) {
+      throw refreshedSubjectReadError
     }
 
-    for (const row of (data ?? []) as Array<{
+    cloudSubjectByClientId.clear()
+
+    for (const row of (refreshedSubjectRows ?? []) as Array<{
       id: string
       client_id: string | null
     }>) {
@@ -299,70 +350,153 @@ export async function saveSupabaseSnapshot(
     }
   }
 
+  /*
+   * IMPORTANT:
+   * Sessions must be reconciled BEFORE deleting stale subjects
+   * because study_sessions.subject_id uses ON DELETE RESTRICT.
+   */
+  const {
+    data: cloudSessionRows,
+    error: cloudSessionReadError,
+  } = await client
+    .from('study_sessions')
+    .select('id, client_id')
+    .eq('user_id', userId)
+
+  if (cloudSessionReadError) {
+    throw cloudSessionReadError
+  }
+
+  const cloudSessions =
+    (cloudSessionRows ?? []) as Array<{
+      id: string
+      client_id: string | null
+    }>
+
   if (snapshot.sessions.length > 0) {
-    const sessionRows = snapshot.sessions.flatMap(
-      (session) => {
-        const cloudSubjectId =
-          cloudSubjectByClientId.get(
-            session.subjectId,
-          )
+    const sessionRows =
+      snapshot.sessions.flatMap(
+        (session) => {
+          const cloudSubjectId =
+            cloudSubjectByClientId.get(
+              session.subjectId,
+            )
 
-        if (!cloudSubjectId) {
-          console.warn(
-            'Skipping session because its subject is not synced:',
-            session.id,
-          )
-          return []
-        }
+          if (!cloudSubjectId) {
+            console.warn(
+              'Skipping session because its subject is not synced:',
+              session.id,
+            )
+            return []
+          }
 
-        return [
-          {
-            client_id: session.id,
-            user_id: userId,
-            subject_id: cloudSubjectId,
-            planned_seconds: Math.max(
-              0,
-              Math.round(
-                session.duration * 60,
-              ),
-            ),
-            actual_seconds: Math.max(
-              0,
-              Math.round(
-                session.actualDuration * 60,
-              ),
-            ),
-            started_at: new Date(
-              session.startedAt ??
-              session.completedAt,
-            ).toISOString(),
-            completed_at: new Date(
-              session.completedAt,
-            ).toISOString(),
-            completed: session.completed,
-            interruptions: Math.max(
-              0,
-              session.interruptions,
-            ),
-            total_paused_seconds: Math.max(
-              0,
-              session.totalPausedSeconds,
-            ),
-            updated_at: now,
-          },
-        ]
-      },
-    )
+          return [
+            {
+              client_id: session.id,
+              user_id: userId,
+              subject_id: cloudSubjectId,
+              planned_seconds:
+                Math.max(
+                  0,
+                  Math.round(
+                    session.duration,
+                  ),
+                ),
+              actual_seconds:
+                Math.max(
+                  0,
+                  Math.round(
+                    session.actualDuration,
+                  ),
+                ),
+              started_at:
+                new Date(
+                  session.startedAt ??
+                    session.completedAt,
+                ).toISOString(),
+              completed_at:
+                new Date(
+                  session.completedAt,
+                ).toISOString(),
+              completed:
+                session.completed,
+              interruptions:
+                Math.max(
+                  0,
+                  session.interruptions,
+                ),
+              total_paused_seconds:
+                Math.max(
+                  0,
+                  session.totalPausedSeconds,
+                ),
+              updated_at: now,
+            },
+          ]
+        },
+      )
 
     if (sessionRows.length > 0) {
-      const { error } = await client
-        .from('study_sessions')
-        .upsert(sessionRows, {
-          onConflict: 'user_id,client_id',
-        })
+      const { error } =
+        await client
+          .from('study_sessions')
+          .upsert(sessionRows, {
+            onConflict:
+              'user_id,client_id',
+          })
 
       if (error) throw error
     }
+  }
+
+  const currentSessionIds =
+    new Set(
+      snapshot.sessions.map(
+        (session) => session.id,
+      ),
+    )
+
+  const staleSessionCloudIds =
+    cloudSessions
+      .filter(
+        (row) =>
+          !row.client_id ||
+          !currentSessionIds.has(
+            row.client_id,
+          ),
+      )
+      .map((row) => row.id)
+
+  if (
+    staleSessionCloudIds.length > 0
+  ) {
+    const { error } =
+      await client
+        .from('study_sessions')
+        .delete()
+        .eq('user_id', userId)
+        .in(
+          'id',
+          staleSessionCloudIds,
+        )
+
+    if (error) throw error
+  }
+
+  if (
+    staleSubjectCloudIds.length > 0
+  ) {
+    const { error } =
+      await client
+        .from('subjects')
+        .delete()
+        .eq('user_id', userId)
+        .in(
+          'id',
+          staleSubjectCloudIds,
+        )
+
+    if (error) throw error
   }
 
   const { data: existingGoals, error: goalReadError } =
@@ -463,3 +597,68 @@ export async function saveSupabaseSnapshot(
     throw settingsError
   }
 }
+
+export async function deleteSupabaseSession(
+  userId: string,
+  clientId: string,
+): Promise<void> {
+  const client = requireSupabase()
+
+  const { error } = await client
+    .from('study_sessions')
+    .delete()
+    .eq('user_id', userId)
+    .eq('client_id', clientId)
+
+  if (error) {
+    throw error
+  }
+}
+
+export async function deleteSupabaseSubject(
+  userId: string,
+  clientId: string,
+): Promise<void> {
+  const client = requireSupabase()
+
+  const {
+    data: subjectRow,
+    error: subjectLookupError,
+  } = await client
+    .from('subjects')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('client_id', clientId)
+    .maybeSingle()
+
+  if (subjectLookupError) {
+    throw subjectLookupError
+  }
+
+  if (!subjectRow?.id) {
+    return
+  }
+
+  const { error: sessionsError } =
+    await client
+      .from('study_sessions')
+      .delete()
+      .eq('user_id', userId)
+      .eq('subject_id', subjectRow.id)
+
+  if (sessionsError) {
+    throw sessionsError
+  }
+
+  const { error: subjectError } =
+    await client
+      .from('subjects')
+      .delete()
+      .eq('user_id', userId)
+      .eq('id', subjectRow.id)
+
+  if (subjectError) {
+    throw subjectError
+  }
+}
+
