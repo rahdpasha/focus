@@ -49,22 +49,16 @@ export default function FocusPage({
           initialFocusMinutes={initialFocusMinutes}
           onComplete={() => {}}
           onSessionEnd={(duration, actualDuration, completed, interruptions, totalPausedSeconds, startedAt) => {
-            console.log(
-              "FOCUS SESSION END:",
-              {
-                activeSubject: activeSubject?.id,
-                duration,
-                actualDuration,
-                completed,
-              },
-            )
-
-            if (!activeSubject) return
+            const targetSubject = activeSubject ?? subjects[0];
+            if (!targetSubject) {
+              console.warn("[FocusPage] Cannot save session: No subjects exist.");
+              return;
+            }
             onAddSession({
-              id: `s${Date.now()}`,
-              subjectId: activeSubject.id,
-              subjectName: activeSubject.name,
-              subjectColor: activeSubject.color,
+              id: "s" + Date.now(),
+              subjectId: targetSubject.id,
+              subjectName: targetSubject.name,
+              subjectColor: targetSubject.color,
               duration,
               actualDuration,
               startedAt,
@@ -72,7 +66,7 @@ export default function FocusPage({
               completed,
               interruptions,
               totalPausedSeconds,
-            })
+            });
           }}
         />
       </div>

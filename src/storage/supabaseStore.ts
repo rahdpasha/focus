@@ -323,30 +323,32 @@ export async function saveSupabaseSnapshot(
 
     if (error) throw error
 
-    const {
-      data: refreshedSubjectRows,
-      error: refreshedSubjectReadError,
-    } = await client
-      .from('subjects')
-      .select('id, client_id')
-      .eq('user_id', userId)
-
-    if (refreshedSubjectReadError) {
-      throw refreshedSubjectReadError
     }
 
-    cloudSubjectByClientId.clear()
+  const {
+    data: refreshedSubjectRows,
+    error: refreshedSubjectReadError,
+  } = await client
+    .from('subjects')
+    .select('id, client_id')
+    .eq('user_id', userId)
 
-    for (const row of (refreshedSubjectRows ?? []) as Array<{
-      id: string
-      client_id: string | null
-    }>) {
-      if (row.client_id) {
-        cloudSubjectByClientId.set(
-          row.client_id,
-          row.id,
-        )
-      }
+  if (refreshedSubjectReadError) {
+    throw refreshedSubjectReadError
+  }
+
+  cloudSubjectByClientId.clear()
+
+  for (const row of (refreshedSubjectRows ?? []) as Array<{
+    id: string
+    client_id: string | null
+  }>) {
+    cloudSubjectByClientId.set(row.id, row.id)
+    if (row.client_id) {
+      cloudSubjectByClientId.set(
+        row.client_id,
+        row.id,
+      )
     }
   }
 
@@ -378,9 +380,9 @@ export async function saveSupabaseSnapshot(
       snapshot.sessions.flatMap(
         (session) => {
           const cloudSubjectId =
-            cloudSubjectByClientId.get(
-              session.subjectId,
-            )
+        cloudSubjectByClientId.get(
+          session.subjectId,
+        ) ?? session.subjectId
 
           if (!cloudSubjectId) {
             console.warn(
@@ -467,21 +469,7 @@ export async function saveSupabaseSnapshot(
       )
       .map((row) => row.id)
 
-  if (
-    staleSessionCloudIds.length > 0
-  ) {
-    const { error } =
-      await client
-        .from('study_sessions')
-        .delete()
-        .eq('user_id', userId)
-        .in(
-          'id',
-          staleSessionCloudIds,
-        )
-
-    if (error) throw error
-  }
+  // Stale session bulk deletion disabled to prevent sync data loss
 
   if (
     staleSubjectCloudIds.length > 0

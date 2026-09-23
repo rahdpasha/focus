@@ -273,8 +273,20 @@ export function useFocusData(
   }
 
   const addSession = (session: StudySession) => {
-    setSessions((previous) => [session, ...previous])
-  }
+    setSessions((previous) => {
+      const nextSessions = [session, ...previous];
+      lastCloudFingerprint.current = getCloudFingerprint({
+        sessions: nextSessions,
+        subjects,
+        dailyGoal,
+        weeklyGoal,
+        weeklyGoalsHistory,
+        activeSubjectId,
+        settings,
+      });
+      return nextSessions;
+    });
+  };
 
   const deleteSession = (id: string) => {
     const removeLocal = () => {
