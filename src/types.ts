@@ -1,3 +1,9 @@
+export interface Subtask {
+  id: string
+  text: string
+  completed: boolean
+}
+
 export interface Subject {
   id: string
   name: string
@@ -17,6 +23,8 @@ export interface StudySession {
   completed: boolean
   interruptions: number
   totalPausedSeconds: number
+  notes?: string
+  subtasks?: Subtask[]
 }
 
 export interface DailyStats {
