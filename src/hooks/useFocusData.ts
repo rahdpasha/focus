@@ -403,24 +403,26 @@ export function useFocusData(
     reader.readAsText(file)
   }
 
+  const userId = authSession?.user.id
+
   useEffect(() => {
     console.error(
       "FOCUS REALTIME EFFECT:",
       "supabase=",
       Boolean(supabase),
       "auth=",
-      Boolean(authSession),
+      Boolean(userId),
       "cloudReady=",
       cloudReady,
       "user=",
-      authSession?.user.id ?? "none",
+      userId ?? "none",
     )
 
-    if (!supabase || !authSession || !cloudReady) {
+    if (!supabase || !userId || !cloudReady) {
       console.error(
         "FOCUS REALTIME BLOCKED:",
         !supabase ? "NO SUPABASE" : "",
-        !authSession ? "NO AUTH" : "",
+        !userId ? "NO AUTH" : "",
         !cloudReady ? "CLOUD NOT READY" : "",
       )
       return
@@ -441,7 +443,7 @@ export function useFocusData(
 
         refreshing = true
 
-        void loadSupabaseSnapshot(authSession.user.id)
+        void loadSupabaseSnapshot(userId)
           .then((cloudSnapshot) => {
             const fingerprint = getCloudFingerprint(cloudSnapshot)
 
@@ -495,7 +497,7 @@ export function useFocusData(
 
     const channel = supabase
       .channel(
-        `focus-sync-${authSession.user.id}`,
+        `focus-sync-${userId}`,
       )
       .on(
         "postgres_changes",
@@ -503,7 +505,7 @@ export function useFocusData(
           event: "*",
           schema: "public",
           table: "subjects",
-          filter: `user_id=eq.${authSession.user.id}`,
+          filter: `user_id=eq.${userId}`,
         },
         refreshFromCloud,
       )
@@ -513,7 +515,7 @@ export function useFocusData(
           event: "*",
           schema: "public",
           table: "study_sessions",
-          filter: `user_id=eq.${authSession.user.id}`,
+          filter: `user_id=eq.${userId}`,
         },
         refreshFromCloud,
       )
@@ -523,7 +525,7 @@ export function useFocusData(
           event: "*",
           schema: "public",
           table: "goals",
-          filter: `user_id=eq.${authSession.user.id}`,
+          filter: `user_id=eq.${userId}`,
         },
         refreshFromCloud,
       )
@@ -533,7 +535,7 @@ export function useFocusData(
           event: "*",
           schema: "public",
           table: "weekly_goal_history",
-          filter: `user_id=eq.${authSession.user.id}`,
+          filter: `user_id=eq.${userId}`,
         },
         refreshFromCloud,
       )
@@ -543,7 +545,7 @@ export function useFocusData(
           event: "*",
           schema: "public",
           table: "user_settings",
-          filter: `user_id=eq.${authSession.user.id}`,
+          filter: `user_id=eq.${userId}`,
         },
         refreshFromCloud,
       )
@@ -572,7 +574,7 @@ export function useFocusData(
 
       if (supabase) void supabase.removeChannel(channel)
     }
-  }, [authSession?.user.id, cloudReady])
+  }, [userId, cloudReady])
 
   return { subjects, activeSubjectId, sessions, dailyGoal, weeklyGoal, weeklyGoalsHistory, settings, setDailyGoal, setWeeklyGoal, setSettings, updateSettings, addSession, deleteSession, addSubject, deleteSubject, selectSubject, exportData, importData }
 }
