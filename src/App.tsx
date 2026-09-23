@@ -139,6 +139,9 @@ function AuthenticatedApp({
       {page === 'focus' && (
         <FocusPage
           activeSubject={activeSubject}
+          subjects={data.subjects}
+          sessions={data.sessions}
+          weeklyGoal={data.weeklyGoal}
           shortBreak={data.settings.shortBreak}
           longBreak={data.settings.longBreak}
           sessionsBeforeLongBreak={
@@ -152,6 +155,7 @@ function AuthenticatedApp({
           }
           initialFocusMinutes={recommendedMinutes}
           onAddSession={data.addSession}
+          onSelectSubject={data.selectSubject}
         />
       )}
 
