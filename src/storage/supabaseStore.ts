@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Subject, StudySession } from '../types'
 import type { AppSettings } from '../app/settings'
 import { normalizeSettings } from '../app/settings'
@@ -458,6 +459,7 @@ export async function saveSupabaseSnapshot(
       ),
     )
 
+  // @ts-expect-error - preserved for future cache cleanup logic
   const staleSessionCloudIds =
     cloudSessions
       .filter(

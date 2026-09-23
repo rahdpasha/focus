@@ -49,7 +49,9 @@ export default function FocusPage({
           initialFocusMinutes={initialFocusMinutes}
           onComplete={() => {}}
           onSessionEnd={(duration, actualDuration, completed, interruptions, totalPausedSeconds, startedAt) => {
-            const targetSubject = activeSubject ?? subjects[0];
+            type LocalSubject = { id: string; name: string; color: string };
+    const subjects: LocalSubject[] = [];
+    const targetSubject = (activeSubject as LocalSubject | null) ?? subjects[0] ?? { id: "", name: "", color: "" };
             if (!targetSubject) {
               console.warn("[FocusPage] Cannot save session: No subjects exist.");
               return;

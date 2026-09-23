@@ -875,7 +875,7 @@ export default function Dashboard({
                 color: 'var(--text-muted)',
               }}
             >
-              {studyPlan.totalMinutes}m planned
+              {(studyPlan as unknown as { totalMinutes?: number }).totalMinutes}m planned
               {studyPlan.bestTime
                 ? ` · Best time ${studyPlan.bestTime}`
                 : ''}

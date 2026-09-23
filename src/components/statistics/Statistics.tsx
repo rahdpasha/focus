@@ -1174,10 +1174,12 @@ export default function Statistics({
   )
 }
 
+
+
 function getWeekKeySafe(): string {
-  return getStartOfWeek(
-    new Date()
-  )
-    .toISOString()
-    .slice(0, 10)
+  const start = getStartOfWeek(new Date())
+  const year = start.getFullYear()
+  const month = String(start.getMonth() + 1).padStart(2, "0")
+  const day = String(start.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
 }
