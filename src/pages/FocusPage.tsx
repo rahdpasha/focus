@@ -1,9 +1,12 @@
+import { useState, useEffect } from 'react'
 import Timer from '../components/timer/Timer'
 import type { Subject, StudySession } from '../types'
 import { useI18n } from '../useI18n'
 import PageContainer from './PageContainer'
 import PageHeader from '../components/layout/PageHeader'
 import { getStudyAdvisor } from '../utils/studyAdvisor'
+import { ambientAudio, type AmbientSoundType } from '../utils/ambientAudio'
+import { Volume2, VolumeX } from 'lucide-react'
 
 interface FocusPageProps {
   activeSubject: Subject | undefined
@@ -39,6 +42,7 @@ export default function FocusPage({
   onSelectSubject,
 }: FocusPageProps) {
   const { t } = useI18n()
+  const [ambientSound, setAmbientSound] = useState<AmbientSoundType>('off')
 
   const advisor = getStudyAdvisor(sessions, subjects, weeklyGoal)
   const priorityColor =
@@ -47,6 +51,21 @@ export default function FocusPage({
       : advisor.priority === 'medium'
       ? '#f59e0b'
       : '#10b981'
+
+  const handleSoundChange = (sound: AmbientSoundType) => {
+    setAmbientSound(sound)
+    if (sound === 'off') {
+      ambientAudio.stop()
+    } else {
+      ambientAudio.play(sound, soundVolume / 100)
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      ambientAudio.stop()
+    }
+  }, [])
 
   return (
     <PageContainer>
@@ -103,6 +122,48 @@ export default function FocusPage({
         </div>
       )}
 
+      {/* Ambient Sound Bar */}
+      <div
+        className="glass-panel"
+        style={{
+          marginBottom: '24px',
+          padding: '14px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600 }}>
+          {ambientSound === 'off' ? <VolumeX size={18} color="var(--text-secondary)" /> : <Volume2 size={18} color="var(--primary)" />}
+          <span>Ambient Focus Audio:</span>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {(['off', 'brown', 'pink', 'white', 'binaural'] as AmbientSoundType[]).map((snd) => (
+            <button
+              key={snd}
+              type="button"
+              onClick={() => handleSoundChange(snd)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                border: ambientSound === snd ? '1px solid var(--primary)' : '1px solid var(--border)',
+                background: ambientSound === snd ? 'var(--primary-soft)' : 'transparent',
+                color: ambientSound === snd ? 'var(--primary)' : 'var(--text-secondary)',
+                textTransform: 'capitalize',
+              }}
+            >
+              {snd === 'off' ? 'Off' : snd === 'binaural' ? 'Alpha Beats' : `${snd} Noise`}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div
         className="glass-panel"
         style={{ padding: '48px', display: 'flex', justifyContent: 'center' }}
@@ -118,7 +179,7 @@ export default function FocusPage({
           soundVolume={soundVolume}
           notificationsEnabled={notificationsEnabled}
           initialFocusMinutes={initialFocusMinutes}
-          onComplete={() => {}}
+          onComplete={() => ambientAudio.stop()}
           onSessionEnd={(
             duration,
             actualDuration,
@@ -127,6 +188,7 @@ export default function FocusPage({
             totalPausedSeconds,
             startedAt
           ) => {
+            ambientAudio.stop()
             const targetSubject = activeSubject ?? subjects[0] ?? {
               id: '',
               name: '',
