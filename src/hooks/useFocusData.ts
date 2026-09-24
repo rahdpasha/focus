@@ -11,6 +11,7 @@ import type { TranslationKey } from "../translations"
 import { supabase } from "../api/supabaseClient"
 import type { AuthSession } from "../auth/types"
 import {
+  deleteSupabaseAdvancedGoal,
   deleteSupabaseSession,
   deleteSupabaseSubject,
   loadSupabaseSnapshot,
@@ -642,9 +643,31 @@ export function useFocusData(
   }
 
   const deleteAdvancedGoal = (id: string) => {
-    setAdvancedGoals((previous) =>
-      previous.filter((goal) => goal.id !== id),
-    )
+    const removeLocal = () => {
+      setAdvancedGoals((previous) =>
+        previous.filter(
+          (goal) => goal.id !== id,
+        ),
+      )
+    }
+
+    if (authSession) {
+      void deleteSupabaseAdvancedGoal(
+        authSession.user.id,
+        id,
+      )
+        .then(removeLocal)
+        .catch((error) => {
+          console.error(
+            "FOCUS advanced goal delete failed:",
+            error,
+          )
+        })
+
+      return
+    }
+
+    removeLocal()
   }
 
   const exportData = () => {
