@@ -199,26 +199,29 @@ export function useFocusData(
     workspacePreferencesVersion,
   }
 
-  const recordOfflineMutation =
+  const recordPendingMutation =
     useCallback(
       (
         update: (
           mutations: OfflineMutationState,
         ) => void,
       ) => {
-        if (
-          !authSession ||
-          typeof navigator === "undefined" ||
-          navigator.onLine
-        ) {
+        if (!authSession) {
           return
         }
 
         update(
           offlineMutations.current,
         )
-        offlineRecoveryRequested.current =
-          true
+
+        if (
+          typeof navigator !== "undefined" &&
+          !navigator.onLine
+        ) {
+          offlineRecoveryRequested.current =
+            true
+        }
+
         saveOfflineMutationState(
           authSession.user.id,
           offlineMutations.current,
@@ -307,6 +310,22 @@ export function useFocusData(
           !queuedCloudSnapshot.current
         ) {
           setCloudStatus("synced")
+
+          if (
+            authSession &&
+            lastCloudFingerprint.current ===
+              getCloudFingerprint(
+                latestLocalSnapshot.current,
+              )
+          ) {
+            offlineMutations.current =
+              createOfflineMutationState()
+            offlineRecoveryRequested.current =
+              false
+            clearOfflineMutationState(
+              authSession.user.id,
+            )
+          }
         }
 
         return !saveFailed
@@ -336,6 +355,55 @@ export function useFocusData(
       }
 
       setCloudStatus("saving")
+      return flushCloudSaveQueue()
+    }, [
+      authSession,
+      flushCloudSaveQueue,
+    ])
+
+  const flushCloudChanges =
+    useCallback(async (): Promise<boolean> => {
+      if (!authSession) {
+        return true
+      }
+
+      if (
+        typeof navigator !== "undefined" &&
+        !navigator.onLine
+      ) {
+        return true
+      }
+
+      if (!cloudHydrated.current) {
+        return true
+      }
+
+      if (cloudSaveTimer.current) {
+        clearTimeout(
+          cloudSaveTimer.current,
+        )
+        cloudSaveTimer.current = null
+      }
+
+      const latestSnapshot =
+        latestLocalSnapshot.current
+      const fingerprint =
+        getCloudFingerprint(
+          latestSnapshot,
+        )
+
+      if (
+        fingerprint !==
+          lastCloudFingerprint.current ||
+        hasOfflineMutations(
+          offlineMutations.current,
+        )
+      ) {
+        queuedCloudSnapshot.current =
+          latestSnapshot
+        setCloudStatus("saving")
+      }
+
       return flushCloudSaveQueue()
     }, [
       authSession,
@@ -727,7 +795,7 @@ export function useFocusData(
     }
 
     setDailyGoal(goal)
-    recordOfflineMutation(
+    recordPendingMutation(
       (mutations) => {
         mutations.dailyGoal = true
       },
@@ -745,7 +813,7 @@ export function useFocusData(
       ...previous,
       [weekKey]: goal,
     }))
-    recordOfflineMutation(
+    recordPendingMutation(
       (mutations) => {
         mutations.weeklyGoal = true
         addOfflineMutationId(
@@ -761,7 +829,7 @@ export function useFocusData(
       session,
       ...previous,
     ])
-    recordOfflineMutation(
+    recordPendingMutation(
       (mutations) => {
         addOfflineMutationId(
           mutations.sessionIds,
@@ -814,7 +882,7 @@ export function useFocusData(
       const newSubject = createSubject(previous, name, color)
       if (!newSubject) return previous
       setActiveSubjectId(newSubject.id)
-      recordOfflineMutation(
+      recordPendingMutation(
         (mutations) => {
           addOfflineMutationId(
             mutations.subjectIds,
@@ -891,7 +959,7 @@ export function useFocusData(
         [key]: value,
       }),
     )
-    recordOfflineMutation(
+    recordPendingMutation(
       (mutations) => {
         if (
           !mutations.settingsKeys.includes(
@@ -937,7 +1005,7 @@ export function useFocusData(
     }
 
     setAdvancedGoals((previous) => [goal, ...previous])
-    recordOfflineMutation(
+    recordPendingMutation(
       (mutations) => {
         addOfflineMutationId(
           mutations.advancedGoalIds,
@@ -958,7 +1026,7 @@ export function useFocusData(
           : goal,
       ),
     )
-    recordOfflineMutation(
+    recordPendingMutation(
       (mutations) => {
         addOfflineMutationId(
           mutations.advancedGoalIds,
@@ -1273,22 +1341,23 @@ export function useFocusData(
         if (authSession) {
           cloudReplaceRequested.current =
             true
+          offlineMutations.current =
+            createOfflineMutationState()
+          offlineMutations.current
+            .replaceWorkspace = true
 
           if (
             typeof navigator !== "undefined" &&
             !navigator.onLine
           ) {
-            offlineMutations.current =
-              createOfflineMutationState()
-            offlineMutations.current
-              .replaceWorkspace = true
             offlineRecoveryRequested.current =
               true
-            saveOfflineMutationState(
-              authSession.user.id,
-              offlineMutations.current,
-            )
           }
+
+          saveOfflineMutationState(
+            authSession.user.id,
+            offlineMutations.current,
+          )
         }
 
         setSessions(importedSessions)
@@ -1627,5 +1696,5 @@ export function useFocusData(
     }
   }, [userId, cloudReady])
 
-  return { subjects, activeSubjectId, sessions, dailyGoal, weeklyGoal, weeklyGoalsHistory, advancedGoals, settings, cloudStatus, setDailyGoal: setDailyGoalValue, setWeeklyGoal, setSettings, updateSettings, addSession, deleteSession, addSubject, deleteSubject, selectSubject, addAdvancedGoal, updateAdvancedGoal, deleteAdvancedGoal, exportData, importData, flushCloudChanges: flushBeforeDestructiveMutation }
+  return { subjects, activeSubjectId, sessions, dailyGoal, weeklyGoal, weeklyGoalsHistory, advancedGoals, settings, cloudStatus, setDailyGoal: setDailyGoalValue, setWeeklyGoal, setSettings, updateSettings, addSession, deleteSession, addSubject, deleteSubject, selectSubject, addAdvancedGoal, updateAdvancedGoal, deleteAdvancedGoal, exportData, importData, flushCloudChanges }
 }
