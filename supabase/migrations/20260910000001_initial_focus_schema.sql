@@ -11,6 +11,7 @@ create table if not exists public.profiles (
 create table if not exists public.subjects (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
+  client_id text,
   name text not null,
   color text not null,
   icon text,
@@ -23,6 +24,7 @@ create table if not exists public.subjects (
 create table if not exists public.study_sessions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
+  client_id text,
   subject_id uuid not null references public.subjects(id) on delete restrict,
   planned_seconds integer not null default 0 check (planned_seconds >= 0),
   actual_seconds integer not null default 0 check (actual_seconds >= 0),
