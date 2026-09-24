@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { Subject, StudySession } from "../types"
 import type { AppSettings } from "../app/settings"
 import { defaultSettings, normalizeSettings } from "../app/settings"
@@ -136,6 +136,119 @@ export function useFocusData(
   const queuedCloudSnapshot = useRef<typeof initial | null>(null)
   const cloudReplaceRequested = useRef(false)
   const lastCloudFingerprint = useRef<string | null>(null)
+
+  const flushCloudSaveQueue = useCallback(
+    async (): Promise<boolean> => {
+      if (!authSession) {
+        return false
+      }
+
+      while (cloudSaveInFlight.current) {
+        await new Promise<void>((resolve) => {
+          window.setTimeout(resolve, 25)
+        })
+      }
+
+      if (!queuedCloudSnapshot.current) {
+        return true
+      }
+
+      cloudSaveInFlight.current = true
+      let saveFailed = false
+
+      try {
+        while (queuedCloudSnapshot.current) {
+          const latestSnapshot =
+            queuedCloudSnapshot.current
+
+          queuedCloudSnapshot.current = null
+
+          const replaceCloud =
+            cloudReplaceRequested.current
+
+          if (replaceCloud) {
+            cloudReplaceRequested.current =
+              false
+          }
+
+          try {
+            if (replaceCloud) {
+              await replaceSupabaseSnapshot(
+                latestSnapshot,
+                authSession.user.id,
+              )
+            } else {
+              await saveSupabaseSnapshot(
+                latestSnapshot,
+                authSession.user.id,
+              )
+            }
+
+            lastCloudFingerprint.current =
+              getCloudFingerprint(
+                latestSnapshot,
+              )
+          } catch (error) {
+            if (replaceCloud) {
+              cloudReplaceRequested.current =
+                true
+            }
+
+            console.error(
+              "FOCUS cloud save failed:",
+              error,
+            )
+
+            if (!queuedCloudSnapshot.current) {
+              queuedCloudSnapshot.current =
+                latestSnapshot
+            }
+
+            saveFailed = true
+            setCloudStatus("error")
+            break
+          }
+        }
+
+        if (
+          !saveFailed &&
+          !queuedCloudSnapshot.current
+        ) {
+          setCloudStatus("synced")
+        }
+
+        return !saveFailed
+      } finally {
+        cloudSaveInFlight.current = false
+      }
+    },
+    [authSession],
+  )
+
+  const flushBeforeDestructiveMutation =
+    useCallback(async (): Promise<boolean> => {
+      if (!authSession) {
+        return true
+      }
+
+      if (cloudSaveTimer.current) {
+        clearTimeout(cloudSaveTimer.current)
+        cloudSaveTimer.current = null
+      }
+
+      if (
+        !cloudSaveInFlight.current &&
+        !queuedCloudSnapshot.current
+      ) {
+        return true
+      }
+
+      setCloudStatus("saving")
+      return flushCloudSaveQueue()
+    }, [
+      authSession,
+      flushCloudSaveQueue,
+    ])
 
   useEffect(() => {
     store.save({
@@ -347,9 +460,8 @@ export function useFocusData(
       workspacePreferencesVersion,
     }
 
-    const fingerprint = getCloudFingerprint(snapshot)
-
-    
+    const fingerprint =
+      getCloudFingerprint(snapshot)
 
     if (
       fingerprint ===
@@ -358,99 +470,28 @@ export function useFocusData(
       return
     }
 
-    queuedCloudSnapshot.current = snapshot
+    queuedCloudSnapshot.current =
+      snapshot
     setCloudStatus("saving")
 
     if (cloudSaveTimer.current) {
-      clearTimeout(cloudSaveTimer.current)
+      clearTimeout(
+        cloudSaveTimer.current,
+      )
     }
 
-    cloudSaveTimer.current = setTimeout(() => {
-      const flushCloudSaveQueue = async () => {
-        if (cloudSaveInFlight.current) {
-          return
-        }
-
-        cloudSaveInFlight.current = true
-        let saveFailed = false
-
-        try {
-          while (queuedCloudSnapshot.current) {
-            const latestSnapshot =
-              queuedCloudSnapshot.current
-
-            queuedCloudSnapshot.current = null
-
-            const replaceCloud =
-              cloudReplaceRequested.current
-
-            if (replaceCloud) {
-              cloudReplaceRequested.current =
-                false
-            }
-
-            try {
-              if (replaceCloud) {
-                await replaceSupabaseSnapshot(
-                  latestSnapshot,
-                  authSession.user.id,
-                )
-              } else {
-                await saveSupabaseSnapshot(
-                  latestSnapshot,
-                  authSession.user.id,
-                )
-              }
-
-              lastCloudFingerprint.current =
-                getCloudFingerprint(
-                  latestSnapshot,
-                )
-            } catch (error) {
-              if (replaceCloud) {
-                cloudReplaceRequested.current =
-                  true
-              }
-              console.error(
-                "FOCUS cloud save failed:",
-                error,
-              )
-
-              if (!queuedCloudSnapshot.current) {
-                queuedCloudSnapshot.current =
-                  latestSnapshot
-              }
-
-              saveFailed = true
-              setCloudStatus("error")
-              break
-            }
-          }
-
-          if (
-            !saveFailed &&
-            !queuedCloudSnapshot.current
-          ) {
-            setCloudStatus("synced")
-          }
-        } finally {
-          cloudSaveInFlight.current = false
-
-          if (
-            !saveFailed &&
-            queuedCloudSnapshot.current
-          ) {
-            void flushCloudSaveQueue()
-          }
-        }
-      }
-
-      void flushCloudSaveQueue()
-    }, 800)
+    cloudSaveTimer.current =
+      setTimeout(() => {
+        cloudSaveTimer.current =
+          null
+        void flushCloudSaveQueue()
+      }, 800)
 
     return () => {
       if (cloudSaveTimer.current) {
-        clearTimeout(cloudSaveTimer.current)
+        clearTimeout(
+          cloudSaveTimer.current,
+        )
       }
     }
   }, [
@@ -465,6 +506,7 @@ export function useFocusData(
     settings,
     workspacePreferencesVersion,
     networkRevision,
+    flushCloudSaveQueue,
   ])
 
   useEffect(() => {
@@ -535,17 +577,27 @@ export function useFocusData(
     }
 
     if (authSession) {
-      void deleteSupabaseSession(
-        authSession.user.id,
-        id,
-      )
-        .then(removeLocal)
-        .catch((error) => {
-          console.error(
-            "FOCUS session delete failed:",
-            error,
-          )
-        })
+      void (async () => {
+        const ready =
+          await flushBeforeDestructiveMutation()
+
+        if (!ready) {
+          return
+        }
+
+        await deleteSupabaseSession(
+          authSession.user.id,
+          id,
+        )
+
+        removeLocal()
+      })().catch((error) => {
+        console.error(
+          "FOCUS session delete failed:",
+          error,
+        )
+        setCloudStatus("error")
+      })
 
       return
     }
@@ -588,17 +640,27 @@ export function useFocusData(
     }
 
     if (authSession) {
-      void deleteSupabaseSubject(
-        authSession.user.id,
-        id,
-      )
-        .then(removeLocal)
-        .catch((error) => {
-          console.error(
-            "FOCUS subject delete failed:",
-            error,
-          )
-        })
+      void (async () => {
+        const ready =
+          await flushBeforeDestructiveMutation()
+
+        if (!ready) {
+          return
+        }
+
+        await deleteSupabaseSubject(
+          authSession.user.id,
+          id,
+        )
+
+        removeLocal()
+      })().catch((error) => {
+        console.error(
+          "FOCUS subject delete failed:",
+          error,
+        )
+        setCloudStatus("error")
+      })
 
       return
     }
@@ -665,17 +727,27 @@ export function useFocusData(
     }
 
     if (authSession) {
-      void deleteSupabaseAdvancedGoal(
-        authSession.user.id,
-        id,
-      )
-        .then(removeLocal)
-        .catch((error) => {
-          console.error(
-            "FOCUS advanced goal delete failed:",
-            error,
-          )
-        })
+      void (async () => {
+        const ready =
+          await flushBeforeDestructiveMutation()
+
+        if (!ready) {
+          return
+        }
+
+        await deleteSupabaseAdvancedGoal(
+          authSession.user.id,
+          id,
+        )
+
+        removeLocal()
+      })().catch((error) => {
+        console.error(
+          "FOCUS advanced goal delete failed:",
+          error,
+        )
+        setCloudStatus("error")
+      })
 
       return
     }
