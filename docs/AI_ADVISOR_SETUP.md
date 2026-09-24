@@ -47,3 +47,10 @@ Gemini 3.8 Flash is the default model. Sampling parameters such as `temperature`
 
 
 The context also includes deterministic 7-day, 30-day, and 90-day summaries (minutes, sessions, active days, average session length, interruptions, and top subject) so the model can distinguish short-term noise from longer study patterns.
+
+
+## Safety and cost guardrails
+
+The Edge Function now treats all study fact strings as untrusted data, caps request/context size, validates the model's returned subject against the supplied subject IDs, derives the returned subject name from trusted context, clamps action duration to 10–120 minutes, and limits response field sizes. These checks reduce prompt-injection surface and prevent unexpectedly large provider requests.
+
+Before enabling Gemini for a public release, configure provider-side quotas/budgets and add a per-user rate limit if FOCUS will be opened beyond a small trusted user group.
