@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import {
   useRef,
+  useState,
 } from 'react'
 import {
   useI18n,
@@ -99,6 +100,10 @@ export default function Settings({
     useRef<HTMLInputElement>(
       null,
     )
+  const [
+    pendingImport,
+    setPendingImport,
+  ] = useState(false)
 
   const {
     language,
@@ -670,18 +675,47 @@ export default function Settings({
             <button
               type="button"
               className="settings-secondary-action"
-              onClick={() =>
+              onClick={() => {
+                if (!pendingImport) {
+                  setPendingImport(true)
+                  return
+                }
+
+                setPendingImport(false)
                 fileInputRef
                   .current
                   ?.click()
+              }}
+              onBlur={() =>
+                setPendingImport(false)
+              }
+              aria-label={
+                pendingImport
+                  ? t(
+                      'confirmImportData',
+                    )
+                  : t(
+                      'importData',
+                    )
+              }
+              title={
+                pendingImport
+                  ? t(
+                      'confirmImportData',
+                    )
+                  : undefined
               }
             >
               <Upload
                 size={15}
               />
-              {t(
-                'importData',
-              )}
+              {pendingImport
+                ? t(
+                    'confirmImportData',
+                  )
+                : t(
+                    'importData',
+                  )}
             </button>
 
             {onSignOut && (

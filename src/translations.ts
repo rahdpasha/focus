@@ -180,6 +180,8 @@ export const translations = {
       'Backup your subjects, sessions, goals, and timer settings.',
     exportData: 'EXPORT DATA',
     importData: 'IMPORT DATA',
+    confirmImportData:
+      'CLICK AGAIN TO REPLACE DATA',
 
     // App messages
     dataImported: 'FOCUS DATA IMPORTED',
@@ -374,6 +376,8 @@ export const translations = {
       'لە بابەتەکان، سێشنەکان، ئامانجەکان و ڕێکخستنەکانی کاتی کارەکەت باکاپ بگرە.',
     exportData: 'هەناردەکردنی داتا',
     importData: 'هێنانی داتا',
+    confirmImportData:
+      'دووبارە کرتە بکە بۆ گۆڕینی داتا',
 
     // App messages
     dataImported:
