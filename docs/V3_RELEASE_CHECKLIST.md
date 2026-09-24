@@ -74,14 +74,14 @@ Checked items below were actually verified during V3 hardening. Re-run the autom
 - [ ] Ask each quick prompt and confirm the deterministic fallback returns a usable action.
 - [ ] Confirm Advisor facts match Dashboard/Statistics data.
 - [ ] Confirm a subject-scoped urgent goal can drive the recommended subject.
-- [ ] Confirm raw session notes are not included in the advisor payload.
+- [x] Confirm raw session notes are not included in the advisor payload.
 - [ ] If Gemini is enabled, configure `GEMINI_API_KEY` only as a Supabase server secret and verify an AI-sourced response.
 
 ## League
 
 - [ ] Test with at least two opted-in accounts.
-- [ ] Confirm 60 completed focus minutes in one local day produces 3 points.
-- [ ] Confirm private session data is not exposed through leaderboard responses.
+- [x] Confirm 60 completed focus minutes in one local day produces 3 points (rollback-only timezone-boundary database test).
+- [x] Confirm private session data is not exposed through leaderboard responses; RPC output is limited to public name/avatar seed, points, completed days, rank and current-user marker.
 - [ ] Check weekly and monthly standings.
 - [ ] Check previous-period champion display.
 - [ ] Check current rank and next-rank progress.
