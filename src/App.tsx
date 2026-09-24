@@ -150,9 +150,11 @@ function AuthenticatedApp({
         <SubjectsPage
           subjects={data.subjects}
           activeSubjectId={data.activeSubjectId}
-          onSelectSubject={handleSelectSubject}
-          onAddSubject={handleAddSubject}
+          sessions={data.sessions}
+          onSelectSubject={data.selectSubject}
+          onAddSubject={data.addSubject}
           onDeleteSubject={data.deleteSubject}
+          onStartSession={startRecommendedSession}
         />
       )}
 
