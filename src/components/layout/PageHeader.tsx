@@ -1,4 +1,6 @@
-import type { ReactNode } from 'react'
+import type {
+  ReactNode,
+} from 'react'
 
 interface PageHeaderProps {
   title: string
@@ -6,24 +8,30 @@ interface PageHeaderProps {
   action?: ReactNode
 }
 
-export default function PageHeader({ title, description, action }: PageHeaderProps) {
+export default function PageHeader({
+  title,
+  description,
+  action,
+}: PageHeaderProps) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        gap: '16px',
-        marginBottom: '24px',
-      }}
-    >
+    <header className="page-header">
       <div>
-        <h1 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '24px' }}>{title}</h1>
+        <h1>
+          {title}
+        </h1>
+
         {description && (
-          <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '6px' }}>{description}</p>
+          <p>
+            {description}
+          </p>
         )}
       </div>
-      {action}
-    </div>
+
+      {action && (
+        <div className="page-header-action">
+          {action}
+        </div>
+      )}
+    </header>
   )
 }

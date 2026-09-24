@@ -1,32 +1,97 @@
-import { useRef } from 'react'
-import { useI18n } from '../../useI18n'
-import { type ThemeMode } from '../../app/theme'
-import { useTheme } from '../../app/useTheme'
-import type { AppSettings } from '../../app/settings'
+import {
+  Bell,
+  BellOff,
+  Database,
+  Download,
+  Languages,
+  LogOut,
+  Monitor,
+  Moon,
+  SlidersHorizontal,
+  Sun,
+  TimerReset,
+  Upload,
+  Volume2,
+  VolumeX,
+} from 'lucide-react'
+import {
+  useRef,
+} from 'react'
+import {
+  useI18n,
+} from '../../useI18n'
+import {
+  type ThemeMode,
+} from '../../app/theme'
+import {
+  useTheme,
+} from '../../app/useTheme'
+import type {
+  AppSettings,
+} from '../../app/settings'
 
 interface SettingsProps {
   settings: AppSettings
   dailyGoal: number
   weeklyGoal: number
-  onDailyGoalChange: (value: number) => void
-  onWeeklyGoalChange: (value: number) => void
-  onSettingChange: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => void
+  accountEmail?: string | null
+  onDailyGoalChange: (
+    value: number,
+  ) => void
+  onWeeklyGoalChange: (
+    value: number,
+  ) => void
+  onSettingChange: <
+    K extends keyof AppSettings,
+  >(
+    key: K,
+    value: AppSettings[K],
+  ) => void
   onExportData: () => void
-  onImportData: (file: File) => void
+  onImportData: (
+    file: File,
+  ) => void
+  onSignOut?: () => void
 }
+
+const themeOptions: Array<{
+  value: ThemeMode
+  label: string
+  icon: typeof Monitor
+}> = [
+  {
+    value: 'system',
+    label: 'System',
+    icon: Monitor,
+  },
+  {
+    value: 'dark',
+    label: 'Dark',
+    icon: Moon,
+  },
+  {
+    value: 'light',
+    label: 'Light',
+    icon: Sun,
+  },
+]
 
 export default function Settings({
   settings,
   dailyGoal,
   weeklyGoal,
+  accountEmail,
   onDailyGoalChange,
   onWeeklyGoalChange,
   onSettingChange,
   onExportData,
   onImportData,
+  onSignOut,
 }: SettingsProps) {
   const fileInputRef =
-    useRef<HTMLInputElement>(null)
+    useRef<HTMLInputElement>(
+      null,
+    )
 
   const {
     language,
@@ -34,559 +99,638 @@ export default function Settings({
     t,
   } = useI18n()
 
-  const { theme, setTheme } = useTheme()
-
-  const selectStyle = {
-    padding: '9px',
-    background:
-      'var(--void-surface-hover)',
-    border:
-      '1px solid var(--void-border)',
-    borderRadius: '8px',
-    color: 'var(--text-primary)',
-    outline: 'none',
-    cursor: 'pointer',
-  }
-
-  const inputStyle = {
-    padding: '9px',
-    background:
-      'var(--void-surface-hover)',
-    border:
-      '1px solid var(--void-border)',
-    borderRadius: '8px',
-    color: 'var(--text-primary)',
-    outline: 'none',
-  }
+  const {
+    theme,
+    setTheme,
+  } = useTheme()
 
   return (
-    <div
-      style={{
-        width: '100%',
-        maxWidth: '720px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px',
-      }}
-    >
-      {/* Appearance */}
-      <div
-        className="glass-panel"
-        style={{ padding: '24px' }}
-      >
-        <h2 style={{ fontSize: '16px', marginBottom: '20px' }}>
-          {t('appearance')}
-        </h2>
+    <div className="settings-v3">
+      <section className="glass-panel settings-section settings-section-wide">
+        <div className="settings-section-head">
+          <div className="settings-section-icon">
+            <SlidersHorizontal
+              size={17}
+            />
+          </div>
 
-        <label
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            color: 'var(--text-secondary)',
-            fontSize: '13px',
-          }}
-        >
-          {t('theme')}
-          <select
-            value={theme}
-            onChange={(event) => setTheme(event.target.value as ThemeMode)}
-            style={{ width: '220px', maxWidth: '100%', ...selectStyle }}
-          >
-            <option value="system">{t('themeSystem')}</option>
-            <option value="dark">{t('themeDark')}</option>
-            <option value="light">{t('themeLight')}</option>
-          </select>
-        </label>
-      </div>
+          <div>
+            <h2>
+              Workspace
+            </h2>
+            <p>
+              Choose how FOCUS
+              looks and speaks.
+            </p>
+          </div>
+        </div>
 
-      {/* Language */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '24px',
-        }}
-      >
-        <h2
-          style={{
-            fontSize: '16px',
-            marginBottom: '20px',
-          }}
-        >
-          {t('language')}
-        </h2>
+        <div className="settings-control-grid">
+          <div className="settings-field">
+            <span className="settings-label">
+              {t('theme')}
+            </span>
 
-        <select
-          value={language}
-          onChange={(event) =>
-            setLanguage(
-              event.target.value === 'ku'
-                ? 'ku'
-                : 'en'
-            )
-          }
-          style={{
-            width: '220px',
-            maxWidth: '100%',
-            ...selectStyle,
-          }}
-        >
-          <option value="en">
-            {t('english')}
-          </option>
+            <div
+              className="settings-segmented"
+              role="group"
+              aria-label={t(
+                'theme',
+              )}
+            >
+              {themeOptions.map(
+                (option) => {
+                  const Icon =
+                    option.icon
+                  const active =
+                    theme ===
+                    option.value
 
-          <option value="ku">
-            {t('kurdishSorani')}
-          </option>
-        </select>
-      </div>
+                  return (
+                    <button
+                      key={
+                        option.value
+                      }
+                      type="button"
+                      className={
+                        active
+                          ? 'active'
+                          : ''
+                      }
+                      aria-pressed={
+                        active
+                      }
+                      onClick={() =>
+                        setTheme(
+                          option.value,
+                        )
+                      }
+                    >
+                      <Icon
+                        size={15}
+                      />
+                      {
+                        option.label
+                      }
+                    </button>
+                  )
+                },
+              )}
+            </div>
+          </div>
 
-      {/* Study Goals */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '24px',
-        }}
-      >
-        <h2
-          style={{
-            fontSize: '16px',
-            marginBottom: '20px',
-          }}
-        >
-          {t('studyGoals')}
-        </h2>
+          <label className="settings-field">
+            <span className="settings-label">
+              {t(
+                'language',
+              )}
+            </span>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns:
-              'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '16px',
-          }}
-        >
-          <label
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              color:
-                'var(--text-secondary)',
-              fontSize: '13px',
-            }}
-          >
-            {t('dailyFocusGoal')}
+            <div className="settings-input-with-icon">
+              <Languages
+                size={15}
+              />
+              <select
+                value={
+                  language
+                }
+                onChange={(
+                  event,
+                ) =>
+                  setLanguage(
+                    event.target
+                      .value ===
+                      'ku'
+                      ? 'ku'
+                      : 'en',
+                  )
+                }
+              >
+                <option value="en">
+                  {t(
+                    'english',
+                  )}
+                </option>
+                <option value="ku">
+                  {t(
+                    'kurdishSorani',
+                  )}
+                </option>
+              </select>
+            </div>
+          </label>
+        </div>
+      </section>
+
+      <section className="glass-panel settings-section">
+        <div className="settings-section-head">
+          <div className="settings-section-icon">
+            <TimerReset
+              size={17}
+            />
+          </div>
+
+          <div>
+            <h2>
+              Focus targets
+            </h2>
+            <p>
+              Define your baseline
+              daily and weekly
+              commitment.
+            </p>
+          </div>
+        </div>
+
+        <div className="settings-control-grid">
+          <label className="settings-field">
+            <span className="settings-label">
+              {t(
+                'dailyFocusGoal',
+              )}
+            </span>
 
             <select
-              value={dailyGoal}
-              onChange={(event) =>
+              value={
+                dailyGoal
+              }
+              onChange={(
+                event,
+              ) =>
                 onDailyGoalChange(
                   Number(
-                    event.target.value
-                  )
+                    event.target
+                      .value,
+                  ),
                 )
               }
-              style={selectStyle}
             >
               <option value={30}>
-                {t('minutes30')}
+                30m
               </option>
               <option value={60}>
-                {t('hour1')}
+                1h
               </option>
               <option value={90}>
-                {t('hours15')}
+                1.5h
               </option>
               <option value={120}>
-                {t('hours2')}
+                2h
               </option>
               <option value={180}>
-                {t('hours3')}
+                3h
               </option>
               <option value={240}>
-                {t('hours4')}
+                4h
               </option>
               <option value={300}>
-                {t('hours5')}
+                5h
               </option>
             </select>
           </label>
 
-          <label
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              color:
-                'var(--text-secondary)',
-              fontSize: '13px',
-            }}
-          >
-            WEEKLY FOCUS GOAL
+          <label className="settings-field">
+            <span className="settings-label">
+              Weekly focus goal
+            </span>
 
             <select
-              value={weeklyGoal}
-              onChange={(event) =>
+              value={
+                weeklyGoal
+              }
+              onChange={(
+                event,
+              ) =>
                 onWeeklyGoalChange(
                   Number(
-                    event.target.value
-                  )
+                    event.target
+                      .value,
+                  ),
                 )
               }
-              style={selectStyle}
             >
               <option value={300}>
-                5 HOURS
+                5h
               </option>
               <option value={600}>
-                10 HOURS
+                10h
               </option>
               <option value={900}>
-                15 HOURS
+                15h
               </option>
               <option value={1200}>
-                20 HOURS
+                20h
               </option>
               <option value={1500}>
-                25 HOURS
+                25h
+              </option>
+              <option value={1800}>
+                30h
               </option>
             </select>
           </label>
         </div>
-      </div>
+      </section>
 
-      {/* Pomodoro */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '24px',
-        }}
-      >
-        <h2
-          style={{
-            fontSize: '16px',
-            marginBottom: '20px',
-          }}
-        >
-          {t('pomodoro')}
-        </h2>
+      <section className="glass-panel settings-section">
+        <div className="settings-section-head">
+          <div className="settings-section-icon">
+            <TimerReset
+              size={17}
+            />
+          </div>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns:
-              'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: '16px',
-          }}
-        >
-          <label
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              fontSize: '13px',
-              color:
-                'var(--text-secondary)',
-            }}
-          >
-            {t('shortBreakMinutes')}
+          <div>
+            <h2>
+              Timer cycle
+            </h2>
+            <p>
+              Tune breaks without
+              changing your study
+              history.
+            </p>
+          </div>
+        </div>
 
+        <div className="settings-three-grid">
+          <label className="settings-field">
+            <span className="settings-label">
+              {t(
+                'shortBreakMinutes',
+              )}
+            </span>
             <input
               type="number"
-              min="1"
-              max="60"
-              value={settings.shortBreak}
-              onChange={(event) =>
+              min={1}
+              max={60}
+              value={
+                settings.shortBreak
+              }
+              onChange={(
+                event,
+              ) =>
                 onSettingChange(
                   'shortBreak',
-                  Number(event.target.value)
+                  Number(
+                    event.target
+                      .value,
+                  ),
                 )
               }
-              style={inputStyle}
             />
           </label>
 
-          <label
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              fontSize: '13px',
-              color:
-                'var(--text-secondary)',
-            }}
-          >
-            {t('longBreakMinutes')}
-
+          <label className="settings-field">
+            <span className="settings-label">
+              {t(
+                'longBreakMinutes',
+              )}
+            </span>
             <input
               type="number"
-              min="1"
-              max="120"
-              value={settings.longBreak}
-              onChange={(event) =>
+              min={1}
+              max={120}
+              value={
+                settings.longBreak
+              }
+              onChange={(
+                event,
+              ) =>
                 onSettingChange(
                   'longBreak',
-                  Number(event.target.value)
+                  Number(
+                    event.target
+                      .value,
+                  ),
                 )
               }
-              style={inputStyle}
             />
           </label>
 
-          <label
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              fontSize: '13px',
-              color:
-                'var(--text-secondary)',
-            }}
-          >
-            {t(
-              'focusSessionsBeforeLongBreak'
-            )}
-
+          <label className="settings-field">
+            <span className="settings-label">
+              Sessions / cycle
+            </span>
             <input
               type="number"
-              min="1"
-              max="10"
-              value={settings.sessionsBeforeLongBreak}
-              onChange={(event) =>
+              min={1}
+              max={10}
+              value={
+                settings.sessionsBeforeLongBreak
+              }
+              onChange={(
+                event,
+              ) =>
                 onSettingChange(
                   'sessionsBeforeLongBreak',
-                  Number(event.target.value)
+                  Number(
+                    event.target
+                      .value,
+                  ),
                 )
               }
-              style={inputStyle}
             />
           </label>
         </div>
 
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            marginTop: '20px',
-            color:
-              'var(--text-secondary)',
-            fontSize: '13px',
-            cursor: 'pointer',
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={settings.autoStartBreak}
-            onChange={(event) =>
-              onSettingChange(
-                'autoStartBreak',
-                event.target.checked
-              )
-            }
-          />
-
-          {t(
-            'automaticallyStartNextBreak'
+        <ToggleRow
+          title={t(
+            'automaticallyStartNextBreak',
           )}
-        </label>
-      </div>
+          description="Start the next break immediately when a focus block finishes."
+          checked={
+            settings.autoStartBreak
+          }
+          onChange={(
+            checked,
+          ) =>
+            onSettingChange(
+              'autoStartBreak',
+              checked,
+            )
+          }
+        />
+      </section>
 
-      {/* Sound */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '24px',
-        }}
-      >
-        <h2
-          style={{
-            fontSize: '16px',
-            marginBottom: '20px',
-          }}
-        >
-          {t('sound')}
-        </h2>
+      <section className="glass-panel settings-section">
+        <div className="settings-section-head">
+          <div className="settings-section-icon">
+            {settings.soundEnabled ? (
+              <Volume2
+                size={17}
+              />
+            ) : (
+              <VolumeX
+                size={17}
+              />
+            )}
+          </div>
 
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            color:
-              'var(--text-secondary)',
-            fontSize: '13px',
-            cursor: 'pointer',
-            marginBottom: '18px',
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={settings.soundEnabled}
-            onChange={(event) =>
-              onSettingChange(
-                'soundEnabled',
-                event.target.checked
-              )
-            }
-          />
+          <div>
+            <h2>
+              Sound
+            </h2>
+            <p>
+              Control timer feedback
+              volume.
+            </p>
+          </div>
+        </div>
 
-          {t('soundEnabled')}
-        </label>
+        <ToggleRow
+          title={t(
+            'soundEnabled',
+          )}
+          description="Play timer sounds for focus and break transitions."
+          checked={
+            settings.soundEnabled
+          }
+          onChange={(
+            checked,
+          ) =>
+            onSettingChange(
+              'soundEnabled',
+              checked,
+            )
+          }
+        />
 
-        <label
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            color:
-              'var(--text-secondary)',
-            fontSize: '13px',
-          }}
-        >
-          {t('soundVolume')}
+        <label className="settings-range">
+          <div>
+            <span>
+              {t(
+                'soundVolume',
+              )}
+            </span>
+            <strong className="mono">
+              {
+                settings.soundVolume
+              }
+              %
+            </strong>
+          </div>
 
           <input
             type="range"
-            min="0"
-            max="100"
-            step="1"
-            value={settings.soundVolume}
-            disabled={!settings.soundEnabled}
-            onChange={(event) =>
+            min={0}
+            max={100}
+            step={1}
+            value={
+              settings.soundVolume
+            }
+            disabled={
+              !settings.soundEnabled
+            }
+            onChange={(
+              event,
+            ) =>
               onSettingChange(
                 'soundVolume',
-                Number(event.target.value)
+                Number(
+                  event.target
+                    .value,
+                ),
               )
             }
           />
-
-          <span
-            className="mono"
-            style={{
-              fontSize: '11px',
-              color:
-                'var(--text-muted)',
-            }}
-          >
-            {settings.soundVolume}%
-          </span>
         </label>
-      </div>
+      </section>
 
-      {/* Notifications */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '24px',
-        }}
-      >
-        <h2
-          style={{
-            fontSize: '16px',
-            marginBottom: '20px',
-          }}
-        >
-          {t('notifications')}
-        </h2>
+      <section className="glass-panel settings-section">
+        <div className="settings-section-head">
+          <div className="settings-section-icon">
+            {settings.notificationsEnabled ? (
+              <Bell
+                size={17}
+              />
+            ) : (
+              <BellOff
+                size={17}
+              />
+            )}
+          </div>
 
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            color:
-              'var(--text-secondary)',
-            fontSize: '13px',
-            cursor: 'pointer',
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={settings.notificationsEnabled}
-            onChange={(event) =>
-              onSettingChange(
-                'notificationsEnabled',
-                event.target.checked
-              )
-            }
-          />
+          <div>
+            <h2>
+              Notifications
+            </h2>
+            <p>
+              Decide whether FOCUS
+              can alert you when a
+              timer changes state.
+            </p>
+          </div>
+        </div>
 
-          {t('notificationsEnabled')}
-        </label>
-      </div>
+        <ToggleRow
+          title={t(
+            'notificationsEnabled',
+          )}
+          description="Browser permission may still be required before notifications can appear."
+          checked={
+            settings.notificationsEnabled
+          }
+          onChange={(
+            checked,
+          ) =>
+            onSettingChange(
+              'notificationsEnabled',
+              checked,
+            )
+          }
+        />
+      </section>
 
-      {/* Data */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '24px',
-        }}
-      >
-        <h2
-          style={{
-            fontSize: '16px',
-            marginBottom: '8px',
-          }}
-        >
-          {t('data')}
-        </h2>
+      <section className="glass-panel settings-section settings-section-wide">
+        <div className="settings-section-head">
+          <div className="settings-section-icon">
+            <Database
+              size={17}
+            />
+          </div>
 
-        <p
-          style={{
-            fontSize: '12px',
-            color:
-              'var(--text-muted)',
-            marginBottom:
-              '18px',
-          }}
-        >
-          {t('backupDescription')}
-        </p>
+          <div>
+            <h2>
+              Data & account
+            </h2>
+            <p>
+              Keep a portable backup
+              and control the current
+              session.
+            </p>
+          </div>
+        </div>
 
-        <div
-          style={{
-            display: 'flex',
-            gap: '10px',
-            flexWrap: 'wrap',
-          }}
-        >
-          <button
-            className="cyber-btn"
-            onClick={
-              onExportData
-            }
-          >
-            {t('exportData')}
-          </button>
+        <div className="settings-data-row">
+          <div className="settings-account-copy">
+            <span>
+              Account
+            </span>
+            <strong>
+              {accountEmail ??
+                'Local mode'}
+            </strong>
+          </div>
 
-          <button
-            className="cyber-btn"
-            onClick={() =>
-              fileInputRef.current?.click()
-            }
-          >
-            {t('importData')}
-          </button>
+          <div className="settings-data-actions">
+            <button
+              type="button"
+              className="settings-secondary-action"
+              onClick={
+                onExportData
+              }
+            >
+              <Download
+                size={15}
+              />
+              {t(
+                'exportData',
+              )}
+            </button>
+
+            <button
+              type="button"
+              className="settings-secondary-action"
+              onClick={() =>
+                fileInputRef
+                  .current
+                  ?.click()
+              }
+            >
+              <Upload
+                size={15}
+              />
+              {t(
+                'importData',
+              )}
+            </button>
+
+            {onSignOut && (
+              <button
+                type="button"
+                className="settings-danger-action"
+                onClick={
+                  onSignOut
+                }
+              >
+                <LogOut
+                  size={15}
+                />
+                Sign out
+              </button>
+            )}
+          </div>
 
           <input
             ref={fileInputRef}
             type="file"
             accept="application/json,.json"
             hidden
-            onChange={(event) => {
+            onChange={(
+              event,
+            ) => {
               const file =
-                event.target.files?.[0]
+                event.target
+                  .files?.[0]
 
               if (file) {
-                onImportData(file)
+                onImportData(
+                  file,
+                )
               }
 
-              event.target.value = ''
+              event.target.value =
+                ''
             }}
           />
         </div>
-      </div>
+      </section>
     </div>
+  )
+}
+
+function ToggleRow({
+  title,
+  description,
+  checked,
+  onChange,
+}: {
+  title: string
+  description: string
+  checked: boolean
+  onChange: (
+    value: boolean,
+  ) => void
+}) {
+  return (
+    <label className="settings-toggle-row">
+      <div>
+        <strong>
+          {title}
+        </strong>
+        <span>
+          {description}
+        </span>
+      </div>
+
+      <input
+        className="settings-switch-input"
+        type="checkbox"
+        checked={checked}
+        onChange={(
+          event,
+        ) =>
+          onChange(
+            event.target
+              .checked,
+          )
+        }
+      />
+
+      <span
+        className="settings-switch"
+        aria-hidden="true"
+      />
+    </label>
   )
 }

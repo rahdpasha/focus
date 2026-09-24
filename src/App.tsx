@@ -246,43 +246,23 @@ function AuthenticatedApp({
             settings={data.settings}
             dailyGoal={data.dailyGoal}
             weeklyGoal={data.weeklyGoal}
+            accountEmail={
+              auth.session?.user.email ??
+              null
+            }
             onDailyGoalChange={data.setDailyGoal}
             onWeeklyGoalChange={data.setWeeklyGoal}
             onSettingChange={data.updateSettings}
             onExportData={data.exportData}
             onImportData={data.importData}
+            onSignOut={
+              auth.session
+                ? () => {
+                    void auth.signOut()
+                  }
+                : undefined
+            }
           />
-
-          {auth.session && (
-            <div
-              className="glass-panel"
-              style={{
-                marginTop: '16px',
-                padding: '20px',
-              }}
-            >
-              <div
-                style={{
-                  fontSize: '13px',
-                  color: 'var(--text-secondary)',
-                  marginBottom: '12px',
-                }}
-              >
-                Signed in as{' '}
-                {auth.session.user.email ??
-                  auth.session.user.id}
-              </div>
-
-              <button
-                className="cyber-btn"
-                onClick={() => {
-                  void auth.signOut()
-                }}
-              >
-                SIGN OUT
-              </button>
-            </div>
-          )}
         </PageContainer>
       )}
     </AppShell>
