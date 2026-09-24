@@ -660,11 +660,9 @@ export function useFocusData(
         }
 
         const localHasData =
-          initial.subjects.length > 0 ||
-          initial.sessions.length > 0 ||
-          Object.keys(
-            initial.weeklyGoalsHistory,
-          ).length > 0
+          hasMeaningfulCloudData(
+            initial,
+          )
 
         if (!cloudHasData && localHasData) {
           await saveSupabaseSnapshot(
