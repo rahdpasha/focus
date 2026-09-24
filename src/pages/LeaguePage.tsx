@@ -116,11 +116,35 @@ export default function LeaguePage({
 
     void (async () => {
       try {
-        const loadedProfile =
+        let loadedProfile =
           await loadLeagueProfile(
             userId,
             displayName,
           )
+
+        if (cancelled) return
+
+        const browserTimezone =
+          Intl.DateTimeFormat()
+            .resolvedOptions()
+            .timeZone ||
+          'UTC'
+
+        if (
+          loadedProfile.timezone !==
+          browserTimezone
+        ) {
+          loadedProfile = {
+            ...loadedProfile,
+            timezone:
+              browserTimezone,
+          }
+
+          await saveLeagueProfile(
+            userId,
+            loadedProfile,
+          )
+        }
 
         if (cancelled) return
 
