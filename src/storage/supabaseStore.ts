@@ -670,6 +670,202 @@ export async function saveSupabaseSnapshot(
   }
 }
 
+export async function replaceSupabaseSnapshot(
+  snapshot: FocusDataSnapshot,
+  userId: string,
+): Promise<void> {
+  const client = requireSupabase()
+  const now = new Date().toISOString()
+
+  const [
+    subjectsResult,
+    sessionsResult,
+    advancedGoalsResult,
+  ] = await Promise.all([
+    client
+      .from('subjects')
+      .select('id, client_id, archived_at')
+      .eq('user_id', userId),
+    client
+      .from('study_sessions')
+      .select('id, client_id, deleted_at')
+      .eq('user_id', userId),
+    client
+      .from('advanced_goals')
+      .select('id, client_id, deleted_at')
+      .eq('user_id', userId),
+  ])
+
+  if (subjectsResult.error) {
+    throw subjectsResult.error
+  }
+  if (sessionsResult.error) {
+    throw sessionsResult.error
+  }
+  if (advancedGoalsResult.error) {
+    throw advancedGoalsResult.error
+  }
+
+  const importedSubjectIds =
+    new Set(
+      snapshot.subjects.map(
+        (subject) => subject.id,
+      ),
+    )
+  const importedSessionIds =
+    new Set(
+      snapshot.sessions.map(
+        (session) => session.id,
+      ),
+    )
+  const importedGoalIds =
+    new Set(
+      snapshot.advancedGoals.map(
+        (goal) => goal.id,
+      ),
+    )
+
+  const staleSubjectIds =
+    (
+      subjectsResult.data ?? []
+    )
+      .filter(
+        (row) =>
+          !row.archived_at &&
+          (
+            !row.client_id ||
+            !importedSubjectIds.has(
+              row.client_id,
+            )
+          ),
+      )
+      .map((row) => row.id)
+
+  if (staleSubjectIds.length > 0) {
+    const { error } = await client
+      .from('subjects')
+      .update({
+        archived_at: now,
+        updated_at: now,
+      })
+      .eq('user_id', userId)
+      .in('id', staleSubjectIds)
+
+    if (error) throw error
+  }
+
+  const staleSessionIds =
+    (
+      sessionsResult.data ?? []
+    )
+      .filter(
+        (row) =>
+          !row.deleted_at &&
+          (
+            !row.client_id ||
+            !importedSessionIds.has(
+              row.client_id,
+            )
+          ),
+      )
+      .map((row) => row.id)
+
+  if (staleSessionIds.length > 0) {
+    const { error } = await client
+      .from('study_sessions')
+      .update({
+        deleted_at: now,
+        updated_at: now,
+      })
+      .eq('user_id', userId)
+      .in('id', staleSessionIds)
+
+    if (error) throw error
+  }
+
+  const staleGoalIds =
+    (
+      advancedGoalsResult.data ?? []
+    )
+      .filter(
+        (row) =>
+          !row.deleted_at &&
+          (
+            !row.client_id ||
+            !importedGoalIds.has(
+              row.client_id,
+            )
+          ),
+      )
+      .map((row) => row.id)
+
+  if (staleGoalIds.length > 0) {
+    const { error } = await client
+      .from('advanced_goals')
+      .update({
+        deleted_at: now,
+        updated_at: now,
+      })
+      .eq('user_id', userId)
+      .in('id', staleGoalIds)
+
+    if (error) throw error
+  }
+
+  const subjectIds =
+    Array.from(importedSubjectIds)
+
+  if (subjectIds.length > 0) {
+    const { error } = await client
+      .from('subjects')
+      .update({
+        archived_at: null,
+        updated_at: now,
+      })
+      .eq('user_id', userId)
+      .in('client_id', subjectIds)
+
+    if (error) throw error
+  }
+
+  const sessionIds =
+    Array.from(importedSessionIds)
+
+  if (sessionIds.length > 0) {
+    const { error } = await client
+      .from('study_sessions')
+      .update({
+        deleted_at: null,
+        updated_at: now,
+      })
+      .eq('user_id', userId)
+      .in('client_id', sessionIds)
+
+    if (error) throw error
+  }
+
+  const goalIds =
+    Array.from(importedGoalIds)
+
+  if (goalIds.length > 0) {
+    const { error } = await client
+      .from('advanced_goals')
+      .update({
+        deleted_at: null,
+        updated_at: now,
+      })
+      .eq('user_id', userId)
+      .in('client_id', goalIds)
+
+    if (error) throw error
+  }
+
+  await saveSupabaseSnapshot(
+    snapshot,
+    userId,
+  )
+}
+
 export async function deleteSupabaseAdvancedGoal(
   userId: string,
   clientId: string,
