@@ -8,6 +8,9 @@ export interface OfflineMutationState {
   subjectIds: string[]
   sessionIds: string[]
   advancedGoalIds: string[]
+  deletedSubjectIds: string[]
+  deletedSessionIds: string[]
+  deletedAdvancedGoalIds: string[]
   settingsKeys: Array<keyof AppSettings>
   weeklyHistoryKeys: string[]
   dailyGoal: boolean
@@ -20,6 +23,9 @@ export function createOfflineMutationState(): OfflineMutationState {
     subjectIds: [],
     sessionIds: [],
     advancedGoalIds: [],
+    deletedSubjectIds: [],
+    deletedSessionIds: [],
+    deletedAdvancedGoalIds: [],
     settingsKeys: [],
     weeklyHistoryKeys: [],
     dailyGoal: false,
@@ -38,6 +44,9 @@ export function hasOfflineMutations(
     state.subjectIds.length > 0 ||
     state.sessionIds.length > 0 ||
     state.advancedGoalIds.length > 0 ||
+    state.deletedSubjectIds.length > 0 ||
+    state.deletedSessionIds.length > 0 ||
+    state.deletedAdvancedGoalIds.length > 0 ||
     state.settingsKeys.length > 0 ||
     state.weeklyHistoryKeys.length > 0
   )
@@ -49,6 +58,17 @@ export function addOfflineMutationId(
 ): void {
   if (!values.includes(id)) {
     values.push(id)
+  }
+}
+
+export function removeOfflineMutationId(
+  values: string[],
+  id: string,
+): void {
+  const index = values.indexOf(id)
+
+  if (index >= 0) {
+    values.splice(index, 1)
   }
 }
 
@@ -120,6 +140,18 @@ export function loadOfflineMutationState(
       advancedGoalIds:
         stringArray(
           value.advancedGoalIds,
+        ),
+      deletedSubjectIds:
+        stringArray(
+          value.deletedSubjectIds,
+        ),
+      deletedSessionIds:
+        stringArray(
+          value.deletedSessionIds,
+        ),
+      deletedAdvancedGoalIds:
+        stringArray(
+          value.deletedAdvancedGoalIds,
         ),
       settingsKeys,
       weeklyHistoryKeys:
@@ -221,11 +253,29 @@ export function mergeOfflineMutations(
   local: FocusDataSnapshot,
   changes: OfflineMutationState,
 ): FocusDataSnapshot {
+  const deletedSubjectIds =
+    new Set(
+      changes.deletedSubjectIds,
+    )
+  const deletedSessionIds =
+    new Set(
+      changes.deletedSessionIds,
+    )
+  const deletedAdvancedGoalIds =
+    new Set(
+      changes.deletedAdvancedGoalIds,
+    )
+
   const subjects =
     mergeById(
       cloud.subjects,
       local.subjects,
       changes.subjectIds,
+    ).filter(
+      (subject) =>
+        !deletedSubjectIds.has(
+          subject.id,
+        ),
     )
 
   const sessions =
@@ -233,6 +283,11 @@ export function mergeOfflineMutations(
       cloud.sessions,
       local.sessions,
       changes.sessionIds,
+    ).filter(
+      (session) =>
+        !deletedSessionIds.has(
+          session.id,
+        ),
     )
 
   const advancedGoals =
@@ -240,6 +295,11 @@ export function mergeOfflineMutations(
       cloud.advancedGoals,
       local.advancedGoals,
       changes.advancedGoalIds,
+    ).filter(
+      (goal) =>
+        !deletedAdvancedGoalIds.has(
+          goal.id,
+        ),
     )
 
   const settings: AppSettings = {
