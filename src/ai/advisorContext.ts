@@ -18,6 +18,16 @@ import {
   getStudyAdvisor,
 } from '../utils/studyAdvisor'
 
+export interface AdvisorPeriodSummary {
+  days: number
+  minutes: number
+  sessions: number
+  activeDays: number
+  averageSessionMinutes: number
+  averageInterruptions: number
+  topSubject: string | null
+}
+
 export interface AdvisorContext {
   generatedAt: string
   today: {
@@ -40,6 +50,11 @@ export interface AdvisorContext {
     averageWeeklyMinutes: number
   }
   bestStudyTime: string | null
+  periods: {
+    last7: AdvisorPeriodSummary
+    last30: AdvisorPeriodSummary
+    last90: AdvisorPeriodSummary
+  }
   subjects: Array<{
     id: string
     name: string
@@ -146,6 +161,132 @@ function checklistPercent(
   )
 }
 
+
+function buildPeriodSummary(
+  sessions: StudySession[],
+  days: number,
+  now = new Date(),
+): AdvisorPeriodSummary {
+  const end = new Date(now)
+  end.setHours(23, 59, 59, 999)
+
+  const start = new Date(end)
+  start.setDate(
+    start.getDate() - (days - 1),
+  )
+  start.setHours(0, 0, 0, 0)
+
+  const completed = sessions.filter(
+    (session) => {
+      if (
+        !session.completed ||
+        session.actualDuration <= 0
+      ) {
+        return false
+      }
+
+      const completedAt =
+        new Date(
+          session.completedAt,
+        )
+
+      return (
+        completedAt >= start &&
+        completedAt <= end
+      )
+    },
+  )
+
+  const totalSeconds =
+    completed.reduce(
+      (sum, session) =>
+        sum +
+        Math.max(
+          0,
+          session.actualDuration,
+        ),
+      0,
+    )
+
+  const dayKeys =
+    new Set<string>()
+
+  const subjectMinutes =
+    new Map<string, number>()
+
+  completed.forEach(
+    (session) => {
+      const date =
+        new Date(
+          session.completedAt,
+        )
+
+      dayKeys.add(
+        `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`,
+      )
+
+      subjectMinutes.set(
+        session.subjectName,
+        (subjectMinutes.get(
+          session.subjectName,
+        ) ?? 0) +
+          session.actualDuration /
+            60,
+      )
+    },
+  )
+
+  const topSubject =
+    [...subjectMinutes.entries()]
+      .sort(
+        (
+          [, a],
+          [, b],
+        ) => b - a,
+      )[0]?.[0] ?? null
+
+  return {
+    days,
+    minutes:
+      Math.round(
+        totalSeconds / 60,
+      ),
+    sessions:
+      completed.length,
+    activeDays:
+      dayKeys.size,
+    averageSessionMinutes:
+      completed.length > 0
+        ? Math.round(
+            totalSeconds /
+              completed.length /
+              60,
+          )
+        : 0,
+    averageInterruptions:
+      completed.length > 0
+        ? Number(
+            (
+              completed.reduce(
+                (
+                  sum,
+                  session,
+                ) =>
+                  sum +
+                  Math.max(
+                    0,
+                    session.interruptions,
+                  ),
+                0,
+              ) /
+              completed.length
+            ).toFixed(1),
+          )
+        : 0,
+    topSubject,
+  }
+}
+
 export function buildAdvisorContext(
   sessions: StudySession[],
   subjects: Subject[],
@@ -221,6 +362,23 @@ export function buildAdvisorContext(
       productivity
         .bestStudyTime?.label ??
       null,
+    periods: {
+      last7:
+        buildPeriodSummary(
+          sessions,
+          7,
+        ),
+      last30:
+        buildPeriodSummary(
+          sessions,
+          30,
+        ),
+      last90:
+        buildPeriodSummary(
+          sessions,
+          90,
+        ),
+    },
     subjects:
       subjects.map((subject) => {
         const balance =

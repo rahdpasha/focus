@@ -413,6 +413,24 @@ export default function AdvisorPage({
 
               <div className="advisor-fact">
                 <span>
+                  Last 30 days
+                </span>
+                <strong>
+                  {
+                    context.periods
+                      .last30.minutes
+                  }
+                  m ·{' '}
+                  {
+                    context.periods
+                      .last30.activeDays
+                  }{' '}
+                  active days
+                </strong>
+              </div>
+
+              <div className="advisor-fact">
+                <span>
                   Consistency
                 </span>
                 <strong>

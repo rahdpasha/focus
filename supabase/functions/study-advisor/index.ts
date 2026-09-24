@@ -121,6 +121,7 @@ Deno.serve(async (request) => {
       'Never invent study statistics, subjects, goals, or history.',
       'Separate observation from interpretation from recommendation.',
       'Be concise, calm, practical, and specific.',
+      'Use the 7-day, 30-day, and 90-day summaries to distinguish a temporary dip from a longer pattern.',
       'Consider active deadline goals alongside daily and weekly balance.',
       'If a deadline goal is urgent or overdue, explain that explicitly without inventing urgency.',
       'Recommend one next action only.',

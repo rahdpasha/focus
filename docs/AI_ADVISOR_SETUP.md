@@ -44,3 +44,6 @@ The advisor context can include:
 Session-note text is still excluded from the model payload.
 
 Gemini 3.8 Flash is the default model. Sampling parameters such as `temperature` are intentionally omitted because the current Gemini 3.8 migration guidance requires removing deprecated sampling parameters for this model.
+
+
+The context also includes deterministic 7-day, 30-day, and 90-day summaries (minutes, sessions, active days, average session length, interruptions, and top subject) so the model can distinguish short-term noise from longer study patterns.
