@@ -59,7 +59,7 @@ export function getStudyPlan(
     sessions.reduce((total, session) => {
       const timestamp = new Date(session.completedAt).getTime()
       return timestamp >= startOfToday.getTime() && timestamp < endOfToday && session.completed
-        ? total + (session.actualDuration || session.duration || 0) / 60
+        ? total + Math.max(0, session.actualDuration) / 60
         : total
     }, 0)
   )
@@ -74,7 +74,7 @@ export function getStudyPlan(
     sessions.reduce((total, session) => {
       const timestamp = new Date(session.completedAt).getTime()
       return timestamp >= startOfWeek.getTime() && session.completed
-        ? total + (session.actualDuration || session.duration || 0) / 60
+        ? total + Math.max(0, session.actualDuration) / 60
         : total
     }, 0)
   )
@@ -87,7 +87,7 @@ export function getStudyPlan(
     const timestamp = new Date(session.completedAt).getTime()
     if (timestamp >= startOfWeek.getTime() && session.completed) {
       const prev = subjectMinutesMap.get(session.subjectId) || 0
-      subjectMinutesMap.set(session.subjectId, prev + (session.actualDuration || session.duration || 0) / 60)
+      subjectMinutesMap.set(session.subjectId, prev + Math.max(0, session.actualDuration) / 60)
     }
   })
 
@@ -128,7 +128,7 @@ export function getStudyPlan(
       sessions.reduce((tot, s) => {
         const ts = new Date(s.completedAt).getTime()
         return ts >= startOfToday.getTime() && ts < endOfToday && s.subjectId === recommendedSubject.id && s.completed
-          ? tot + (s.actualDuration || s.duration || 0) / 60
+          ? tot + Math.max(0, s.actualDuration) / 60
           : tot
       }, 0)
     )
@@ -161,7 +161,7 @@ export function getStudyPlan(
         sessions.reduce((tot, s) => {
           const ts = new Date(s.completedAt).getTime()
           return ts >= startOfToday.getTime() && ts < endOfToday && s.subjectId === sub.id && s.completed
-            ? tot + (s.actualDuration || s.duration || 0) / 60
+            ? tot + Math.max(0, s.actualDuration) / 60
             : tot
         }, 0)
       )
