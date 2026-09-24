@@ -113,25 +113,10 @@ function AuthenticatedApp({
       {page === 'dashboard' && (
         <Dashboard
           subjects={data.subjects}
-          activeSubjectId={data.activeSubjectId}
           sessions={data.sessions}
           dailyGoal={data.dailyGoal}
           weeklyGoal={data.weeklyGoal}
-          onDailyGoalChange={data.setDailyGoal}
-          onWeeklyGoalChange={data.setWeeklyGoal}
-          onAddSession={data.addSession}
           onDeleteSession={data.deleteSession}
-          shortBreak={data.settings.shortBreak}
-          longBreak={data.settings.longBreak}
-          sessionsBeforeLongBreak={
-            data.settings.sessionsBeforeLongBreak
-          }
-          autoStartBreak={data.settings.autoStartBreak}
-          soundEnabled={data.settings.soundEnabled}
-          soundVolume={data.settings.soundVolume}
-          notificationsEnabled={
-            data.settings.notificationsEnabled
-          }
           onStartRecommendedSession={
             startRecommendedSession
           }
