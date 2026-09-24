@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import type { Subject } from '../../types'
 import type { Page } from '../../app/navigation'
 import Sidebar from './Sidebar'
+import MobileDock from './MobileDock'
 import BackgroundEffects from '../effects/BackgroundEffects'
 
 interface AppShellProps {
@@ -28,15 +29,7 @@ export default function AppShell({
   return (
     <>
       <BackgroundEffects />
-      <div
-        style={{
-          display: 'flex',
-          minHeight: '100vh',
-          background: 'transparent',
-          position: 'relative',
-          zIndex: 2,
-        }}
-      >
+      <div className="app-shell">
         <Sidebar
           page={page}
           onPageChange={onPageChange}
@@ -46,7 +39,13 @@ export default function AppShell({
           onAddSubject={onAddSubject}
           onDeleteSubject={onDeleteSubject}
         />
-        {children}
+        <div className="app-content">
+          {children}
+        </div>
+        <MobileDock
+          page={page}
+          onPageChange={onPageChange}
+        />
       </div>
     </>
   )

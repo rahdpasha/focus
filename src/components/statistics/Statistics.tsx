@@ -18,6 +18,7 @@ import { getPersonalRecords } from '../../utils/personalRecords'
 import { getStatisticsOverview, getStatisticsWeeklyHistory } from '../../utils/statisticsInsights'
 import WeeklyTrend from '../dashboard/WeeklyTrend'
 import SubjectBalance from '../dashboard/SubjectBalance'
+import AdvancedInsights from './AdvancedInsights'
 
 interface StatisticsProps {
   sessions: StudySession[]
@@ -640,6 +641,8 @@ export default function Statistics({
         <WeeklyTrend
           sessions={sessions}
         />
+
+        <AdvancedInsights sessions={sessions} />
 
         <div
           className="glass-panel"
