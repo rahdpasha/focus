@@ -14,6 +14,7 @@ Checked items below were actually verified during V3 hardening. Re-run the autom
 - [x] Supabase `study-advisor` Edge Function is ACTIVE with JWT verification enabled.
 - [x] Supabase Security Advisor findings have been reviewed.
 - [x] All user-facing data tables have RLS enabled.
+- [x] Authenticated cross-user RLS probe confirmed all 8 user-facing tables hide rows owned by other accounts.
 - [x] League helper/trigger SECURITY DEFINER functions are not client-executable; only the two intentional authenticated League RPCs remain callable.
 - [x] SECURITY DEFINER search paths are pinned to `pg_catalog, public`, including the legacy auth profile trigger helper.
 
