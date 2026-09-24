@@ -168,22 +168,23 @@ export default function LeaguePage({
   )
 
   const nextRank = useMemo(() => {
-    if (!currentUser) {
-      return null
-    }
-
-    const currentIndex =
-      entries.findIndex(
-        (entry) =>
-          entry.isCurrentUser,
-      )
-
-    if (currentIndex <= 0) {
+    if (
+      !currentUser ||
+      currentUser.rank <= 1
+    ) {
       return null
     }
 
     const target =
-      entries[currentIndex - 1]
+      entries.find(
+        (entry) =>
+          entry.rank ===
+          currentUser.rank - 1,
+      )
+
+    if (!target) {
+      return null
+    }
 
     return {
       target,
