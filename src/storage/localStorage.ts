@@ -12,6 +12,8 @@ export const WEEKLY_GOALS_HISTORY_KEY = "focus-weekly-goals-history"
 export const ADVANCED_GOALS_KEY = "focus-advanced-goals"
 export const ACTIVE_SUBJECT_KEY = "focus-active-subject"
 export const SETTINGS_KEY = "focus-settings"
+const ACCOUNT_SNAPSHOT_PREFIX =
+  "focus-account-snapshot:"
 
 export function loadSessions(): StudySession[] {
   try {
@@ -155,6 +157,278 @@ export function saveActiveSubject(id: string | null) {
   try { if (id) localStorage.setItem(ACTIVE_SUBJECT_KEY, id); else localStorage.removeItem(ACTIVE_SUBJECT_KEY) } catch { /* Ignore storage errors. */ }
 }
 export function saveSettings(settings: AppSettings) { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch { /* Ignore storage errors. */ } }
+
+function normalizeSnapshotRecord(
+  value: unknown,
+): FocusDataSnapshot | null {
+  if (
+    !value ||
+    typeof value !== "object" ||
+    Array.isArray(value)
+  ) {
+    return null
+  }
+
+  const data =
+    value as Record<string, unknown>
+
+  if (
+    !Array.isArray(data.sessions) ||
+    !Array.isArray(data.subjects)
+  ) {
+    return null
+  }
+
+  const sessions =
+    data.sessions.flatMap(
+      (candidate): StudySession[] => {
+        if (
+          !candidate ||
+          typeof candidate !== "object" ||
+          Array.isArray(candidate)
+        ) {
+          return []
+        }
+
+        const session =
+          candidate as StudySession
+        const completedAt =
+          new Date(
+            session.completedAt,
+          )
+        const startedAt =
+          session.startedAt
+            ? new Date(
+                session.startedAt,
+              )
+            : undefined
+
+        if (
+          Number.isNaN(
+            completedAt.getTime(),
+          ) ||
+          (startedAt &&
+            Number.isNaN(
+              startedAt.getTime(),
+            ))
+        ) {
+          return []
+        }
+
+        return [{
+          ...session,
+          startedAt,
+          completedAt,
+          totalPausedSeconds:
+            session.totalPausedSeconds ??
+            0,
+        }]
+      },
+    )
+
+  const subjects =
+    data.subjects.filter(
+      (subject): subject is Subject =>
+        Boolean(
+          subject &&
+            typeof subject === "object" &&
+            !Array.isArray(subject) &&
+            typeof (
+              subject as Subject
+            ).id === "string" &&
+            typeof (
+              subject as Subject
+            ).name === "string" &&
+            typeof (
+              subject as Subject
+            ).color === "string",
+        ),
+    )
+
+  const weeklyGoalsHistory: WeeklyGoalMap =
+    {}
+
+  if (
+    data.weeklyGoalsHistory &&
+    typeof data.weeklyGoalsHistory ===
+      "object" &&
+    !Array.isArray(
+      data.weeklyGoalsHistory,
+    )
+  ) {
+    for (
+      const [weekKey, goal] of
+      Object.entries(
+        data.weeklyGoalsHistory as Record<
+          string,
+          unknown
+        >,
+      )
+    ) {
+      if (
+        typeof goal === "number" &&
+        Number.isFinite(goal) &&
+        goal > 0
+      ) {
+        weeklyGoalsHistory[
+          weekKey
+        ] = goal
+      }
+    }
+  }
+
+  const advancedGoals =
+    Array.isArray(
+      data.advancedGoals,
+    )
+      ? data.advancedGoals.filter(
+          (
+            goal,
+          ): goal is AdvancedGoal => {
+            if (
+              !goal ||
+              typeof goal !==
+                "object" ||
+              Array.isArray(goal)
+            ) {
+              return false
+            }
+
+            const item =
+              goal as Record<
+                string,
+                unknown
+              >
+
+            return (
+              typeof item.id ===
+                "string" &&
+              typeof item.title ===
+                "string" &&
+              (item.subjectId ===
+                undefined ||
+                typeof item.subjectId ===
+                  "string") &&
+              typeof item.targetMinutes ===
+                "number" &&
+              Number.isFinite(
+                item.targetMinutes,
+              ) &&
+              item.targetMinutes > 0 &&
+              typeof item.deadline ===
+                "string" &&
+              (item.priority ===
+                "low" ||
+                item.priority ===
+                  "medium" ||
+                item.priority ===
+                  "high") &&
+              (item.status ===
+                "active" ||
+                item.status ===
+                  "completed") &&
+              typeof item.createdAt ===
+                "string"
+            )
+          },
+        )
+      : []
+
+  const positiveNumber = (
+    input: unknown,
+    fallback: number,
+  ) =>
+    typeof input === "number" &&
+    Number.isFinite(input) &&
+    input > 0
+      ? input
+      : fallback
+
+  return {
+    sessions,
+    subjects,
+    dailyGoal:
+      positiveNumber(
+        data.dailyGoal,
+        120,
+      ),
+    weeklyGoal:
+      positiveNumber(
+        data.weeklyGoal,
+        600,
+      ),
+    weeklyGoalsHistory,
+    advancedGoals,
+    activeSubjectId:
+      typeof data.activeSubjectId ===
+        "string" &&
+      subjects.some(
+        (subject) =>
+          subject.id ===
+          data.activeSubjectId,
+      )
+        ? data.activeSubjectId
+        : null,
+    settings:
+      normalizeSettings(
+        data.settings &&
+          typeof data.settings ===
+            "object" &&
+          !Array.isArray(
+            data.settings,
+          )
+          ? data.settings as Partial<AppSettings>
+          : null,
+      ),
+    workspacePreferencesVersion:
+      typeof data.workspacePreferencesVersion ===
+        "number" &&
+      Number.isFinite(
+        data.workspacePreferencesVersion,
+      ) &&
+      data.workspacePreferencesVersion >=
+        0
+        ? Math.floor(
+            data.workspacePreferencesVersion,
+          )
+        : 1,
+  }
+}
+
+export function loadAccountSnapshot(
+  userId: string,
+): FocusDataSnapshot | null {
+  try {
+    const raw =
+      localStorage.getItem(
+        `${ACCOUNT_SNAPSHOT_PREFIX}${userId}`,
+      )
+
+    if (!raw) {
+      return null
+    }
+
+    return normalizeSnapshotRecord(
+      JSON.parse(raw) as unknown,
+    )
+  } catch {
+    return null
+  }
+}
+
+export function saveAccountSnapshot(
+  userId: string,
+  snapshot: FocusDataSnapshot,
+): void {
+  try {
+    localStorage.setItem(
+      `${ACCOUNT_SNAPSHOT_PREFIX}${userId}`,
+      JSON.stringify(snapshot),
+    )
+  } catch {
+    // Account cache is best-effort.
+  }
+}
 
 export const localStorageStore: FocusDataStore = {
   load(): FocusDataSnapshot {
