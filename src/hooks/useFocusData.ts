@@ -484,9 +484,17 @@ export function useFocusData(
 
   const exportData = () => {
     const backup = {
-      version: 4,
+      version: 5,
       exportedAt: new Date().toISOString(),
-      sessions, subjects, dailyGoal, weeklyGoal, weeklyGoalsHistory, advancedGoals, settings, activeSubjectId,
+      sessions,
+      subjects,
+      dailyGoal,
+      weeklyGoal,
+      weeklyGoalsHistory,
+      advancedGoals,
+      settings,
+      activeSubjectId,
+      workspacePreferencesVersion,
     }
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" })
     const url = URL.createObjectURL(blob)
@@ -505,8 +513,41 @@ export function useFocusData(
         const data = backup as Record<string, unknown>
         if (!Array.isArray(data.sessions)) throw new Error("Invalid sessions")
         if (!Array.isArray(data.subjects)) throw new Error("Invalid subjects")
-        const importedSessions: StudySession[] = data.sessions.map((session: StudySession) => ({ ...session, completedAt: new Date(session.completedAt), totalPausedSeconds: session.totalPausedSeconds ?? 0 }))
-        setSessions(importedSessions); setSubjects(data.subjects as Subject[])
+        const importedSessions: StudySession[] =
+          data.sessions
+            .map((session: StudySession) => ({
+              ...session,
+              startedAt: session.startedAt
+                ? new Date(session.startedAt)
+                : undefined,
+              completedAt: new Date(session.completedAt),
+              totalPausedSeconds:
+                session.totalPausedSeconds ?? 0,
+            }))
+            .filter(
+              (session) =>
+                !Number.isNaN(
+                  session.completedAt.getTime(),
+                ) &&
+                (!session.startedAt ||
+                  !Number.isNaN(
+                    session.startedAt.getTime(),
+                  )),
+            )
+
+        const importedSubjects =
+          (data.subjects as Subject[]).filter(
+            (subject) =>
+              Boolean(
+                subject &&
+                  typeof subject.id === "string" &&
+                  typeof subject.name === "string" &&
+                  typeof subject.color === "string",
+              ),
+          )
+
+        setSessions(importedSessions)
+        setSubjects(importedSubjects)
         if (Array.isArray(data.advancedGoals)) {
           const importedAdvancedGoals = data.advancedGoals.filter(
             (goal): goal is AdvancedGoal => {
@@ -545,8 +586,35 @@ export function useFocusData(
           setWeeklyGoalsHistory(importedWeeklyGoals)
         } else if (typeof data.weeklyGoal === "number" && data.weeklyGoal > 0) setWeeklyGoalsHistory({ [getWeekKey(new Date())]: data.weeklyGoal })
         else setWeeklyGoalsHistory({})
-        if (data.settings && typeof data.settings === "object" && !Array.isArray(data.settings)) setSettings(normalizeSettings(data.settings as Partial<AppSettings>))
-        if (typeof data.activeSubjectId === "string" || data.activeSubjectId === null) setActiveSubjectId(data.activeSubjectId)
+        if (
+          data.settings &&
+          typeof data.settings === "object" &&
+          !Array.isArray(data.settings)
+        ) {
+          setSettings(
+            normalizeSettings(
+              data.settings as Partial<AppSettings>,
+            ),
+          )
+        }
+
+        const requestedActiveSubject =
+          typeof data.activeSubjectId === "string"
+            ? data.activeSubjectId
+            : null
+
+        setActiveSubjectId(
+          requestedActiveSubject &&
+            importedSubjects.some(
+              (subject) =>
+                subject.id ===
+                requestedActiveSubject,
+            )
+            ? requestedActiveSubject
+            : importedSubjects[0]?.id ?? null,
+        )
+
+        setWorkspacePreferencesVersion(1)
         alert(t("dataImported"))
       } catch { alert(t("invalidBackup")) }
     }
