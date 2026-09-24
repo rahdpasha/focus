@@ -35,7 +35,7 @@ export function loadSubjects(): Subject[] {
     const raw = localStorage.getItem(SUBJECTS_KEY)
     if (!raw) return defaultSubjects
     const parsed: unknown = JSON.parse(raw)
-    if (!Array.isArray(parsed) || parsed.length === 0) return defaultSubjects
+    if (!Array.isArray(parsed)) return defaultSubjects
     return parsed as Subject[]
   } catch { return defaultSubjects }
 }

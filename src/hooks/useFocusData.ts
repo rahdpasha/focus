@@ -391,13 +391,6 @@ export function useFocusData(
         ),
       )
 
-      setSessions((previous) =>
-        previous.filter(
-          (session) =>
-            session.subjectId !== id,
-        ),
-      )
-
       setAdvancedGoals((previous) =>
         previous.map((goal) =>
           goal.subjectId === id

@@ -154,7 +154,6 @@ export async function loadSupabaseSnapshot(userId: string): Promise<FocusDataSna
       .from('subjects')
       .select('*')
       .eq('user_id', userId)
-      .is('archived_at', null)
       .order('created_at', { ascending: true }),
 
     client
@@ -209,10 +208,16 @@ export async function loadSupabaseSnapshot(userId: string): Promise<FocusDataSna
   const settingsRow =
     settingsResult.data as UserSettingsRow | null
 
-  const subjects = subjectRows.map(toSubject)
+  const allSubjects =
+    subjectRows.map(toSubject)
+
+  const subjects =
+    subjectRows
+      .filter((row) => !row.archived_at)
+      .map(toSubject)
 
   const subjectMap = new Map(
-    subjects.map((subject) => [subject.id, subject]),
+    allSubjects.map((subject) => [subject.id, subject]),
   )
 
   const cloudSubjectToClientId = new Map(
@@ -312,7 +317,7 @@ export async function saveSupabaseSnapshot(
     error: cloudSubjectReadError,
   } = await client
     .from('subjects')
-    .select('id, client_id')
+    .select('id, client_id, archived_at')
     .eq('user_id', userId)
 
   if (cloudSubjectReadError) {
@@ -323,6 +328,7 @@ export async function saveSupabaseSnapshot(
     (cloudSubjectRows ?? []) as Array<{
       id: string
       client_id: string | null
+      archived_at: string | null
     }>
 
   for (const row of cloudSubjects) {
@@ -344,9 +350,12 @@ export async function saveSupabaseSnapshot(
     cloudSubjects
       .filter(
         (row) =>
-          !row.client_id ||
-          !currentSubjectIds.has(
-            row.client_id,
+          !row.archived_at &&
+          (
+            !row.client_id ||
+            !currentSubjectIds.has(
+              row.client_id,
+            )
           ),
       )
       .map((row) => row.id)
@@ -360,6 +369,7 @@ export async function saveSupabaseSnapshot(
           name: subject.name,
           color: subject.color,
           icon: subject.icon ?? null,
+          archived_at: null,
           updated_at: now,
         }),
       )
@@ -531,7 +541,10 @@ export async function saveSupabaseSnapshot(
     const { error } =
       await client
         .from('subjects')
-        .delete()
+        .update({
+          archived_at: now,
+          updated_at: now,
+        })
         .eq('user_id', userId)
         .in(
           'id',
@@ -727,45 +740,19 @@ export async function deleteSupabaseSubject(
   clientId: string,
 ): Promise<void> {
   const client = requireSupabase()
+  const now = new Date().toISOString()
 
-  const {
-    data: subjectRow,
-    error: subjectLookupError,
-  } = await client
-    .from('subjects')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('client_id', clientId)
-    .maybeSingle()
-
-  if (subjectLookupError) {
-    throw subjectLookupError
-  }
-
-  if (!subjectRow?.id) {
-    return
-  }
-
-  const { error: sessionsError } =
-    await client
-      .from('study_sessions')
-      .delete()
-      .eq('user_id', userId)
-      .eq('subject_id', subjectRow.id)
-
-  if (sessionsError) {
-    throw sessionsError
-  }
-
-  const { error: subjectError } =
+  const { error } =
     await client
       .from('subjects')
-      .delete()
+      .update({
+        archived_at: now,
+        updated_at: now,
+      })
       .eq('user_id', userId)
-      .eq('id', subjectRow.id)
+      .eq('client_id', clientId)
 
-  if (subjectError) {
-    throw subjectError
+  if (error) {
+    throw error
   }
 }
-
