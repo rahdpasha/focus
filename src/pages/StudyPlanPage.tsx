@@ -53,6 +53,10 @@ export default function StudyPlanPage({
   const [goalSubjectId, setGoalSubjectId] = useState("")
   const [goalPriority, setGoalPriority] =
     useState<AdvancedGoal["priority"]>("medium")
+  const [
+    pendingGoalDelete,
+    setPendingGoalDelete,
+  ] = useState<string | null>(null)
 
   const advancedGoalCards = useMemo(
     () =>
@@ -458,9 +462,33 @@ export default function StudyPlanPage({
                     </button>
                     <button
                       type="button"
-                      onClick={() => onDeleteAdvancedGoal(goal.id)}
+                      onClick={() => {
+                        if (
+                          pendingGoalDelete === goal.id
+                        ) {
+                          onDeleteAdvancedGoal(goal.id)
+                          setPendingGoalDelete(null)
+                          return
+                        }
+
+                        setPendingGoalDelete(goal.id)
+                      }}
+                      onBlur={() => {
+                        if (
+                          pendingGoalDelete === goal.id
+                        ) {
+                          setPendingGoalDelete(null)
+                        }
+                      }}
+                      aria-label={
+                        pendingGoalDelete === goal.id
+                          ? `Confirm deletion of ${goal.title}`
+                          : `Delete ${goal.title}`
+                      }
                     >
-                      DELETE
+                      {pendingGoalDelete === goal.id
+                        ? "CONFIRM DELETE"
+                        : "DELETE"}
                     </button>
                   </div>
                 </div>

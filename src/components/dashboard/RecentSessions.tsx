@@ -68,6 +68,9 @@ export default function RecentSessions({
   const [subjectFilter, setSubjectFilter] =
     useState('all')
 
+  const [pendingDelete, setPendingDelete] =
+    useState<string | null>(null)
+
   const subjects = useMemo(() => {
     return Array.from(
       new Set(
@@ -173,6 +176,18 @@ export default function RecentSessions({
       )
     }
   }, [])
+
+  const requestDeleteSession = (
+    id: string,
+  ) => {
+    if (pendingDelete === id) {
+      onDeleteSession(id)
+      setPendingDelete(null)
+      return
+    }
+
+    setPendingDelete(id)
+  }
 
   const locale =
     language === 'ku'
@@ -468,16 +483,40 @@ export default function RecentSessions({
 
                   <button
                     onClick={() =>
-                      onDeleteSession(
+                      requestDeleteSession(
                         session.id
                       )
                     }
-                    title={t(
-                      'deleteSession'
-                    )}
-                    aria-label={t(
-                      'deleteSession'
-                    )}
+                    onBlur={() => {
+                      if (
+                        pendingDelete ===
+                        session.id
+                      ) {
+                        setPendingDelete(
+                          null
+                        )
+                      }
+                    }}
+                    title={
+                      pendingDelete ===
+                      session.id
+                        ? t(
+                            'confirmDeleteSession'
+                          )
+                        : t(
+                            'deleteSession'
+                          )
+                    }
+                    aria-label={
+                      pendingDelete ===
+                      session.id
+                        ? t(
+                            'confirmDeleteSession'
+                          )
+                        : t(
+                            'deleteSession'
+                          )
+                    }
                     style={{
                       width:
                         '26px',
@@ -493,11 +532,17 @@ export default function RecentSessions({
                         'transparent',
                       border: 'none',
                       color:
-                        'var(--text-muted)',
+                        pendingDelete ===
+                        session.id
+                          ? 'var(--energy)'
+                          : 'var(--text-muted)',
                       cursor:
                         'pointer',
                       opacity:
-                        0.55,
+                        pendingDelete ===
+                        session.id
+                          ? 1
+                          : 0.55,
                       flexShrink:
                         0,
                     }}

@@ -55,6 +55,8 @@ export const translations = {
     allSubjects: 'ALL SUBJECTS',
     noMatchingSessions: 'No matching sessions.',
     deleteSession: 'Delete session',
+    confirmDeleteSession:
+      'Click again to delete session',
 
     // Dashboard
     goodEvening: 'GOOD EVENING, BRO',
@@ -241,6 +243,8 @@ export const translations = {
     noMatchingSessions:
       'هیچ سێشنێکی گونجاو نییە.',
     deleteSession: 'سڕینەوەی سێشن',
+    confirmDeleteSession:
+      'دووبارە کرتە بکە بۆ سڕینەوەی سێشن',
 
     // Dashboard
     goodEvening: 'بەیانی باش، برا',
