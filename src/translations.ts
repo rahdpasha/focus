@@ -22,6 +22,7 @@ export const translations = {
     records: 'Records',
     history: 'History',
     league: 'League',
+    advisor: 'Advisor',
 
     focusPageQuestion: 'What am I studying right now?',
     subjectsPageQuestion: 'What am I studying?',
@@ -206,6 +207,7 @@ export const translations = {
     records: 'تۆمارەکان',
     history: 'مێژوو',
     league: 'پێشبڕکێ',
+    advisor: 'ڕاوێژکار',
 
     focusPageQuestion: 'لە ئێستادا چی دەخوێنم؟',
     subjectsPageQuestion: 'چی دەخوێنم؟',

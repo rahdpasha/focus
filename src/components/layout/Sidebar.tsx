@@ -130,6 +130,7 @@ export default function Sidebar({
         ['statistics', 'statistics'],
         ['records', 'records'],
         ['history', 'history'],
+        ['advisor', 'advisor'],
         ['league', 'league'],
         ['settings', 'settings'],
       ] as const).map(([item, labelKey]) => (
@@ -169,9 +170,11 @@ export default function Sidebar({
                         ? '★'
                         : item === 'history'
                           ? '◷'
-                          : item === 'league'
-                            ? '♕'
-                            : '⚙'}
+                          : item === 'advisor'
+                            ? '✦'
+                            : item === 'league'
+                              ? '♕'
+                              : '⚙'}
           </span>
           {!collapsed && t(labelKey)}
         </button>

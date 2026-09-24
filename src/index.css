@@ -885,3 +885,134 @@ select option {
     justify-content: center;
   }
 }
+
+
+/* AI Advisor */
+.advisor-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.75fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.advisor-hero {
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.advisor-hero::after {
+  content: '';
+  position: absolute;
+  inset: auto -90px -130px auto;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--primary-soft), transparent 68%);
+  pointer-events: none;
+}
+
+.advisor-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.advisor-form textarea {
+  width: 100%;
+  min-height: 92px;
+  box-sizing: border-box;
+  padding: 13px 14px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.advisor-quick-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.advisor-quick-prompts button {
+  padding: 8px 10px;
+  border: 1px solid var(--void-border);
+  border-radius: 999px;
+  background: var(--void-surface-hover);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.advisor-answer {
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid var(--primary-border);
+  border-radius: 14px;
+  background: var(--primary-soft);
+}
+
+.advisor-answer h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 18px;
+}
+
+.advisor-answer p {
+  margin: 9px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.advisor-reasons {
+  display: grid;
+  gap: 7px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.advisor-reasons li {
+  display: flex;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.advisor-reasons li::before {
+  content: '•';
+  color: var(--primary-glow);
+}
+
+.advisor-facts {
+  display: grid;
+  gap: 10px;
+}
+
+.advisor-fact {
+  padding: 13px;
+  border: 1px solid var(--void-border);
+  border-radius: 11px;
+  background: var(--void-surface-hover);
+}
+
+.advisor-fact span {
+  color: var(--text-muted);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.advisor-fact strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .advisor-shell {
+    grid-template-columns: 1fr;
+  }
+}
