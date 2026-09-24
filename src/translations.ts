@@ -21,6 +21,7 @@ export const translations = {
     studyPlan: 'Study Plan',
     records: 'Records',
     history: 'History',
+    league: 'League',
 
     focusPageQuestion: 'What am I studying right now?',
     subjectsPageQuestion: 'What am I studying?',
@@ -204,6 +205,7 @@ export const translations = {
     studyPlan: 'پلانێ خوێندن',
     records: 'تۆمارەکان',
     history: 'مێژوو',
+    league: 'پێشبڕکێ',
 
     focusPageQuestion: 'لە ئێستادا چی دەخوێنم؟',
     subjectsPageQuestion: 'چی دەخوێنم؟',

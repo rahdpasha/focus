@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import Timer from '../components/timer/Timer'
-import type { Subject, StudySession } from '../types'
+import type { Subject, StudySession, Subtask } from '../types'
 import { useI18n } from '../useI18n'
 import PageContainer from './PageContainer'
 import PageHeader from '../components/layout/PageHeader'
@@ -43,6 +43,9 @@ export default function FocusPage({
 }: FocusPageProps) {
   const { t } = useI18n()
   const [ambientSound, setAmbientSound] = useState<AmbientSoundType>('off')
+  const [sessionNotes, setSessionNotes] = useState('')
+  const [subtasks, setSubtasks] = useState<Subtask[]>([])
+  const [subtaskDraft, setSubtaskDraft] = useState('')
 
   const advisor = getStudyAdvisor(sessions, subjects, weeklyGoal)
   const priorityColor =
@@ -59,6 +62,21 @@ export default function FocusPage({
     } else {
       ambientAudio.play(sound, soundVolume / 100)
     }
+  }
+
+  const addSubtask = () => {
+    const text = subtaskDraft.trim()
+    if (!text) return
+
+    setSubtasks((current) => [
+      ...current,
+      {
+        id: 'task-' + Date.now(),
+        text,
+        completed: false,
+      },
+    ])
+    setSubtaskDraft('')
   }
 
   useEffect(() => {
@@ -164,6 +182,84 @@ export default function FocusPage({
         </div>
       </div>
 
+      <div className="glass-panel focus-intent-card">
+        <div>
+          <div className="eyebrow">Session intent</div>
+          <div className="focus-intent-title">
+            Decide what success looks like before the timer starts.
+          </div>
+        </div>
+
+        <textarea
+          value={sessionNotes}
+          onChange={(event) => setSessionNotes(event.target.value)}
+          placeholder="What are you trying to finish, understand, or practice?"
+          rows={3}
+          maxLength={1000}
+          className="focus-intent-notes"
+        />
+
+        <div className="focus-checklist">
+          {subtasks.map((task) => (
+            <label key={task.id} className="focus-checklist-item">
+              <input
+                type="checkbox"
+                checked={task.completed}
+                onChange={(event) => {
+                  setSubtasks((current) =>
+                    current.map((item) =>
+                      item.id === task.id
+                        ? { ...item, completed: event.target.checked }
+                        : item,
+                    ),
+                  )
+                }}
+              />
+              <span
+                className={task.completed ? 'focus-checklist-text complete' : 'focus-checklist-text'}
+              >
+                {task.text}
+              </span>
+              <button
+                type="button"
+                aria-label="Remove checklist item"
+                className="focus-checklist-remove"
+                onClick={() =>
+                  setSubtasks((current) =>
+                    current.filter((item) => item.id !== task.id),
+                  )
+                }
+              >
+                ×
+              </button>
+            </label>
+          ))}
+
+          <div className="focus-checklist-compose">
+            <input
+              value={subtaskDraft}
+              onChange={(event) => setSubtaskDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault()
+                  addSubtask()
+                }
+              }}
+              placeholder="Add a small checklist step"
+              maxLength={160}
+            />
+            <button
+              type="button"
+              className="cyber-btn"
+              onClick={addSubtask}
+              disabled={!subtaskDraft.trim()}
+            >
+              ADD STEP
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div
         className="glass-panel"
         style={{ padding: '48px', display: 'flex', justifyContent: 'center' }}
@@ -210,7 +306,12 @@ export default function FocusPage({
               completed,
               interruptions,
               totalPausedSeconds,
+              notes: sessionNotes.trim() || undefined,
+              subtasks: subtasks.length > 0 ? subtasks : undefined,
             })
+            setSessionNotes('')
+            setSubtasks([])
+            setSubtaskDraft('')
           }}
         />
       </div>

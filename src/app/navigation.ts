@@ -6,4 +6,5 @@ export type Page =
   | 'statistics'
   | 'records'
   | 'history'
+  | 'league'
   | 'settings'

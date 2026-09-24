@@ -30,6 +30,8 @@ type StudySessionRow = {
   completed: boolean
   interruptions: number
   total_paused_seconds: number
+  notes: string | null
+  subtasks: unknown
   created_at: string
   updated_at: string
 }
@@ -111,6 +113,10 @@ function toStudySession(
     completed: row.completed,
     interruptions: row.interruptions,
     totalPausedSeconds: row.total_paused_seconds,
+    notes: row.notes ?? undefined,
+    subtasks: Array.isArray(row.subtasks)
+      ? (row.subtasks as StudySession['subtasks'])
+      : undefined,
   }
 }
 
@@ -433,6 +439,8 @@ export async function saveSupabaseSnapshot(
                   0,
                   session.totalPausedSeconds,
                 ),
+              notes: session.notes ?? null,
+              subtasks: session.subtasks ?? [],
               updated_at: now,
             },
           ]

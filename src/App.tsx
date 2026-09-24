@@ -15,6 +15,7 @@ import SubjectsPage from './pages/SubjectsPage'
 import StudyPlanPage from './pages/StudyPlanPage'
 import RecordsPage from './pages/RecordsPage'
 import HistoryPage from './pages/HistoryPage'
+import LeaguePage from './pages/LeaguePage'
 import { useFocusData } from './hooks/useFocusData'
 import PageContainer from './pages/PageContainer'
 
@@ -190,6 +191,13 @@ function AuthenticatedApp({
       {page === 'history' && (
         <HistoryPage
           sessions={data.sessions}
+        />
+      )}
+
+      {page === 'league' && (
+        <LeaguePage
+          userId={auth.session?.user.id ?? null}
+          displayName={auth.session?.user.displayName}
         />
       )}
 
