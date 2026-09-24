@@ -1,27 +1,111 @@
-import { useState } from 'react'
 import {
+  BarChart3,
+  BookOpen,
+  BrainCircuit,
+  CalendarRange,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  Gauge,
   Hexagon,
-  Plus,
-  Trash2,
-  X,
+  History,
   Menu,
+  Plus,
+  Settings,
+  Swords,
+  Trash2,
+  Trophy,
+  X,
 } from 'lucide-react'
-import type { Subject } from '../../types'
-import type { Page } from '../../app/navigation'
-import { useI18n } from '../../useI18n'
-import { SUBJECT_COLORS } from '../../utils/subjectManager'
+import {
+  useState,
+} from 'react'
+import type {
+  Subject,
+} from '../../types'
+import type {
+  Page,
+} from '../../app/navigation'
+import {
+  useI18n,
+} from '../../useI18n'
+import {
+  SUBJECT_COLORS,
+} from '../../utils/subjectManager'
 
 interface SidebarProps {
   page: Page
-  onPageChange: (page: Page) => void
+  onPageChange: (
+    page: Page,
+  ) => void
   subjects: Subject[]
-  activeSubjectId: string | null
-  onSelectSubject: (id: string | null) => void
-  onAddSubject: (name: string, color: string) => void
-  onDeleteSubject: (id: string) => void
+  activeSubjectId:
+    | string
+    | null
+  onSelectSubject: (
+    id: string | null,
+  ) => void
+  onAddSubject: (
+    name: string,
+    color: string,
+  ) => void
+  onDeleteSubject: (
+    id: string,
+  ) => void
 }
 
-const colors = SUBJECT_COLORS
+const navItems = [
+  {
+    page: 'dashboard' as const,
+    labelKey: 'dashboard' as const,
+    icon: Gauge,
+  },
+  {
+    page: 'focus' as const,
+    labelKey: 'focus' as const,
+    icon: Clock3,
+  },
+  {
+    page: 'subjects' as const,
+    labelKey: 'subjects' as const,
+    icon: BookOpen,
+  },
+  {
+    page: 'study-plan' as const,
+    labelKey: 'studyPlan' as const,
+    icon: CalendarRange,
+  },
+  {
+    page: 'advisor' as const,
+    labelKey: 'advisor' as const,
+    icon: BrainCircuit,
+  },
+  {
+    page: 'statistics' as const,
+    labelKey: 'statistics' as const,
+    icon: BarChart3,
+  },
+  {
+    page: 'records' as const,
+    labelKey: 'records' as const,
+    icon: Trophy,
+  },
+  {
+    page: 'history' as const,
+    labelKey: 'history' as const,
+    icon: History,
+  },
+  {
+    page: 'league' as const,
+    labelKey: 'league' as const,
+    icon: Swords,
+  },
+  {
+    page: 'settings' as const,
+    labelKey: 'settings' as const,
+    icon: Settings,
+  },
+]
 
 export default function Sidebar({
   page,
@@ -33,486 +117,439 @@ export default function Sidebar({
   onDeleteSubject,
 }: SidebarProps) {
   const { t } = useI18n()
+  const [
+    collapsed,
+    setCollapsed,
+  ] = useState(false)
+  const [
+    mobileOpen,
+    setMobileOpen,
+  ] = useState(false)
+  const [
+    showAdd,
+    setShowAdd,
+  ] = useState(false)
+  const [name, setName] =
+    useState('')
+  const [color, setColor] =
+    useState<string>(
+      SUBJECT_COLORS[0],
+    )
 
-  const [collapsed, setCollapsed] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [showAdd, setShowAdd] = useState(false)
-  const [name, setName] = useState('')
-  const [color, setColor] = useState<string>(colors[0])
-
-  const closeMobile = () => {
+  const closeMobile = () =>
     setMobileOpen(false)
-  }
 
-  const handlePageChange = (nextPage: Page) => {
+  const changePage = (
+    nextPage: Page,
+  ) => {
     onPageChange(nextPage)
     closeMobile()
   }
 
-  const handleSubjectSelect = (id: string | null) => {
+  const selectSubject = (
+    id: string,
+  ) => {
     onSelectSubject(id)
     closeMobile()
   }
 
-  const handleAdd = () => {
-    const trimmedName = name.trim()
-
-    if (!trimmedName) return
-
-    onAddSubject(trimmedName, color)
-
-    setName('')
-    setColor(colors[0])
+  const closeAdd = () => {
     setShowAdd(false)
+    setName('')
+    setColor(
+      SUBJECT_COLORS[0],
+    )
+  }
+
+  const createSubject = () => {
+    const clean = name.trim()
+    if (!clean) return
+
+    onAddSubject(
+      clean,
+      color,
+    )
+    closeAdd()
     closeMobile()
   }
 
-  const sidebarContent = (
-    <>
-      {/* Logo */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          padding: '0 20px',
-          marginBottom: '28px',
-        }}
-      >
-        <Hexagon
-          size={28}
-          color="var(--primary)"
-          fill="var(--primary)"
-          fillOpacity={0.2}
-        />
-
-        {(!collapsed || mobileOpen) && (
-          <span
-            style={{
-              fontFamily: 'Orbitron, sans-serif',
-              fontSize: '18px',
-              fontWeight: '600',
-              letterSpacing: '0.15em',
-              color: 'var(--text-primary)',
-            }}
-          >
-            FOCUS
-          </span>
-        )}
-
-        <button
-          className="mobile-sidebar-close"
-          onClick={closeMobile}
-          aria-label="Close navigation"
-          style={{
-            marginLeft: 'auto',
-            display: 'none',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '36px',
-            height: '36px',
-            border: '1px solid var(--void-border)',
-            borderRadius: '8px',
-            background: 'transparent',
-            color: 'var(--text-secondary)',
-            cursor: 'pointer',
-          }}
-        >
-          <X size={18} />
-        </button>
-      </div>
-
-      {([
-        ['dashboard', 'dashboard'],
-        ['focus', 'focus'],
-        ['subjects', 'subjects'],
-        ['study-plan', 'studyPlan'],
-        ['statistics', 'statistics'],
-        ['records', 'records'],
-        ['history', 'history'],
-        ['advisor', 'advisor'],
-        ['league', 'league'],
-        ['settings', 'settings'],
-      ] as const).map(([item, labelKey]) => (
-        <button
-          key={item}
-          onClick={() => handlePageChange(item)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            padding: '10px 20px',
-            margin: '0 8px 4px',
-            width: 'calc(100% - 16px)',
-            background: page === item ? 'var(--void-surface-hover)' : 'transparent',
-            border: 'none',
-            borderRadius: '8px',
-            color: page === item ? 'var(--text-primary)' : 'var(--text-secondary)',
-            cursor: 'pointer',
-            fontFamily: 'Inter, sans-serif',
-            fontSize: '14px',
-            textAlign: 'left',
-            borderLeft: page === item ? '2px solid var(--primary)' : '2px solid transparent',
-          }}
-        >
-          <span style={{ width: '18px', textAlign: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: '11px' }}>
-            {item === 'dashboard'
-              ? '⌂'
-              : item === 'focus'
-                ? '◎'
-                : item === 'subjects'
-                  ? '○'
-                  : item === 'study-plan'
-                    ? '□'
-                    : item === 'statistics'
-                      ? '▥'
-                      : item === 'records'
-                        ? '★'
-                        : item === 'history'
-                          ? '◷'
-                          : item === 'advisor'
-                            ? '✦'
-                            : item === 'league'
-                              ? '♕'
-                              : '⚙'}
-          </span>
-          {!collapsed && t(labelKey)}
-        </button>
-      ))}
-
-      {/* Subject heading */}
-      {!collapsed && (
-        <span
-          style={{
-            padding: '8px 20px',
-            fontSize: '11px',
-            fontFamily: 'Orbitron, sans-serif',
-            color: 'var(--text-muted)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-          }}
-        >
-          {t('subjects')}
-        </span>
-      )}
-
-      {/* Subjects */}
-      {subjects.map((subject) => {
-        const isActive =
-          activeSubjectId === subject.id
-
-        return (
-          <div
-            key={subject.id}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              margin: '0 8px 2px',
-            }}
-          >
-            <button
-              onClick={() =>
-                handleSubjectSelect(subject.id)
-              }
-              style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '10px 12px',
-                background: isActive
-                  ? 'var(--void-surface-hover)'
-                  : 'transparent',
-                border: 'none',
-                borderRadius: '8px',
-                borderLeft: isActive
-                  ? `2px solid ${subject.color}`
-                  : '2px solid transparent',
-                color: isActive
-                  ? 'var(--text-primary)'
-                  : 'var(--text-secondary)',
-                cursor: 'pointer',
-                fontFamily: 'Inter, sans-serif',
-                fontSize: '14px',
-                textAlign: 'left',
-                minWidth: 0,
-              }}
-            >
-              <span
-                style={{
-                  width: '10px',
-                  height: '10px',
-                  borderRadius: '50%',
-                  background: subject.color,
-                  boxShadow: isActive
-                    ? `0 0 10px ${subject.color}80`
-                    : 'none',
-                  flexShrink: 0,
-                }}
-              />
-
-              {!collapsed && (
-                <span
-                  style={{
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {subject.name}
-                </span>
-              )}
-            </button>
-
-            {!collapsed && (
-              <button
-                onClick={() =>
-                  onDeleteSubject(subject.id)
-                }
-                title={`${t('deleteSubject')} ${subject.name}`}
-                style={{
-                  width: '28px',
-                  height: '28px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'var(--text-muted)',
-                  cursor: 'pointer',
-                  opacity: 0.5,
-                  flexShrink: 0,
-                }}
-              >
-                <Trash2 size={13} />
-              </button>
-            )}
-          </div>
-        )
-      })}
-
-      {/* Add Subject */}
-      <button
-        onClick={() => setShowAdd(true)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          padding: '10px 20px',
-          margin: '8px',
-          background: 'transparent',
-          border: '1px dashed var(--void-border)',
-          borderRadius: '8px',
-          color: 'var(--text-muted)',
-          cursor: 'pointer',
-          fontFamily: 'Inter, sans-serif',
-          fontSize: '14px',
-        }}
-      >
-        <Plus size={18} />
-        {!collapsed && t('addSubject')}
-      </button>
-
-      {/* Collapse */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="desktop-collapse-button"
-        style={{
-          marginTop: 'auto',
-          padding: '10px',
-          background: 'transparent',
-          border: 'none',
-          color: 'var(--text-muted)',
-          cursor: 'pointer',
-          fontSize: '18px',
-        }}
-      >
-        {collapsed ? '▶' : '◀'}
-      </button>
-
-      {/* Add Subject Dialog */}
-      {showAdd && !collapsed && (
-        <div
-          style={{
-            position: 'absolute',
-            left: '250px',
-            bottom: '60px',
-            width: '260px',
-            padding: '20px',
-            background: 'rgba(12, 12, 30, 0.98)',
-            border: '1px solid var(--void-border)',
-            borderRadius: '12px',
-            boxShadow:
-              '0 20px 60px rgba(0,0,0,0.5)',
-            zIndex: 20,
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '16px',
-            }}
-          >
-            <span
-              style={{
-                fontFamily:
-                  'Orbitron, sans-serif',
-                fontSize: '11px',
-                color: 'var(--text-primary)',
-                letterSpacing: '0.08em',
-              }}
-            >
-              {t('newSubject')}
-            </span>
-
-            <button
-              onClick={() => setShowAdd(false)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-muted)',
-                cursor: 'pointer',
-              }}
-            >
-              <X size={16} />
-            </button>
-          </div>
-
-          <input
-            autoFocus
-            value={name}
-            onChange={(event) =>
-              setName(event.target.value)
-            }
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                handleAdd()
-              }
-
-              if (event.key === 'Escape') {
-                setShowAdd(false)
-              }
-            }}
-            placeholder={t('subjectName')}
-            style={{
-              width: '100%',
-              boxSizing: 'border-box',
-              padding: '10px 12px',
-              background:
-                'rgba(255,255,255,0.04)',
-              border:
-                '1px solid var(--void-border)',
-              borderRadius: '8px',
-              color: 'var(--text-primary)',
-              outline: 'none',
-              marginBottom: '14px',
-            }}
-          />
-
-          <span
-            style={{
-              display: 'block',
-              fontSize: '10px',
-              color: 'var(--text-muted)',
-              marginBottom: '8px',
-            }}
-          >
-            {t('color')}
-          </span>
-
-          <div
-            style={{
-              display: 'flex',
-              gap: '8px',
-              flexWrap: 'wrap',
-              marginBottom: '16px',
-            }}
-          >
-            {colors.map((item) => (
-              <button
-                key={item}
-                onClick={() => setColor(item)}
-                style={{
-                  width: '24px',
-                  height: '24px',
-                  borderRadius: '50%',
-                  border:
-                    color === item
-                      ? '2px solid white'
-                      : '2px solid transparent',
-                  background: item,
-                  cursor: 'pointer',
-                  boxShadow:
-                    color === item
-                      ? `0 0 10px ${item}`
-                      : 'none',
-                }}
-              />
-            ))}
-          </div>
-
-          <button
-            className="cyber-btn"
-            onClick={handleAdd}
-            disabled={!name.trim()}
-            style={{
-              width: '100%',
-            }}
-          >
-            <Plus size={15} />
-            {t('createSubject')}
-          </button>
-        </div>
-      )}
-    </>
-  )
+  const showLabels =
+    !collapsed || mobileOpen
 
   return (
     <>
       <button
+        type="button"
         className="mobile-menu-button"
-        onClick={() => setMobileOpen(true)}
-      aria-label={t('dashboard')}
+        onClick={() =>
+          setMobileOpen(true)
+        }
+        aria-label="Open navigation"
       >
-        <Menu size={22} />
+        <Menu size={21} />
       </button>
 
       {mobileOpen && (
-        <div
+        <button
+          type="button"
           className="mobile-sidebar-overlay"
           onClick={closeMobile}
+          aria-label="Close navigation"
         />
       )}
 
       <aside
-        className={`app-sidebar ${
-          mobileOpen ? 'mobile-open' : ''
-        }`}
-        style={{
-          width: collapsed
-            ? '60px'
-            : '240px',
-          minHeight: '100vh',
-          height: '100vh',
-          overflowY: 'auto',
-          background:
-            'var(--void-surface)',
-          borderRight:
-            '1px solid var(--void-border)',
-          display: 'flex',
-          flexDirection: 'column',
-          padding: '20px 0',
-          transition:
-            'width 0.3s ease, transform 0.3s ease',
-          position: 'relative',
-          flexShrink: 0,
-          zIndex: 1000,
-        }}
+        className={[
+          'app-sidebar',
+          collapsed
+            ? 'is-collapsed'
+            : '',
+          mobileOpen
+            ? 'mobile-open'
+            : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
       >
-        {sidebarContent}
+        <div className="sidebar-brand">
+          <div className="sidebar-logo">
+            <Hexagon
+              size={24}
+              strokeWidth={1.8}
+            />
+          </div>
+
+          {showLabels && (
+            <div className="sidebar-brand-copy">
+              <strong>
+                FOCUS
+              </strong>
+              <span>
+                Study system
+              </span>
+            </div>
+          )}
+
+          <button
+            type="button"
+            className="sidebar-mobile-close"
+            onClick={closeMobile}
+            aria-label="Close navigation"
+          >
+            <X size={17} />
+          </button>
+        </div>
+
+        <nav
+          className="sidebar-nav"
+          aria-label="Application navigation"
+        >
+          {navItems.map(
+            (item) => {
+              const Icon =
+                item.icon
+              const active =
+                page === item.page
+
+              return (
+                <button
+                  key={item.page}
+                  type="button"
+                  className={
+                    active
+                      ? 'sidebar-nav-item active'
+                      : 'sidebar-nav-item'
+                  }
+                  onClick={() =>
+                    changePage(
+                      item.page,
+                    )
+                  }
+                  title={
+                    collapsed
+                      ? t(
+                          item.labelKey,
+                        )
+                      : undefined
+                  }
+                  aria-current={
+                    active
+                      ? 'page'
+                      : undefined
+                  }
+                >
+                  <Icon
+                    size={17}
+                    strokeWidth={1.8}
+                  />
+
+                  {showLabels && (
+                    <span>
+                      {t(
+                        item.labelKey,
+                      )}
+                    </span>
+                  )}
+                </button>
+              )
+            },
+          )}
+        </nav>
+
+        <div className="sidebar-divider" />
+
+        {showLabels && (
+          <div className="sidebar-section-label">
+            Your subjects
+          </div>
+        )}
+
+        <div className="sidebar-subjects">
+          {subjects.map(
+            (subject) => {
+              const active =
+                activeSubjectId ===
+                subject.id
+
+              return (
+                <div
+                  key={subject.id}
+                  className={
+                    active
+                      ? 'sidebar-subject-row active'
+                      : 'sidebar-subject-row'
+                  }
+                >
+                  <button
+                    type="button"
+                    className="sidebar-subject-select"
+                    onClick={() =>
+                      selectSubject(
+                        subject.id,
+                      )
+                    }
+                    title={
+                      collapsed
+                        ? subject.name
+                        : undefined
+                    }
+                  >
+                    <span
+                      className="sidebar-subject-dot"
+                      style={{
+                        background:
+                          subject.color,
+                        boxShadow:
+                          active
+                            ? `0 0 12px ${subject.color}70`
+                            : 'none',
+                      }}
+                    />
+
+                    {showLabels && (
+                      <span className="sidebar-subject-name">
+                        {
+                          subject.name
+                        }
+                      </span>
+                    )}
+                  </button>
+
+                  {showLabels && (
+                    <button
+                      type="button"
+                      className="sidebar-subject-delete"
+                      onClick={() =>
+                        onDeleteSubject(
+                          subject.id,
+                        )
+                      }
+                      aria-label={
+                        `${t('deleteSubject')} ${subject.name}`
+                      }
+                    >
+                      <Trash2
+                        size={13}
+                      />
+                    </button>
+                  )}
+                </div>
+              )
+            },
+          )}
+        </div>
+
+        <button
+          type="button"
+          className="sidebar-add-subject"
+          onClick={() =>
+            setShowAdd(true)
+          }
+          title={
+            collapsed
+              ? t('addSubject')
+              : undefined
+          }
+        >
+          <Plus size={16} />
+          {showLabels && (
+            <span>
+              {t('addSubject')}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          className="sidebar-collapse"
+          onClick={() =>
+            setCollapsed(
+              (value) =>
+                !value,
+            )
+          }
+          aria-label={
+            collapsed
+              ? 'Expand navigation'
+              : 'Collapse navigation'
+          }
+        >
+          {collapsed ? (
+            <ChevronRight
+              size={17}
+            />
+          ) : (
+            <>
+              <ChevronLeft
+                size={17}
+              />
+              <span>
+                Collapse
+              </span>
+            </>
+          )}
+        </button>
       </aside>
+
+      {showAdd && (
+        <div
+          className="subject-dialog-backdrop"
+          role="presentation"
+          onMouseDown={(
+            event,
+          ) => {
+            if (
+              event.target ===
+              event.currentTarget
+            ) {
+              closeAdd()
+            }
+          }}
+        >
+          <div
+            className="subject-dialog glass-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="subject-dialog-title"
+          >
+            <div className="subject-dialog-head">
+              <div>
+                <div className="eyebrow">
+                  Subjects
+                </div>
+                <h2 id="subject-dialog-title">
+                  {t('newSubject')}
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeAdd}
+                aria-label="Close"
+              >
+                <X size={17} />
+              </button>
+            </div>
+
+            <input
+              autoFocus
+              value={name}
+              onChange={(
+                event,
+              ) =>
+                setName(
+                  event.target
+                    .value,
+                )
+              }
+              onKeyDown={(
+                event,
+              ) => {
+                if (
+                  event.key ===
+                  'Enter'
+                ) {
+                  createSubject()
+                }
+
+                if (
+                  event.key ===
+                  'Escape'
+                ) {
+                  closeAdd()
+                }
+              }}
+              placeholder={t(
+                'subjectName',
+              )}
+              maxLength={80}
+              className="subject-dialog-input"
+            />
+
+            <div className="subject-dialog-label">
+              {t('color')}
+            </div>
+
+            <div className="subject-color-grid">
+              {SUBJECT_COLORS.map(
+                (item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() =>
+                      setColor(item)
+                    }
+                    aria-label={
+                      `Choose ${item}`
+                    }
+                    aria-pressed={
+                      color === item
+                    }
+                    style={{
+                      background:
+                        item,
+                    }}
+                  />
+                ),
+              )}
+            </div>
+
+            <button
+              type="button"
+              className="cyber-btn"
+              disabled={!name.trim()}
+              onClick={
+                createSubject
+              }
+            >
+              <Plus size={15} />
+              {t(
+                'createSubject',
+              )}
+            </button>
+          </div>
+        </div>
+      )}
     </>
   )
 }
