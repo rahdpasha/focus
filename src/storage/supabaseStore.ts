@@ -254,6 +254,10 @@ export async function loadSupabaseSnapshot(userId: string): Promise<FocusDataSna
     normalizeSettings(
       settingsRow
         ? {
+            theme:
+              settingsRow.theme,
+            language:
+              settingsRow.language,
             shortBreak:
               settingsRow.short_break_minutes,
             longBreak:
@@ -665,6 +669,10 @@ export async function saveSupabaseSnapshot(
       .upsert(
         {
           user_id: userId,
+          theme:
+            snapshot.settings.theme,
+          language:
+            snapshot.settings.language,
           short_break_minutes:
             snapshot.settings.shortBreak,
           long_break_minutes:

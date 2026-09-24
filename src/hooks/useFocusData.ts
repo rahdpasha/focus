@@ -504,25 +504,7 @@ export function useFocusData(
   const userId = authSession?.user.id
 
   useEffect(() => {
-    console.error(
-      "FOCUS REALTIME EFFECT:",
-      "supabase=",
-      Boolean(supabase),
-      "auth=",
-      Boolean(userId),
-      "cloudReady=",
-      cloudReady,
-      "user=",
-      userId ?? "none",
-    )
-
     if (!supabase || !userId || !cloudReady) {
-      console.error(
-        "FOCUS REALTIME BLOCKED:",
-        !supabase ? "NO SUPABASE" : "",
-        !userId ? "NO AUTH" : "",
-        !cloudReady ? "CLOUD NOT READY" : "",
-      )
       return
     }
 

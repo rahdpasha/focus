@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import AppShell from './components/layout/AppShell'
 import Dashboard from './components/dashboard/Dashboard'
 import Settings from './components/settings/Settings'
@@ -7,6 +7,7 @@ import AuthScreen from './components/auth/AuthScreen'
 import { useAuth } from './auth/useAuth'
 import { supabase } from './api/supabaseClient'
 import { useI18n } from './useI18n'
+import { useTheme } from './app/useTheme'
 import type { Page } from './app/navigation'
 import type { TranslationKey } from './translations'
 import type { AuthState } from './auth/types'
@@ -68,6 +69,43 @@ function AuthenticatedApp({
     undefined,
     auth.session,
   )
+
+  const {
+    language,
+    setLanguage,
+  } = useI18n()
+  const {
+    theme,
+    setTheme,
+  } = useTheme()
+
+  useEffect(() => {
+    if (
+      theme !== data.settings.theme
+    ) {
+      setTheme(
+        data.settings.theme,
+      )
+    }
+  }, [
+    data.settings.theme,
+    setTheme,
+    theme,
+  ])
+
+  useEffect(() => {
+    if (
+      language !== data.settings.language
+    ) {
+      setLanguage(
+        data.settings.language,
+      )
+    }
+  }, [
+    data.settings.language,
+    language,
+    setLanguage,
+  ])
 
   const activeSubject = data.subjects.find(
     (subject) => subject.id === data.activeSubjectId,

@@ -95,13 +95,11 @@ export default function Settings({
 
   const {
     language,
-    setLanguage,
     t,
   } = useI18n()
 
   const {
     theme,
-    setTheme,
   } = useTheme()
 
   return (
@@ -161,7 +159,8 @@ export default function Settings({
                         active
                       }
                       onClick={() =>
-                        setTheme(
+                        onSettingChange(
+                          'theme',
                           option.value,
                         )
                       }
@@ -197,7 +196,8 @@ export default function Settings({
                 onChange={(
                   event,
                 ) =>
-                  setLanguage(
+                  onSettingChange(
+                    'language',
                     event.target
                       .value ===
                       'ku'

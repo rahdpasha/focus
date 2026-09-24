@@ -1,7 +1,7 @@
 import { subjects as defaultSubjects } from "../data/subjects"
 import type { Subject, StudySession } from "../types"
 import { type WeeklyGoalMap } from "../utils/goalHistory"
-import { defaultSettings, type AppSettings } from "../app/settings"
+import { defaultSettings, normalizeSettings, type AppSettings } from "../app/settings"
 import type { AdvancedGoal, FocusDataSnapshot, FocusDataStore } from "./types"
 
 export const STORAGE_KEY = "focus-sessions"
@@ -105,11 +105,44 @@ export function loadActiveSubject(): string | null {
 export function loadSettings(): AppSettings {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY)
-    if (!raw) return defaultSettings
-    const parsed: unknown = JSON.parse(raw)
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return defaultSettings
-    return { ...defaultSettings, ...(parsed as Partial<AppSettings>) }
-  } catch { return defaultSettings }
+    const parsed: unknown = raw ? JSON.parse(raw) : {}
+
+    if (
+      !parsed ||
+      typeof parsed !== "object" ||
+      Array.isArray(parsed)
+    ) {
+      return defaultSettings
+    }
+
+    const stored =
+      parsed as Partial<AppSettings>
+
+    const legacyTheme =
+      localStorage.getItem("focus-theme")
+    const legacyLanguage =
+      localStorage.getItem("focus-language")
+
+    return normalizeSettings({
+      ...stored,
+      theme:
+        stored.theme ??
+        (legacyTheme === "dark" ||
+        legacyTheme === "light" ||
+        legacyTheme === "system"
+          ? legacyTheme
+          : undefined),
+      language:
+        stored.language ??
+        (legacyLanguage === "ku"
+          ? "ku"
+          : legacyLanguage === "en"
+            ? "en"
+            : undefined),
+    })
+  } catch {
+    return defaultSettings
+  }
 }
 
 export function saveSessions(sessions: StudySession[]) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions)) } catch { /* Ignore storage errors. */ } }
