@@ -108,7 +108,7 @@ Checked items below were actually verified during V3 hardening. Re-run the autom
 
 ## Release
 
-- [ ] Review the final draft PR diff.
+- [x] Review the final draft PR diff.
 - [ ] Perform one clean authenticated end-to-end preview test.
 - [ ] Mark the PR ready only after all blocking checks pass.
 - [ ] Merge into `main`.
