@@ -6,7 +6,7 @@ Checked items below were actually verified during V3 hardening. Re-run the autom
 
 ## Automated gates
 
-- [x] GitHub **Quality / Lint and build** check passes.
+- [x] GitHub **Quality** passes: install, lint, V3 regression tests, client-secret guard, migration-version guard and build.
 - [x] Latest Vercel preview deployment is **READY**.
 - [x] Vercel runtime error check shows no new application errors.
 - [x] Supabase migrations through `harden_legacy_new_user_trigger` are applied.
