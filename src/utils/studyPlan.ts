@@ -130,7 +130,7 @@ export function getStudyPlan(
     const todaySubMinutes = Math.round(
       sessions.reduce((tot, s) => {
         const ts = new Date(s.completedAt).getTime()
-        return ts >= startOfToday.getTime() && ts < endOfToday && s.subjectId === recommendedSubject.id && s.completed
+        return ts >= startOfToday.getTime() && ts < endOfToday.getTime() && s.subjectId === recommendedSubject.id && s.completed
           ? tot + Math.max(0, s.actualDuration) / 60
           : tot
       }, 0)
@@ -163,7 +163,7 @@ export function getStudyPlan(
       const todaySubMinutes = Math.round(
         sessions.reduce((tot, s) => {
           const ts = new Date(s.completedAt).getTime()
-          return ts >= startOfToday.getTime() && ts < endOfToday && s.subjectId === sub.id && s.completed
+          return ts >= startOfToday.getTime() && ts < endOfToday.getTime() && s.subjectId === sub.id && s.completed
             ? tot + Math.max(0, s.actualDuration) / 60
             : tot
         }, 0)
