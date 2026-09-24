@@ -53,12 +53,15 @@ export function getStudyPlan(
   const now = new Date()
   const startOfToday = new Date(now)
   startOfToday.setHours(0, 0, 0, 0)
-  const endOfToday = startOfToday.getTime() + 24 * 60 * 60 * 1000
+  const endOfToday = new Date(startOfToday)
+  endOfToday.setDate(
+    endOfToday.getDate() + 1,
+  )
 
   const todayMinutes = Math.round(
     sessions.reduce((total, session) => {
       const timestamp = new Date(session.completedAt).getTime()
-      return timestamp >= startOfToday.getTime() && timestamp < endOfToday && session.completed
+      return timestamp >= startOfToday.getTime() && timestamp < endOfToday.getTime() && session.completed
         ? total + Math.max(0, session.actualDuration) / 60
         : total
     }, 0)
