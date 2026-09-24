@@ -7,6 +7,16 @@ import { getWeekKey, type WeeklyGoalMap } from "../utils/goalHistory"
 import { createSubject, normalizeSubjectName } from "../utils/subjectManager"
 import { localStorageStore } from "../storage/localStorage"
 import type { AdvancedGoal, CloudSyncStatus, FocusDataSnapshot, FocusDataStore } from "../storage/types"
+import {
+  addOfflineMutationId,
+  clearOfflineMutationState,
+  createOfflineMutationState,
+  hasOfflineMutations,
+  loadOfflineMutationState,
+  mergeOfflineMutations,
+  saveOfflineMutationState,
+  type OfflineMutationState,
+} from "../storage/offlineSync"
 import type { TranslationKey } from "../translations"
 import { supabase } from "../api/supabaseClient"
 import type { AuthSession } from "../auth/types"
@@ -74,6 +84,33 @@ function loadInitialSnapshot(
   return createFreshSnapshot()
 }
 
+function hasMeaningfulCloudData(
+  snapshot: FocusDataSnapshot & {
+    hasArchivedSubjects?: boolean
+  },
+): boolean {
+  return (
+    Boolean(
+      snapshot.hasArchivedSubjects,
+    ) ||
+    snapshot.subjects.length > 0 ||
+    snapshot.sessions.length > 0 ||
+    Object.keys(
+      snapshot.weeklyGoalsHistory,
+    ).length > 0 ||
+    snapshot.advancedGoals.length > 0 ||
+    snapshot.dailyGoal !== 120 ||
+    snapshot.weeklyGoal !== 600 ||
+    snapshot.workspacePreferencesVersion > 0 ||
+    JSON.stringify(
+      snapshot.settings,
+    ) !==
+      JSON.stringify(
+        defaultSettings,
+      )
+  )
+}
+
 function getCloudFingerprint(
   snapshot: FocusDataSnapshot,
 ): string {
@@ -137,6 +174,58 @@ export function useFocusData(
   const queuedCloudSnapshot = useRef<typeof initial | null>(null)
   const cloudReplaceRequested = useRef(false)
   const lastCloudFingerprint = useRef<string | null>(null)
+  const offlineMutations = useRef<OfflineMutationState>(
+    loadOfflineMutationState(
+      authSession?.user.id,
+    ),
+  )
+  const offlineRecoveryRequested = useRef(
+    hasOfflineMutations(
+      offlineMutations.current,
+    ),
+  )
+  const latestLocalSnapshot =
+    useRef<FocusDataSnapshot>(initial)
+
+  latestLocalSnapshot.current = {
+    sessions,
+    subjects,
+    dailyGoal,
+    weeklyGoal,
+    weeklyGoalsHistory,
+    advancedGoals,
+    activeSubjectId,
+    settings,
+    workspacePreferencesVersion,
+  }
+
+  const recordOfflineMutation =
+    useCallback(
+      (
+        update: (
+          mutations: OfflineMutationState,
+        ) => void,
+      ) => {
+        if (
+          !authSession ||
+          typeof navigator === "undefined" ||
+          navigator.onLine
+        ) {
+          return
+        }
+
+        update(
+          offlineMutations.current,
+        )
+        offlineRecoveryRequested.current =
+          true
+        saveOfflineMutationState(
+          authSession.user.id,
+          offlineMutations.current,
+        )
+      },
+      [authSession],
+    )
 
   const flushCloudSaveQueue = useCallback(
     async (): Promise<boolean> => {
@@ -302,23 +391,91 @@ export function useFocusData(
 
     void (async () => {
       try {
-        const cloudSnapshot = await loadSupabaseSnapshot(
-          authSession.user.id,
-        )
+        if (
+          queuedCloudSnapshot.current
+        ) {
+          const flushed =
+            await flushCloudSaveQueue()
 
-        const cloudHasData =
-          cloudSnapshot.hasArchivedSubjects ||
-          cloudSnapshot.subjects.length > 0 ||
-          cloudSnapshot.sessions.length > 0 ||
-          Object.keys(
-            cloudSnapshot.weeklyGoalsHistory,
-          ).length > 0 ||
-          cloudSnapshot.advancedGoals.length > 0 ||
-          cloudSnapshot.dailyGoal !== 120 ||
-          cloudSnapshot.weeklyGoal !== 600 ||
-          cloudSnapshot.workspacePreferencesVersion > 0 ||
-          JSON.stringify(cloudSnapshot.settings) !==
-            JSON.stringify(defaultSettings)
+          if (!flushed) {
+            throw new Error(
+              "Pending cloud changes could not be saved.",
+            )
+          }
+        }
+
+        let cloudSnapshot =
+          await loadSupabaseSnapshot(
+            authSession.user.id,
+          )
+
+        let cloudHasData =
+          hasMeaningfulCloudData(
+            cloudSnapshot,
+          )
+
+        if (
+          offlineRecoveryRequested.current ||
+          hasOfflineMutations(
+            offlineMutations.current,
+          )
+        ) {
+          const localSnapshot =
+            latestLocalSnapshot.current
+          const offlineChanges =
+            offlineMutations.current
+
+          if (
+            offlineChanges.replaceWorkspace
+          ) {
+            await replaceSupabaseSnapshot(
+              localSnapshot,
+              authSession.user.id,
+            )
+            cloudReplaceRequested.current =
+              false
+          } else if (!cloudHasData) {
+            await saveSupabaseSnapshot(
+              localSnapshot,
+              authSession.user.id,
+            )
+          } else if (
+            hasOfflineMutations(
+              offlineChanges,
+            )
+          ) {
+            const mergedSnapshot =
+              mergeOfflineMutations(
+                cloudSnapshot,
+                localSnapshot,
+                offlineChanges,
+              )
+
+            await saveSupabaseSnapshot(
+              mergedSnapshot,
+              authSession.user.id,
+            )
+          }
+
+          offlineMutations.current =
+            createOfflineMutationState()
+          offlineRecoveryRequested.current =
+            false
+          clearOfflineMutationState(
+            authSession.user.id,
+          )
+          cloudSaveFailed.current =
+            false
+
+          cloudSnapshot =
+            await loadSupabaseSnapshot(
+              authSession.user.id,
+            )
+          cloudHasData =
+            hasMeaningfulCloudData(
+              cloudSnapshot,
+            )
+        }
 
         const localHasData =
           initial.subjects.length > 0 ||
@@ -435,6 +592,7 @@ export function useFocusData(
     initial,
     authSession,
     networkRevision,
+    flushCloudSaveQueue,
   ])
 
   useEffect(() => {
@@ -523,11 +681,11 @@ export function useFocusData(
     }
 
     const handleOnline = () => {
-      setCloudStatus(
-        cloudHydrated.current
-          ? "saving"
-          : "loading",
-      )
+      cloudHydrationStarted.current =
+        false
+      cloudHydrated.current = false
+      setCloudReady(false)
+      setCloudStatus("loading")
       setNetworkRevision(
         (value) => value + 1,
       )
@@ -558,10 +716,44 @@ export function useFocusData(
     }
   }, [authSession])
 
+  const setDailyGoalValue = (
+    goal: number,
+  ) => {
+    if (
+      !Number.isFinite(goal) ||
+      goal <= 0
+    ) {
+      return
+    }
+
+    setDailyGoal(goal)
+    recordOfflineMutation(
+      (mutations) => {
+        mutations.dailyGoal = true
+      },
+    )
+  }
+
   const setWeeklyGoal = (goal: number) => {
     if (!Number.isFinite(goal) || goal <= 0) return
+
+    const weekKey =
+      getWeekKey(new Date())
+
     setWeeklyGoalState(goal)
-    setWeeklyGoalsHistory((previous) => ({ ...previous, [getWeekKey(new Date())]: goal }))
+    setWeeklyGoalsHistory((previous) => ({
+      ...previous,
+      [weekKey]: goal,
+    }))
+    recordOfflineMutation(
+      (mutations) => {
+        mutations.weeklyGoal = true
+        addOfflineMutationId(
+          mutations.weeklyHistoryKeys,
+          weekKey,
+        )
+      },
+    )
   }
 
   const addSession = (session: StudySession) => {
@@ -569,6 +761,14 @@ export function useFocusData(
       session,
       ...previous,
     ])
+    recordOfflineMutation(
+      (mutations) => {
+        addOfflineMutationId(
+          mutations.sessionIds,
+          session.id,
+        )
+      },
+    )
   }
 
   const deleteSession = (id: string) => {
@@ -614,6 +814,14 @@ export function useFocusData(
       const newSubject = createSubject(previous, name, color)
       if (!newSubject) return previous
       setActiveSubjectId(newSubject.id)
+      recordOfflineMutation(
+        (mutations) => {
+          addOfflineMutationId(
+            mutations.subjectIds,
+            newSubject.id,
+          )
+        },
+      )
       return [...previous, newSubject]
     })
   }
@@ -673,7 +881,30 @@ export function useFocusData(
   }
 
   const selectSubject = (id: string | null) => setActiveSubjectId(id)
-  const updateSettings = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => setSettings((previous) => normalizeSettings({ ...previous, [key]: value }))
+  const updateSettings = <K extends keyof AppSettings>(
+    key: K,
+    value: AppSettings[K],
+  ) => {
+    setSettings((previous) =>
+      normalizeSettings({
+        ...previous,
+        [key]: value,
+      }),
+    )
+    recordOfflineMutation(
+      (mutations) => {
+        if (
+          !mutations.settingsKeys.includes(
+            key,
+          )
+        ) {
+          mutations.settingsKeys.push(
+            key,
+          )
+        }
+      },
+    )
+  }
 
   const addAdvancedGoal = (
     title: string,
@@ -706,6 +937,14 @@ export function useFocusData(
     }
 
     setAdvancedGoals((previous) => [goal, ...previous])
+    recordOfflineMutation(
+      (mutations) => {
+        addOfflineMutationId(
+          mutations.advancedGoalIds,
+          goal.id,
+        )
+      },
+    )
   }
 
   const updateAdvancedGoal = (
@@ -718,6 +957,14 @@ export function useFocusData(
           ? { ...goal, ...patch }
           : goal,
       ),
+    )
+    recordOfflineMutation(
+      (mutations) => {
+        addOfflineMutationId(
+          mutations.advancedGoalIds,
+          id,
+        )
+      },
     )
   }
 
@@ -1026,6 +1273,22 @@ export function useFocusData(
         if (authSession) {
           cloudReplaceRequested.current =
             true
+
+          if (
+            typeof navigator !== "undefined" &&
+            !navigator.onLine
+          ) {
+            offlineMutations.current =
+              createOfflineMutationState()
+            offlineMutations.current
+              .replaceWorkspace = true
+            offlineRecoveryRequested.current =
+              true
+            saveOfflineMutationState(
+              authSession.user.id,
+              offlineMutations.current,
+            )
+          }
         }
 
         setSessions(importedSessions)
@@ -1364,5 +1627,5 @@ export function useFocusData(
     }
   }, [userId, cloudReady])
 
-  return { subjects, activeSubjectId, sessions, dailyGoal, weeklyGoal, weeklyGoalsHistory, advancedGoals, settings, cloudStatus, setDailyGoal, setWeeklyGoal, setSettings, updateSettings, addSession, deleteSession, addSubject, deleteSubject, selectSubject, addAdvancedGoal, updateAdvancedGoal, deleteAdvancedGoal, exportData, importData }
+  return { subjects, activeSubjectId, sessions, dailyGoal, weeklyGoal, weeklyGoalsHistory, advancedGoals, settings, cloudStatus, setDailyGoal: setDailyGoalValue, setWeeklyGoal, setSettings, updateSettings, addSession, deleteSession, addSubject, deleteSubject, selectSubject, addAdvancedGoal, updateAdvancedGoal, deleteAdvancedGoal, exportData, importData, flushCloudChanges: flushBeforeDestructiveMutation }
 }
