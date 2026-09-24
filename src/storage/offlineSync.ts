@@ -456,14 +456,22 @@ export function mergeOfflineMutations(
     }
   }
 
+  const remappedLocalActiveSubjectId =
+    local.activeSubjectId
+      ? subjectIdAliases.get(
+          local.activeSubjectId,
+        ) ??
+        local.activeSubjectId
+      : null
+
   const activeSubjectId =
-    local.activeSubjectId &&
+    remappedLocalActiveSubjectId &&
     subjects.some(
       (subject) =>
         subject.id ===
-        local.activeSubjectId,
+        remappedLocalActiveSubjectId,
     )
-      ? local.activeSubjectId
+      ? remappedLocalActiveSubjectId
       : cloud.activeSubjectId &&
           subjects.some(
             (subject) =>
