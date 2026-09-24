@@ -2,27 +2,50 @@
 
 FOCUS V3 is developed on `feature/focus-league-v3`. Keep `main` unchanged until the preview has passed this checklist.
 
+Checked items below were actually verified during V3 hardening. Re-run the automated gates after any later code or migration commit.
+
 ## Automated gates
 
-- [ ] GitHub **Quality / Lint and build** check passes.
-- [ ] Latest Vercel preview deployment is **READY**.
-- [ ] Vercel runtime error check shows no new application errors.
-- [ ] Supabase migrations through `subject_scoped_advanced_goals` are applied.
-- [ ] Supabase `study-advisor` Edge Function is ACTIVE with JWT verification enabled.
-- [ ] Supabase Security Advisor findings have been reviewed.
+- [x] GitHub **Quality / Lint and build** check passes.
+- [x] Latest Vercel preview deployment is **READY**.
+- [x] Vercel runtime error check shows no new application errors.
+- [x] Supabase migrations through `unscope_goals_on_subject_archive` are applied.
+- [x] Supabase `study-advisor` Edge Function is ACTIVE with JWT verification enabled.
+- [x] Supabase Security Advisor findings have been reviewed.
+- [x] All user-facing data tables have RLS enabled.
+- [x] League helper/trigger SECURITY DEFINER functions are not client-executable; only the two intentional authenticated League RPCs remain callable.
+- [x] SECURITY DEFINER search paths are pinned to `pg_catalog, public`.
 
 ## Core product smoke test
 
 - [ ] Sign in and sign out.
+- [ ] Sign out of account A, sign in to account B in the same browser, and confirm no account-A study data appears.
+- [ ] Sign back into the original account and confirm its cloud data hydrates correctly.
 - [ ] Add, select and remove a subject.
 - [ ] Remove a subject with completed sessions and confirm its historical sessions remain in History/Statistics after refresh.
 - [ ] Start a session from Dashboard, Subjects and Study Plan.
 - [ ] Complete a focus session and confirm it appears in History and Statistics.
 - [ ] Add session notes and checklist items, complete the session, refresh, and confirm they persist.
-- [ ] Delete a session and confirm the cloud copy is removed.
+- [ ] Delete a session and confirm it disappears from the app/cloud view.
 - [ ] Change daily/weekly targets and confirm they survive refresh.
 - [ ] Change theme, language, timer, sound and notification settings.
 - [ ] Export a backup and import it into a safe test account/browser profile.
+- [ ] Restore a backup containing history for an archived/removed subject and confirm that history remains readable.
+
+## Cloud sync and data safety
+
+- [x] Rollback-only database test confirmed a deleted session tombstone cannot be resurrected by a stale upsert.
+- [x] Rollback-only database test confirmed a deleted advanced goal tombstone cannot be resurrected by a stale upsert.
+- [x] Rollback-only database test confirmed soft-deleting a 60-minute session recomputes its League day from 3 points to 0.
+- [x] Rollback-only database test confirmed archiving a linked subject automatically unscopes its active advanced goal.
+- [x] Rollback-only archived-name test confirmed one archived + one active normalized subject name can coexist and a second active duplicate is rejected.
+- [ ] Test offline → online recovery in a real browser.
+- [ ] Make rapid edits while sync is saving and confirm the final cloud state matches the final local state.
+- [ ] With two signed-in browsers/devices, delete a session on one and confirm the stale second device cannot resurrect it.
+- [ ] With two signed-in browsers/devices, delete an advanced goal on one and confirm the stale second device cannot resurrect it.
+- [ ] With two signed-in browsers/devices, archive a subject on one and confirm the other device sees the subject removed and the linked goal unscoped.
+- [ ] Verify theme/language sync between two signed-in browsers/devices.
+- [ ] Simulate an initial cloud-read failure and confirm local data is not pushed until hydration succeeds.
 
 ## Advanced goals
 
@@ -35,7 +58,7 @@ FOCUS V3 is developed on `feature/focus-league-v3`. Keep `main` unchanged until 
 
 ## Advisor
 
-- [ ] Ask each quick prompt and confirm the fallback returns a usable action.
+- [ ] Ask each quick prompt and confirm the deterministic fallback returns a usable action.
 - [ ] Confirm Advisor facts match Dashboard/Statistics data.
 - [ ] Confirm a subject-scoped urgent goal can drive the recommended subject.
 - [ ] Confirm raw session notes are not included in the advisor payload.
@@ -63,17 +86,17 @@ FOCUS V3 is developed on `feature/focus-league-v3`. Keep `main` unchanged until 
 
 ## Security before production
 
-- [ ] Keep RLS enabled on every user-data table.
-- [ ] Confirm anonymous users cannot execute League RPCs.
-- [ ] Confirm only the two intentional League RPCs are authenticated-callable SECURITY DEFINER functions.
-- [ ] Keep SECURITY DEFINER search paths pinned to `pg_catalog, public`.
+- [x] Keep RLS enabled on every user-data table.
+- [x] Confirm anonymous users cannot execute League RPCs.
+- [x] Confirm only the two intentional League RPCs are authenticated-callable SECURITY DEFINER functions.
+- [x] Keep SECURITY DEFINER search paths pinned to `pg_catalog, public`.
 - [ ] Enable Supabase Auth leaked-password protection in the dashboard.
-- [ ] Never expose a service-role key or Gemini API key in Vite/client environment variables.
+- [x] Confirm no service-role key or Gemini key is present in Vite/client variables in the V3 diff.
 
 ## Release
 
-- [ ] Review the draft PR diff.
-- [ ] Perform one clean end-to-end preview test.
+- [ ] Review the final draft PR diff.
+- [ ] Perform one clean authenticated end-to-end preview test.
 - [ ] Mark the PR ready only after all blocking checks pass.
 - [ ] Merge into `main`.
 - [ ] Verify the production Vercel deployment.
