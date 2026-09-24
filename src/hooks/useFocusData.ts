@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import type { Subject, StudySession } from "../types"
 import type { AppSettings } from "../app/settings"
-import { normalizeSettings } from "../app/settings"
+import { defaultSettings, normalizeSettings } from "../app/settings"
+import { subjects as defaultSubjects } from "../data/subjects"
 import { getWeekKey, type WeeklyGoalMap } from "../utils/goalHistory"
 import { createSubject } from "../utils/subjectManager"
 import { localStorageStore } from "../storage/localStorage"
@@ -17,6 +18,59 @@ import {
 } from "../storage/supabaseStore"
 
 type Translate = (key: TranslationKey) => string
+
+const LOCAL_OWNER_KEY = "focus-local-owner-id"
+
+function readLocalOwnerId(): string | null {
+  try {
+    return localStorage.getItem(LOCAL_OWNER_KEY)
+  } catch {
+    return null
+  }
+}
+
+function writeLocalOwnerId(userId: string): void {
+  try {
+    localStorage.setItem(LOCAL_OWNER_KEY, userId)
+  } catch {
+    // Local cache ownership is best-effort only.
+  }
+}
+
+function createFreshSnapshot(): FocusDataSnapshot {
+  return {
+    sessions: [],
+    subjects: defaultSubjects.map((subject) => ({
+      ...subject,
+    })),
+    dailyGoal: 120,
+    weeklyGoal: 600,
+    weeklyGoalsHistory: {},
+    advancedGoals: [],
+    activeSubjectId: defaultSubjects[0]?.id ?? null,
+    settings: { ...defaultSettings },
+    workspacePreferencesVersion: 1,
+  }
+}
+
+function loadInitialSnapshot(
+  store: FocusDataStore,
+  userId?: string,
+): FocusDataSnapshot {
+  const snapshot = store.load()
+
+  if (store !== localStorageStore || !userId) {
+    return snapshot
+  }
+
+  const ownerId = readLocalOwnerId()
+
+  if (!ownerId || ownerId === userId) {
+    return snapshot
+  }
+
+  return createFreshSnapshot()
+}
 
 function getCloudFingerprint(
   snapshot: FocusDataSnapshot,
@@ -39,7 +93,14 @@ export function useFocusData(
   store: FocusDataStore = localStorageStore,
   authSession: AuthSession | null = null,
 ) {
-  const initial = useMemo(() => store.load(), [store])
+  const initial = useMemo(
+    () =>
+      loadInitialSnapshot(
+        store,
+        authSession?.user.id,
+      ),
+    [store, authSession?.user.id],
+  )
   const [subjects, setSubjects] = useState<Subject[]>(initial.subjects)
   const [activeSubjectId, setActiveSubjectId] = useState<string | null>(initial.activeSubjectId)
   const [sessions, setSessions] = useState<StudySession[]>(initial.sessions)
@@ -85,6 +146,15 @@ export function useFocusData(
       settings,
       workspacePreferencesVersion,
     })
+
+    if (
+      authSession &&
+      store === localStorageStore
+    ) {
+      writeLocalOwnerId(
+        authSession.user.id,
+      )
+    }
   }, [
     store,
     sessions,
@@ -96,6 +166,7 @@ export function useFocusData(
     activeSubjectId,
     settings,
     workspacePreferencesVersion,
+    authSession,
   ])
 
   useEffect(() => {
@@ -121,7 +192,13 @@ export function useFocusData(
           cloudSnapshot.sessions.length > 0 ||
           Object.keys(
             cloudSnapshot.weeklyGoalsHistory,
-          ).length > 0
+          ).length > 0 ||
+          cloudSnapshot.advancedGoals.length > 0 ||
+          cloudSnapshot.dailyGoal !== 120 ||
+          cloudSnapshot.weeklyGoal !== 600 ||
+          cloudSnapshot.workspacePreferencesVersion > 0 ||
+          JSON.stringify(cloudSnapshot.settings) !==
+            JSON.stringify(defaultSettings)
 
         const localHasData =
           initial.subjects.length > 0 ||
@@ -228,7 +305,9 @@ export function useFocusData(
           return
         }
 
-        cloudHydrated.current = true
+        cloudHydrationStarted.current = false
+        cloudHydrated.current = false
+        setCloudReady(false)
         setCloudStatus("error")
       }
     })()
