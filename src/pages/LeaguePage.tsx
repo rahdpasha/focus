@@ -35,6 +35,27 @@ function previousMonthDate(): Date {
   return date
 }
 
+function championLabel(
+  entries: LeagueEntry[],
+): string | null {
+  const winners =
+    entries.filter(
+      (entry) =>
+        entry.rank === 1 &&
+        entry.points > 0,
+    )
+
+  if (winners.length === 0) {
+    return null
+  }
+
+  if (winners.length === 1) {
+    return winners[0].publicName
+  }
+
+  return `${winners[0].publicName} + ${winners.length - 1} tied`
+}
+
 function defaultProfile(
   displayName?: string,
 ): LeagueProfile {
@@ -66,11 +87,11 @@ export default function LeaguePage({
   const [
     lastWeekChampion,
     setLastWeekChampion,
-  ] = useState<LeagueEntry | null>(null)
+  ] = useState<string | null>(null)
   const [
     lastMonthChampion,
     setLastMonthChampion,
-  ] = useState<LeagueEntry | null>(null)
+  ] = useState<string | null>(null)
   const [loading, setLoading] =
     useState(() => Boolean(userId))
   const [saving, setSaving] =
@@ -98,10 +119,10 @@ export default function LeaguePage({
 
       setEntries(current)
       setLastWeekChampion(
-        lastWeek[0] ?? null,
+        championLabel(lastWeek),
       )
       setLastMonthChampion(
-        lastMonth[0] ?? null,
+        championLabel(lastMonth),
       )
     },
     [],
@@ -881,8 +902,7 @@ export default function LeaguePage({
                       700,
                   }}
                 >
-                  {lastWeekChampion
-                    ?.publicName ??
+                  {lastWeekChampion ??
                     'No winner yet'}
                 </div>
               </div>
@@ -909,8 +929,7 @@ export default function LeaguePage({
                       700,
                   }}
                 >
-                  {lastMonthChampion
-                    ?.publicName ??
+                  {lastMonthChampion ??
                     'No winner yet'}
                 </div>
               </div>
