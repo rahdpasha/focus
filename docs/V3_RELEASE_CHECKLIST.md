@@ -9,7 +9,7 @@ Checked items below were actually verified during V3 hardening. Re-run the autom
 - [x] GitHub **Quality / Lint and build** check passes.
 - [x] Latest Vercel preview deployment is **READY**.
 - [x] Vercel runtime error check shows no new application errors.
-- [x] Supabase migrations through `unscope_goals_on_subject_archive` are applied.
+- [x] Supabase migrations through `guard_advanced_goal_subject_scope` are applied.
 - [x] Supabase `study-advisor` Edge Function is ACTIVE with JWT verification enabled.
 - [x] Supabase Security Advisor findings have been reviewed.
 - [x] All user-facing data tables have RLS enabled.
@@ -38,9 +38,14 @@ Checked items below were actually verified during V3 hardening. Re-run the autom
 - [x] Rollback-only database test confirmed a deleted advanced goal tombstone cannot be resurrected by a stale upsert.
 - [x] Rollback-only database test confirmed soft-deleting a 60-minute session recomputes its League day from 3 points to 0.
 - [x] Rollback-only database test confirmed archiving a linked subject automatically unscopes its active advanced goal.
+- [x] Rollback-only database test confirmed a stale client cannot re-scope an advanced goal to an archived subject.
 - [x] Rollback-only archived-name test confirmed one archived + one active normalized subject name can coexist and a second active duplicate is rejected.
 - [ ] Test offline → online recovery in a real browser.
 - [ ] Make rapid edits while sync is saving and confirm the final cloud state matches the final local state.
+- [ ] Complete/create an entity and immediately delete/archive it while sync is active; confirm the destructive action wins and no ghost row returns after refresh.
+- [x] Cloud destructive actions are serialized behind pending snapshot saves so same-device delete/archive cannot race an unfinished create/update write.
+- [x] Realtime refresh stops polling after a failed queued cloud save instead of spinning indefinitely.
+- [x] Archived-only cloud subject history is treated as meaningful cloud state, so an intentionally empty subject workspace is not repopulated from local defaults.
 - [ ] With two signed-in browsers/devices, delete a session on one and confirm the stale second device cannot resurrect it.
 - [ ] With two signed-in browsers/devices, delete an advanced goal on one and confirm the stale second device cannot resurrect it.
 - [ ] With two signed-in browsers/devices, archive a subject on one and confirm the other device sees the subject removed and the linked goal unscoped.
