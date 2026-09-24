@@ -14,6 +14,7 @@ import type { AdvancedGoal, CloudSyncStatus, FocusDataSnapshot, FocusDataStore }
 import {
   addOfflineMutationId,
   clearOfflineMutationState,
+  cloneOfflineMutationState,
   createOfflineMutationState,
   hasOfflineMutations,
   loadOfflineMutationState,
@@ -31,6 +32,7 @@ import {
   deleteSupabaseSubject,
   loadSupabaseSnapshot,
   replaceSupabaseSnapshot,
+  saveSupabaseMutations,
   saveSupabaseSnapshot,
 } from "../storage/supabaseStore"
 
@@ -277,10 +279,13 @@ export function useFocusData(
       cloudSaveInFlight.current = true
       cloudSaveFailed.current = false
       let saveFailed = false
+      let lastSavedLocalFingerprint:
+        | string
+        | null = null
 
       try {
         while (queuedCloudSnapshot.current) {
-          const latestSnapshot =
+          const queuedSnapshot =
             queuedCloudSnapshot.current
 
           queuedCloudSnapshot.current = null
@@ -293,23 +298,70 @@ export function useFocusData(
               false
           }
 
+          const localSnapshot =
+            latestLocalSnapshot.current
+          const localFingerprint =
+            getCloudFingerprint(
+              localSnapshot,
+            )
+          const pendingChanges =
+            cloneOfflineMutationState(
+              offlineMutations.current,
+            )
+
           try {
+            let savedSnapshot =
+              queuedSnapshot
+
             if (replaceCloud) {
               await replaceSupabaseSnapshot(
-                latestSnapshot,
+                localSnapshot,
                 authSession.user.id,
               )
+
+              savedSnapshot =
+                localSnapshot
+            } else if (
+              hasOfflineMutations(
+                pendingChanges,
+              )
+            ) {
+              const cloudSnapshot =
+                await loadSupabaseSnapshot(
+                  authSession.user.id,
+                )
+
+              const mergedSnapshot =
+                mergeOfflineMutations(
+                  cloudSnapshot,
+                  localSnapshot,
+                  pendingChanges,
+                )
+
+              await saveSupabaseMutations(
+                mergedSnapshot,
+                authSession.user.id,
+                pendingChanges,
+              )
+
+              savedSnapshot =
+                mergedSnapshot
             } else {
-              await saveSupabaseSnapshot(
-                latestSnapshot,
-                authSession.user.id,
-              )
+              lastCloudFingerprint.current =
+                getCloudFingerprint(
+                  queuedSnapshot,
+                )
+              lastSavedLocalFingerprint =
+                localFingerprint
+              continue
             }
 
             lastCloudFingerprint.current =
               getCloudFingerprint(
-                latestSnapshot,
+                savedSnapshot,
               )
+            lastSavedLocalFingerprint =
+              localFingerprint
           } catch (error) {
             if (replaceCloud) {
               cloudReplaceRequested.current =
@@ -323,7 +375,7 @@ export function useFocusData(
 
             if (!queuedCloudSnapshot.current) {
               queuedCloudSnapshot.current =
-                latestSnapshot
+                latestLocalSnapshot.current
             }
 
             saveFailed = true
@@ -337,14 +389,14 @@ export function useFocusData(
           !saveFailed &&
           !queuedCloudSnapshot.current
         ) {
-          setCloudStatus("synced")
+          const currentLocalFingerprint =
+            getCloudFingerprint(
+              latestLocalSnapshot.current,
+            )
 
           if (
-            authSession &&
-            lastCloudFingerprint.current ===
-              getCloudFingerprint(
-                latestLocalSnapshot.current,
-              )
+            lastSavedLocalFingerprint ===
+              currentLocalFingerprint
           ) {
             offlineMutations.current =
               createOfflineMutationState()
@@ -354,6 +406,14 @@ export function useFocusData(
               authSession.user.id,
             )
           }
+
+          setCloudStatus(
+            hasOfflineMutations(
+              offlineMutations.current,
+            )
+              ? "saving"
+              : "synced",
+          )
         }
 
         return !saveFailed
@@ -388,14 +448,8 @@ export function useFocusData(
 
       const latestSnapshot =
         latestLocalSnapshot.current
-      const fingerprint =
-        getCloudFingerprint(
-          latestSnapshot,
-        )
 
       if (
-        fingerprint !==
-          lastCloudFingerprint.current ||
         hasOfflineMutations(
           offlineMutations.current,
         )
@@ -444,14 +498,8 @@ export function useFocusData(
 
       const latestSnapshot =
         latestLocalSnapshot.current
-      const fingerprint =
-        getCloudFingerprint(
-          latestSnapshot,
-        )
 
       if (
-        fingerprint !==
-          lastCloudFingerprint.current ||
         hasOfflineMutations(
           offlineMutations.current,
         )
@@ -646,9 +694,10 @@ export function useFocusData(
                 offlineChanges,
               )
 
-            await saveSupabaseSnapshot(
+            await saveSupabaseMutations(
               mergedSnapshot,
               authSession.user.id,
+              offlineChanges,
             )
           }
 
@@ -815,12 +864,10 @@ export function useFocusData(
       workspacePreferencesVersion,
     }
 
-    const fingerprint =
-      getCloudFingerprint(snapshot)
-
     if (
-      fingerprint ===
-      lastCloudFingerprint.current
+      !hasOfflineMutations(
+        offlineMutations.current,
+      )
     ) {
       return
     }
