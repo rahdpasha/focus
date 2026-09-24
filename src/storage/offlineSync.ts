@@ -34,6 +34,37 @@ export function createOfflineMutationState(): OfflineMutationState {
   }
 }
 
+export function cloneOfflineMutationState(
+  state: OfflineMutationState,
+): OfflineMutationState {
+  return {
+    subjectIds: [...state.subjectIds],
+    sessionIds: [...state.sessionIds],
+    advancedGoalIds: [
+      ...state.advancedGoalIds,
+    ],
+    deletedSubjectIds: [
+      ...state.deletedSubjectIds,
+    ],
+    deletedSessionIds: [
+      ...state.deletedSessionIds,
+    ],
+    deletedAdvancedGoalIds: [
+      ...state.deletedAdvancedGoalIds,
+    ],
+    settingsKeys: [
+      ...state.settingsKeys,
+    ],
+    weeklyHistoryKeys: [
+      ...state.weeklyHistoryKeys,
+    ],
+    dailyGoal: state.dailyGoal,
+    weeklyGoal: state.weeklyGoal,
+    replaceWorkspace:
+      state.replaceWorkspace,
+  }
+}
+
 export function hasOfflineMutations(
   state: OfflineMutationState,
 ): boolean {
