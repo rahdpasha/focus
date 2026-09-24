@@ -50,7 +50,13 @@ function App() {
     return <AuthScreen />
   }
 
-  return <AuthenticatedApp t={t} auth={auth} />
+  return (
+    <AuthenticatedApp
+      key={auth.session?.user.id ?? 'local'}
+      t={t}
+      auth={auth}
+    />
+  )
 }
 
 function AuthenticatedApp({
