@@ -1,4 +1,7 @@
+import { useMemo, useState } from "react"
 import type { Subject, StudySession } from "../types"
+import type { AdvancedGoal } from "../storage/types"
+import { getAdvancedGoalProgress } from "../utils/advancedGoals"
 import { useI18n } from "../useI18n"
 import { getStudyPlan } from "../utils/studyPlan"
 import PageContainer from "./PageContainer"
@@ -9,8 +12,20 @@ interface StudyPlanPageProps {
   subjects: Subject[]
   weeklyGoal: number
   dailyGoal: number
+  advancedGoals: AdvancedGoal[]
   onDailyGoalChange: (value: number) => void
   onWeeklyGoalChange: (value: number) => void
+  onAddAdvancedGoal: (
+    title: string,
+    targetMinutes: number,
+    deadline: string,
+    priority: AdvancedGoal["priority"],
+  ) => void
+  onUpdateAdvancedGoal: (
+    id: string,
+    patch: Partial<Omit<AdvancedGoal, "id" | "createdAt">>,
+  ) => void
+  onDeleteAdvancedGoal: (id: string) => void
 }
 
 export default function StudyPlanPage({
@@ -18,10 +33,45 @@ export default function StudyPlanPage({
   subjects,
   weeklyGoal,
   dailyGoal,
+  advancedGoals,
   onDailyGoalChange,
   onWeeklyGoalChange,
+  onAddAdvancedGoal,
+  onUpdateAdvancedGoal,
+  onDeleteAdvancedGoal,
 }: StudyPlanPageProps) {
   const { t } = useI18n()
+  const [goalTitle, setGoalTitle] = useState("")
+  const [goalTarget, setGoalTarget] = useState(300)
+  const [goalDeadline, setGoalDeadline] = useState("")
+  const [goalPriority, setGoalPriority] =
+    useState<AdvancedGoal["priority"]>("medium")
+
+  const advancedGoalCards = useMemo(
+    () =>
+      advancedGoals.map((goal) => ({
+        goal,
+        progress: getAdvancedGoalProgress(goal, sessions),
+      })),
+    [advancedGoals, sessions],
+  )
+
+  const createAdvancedGoal = () => {
+    if (!goalTitle.trim() || !goalDeadline) return
+
+    onAddAdvancedGoal(
+      goalTitle,
+      goalTarget,
+      goalDeadline,
+      goalPriority,
+    )
+
+    setGoalTitle("")
+    setGoalTarget(300)
+    setGoalDeadline("")
+    setGoalPriority("medium")
+  }
+
   const plan = getStudyPlan(sessions, subjects, weeklyGoal, dailyGoal)
 
   const dailyPercent = Math.min(100, Math.round((plan.todayCompletedMinutes / dailyGoal) * 100))
@@ -199,6 +249,144 @@ export default function StudyPlanPage({
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      <div className="glass-panel advanced-goals-panel">
+        <div className="advanced-goals-header">
+          <div>
+            <div className="eyebrow">Advanced goals</div>
+            <h2>Targets with a deadline</h2>
+            <p>
+              Track a focused objective across multiple sessions without turning the plan into a to-do list.
+            </p>
+          </div>
+          <span className="mono">{advancedGoals.filter((goal) => goal.status === "active").length} active</span>
+        </div>
+
+        <div className="advanced-goal-create">
+          <input
+            value={goalTitle}
+            maxLength={80}
+            onChange={(event) => setGoalTitle(event.target.value)}
+            placeholder="Example: 10 hours of Operating Systems"
+          />
+
+          <input
+            type="number"
+            min={30}
+            max={10000}
+            step={30}
+            value={goalTarget}
+            onChange={(event) => setGoalTarget(Number(event.target.value))}
+            aria-label="Target minutes"
+          />
+
+          <input
+            type="datetime-local"
+            value={goalDeadline}
+            onChange={(event) => setGoalDeadline(event.target.value)}
+            aria-label="Goal deadline"
+          />
+
+          <select
+            value={goalPriority}
+            onChange={(event) =>
+              setGoalPriority(event.target.value as AdvancedGoal["priority"])
+            }
+          >
+            <option value="low">Low priority</option>
+            <option value="medium">Medium priority</option>
+            <option value="high">High priority</option>
+          </select>
+
+          <button
+            type="button"
+            className="cyber-btn"
+            disabled={!goalTitle.trim() || !goalDeadline}
+            onClick={createAdvancedGoal}
+          >
+            ADD GOAL
+          </button>
+        </div>
+
+        <div className="advanced-goal-list">
+          {advancedGoalCards.length === 0 ? (
+            <div className="advanced-goal-empty">
+              No deadline goals yet. Your daily and weekly targets still work normally.
+            </div>
+          ) : (
+            advancedGoalCards.map(({ goal, progress }) => (
+              <article
+                key={goal.id}
+                className={
+                  progress.overdue
+                    ? "advanced-goal-card overdue"
+                    : progress.completed
+                      ? "advanced-goal-card complete"
+                      : "advanced-goal-card"
+                }
+              >
+                <div className="advanced-goal-topline">
+                  <div>
+                    <span className={`advanced-goal-priority ${goal.priority}`}>
+                      {goal.priority}
+                    </span>
+                    <h3>{goal.title}</h3>
+                  </div>
+
+                  <div className="advanced-goal-actions">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onUpdateAdvancedGoal(goal.id, {
+                          status:
+                            goal.status === "completed"
+                              ? "active"
+                              : "completed",
+                        })
+                      }
+                    >
+                      {goal.status === "completed" ? "REOPEN" : "COMPLETE"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDeleteAdvancedGoal(goal.id)}
+                    >
+                      DELETE
+                    </button>
+                  </div>
+                </div>
+
+                <div className="advanced-goal-progress-row">
+                  <span className="mono">
+                    {progress.minutes}m / {progress.targetMinutes}m
+                  </span>
+                  <span>
+                    {progress.completed
+                      ? "Completed"
+                      : progress.overdue
+                        ? "Overdue"
+                        : `${progress.remainingMinutes}m remaining`}
+                  </span>
+                </div>
+
+                <div className="advanced-goal-track">
+                  <div
+                    className="advanced-goal-fill"
+                    style={{ width: `${progress.percent}%` }}
+                  />
+                </div>
+
+                <div className="advanced-goal-footer">
+                  <span>{progress.percent}%</span>
+                  <span>
+                    Due {new Date(goal.deadline).toLocaleString()}
+                  </span>
+                </div>
+              </article>
+            ))
+          )}
         </div>
       </div>
 

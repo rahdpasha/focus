@@ -4,7 +4,7 @@ import type { AppSettings } from '../app/settings'
 import { normalizeSettings } from '../app/settings'
 import { supabase } from '../api/supabaseClient'
 import type { WeeklyGoalMap } from '../utils/goalHistory'
-import type { FocusDataSnapshot } from './types'
+import type { AdvancedGoal, FocusDataSnapshot } from './types'
 
 type SubjectRow = {
   id: string
@@ -52,6 +52,19 @@ type WeeklyGoalHistoryRow = {
   week_start: string
   goal_minutes: number
   achieved_minutes: number
+  created_at: string
+  updated_at: string
+}
+
+type AdvancedGoalRow = {
+  id: string
+  client_id: string | null
+  user_id: string
+  title: string
+  target_minutes: number
+  deadline: string
+  priority: 'low' | 'medium' | 'high'
+  status: 'active' | 'completed'
   created_at: string
   updated_at: string
 }
@@ -132,6 +145,7 @@ export async function loadSupabaseSnapshot(userId: string): Promise<FocusDataSna
     sessionsResult,
     goalsResult,
     weeklyGoalsResult,
+    advancedGoalsResult,
     settingsResult,
   ] = await Promise.all([
     client
@@ -161,6 +175,12 @@ export async function loadSupabaseSnapshot(userId: string): Promise<FocusDataSna
       .order('week_start', { ascending: true }),
 
     client
+      .from('advanced_goals')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false }),
+
+    client
       .from('user_settings')
       .select('*')
       .eq('user_id', userId)
@@ -171,6 +191,7 @@ export async function loadSupabaseSnapshot(userId: string): Promise<FocusDataSna
   if (sessionsResult.error) throw sessionsResult.error
   if (goalsResult.error) throw goalsResult.error
   if (weeklyGoalsResult.error) throw weeklyGoalsResult.error
+  if (advancedGoalsResult.error) throw advancedGoalsResult.error
   if (settingsResult.error) throw settingsResult.error
 
   const subjectRows =
@@ -181,6 +202,8 @@ export async function loadSupabaseSnapshot(userId: string): Promise<FocusDataSna
     (goalsResult.data ?? []) as GoalRow[]
   const weeklyRows =
     (weeklyGoalsResult.data ?? []) as WeeklyGoalHistoryRow[]
+  const advancedGoalRows =
+    (advancedGoalsResult.data ?? []) as AdvancedGoalRow[]
   const settingsRow =
     settingsResult.data as UserSettingsRow | null
 
@@ -214,6 +237,17 @@ export async function loadSupabaseSnapshot(userId: string): Promise<FocusDataSna
       row.goal_minutes
   }
 
+  const advancedGoals: AdvancedGoal[] =
+    advancedGoalRows.map((row) => ({
+      id: row.client_id ?? row.id,
+      title: row.title,
+      targetMinutes: row.target_minutes,
+      deadline: row.deadline,
+      priority: row.priority,
+      status: row.status,
+      createdAt: row.created_at,
+    }))
+
   const settings: AppSettings =
     normalizeSettings(
       settingsRow
@@ -244,6 +278,7 @@ export async function loadSupabaseSnapshot(userId: string): Promise<FocusDataSna
     weeklyGoal:
       latestGoal?.weekly_minutes ?? 600,
     weeklyGoalsHistory,
+    advancedGoals,
     settings,
   }
 }
@@ -558,6 +593,65 @@ export async function saveSupabaseSnapshot(
       .upsert(weeklyRows, {
         onConflict: 'user_id,week_start',
       })
+
+    if (error) throw error
+  }
+
+  const {
+    data: existingAdvancedGoalRows,
+    error: advancedGoalReadError,
+  } = await client
+    .from('advanced_goals')
+    .select('id, client_id')
+    .eq('user_id', userId)
+
+  if (advancedGoalReadError) {
+    throw advancedGoalReadError
+  }
+
+  const advancedGoalRows = snapshot.advancedGoals.map((goal) => ({
+    client_id: goal.id,
+    user_id: userId,
+    title: goal.title.trim(),
+    target_minutes: Math.max(1, Math.round(goal.targetMinutes)),
+    deadline: new Date(goal.deadline).toISOString(),
+    priority: goal.priority,
+    status: goal.status,
+    created_at: goal.createdAt,
+    updated_at: now,
+  }))
+
+  if (advancedGoalRows.length > 0) {
+    const { error } = await client
+      .from('advanced_goals')
+      .upsert(advancedGoalRows, {
+        onConflict: 'user_id,client_id',
+      })
+
+    if (error) throw error
+  }
+
+  const currentAdvancedGoalIds =
+    new Set(snapshot.advancedGoals.map((goal) => goal.id))
+
+  const staleAdvancedGoalCloudIds =
+    ((existingAdvancedGoalRows ?? []) as Array<{
+      id: string
+      client_id: string | null
+    }>)
+      .filter(
+        (row) =>
+          !row.client_id ||
+          !currentAdvancedGoalIds.has(row.client_id),
+      )
+      .map((row) => row.id)
+
+  if (staleAdvancedGoalCloudIds.length > 0) {
+    const { error } = await client
+      .from('advanced_goals')
+      .delete()
+      .eq('user_id', userId)
+      .in('id', staleAdvancedGoalCloudIds)
 
     if (error) throw error
   }
