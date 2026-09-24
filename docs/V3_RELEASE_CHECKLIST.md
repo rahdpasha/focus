@@ -46,6 +46,12 @@ Checked items below were actually verified during V3 hardening. Re-run the autom
 - [x] Cloud destructive actions are serialized behind pending snapshot saves so same-device delete/archive cannot race an unfinished create/update write.
 - [x] Realtime refresh stops polling after a failed queued cloud save instead of spinning indefinitely.
 - [x] Archived-only cloud subject history is treated as meaningful cloud state, so an intentionally empty subject workspace is not repopulated from local defaults.
+- [x] Pending local mutations are persisted per account until the cloud confirms the matching snapshot.
+- [x] Reconnect recovery merges only locally changed subjects, sessions, goals, targets and settings into freshly loaded cloud state instead of pushing an entire stale snapshot.
+- [x] Account-scoped local recovery snapshots preserve unsynced data across same-browser account switching without exposing one account's workspace to another.
+- [x] Online sign-out flushes pending cloud changes first; offline pending mutation metadata remains account-scoped for recovery on the next same-account connection.
+- [x] Signed-in backup restore uses an explicit cloud-replacement path; ordinary background sync remains non-destructive.
+- [x] Session deletion, advanced-goal deletion and backup import require an explicit second confirmation action.
 - [ ] With two signed-in browsers/devices, delete a session on one and confirm the stale second device cannot resurrect it.
 - [ ] With two signed-in browsers/devices, delete an advanced goal on one and confirm the stale second device cannot resurrect it.
 - [ ] With two signed-in browsers/devices, archive a subject on one and confirm the other device sees the subject removed and the linked goal unscoped.
