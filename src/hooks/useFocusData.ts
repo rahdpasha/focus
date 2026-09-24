@@ -304,6 +304,7 @@ export function useFocusData(
         )
 
         const cloudHasData =
+          cloudSnapshot.hasArchivedSubjects ||
           cloudSnapshot.subjects.length > 0 ||
           cloudSnapshot.sessions.length > 0 ||
           Object.keys(
