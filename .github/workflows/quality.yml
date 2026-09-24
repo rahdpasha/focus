@@ -44,5 +44,35 @@ jobs:
             exit 1
           fi
 
+      - name: Validate Supabase migration versions
+        shell: bash
+        run: |
+          mapfile -t migrations < <(find supabase/migrations -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | sort)
+
+          if [ "${#migrations[@]}" -eq 0 ]; then
+            echo "No Supabase migrations found."
+            exit 1
+          fi
+
+          for migration in "${migrations[@]}"; do
+            if [[ ! "$migration" =~ ^[0-9]{14}_.+\.sql$ ]]; then
+              echo "Invalid migration filename: $migration"
+              exit 1
+            fi
+          done
+
+          duplicates="$(
+            printf '%s\n' "${migrations[@]}" |
+              cut -d_ -f1 |
+              sort |
+              uniq -d
+          )"
+
+          if [ -n "$duplicates" ]; then
+            echo "Duplicate Supabase migration versions:"
+            echo "$duplicates"
+            exit 1
+          fi
+
       - name: Build
         run: npm run build
