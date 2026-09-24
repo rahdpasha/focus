@@ -37,5 +37,12 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Guard client secrets
+        run: |
+          if grep -RInE 'GEMINI_API_KEY|SUPABASE_SERVICE_ROLE|VITE_[A-Z0-9_]*SERVICE_ROLE|VITE_GEMINI' src public index.html .env.example; then
+            echo "Forbidden server secret reference found in client-shipped files."
+            exit 1
+          fi
+
       - name: Build
         run: npm run build
