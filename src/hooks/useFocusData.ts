@@ -530,7 +530,25 @@ export function useFocusData(
 
     void (async () => {
       try {
-        if (
+        const needsMutationRecovery =
+          offlineRecoveryRequested.current ||
+          hasOfflineMutations(
+            offlineMutations.current,
+          )
+
+        if (needsMutationRecovery) {
+          if (cloudSaveTimer.current) {
+            clearTimeout(
+              cloudSaveTimer.current,
+            )
+            cloudSaveTimer.current = null
+          }
+
+          queuedCloudSnapshot.current =
+            null
+          cloudSaveFailed.current =
+            false
+        } else if (
           queuedCloudSnapshot.current
         ) {
           const flushed =
@@ -553,12 +571,7 @@ export function useFocusData(
             cloudSnapshot,
           )
 
-        if (
-          offlineRecoveryRequested.current ||
-          hasOfflineMutations(
-            offlineMutations.current,
-          )
-        ) {
+        if (needsMutationRecovery) {
           const localSnapshot =
             latestLocalSnapshot.current
           const offlineChanges =
