@@ -33,3 +33,11 @@ export interface FocusDataStore {
 
 /** Current browser-backed implementation used by the app in V1. */
 export type LocalStorageDataStore = FocusDataStore
+
+
+export type CloudSyncStatus =
+  | "local"
+  | "loading"
+  | "saving"
+  | "synced"
+  | "error"

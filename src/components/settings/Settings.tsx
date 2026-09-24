@@ -1,6 +1,8 @@
 import {
   Bell,
   BellOff,
+  Cloud,
+  CloudOff,
   Database,
   Download,
   Languages,
@@ -29,12 +31,16 @@ import {
 import type {
   AppSettings,
 } from '../../app/settings'
+import type {
+  CloudSyncStatus,
+} from '../../storage/types'
 
 interface SettingsProps {
   settings: AppSettings
   dailyGoal: number
   weeklyGoal: number
   accountEmail?: string | null
+  cloudStatus: CloudSyncStatus
   onDailyGoalChange: (
     value: number,
   ) => void
@@ -81,6 +87,7 @@ export default function Settings({
   dailyGoal,
   weeklyGoal,
   accountEmail,
+  cloudStatus,
   onDailyGoalChange,
   onWeeklyGoalChange,
   onSettingChange,
@@ -610,6 +617,33 @@ export default function Settings({
               {accountEmail ??
                 'Local mode'}
             </strong>
+
+            <div
+              className={
+                cloudStatus === 'error'
+                  ? 'settings-sync-status error'
+                  : cloudStatus === 'synced'
+                    ? 'settings-sync-status synced'
+                    : 'settings-sync-status'
+              }
+            >
+              {cloudStatus === 'error' ? (
+                <CloudOff size={13} />
+              ) : (
+                <Cloud size={13} />
+              )}
+              <span>
+                {cloudStatus === 'local'
+                  ? 'Saved on this device'
+                  : cloudStatus === 'loading'
+                    ? 'Connecting to cloud…'
+                    : cloudStatus === 'saving'
+                      ? 'Saving changes…'
+                      : cloudStatus === 'synced'
+                        ? 'Cloud synced'
+                        : 'Cloud sync needs attention'}
+              </span>
+            </div>
           </div>
 
           <div className="settings-data-actions">

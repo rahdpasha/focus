@@ -3565,3 +3565,22 @@ select option {
   font-size: 8px;
   font-weight: 700;
 }
+
+
+.settings-sync-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.settings-sync-status.synced {
+  color: var(--energy);
+}
+
+.settings-sync-status.error {
+  color: var(--danger);
+}

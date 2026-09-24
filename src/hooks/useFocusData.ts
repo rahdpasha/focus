@@ -5,7 +5,7 @@ import { normalizeSettings } from "../app/settings"
 import { getWeekKey, type WeeklyGoalMap } from "../utils/goalHistory"
 import { createSubject } from "../utils/subjectManager"
 import { localStorageStore } from "../storage/localStorage"
-import type { AdvancedGoal, FocusDataSnapshot, FocusDataStore } from "../storage/types"
+import type { AdvancedGoal, CloudSyncStatus, FocusDataSnapshot, FocusDataStore } from "../storage/types"
 import type { TranslationKey } from "../translations"
 import { supabase } from "../api/supabaseClient"
 import type { AuthSession } from "../auth/types"
@@ -48,6 +48,10 @@ export function useFocusData(
   const [settings, setSettings] = useState<AppSettings>(initial.settings)
   const cloudHydrated = useRef(false)
   const [cloudReady, setCloudReady] = useState(false)
+  const [cloudStatus, setCloudStatus] =
+    useState<CloudSyncStatus>(
+      authSession ? "loading" : "local",
+    )
   const cloudSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const cloudHydrationStarted = useRef(false)
   const cloudSaveInFlight = useRef(false)
@@ -113,6 +117,7 @@ export function useFocusData(
 
           cloudHydrated.current = true
           setCloudReady(true)
+          setCloudStatus("synced")
           return
         }
 
@@ -146,6 +151,7 @@ export function useFocusData(
 
         cloudHydrated.current = true
         setCloudReady(true)
+        setCloudStatus("synced")
       } catch (error) {
         console.error(
           "FOCUS cloud hydration failed:",
@@ -153,6 +159,7 @@ export function useFocusData(
         )
 
         cloudHydrated.current = true
+        setCloudStatus("error")
       }
     })()
   }, [initial, authSession])
@@ -183,6 +190,7 @@ export function useFocusData(
     }
 
     queuedCloudSnapshot.current = snapshot
+    setCloudStatus("saving")
 
     if (cloudSaveTimer.current) {
       clearTimeout(cloudSaveTimer.current)
@@ -216,6 +224,7 @@ export function useFocusData(
 
           lastCloudFingerprint.current =
             getCloudFingerprint(latestSnapshot)
+          setCloudStatus("synced")
         } catch (error) {
           console.error(
             "FOCUS cloud save failed:",
@@ -224,6 +233,7 @@ export function useFocusData(
 
           queuedCloudSnapshot.current =
             latestSnapshot
+          setCloudStatus("error")
         } finally {
           cloudSaveInFlight.current = false
 
@@ -240,6 +250,7 @@ export function useFocusData(
               )
 
               lastCloudFingerprint.current = getCloudFingerprint(nextSnapshot)
+              setCloudStatus("synced")
             } catch (error) {
               console.error(
                 "FOCUS cloud retry failed:",
@@ -248,6 +259,7 @@ export function useFocusData(
 
               queuedCloudSnapshot.current =
                 nextSnapshot
+              setCloudStatus("error")
             }
           }
         }
@@ -561,12 +573,14 @@ export function useFocusData(
 
             lastCloudFingerprint.current =
               fingerprint
+            setCloudStatus("synced")
           })
           .catch((error) => {
             console.error(
               "FOCUS realtime refresh failed:",
               error,
             )
+            setCloudStatus("error")
           })
           .finally(() => {
             refreshing = false
@@ -667,5 +681,5 @@ export function useFocusData(
     }
   }, [userId, cloudReady])
 
-  return { subjects, activeSubjectId, sessions, dailyGoal, weeklyGoal, weeklyGoalsHistory, advancedGoals, settings, setDailyGoal, setWeeklyGoal, setSettings, updateSettings, addSession, deleteSession, addSubject, deleteSubject, selectSubject, addAdvancedGoal, updateAdvancedGoal, deleteAdvancedGoal, exportData, importData }
+  return { subjects, activeSubjectId, sessions, dailyGoal, weeklyGoal, weeklyGoalsHistory, advancedGoals, settings, cloudStatus, setDailyGoal, setWeeklyGoal, setSettings, updateSettings, addSession, deleteSession, addSubject, deleteSubject, selectSubject, addAdvancedGoal, updateAdvancedGoal, deleteAdvancedGoal, exportData, importData }
 }

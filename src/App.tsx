@@ -289,6 +289,9 @@ function AuthenticatedApp({
               auth.session?.user.email ??
               null
             }
+            cloudStatus={
+              data.cloudStatus
+            }
             onDailyGoalChange={data.setDailyGoal}
             onWeeklyGoalChange={data.setWeeklyGoal}
             onSettingChange={data.updateSettings}
