@@ -133,6 +133,7 @@ export function useFocusData(
   const cloudSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const cloudHydrationStarted = useRef(false)
   const cloudSaveInFlight = useRef(false)
+  const cloudSaveFailed = useRef(false)
   const queuedCloudSnapshot = useRef<typeof initial | null>(null)
   const cloudReplaceRequested = useRef(false)
   const lastCloudFingerprint = useRef<string | null>(null)
@@ -154,6 +155,7 @@ export function useFocusData(
       }
 
       cloudSaveInFlight.current = true
+      cloudSaveFailed.current = false
       let saveFailed = false
 
       try {
@@ -205,6 +207,7 @@ export function useFocusData(
             }
 
             saveFailed = true
+            cloudSaveFailed.current = true
             setCloudStatus("error")
             break
           }
@@ -1183,6 +1186,13 @@ export function useFocusData(
     let refreshing = false
 
     const runRefreshFromCloud = () => {
+      if (
+        cloudSaveFailed.current &&
+        !cloudSaveInFlight.current
+      ) {
+        return
+      }
+
       if (
         refreshing ||
         cloudSaveInFlight.current ||
