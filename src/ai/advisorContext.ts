@@ -2,6 +2,12 @@ import type {
   Subject,
   StudySession,
 } from '../types'
+import type {
+  AdvancedGoal,
+} from '../storage/types'
+import {
+  getAdvancedGoalProgress,
+} from '../utils/advancedGoals'
 import {
   getProductivityInsights,
 } from '../utils/productivityInsights'
@@ -40,6 +46,23 @@ export interface AdvisorContext {
     minutesThisWeek: number
     percentageThisWeek: number
     sessionsThisWeek: number
+  }>
+  advancedGoals: Array<{
+    id: string
+    title: string
+    priority:
+      | 'low'
+      | 'medium'
+      | 'high'
+    status:
+      | 'active'
+      | 'completed'
+    deadline: string
+    targetMinutes: number
+    completedMinutes: number
+    remainingMinutes: number
+    percent: number
+    overdue: boolean
   }>
   recentSessions: Array<{
     subjectName: string
@@ -128,6 +151,7 @@ export function buildAdvisorContext(
   subjects: Subject[],
   dailyGoal: number,
   weeklyGoal: number,
+  advancedGoals: AdvancedGoal[] = [],
 ): AdvisorContext {
   const productivity =
     getProductivityInsights(
@@ -214,6 +238,32 @@ export function buildAdvisorContext(
             0,
           sessionsThisWeek:
             balance?.sessions ?? 0,
+        }
+      }),
+    advancedGoals:
+      advancedGoals.map((goal) => {
+        const progress =
+          getAdvancedGoalProgress(
+            goal,
+            sessions,
+          )
+
+        return {
+          id: goal.id,
+          title: goal.title,
+          priority: goal.priority,
+          status: goal.status,
+          deadline: goal.deadline,
+          targetMinutes:
+            goal.targetMinutes,
+          completedMinutes:
+            progress.minutes,
+          remainingMinutes:
+            progress.remainingMinutes,
+          percent:
+            progress.percent,
+          overdue:
+            progress.overdue,
         }
       }),
     recentSessions:

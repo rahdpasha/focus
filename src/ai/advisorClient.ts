@@ -26,11 +26,33 @@ function localFallback(
     context
       .deterministicRecommendation
 
+  const urgentGoal =
+    context.advancedGoals
+      .filter(
+        (goal) =>
+          goal.status === 'active',
+      )
+      .sort(
+        (a, b) =>
+          new Date(
+            a.deadline,
+          ).getTime() -
+          new Date(
+            b.deadline,
+          ).getTime(),
+      )[0]
+
   const reasons = [
     `${context.today.minutes}/${context.today.goalMinutes} minutes completed today`,
     `${context.week.minutes}/${context.week.goalMinutes} minutes completed this week`,
     `Consistency is ${context.consistency.trend}`,
   ]
+
+  if (urgentGoal) {
+    reasons.push(
+      `Goal "${urgentGoal.title}" is ${urgentGoal.percent}% complete with ${urgentGoal.remainingMinutes} minutes remaining`,
+    )
+  }
 
   if (
     context.bestStudyTime
@@ -43,9 +65,11 @@ function localFallback(
   return {
     source: 'local',
     headline:
-      recommended.subjectName
-        ? `Focus on ${recommended.subjectName} next.`
-        : 'Take one focused step next.',
+      urgentGoal?.overdue
+        ? `Recover your overdue goal: ${urgentGoal.title}.`
+        : recommended.subjectName
+          ? `Focus on ${recommended.subjectName} next.`
+          : 'Take one focused step next.',
     answer:
       recommended.summary,
     reasons,

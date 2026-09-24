@@ -121,6 +121,8 @@ Deno.serve(async (request) => {
       'Never invent study statistics, subjects, goals, or history.',
       'Separate observation from interpretation from recommendation.',
       'Be concise, calm, practical, and specific.',
+      'Consider active deadline goals alongside daily and weekly balance.',
+      'If a deadline goal is urgent or overdue, explain that explicitly without inventing urgency.',
       'Recommend one next action only.',
       'Action subjectId must be one of the supplied subject IDs, or null.',
       'Action duration must be between 10 and 120 minutes.',
@@ -166,7 +168,6 @@ Deno.serve(async (request) => {
               },
             ],
             generationConfig: {
-              temperature: 0.25,
               responseMimeType:
                 'application/json',
               responseSchema: {

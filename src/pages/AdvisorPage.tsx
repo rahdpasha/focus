@@ -12,6 +12,9 @@ import type {
   Subject,
   StudySession,
 } from '../types'
+import type {
+  AdvancedGoal,
+} from '../storage/types'
 import PageContainer from './PageContainer'
 import PageHeader from '../components/layout/PageHeader'
 import {
@@ -27,6 +30,7 @@ interface AdvisorPageProps {
   subjects: Subject[]
   dailyGoal: number
   weeklyGoal: number
+  advancedGoals: AdvancedGoal[]
   onStartSession: (
     subjectId?: string,
     minutes?: number,
@@ -45,6 +49,7 @@ export default function AdvisorPage({
   subjects,
   dailyGoal,
   weeklyGoal,
+  advancedGoals,
   onStartSession,
 }: AdvisorPageProps) {
   const [question, setQuestion] =
@@ -67,8 +72,10 @@ export default function AdvisorPage({
         subjects,
         dailyGoal,
         weeklyGoal,
+        advancedGoals,
       ),
     [
+      advancedGoals,
       dailyGoal,
       sessions,
       subjects,
@@ -413,6 +420,20 @@ export default function AdvisorPage({
                     context
                       .consistency
                       .trend
+                  }
+                </strong>
+              </div>
+
+              <div className="advisor-fact">
+                <span>
+                  Active goals
+                </span>
+                <strong>
+                  {
+                    context.advancedGoals.filter(
+                      (goal) =>
+                        goal.status === 'active',
+                    ).length
                   }
                 </strong>
               </div>

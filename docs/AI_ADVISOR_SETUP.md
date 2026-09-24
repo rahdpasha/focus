@@ -29,3 +29,18 @@ GEMINI_MODEL=gemini-3.8-flash
 Do not add a Gemini API key to `.env.local` as a `VITE_*` variable. Vite variables are shipped to the browser.
 
 The ChatGPT/Gemini consumer subscription and Gemini API billing are separate products; use a Gemini API key from the developer platform and review its pricing/quota before enabling real AI.
+
+
+## Grounding and personalization
+
+The advisor context can include:
+- daily and weekly progress
+- subject balance
+- consistency trend
+- strongest recent study window
+- recent session duration/interruption/checklist metrics
+- active deadline goals and their deterministic progress
+
+Session-note text is still excluded from the model payload.
+
+Gemini 3.8 Flash is the default model. Sampling parameters such as `temperature` are intentionally omitted because the current Gemini 3.8 migration guidance requires removing deprecated sampling parameters for this model.

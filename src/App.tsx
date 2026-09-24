@@ -190,6 +190,7 @@ function AuthenticatedApp({
           subjects={data.subjects}
           dailyGoal={data.dailyGoal}
           weeklyGoal={data.weeklyGoal}
+          advancedGoals={data.advancedGoals}
           onStartSession={startRecommendedSession}
         />
       )}
