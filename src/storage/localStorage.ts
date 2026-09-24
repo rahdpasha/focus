@@ -167,6 +167,7 @@ export const localStorageStore: FocusDataStore = {
       advancedGoals: loadAdvancedGoals(),
       activeSubjectId: loadActiveSubject(),
       settings: loadSettings(),
+      workspacePreferencesVersion: 1,
     }
   },
   save(snapshot) {

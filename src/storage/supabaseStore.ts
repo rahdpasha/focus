@@ -82,6 +82,7 @@ type UserSettingsRow = {
   volume: number
   notifications_enabled: boolean
   auto_start_break: boolean
+  workspace_preferences_version: number
   updated_at: string
 }
 
@@ -286,6 +287,8 @@ export async function loadSupabaseSnapshot(userId: string): Promise<FocusDataSna
     weeklyGoalsHistory,
     advancedGoals,
     settings,
+    workspacePreferencesVersion:
+      settingsRow?.workspace_preferences_version ?? 0,
   }
 }
 
@@ -689,6 +692,7 @@ export async function saveSupabaseSnapshot(
               .notificationsEnabled,
           auto_start_break:
             snapshot.settings.autoStartBreak,
+          workspace_preferences_version: 1,
           updated_at: now,
         },
         {

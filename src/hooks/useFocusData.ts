@@ -29,6 +29,8 @@ function getCloudFingerprint(
     weeklyGoalsHistory: snapshot.weeklyGoalsHistory,
     advancedGoals: snapshot.advancedGoals,
     settings: snapshot.settings,
+    workspacePreferencesVersion:
+      snapshot.workspacePreferencesVersion,
   })
 }
 
@@ -46,6 +48,12 @@ export function useFocusData(
   const [weeklyGoalsHistory, setWeeklyGoalsHistory] = useState<WeeklyGoalMap>(initial.weeklyGoalsHistory)
   const [advancedGoals, setAdvancedGoals] = useState<AdvancedGoal[]>(initial.advancedGoals)
   const [settings, setSettings] = useState<AppSettings>(initial.settings)
+  const [
+    workspacePreferencesVersion,
+    setWorkspacePreferencesVersion,
+  ] = useState(
+    initial.workspacePreferencesVersion,
+  )
   const cloudHydrated = useRef(false)
   const [cloudReady, setCloudReady] = useState(false)
   const [cloudStatus, setCloudStatus] =
@@ -68,6 +76,7 @@ export function useFocusData(
       advancedGoals,
       activeSubjectId,
       settings,
+      workspacePreferencesVersion,
     })
   }, [
     store,
@@ -79,6 +88,7 @@ export function useFocusData(
     advancedGoals,
     activeSubjectId,
     settings,
+    workspacePreferencesVersion,
   ])
 
   useEffect(() => {
@@ -144,14 +154,50 @@ export function useFocusData(
           cloudSnapshot.weeklyGoalsHistory,
         )
         setAdvancedGoals(cloudSnapshot.advancedGoals)
-        setSettings(cloudSnapshot.settings)
+        const cloudNeedsPreferenceUpgrade =
+          cloudSnapshot.workspacePreferencesVersion < 1
 
-        lastCloudFingerprint.current =
-          getCloudFingerprint(cloudSnapshot)
+        const hydratedSettings =
+          cloudNeedsPreferenceUpgrade
+            ? {
+                ...cloudSnapshot.settings,
+                theme:
+                  initial.settings.theme,
+                language:
+                  initial.settings.language,
+              }
+            : cloudSnapshot.settings
+
+        setSettings(hydratedSettings)
+        setWorkspacePreferencesVersion(1)
+
+        if (cloudNeedsPreferenceUpgrade) {
+          const upgradedSnapshot = {
+            ...cloudSnapshot,
+            settings: hydratedSettings,
+            workspacePreferencesVersion: 1,
+          }
+
+          await saveSupabaseSnapshot(
+            upgradedSnapshot,
+            authSession.user.id,
+          )
+
+          lastCloudFingerprint.current =
+            getCloudFingerprint(
+              upgradedSnapshot,
+            )
+        } else {
+          lastCloudFingerprint.current =
+            getCloudFingerprint(cloudSnapshot)
+        }
 
         cloudHydrated.current = true
         setCloudReady(true)
         setCloudStatus("synced")
+        return
+
+
       } catch (error) {
         console.error(
           "FOCUS cloud hydration failed:",
@@ -176,6 +222,7 @@ export function useFocusData(
       advancedGoals,
       activeSubjectId,
       settings,
+      workspacePreferencesVersion,
     }
 
     const fingerprint = getCloudFingerprint(snapshot)
@@ -283,6 +330,7 @@ export function useFocusData(
     advancedGoals,
     activeSubjectId,
     settings,
+    workspacePreferencesVersion,
   ])
 
   const setWeeklyGoal = (goal: number) => {
@@ -570,6 +618,9 @@ export function useFocusData(
             )
             setAdvancedGoals(cloudSnapshot.advancedGoals)
             setSettings(cloudSnapshot.settings)
+            setWorkspacePreferencesVersion(
+              cloudSnapshot.workspacePreferencesVersion,
+            )
 
             lastCloudFingerprint.current =
               fingerprint

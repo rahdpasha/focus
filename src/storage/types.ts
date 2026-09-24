@@ -24,6 +24,7 @@ export interface FocusDataSnapshot {
   advancedGoals: AdvancedGoal[]
   activeSubjectId: string | null
   settings: AppSettings
+  workspacePreferencesVersion: number
 }
 
 export interface FocusDataStore {
