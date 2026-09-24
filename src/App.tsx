@@ -307,7 +307,13 @@ function AuthenticatedApp({
               auth.session
                 ? () => {
                     void (async () => {
-                      await data.flushCloudChanges()
+                      const flushed =
+                        await data.flushCloudChanges()
+
+                      if (!flushed) {
+                        return
+                      }
+
                       await auth.signOut()
                     })()
                   }
