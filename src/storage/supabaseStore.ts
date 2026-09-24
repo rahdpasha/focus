@@ -4,6 +4,7 @@ import { normalizeSettings } from '../app/settings'
 import { supabase } from '../api/supabaseClient'
 import type { WeeklyGoalMap } from '../utils/goalHistory'
 import type { AdvancedGoal, FocusDataSnapshot } from './types'
+import type { OfflineMutationState } from './offlineSync'
 
 type SubjectRow = {
   id: string
@@ -677,6 +678,481 @@ export async function saveSupabaseSnapshot(
 
   if (settingsError) {
     throw settingsError
+  }
+}
+
+export async function saveSupabaseMutations(
+  snapshot: FocusDataSnapshot,
+  userId: string,
+  changes: OfflineMutationState,
+): Promise<void> {
+  if (!userId) {
+    throw new Error('No authenticated user')
+  }
+
+  const client = requireSupabase()
+  const now = new Date().toISOString()
+
+  const changedSubjectIds =
+    new Set(changes.subjectIds)
+  const changedSessionIds =
+    new Set(changes.sessionIds)
+  const changedAdvancedGoalIds =
+    new Set(
+      changes.advancedGoalIds,
+    )
+
+  const subjectRows = snapshot.subjects
+    .filter((subject) =>
+      changedSubjectIds.has(
+        subject.id,
+      ),
+    )
+    .map((subject) => ({
+      client_id: subject.id,
+      user_id: userId,
+      name: subject.name,
+      color: subject.color,
+      icon: subject.icon ?? null,
+      updated_at: now,
+    }))
+
+  if (subjectRows.length > 0) {
+    const { error } = await client
+      .from('subjects')
+      .upsert(subjectRows, {
+        onConflict:
+          'user_id,client_id',
+      })
+
+    if (error) throw error
+  }
+
+  if (changedSessionIds.size > 0) {
+    const {
+      data: subjectRowsForSessions,
+      error: subjectReadError,
+    } = await client
+      .from('subjects')
+      .select('id, client_id')
+      .eq('user_id', userId)
+
+    if (subjectReadError) {
+      throw subjectReadError
+    }
+
+    const cloudSubjectByClientId =
+      new Map<string, string>()
+
+    for (
+      const row of
+        (subjectRowsForSessions ??
+          []) as Array<{
+          id: string
+          client_id: string | null
+        }>
+    ) {
+      cloudSubjectByClientId.set(
+        row.id,
+        row.id,
+      )
+
+      if (row.client_id) {
+        cloudSubjectByClientId.set(
+          row.client_id,
+          row.id,
+        )
+      }
+    }
+
+    const sessionRows =
+      snapshot.sessions
+        .filter((session) =>
+          changedSessionIds.has(
+            session.id,
+          ),
+        )
+        .map((session) => {
+          const cloudSubjectId =
+            cloudSubjectByClientId.get(
+              session.subjectId,
+            )
+
+          if (!cloudSubjectId) {
+            throw new Error(
+              `Cannot sync session ${session.id}: subject is not available in cloud.`,
+            )
+          }
+
+          return {
+            client_id: session.id,
+            user_id: userId,
+            subject_id:
+              cloudSubjectId,
+            planned_seconds:
+              Math.max(
+                0,
+                Math.round(
+                  session.duration,
+                ),
+              ),
+            actual_seconds:
+              Math.max(
+                0,
+                Math.round(
+                  session.actualDuration,
+                ),
+              ),
+            started_at:
+              new Date(
+                session.startedAt ??
+                  session.completedAt,
+              ).toISOString(),
+            completed_at:
+              new Date(
+                session.completedAt,
+              ).toISOString(),
+            completed:
+              session.completed,
+            interruptions:
+              Math.max(
+                0,
+                session.interruptions,
+              ),
+            total_paused_seconds:
+              Math.max(
+                0,
+                session.totalPausedSeconds,
+              ),
+            notes:
+              session.notes ?? null,
+            subtasks:
+              session.subtasks ?? [],
+            updated_at: now,
+          }
+        })
+
+    if (sessionRows.length > 0) {
+      const { error } = await client
+        .from('study_sessions')
+        .upsert(sessionRows, {
+          onConflict:
+            'user_id,client_id',
+        })
+
+      if (error) throw error
+    }
+  }
+
+  if (
+    changes.dailyGoal ||
+    changes.weeklyGoal
+  ) {
+    const {
+      data: existingGoals,
+      error: goalReadError,
+    } = await client
+      .from('goals')
+      .select('id')
+      .eq('user_id', userId)
+      .order('effective_from', {
+        ascending: false,
+      })
+      .limit(1)
+
+    if (goalReadError) {
+      throw goalReadError
+    }
+
+    if (existingGoals?.[0]?.id) {
+      const goalPatch: Record<
+        string,
+        unknown
+      > = {
+        effective_from:
+          dateOnly(new Date()),
+        updated_at: now,
+      }
+
+      if (changes.dailyGoal) {
+        goalPatch.daily_minutes =
+          Math.max(
+            0,
+            Math.round(
+              snapshot.dailyGoal,
+            ),
+          )
+      }
+
+      if (changes.weeklyGoal) {
+        goalPatch.weekly_minutes =
+          Math.max(
+            0,
+            Math.round(
+              snapshot.weeklyGoal,
+            ),
+          )
+      }
+
+      const { error } = await client
+        .from('goals')
+        .update(goalPatch)
+        .eq(
+          'id',
+          existingGoals[0].id,
+        )
+        .eq('user_id', userId)
+
+      if (error) throw error
+    } else {
+      const { error } = await client
+        .from('goals')
+        .insert({
+          user_id: userId,
+          daily_minutes:
+            Math.max(
+              0,
+              Math.round(
+                snapshot.dailyGoal,
+              ),
+            ),
+          weekly_minutes:
+            Math.max(
+              0,
+              Math.round(
+                snapshot.weeklyGoal,
+              ),
+            ),
+          effective_from:
+            dateOnly(new Date()),
+          updated_at: now,
+        })
+
+      if (error) throw error
+    }
+  }
+
+  for (
+    const weekStart of
+      changes.weeklyHistoryKeys
+  ) {
+    const goalMinutes =
+      snapshot.weeklyGoalsHistory[
+        weekStart
+      ]
+
+    if (goalMinutes === undefined) {
+      const { error } = await client
+        .from(
+          'weekly_goal_history',
+        )
+        .delete()
+        .eq('user_id', userId)
+        .eq(
+          'week_start',
+          weekStart,
+        )
+
+      if (error) throw error
+      continue
+    }
+
+    const { error } = await client
+      .from('weekly_goal_history')
+      .upsert(
+        {
+          user_id: userId,
+          week_start:
+            weekStart,
+          goal_minutes:
+            Math.max(
+              0,
+              Math.round(
+                goalMinutes,
+              ),
+            ),
+          achieved_minutes: 0,
+          updated_at: now,
+        },
+        {
+          onConflict:
+            'user_id,week_start',
+        },
+      )
+
+    if (error) throw error
+  }
+
+  const advancedGoalRows =
+    snapshot.advancedGoals
+      .filter((goal) =>
+        changedAdvancedGoalIds.has(
+          goal.id,
+        ),
+      )
+      .map((goal) => ({
+        client_id: goal.id,
+        user_id: userId,
+        title:
+          goal.title.trim(),
+        subject_client_id:
+          goal.subjectId ?? null,
+        target_minutes:
+          Math.max(
+            1,
+            Math.round(
+              goal.targetMinutes,
+            ),
+          ),
+        deadline:
+          new Date(
+            goal.deadline,
+          ).toISOString(),
+        priority:
+          goal.priority,
+        status:
+          goal.status,
+        created_at:
+          goal.createdAt,
+        updated_at: now,
+      }))
+
+  if (
+    advancedGoalRows.length > 0
+  ) {
+    const { error } = await client
+      .from('advanced_goals')
+      .upsert(
+        advancedGoalRows,
+        {
+          onConflict:
+            'user_id,client_id',
+        },
+      )
+
+    if (error) throw error
+  }
+
+  if (
+    changes.settingsKeys.length >
+    0
+  ) {
+    const {
+      data: existingSettings,
+      error:
+        settingsReadError,
+    } = await client
+      .from('user_settings')
+      .select('user_id')
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    if (settingsReadError) {
+      throw settingsReadError
+    }
+
+    if (!existingSettings) {
+      const { error } = await client
+        .from('user_settings')
+        .insert({
+          user_id: userId,
+          theme:
+            snapshot.settings.theme,
+          language:
+            snapshot.settings.language,
+          short_break_minutes:
+            snapshot.settings
+              .shortBreak,
+          long_break_minutes:
+            snapshot.settings
+              .longBreak,
+          sessions_before_long_break:
+            snapshot.settings
+              .sessionsBeforeLongBreak,
+          sound_enabled:
+            snapshot.settings
+              .soundEnabled,
+          volume:
+            snapshot.settings
+              .soundVolume,
+          notifications_enabled:
+            snapshot.settings
+              .notificationsEnabled,
+          auto_start_break:
+            snapshot.settings
+              .autoStartBreak,
+          workspace_preferences_version:
+            1,
+          updated_at: now,
+        })
+
+      if (error) throw error
+    } else {
+      const settingsPatch: Record<
+        string,
+        unknown
+      > = {
+        workspace_preferences_version:
+          1,
+        updated_at: now,
+      }
+
+      for (
+        const key of
+          changes.settingsKeys
+      ) {
+        switch (key) {
+          case 'theme':
+            settingsPatch.theme =
+              snapshot.settings.theme
+            break
+          case 'language':
+            settingsPatch.language =
+              snapshot.settings.language
+            break
+          case 'shortBreak':
+            settingsPatch.short_break_minutes =
+              snapshot.settings.shortBreak
+            break
+          case 'longBreak':
+            settingsPatch.long_break_minutes =
+              snapshot.settings.longBreak
+            break
+          case 'sessionsBeforeLongBreak':
+            settingsPatch.sessions_before_long_break =
+              snapshot.settings
+                .sessionsBeforeLongBreak
+            break
+          case 'autoStartBreak':
+            settingsPatch.auto_start_break =
+              snapshot.settings
+                .autoStartBreak
+            break
+          case 'soundEnabled':
+            settingsPatch.sound_enabled =
+              snapshot.settings
+                .soundEnabled
+            break
+          case 'soundVolume':
+            settingsPatch.volume =
+              snapshot.settings
+                .soundVolume
+            break
+          case 'notificationsEnabled':
+            settingsPatch.notifications_enabled =
+              snapshot.settings
+                .notificationsEnabled
+            break
+        }
+      }
+
+      const { error } = await client
+        .from('user_settings')
+        .update(settingsPatch)
+        .eq('user_id', userId)
+
+      if (error) throw error
+    }
   }
 }
 
