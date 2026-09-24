@@ -57,8 +57,13 @@ export function useFocusData(
   const cloudHydrated = useRef(false)
   const [cloudReady, setCloudReady] = useState(false)
   const [cloudStatus, setCloudStatus] =
-    useState<CloudSyncStatus>(
-      authSession ? "loading" : "local",
+    useState<CloudSyncStatus>(() =>
+      authSession
+        ? typeof navigator !== "undefined" &&
+          !navigator.onLine
+          ? "offline"
+          : "loading"
+        : "local",
     )
   const [networkRevision, setNetworkRevision] =
     useState(0)
@@ -100,7 +105,6 @@ export function useFocusData(
       typeof navigator !== "undefined" &&
       !navigator.onLine
     ) {
-      setCloudStatus("offline")
       return
     }
 
@@ -246,7 +250,6 @@ export function useFocusData(
       typeof navigator !== "undefined" &&
       !navigator.onLine
     ) {
-      setCloudStatus("offline")
       return
     }
 
@@ -373,7 +376,6 @@ export function useFocusData(
 
   useEffect(() => {
     if (!authSession) {
-      setCloudStatus("local")
       return
     }
 
