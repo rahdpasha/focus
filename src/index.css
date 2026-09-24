@@ -3859,3 +3859,52 @@ select option {
   background: rgba(251, 191, 36, 0.16);
   color: var(--warning);
 }
+
+
+/* V3 fatal recovery */
+.fatal-error-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 50% 20%, var(--primary-soft), transparent 34%),
+    var(--void-bg);
+}
+
+.fatal-error-card {
+  width: min(520px, 100%);
+  padding: 30px;
+  text-align: center;
+}
+
+.fatal-error-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 16px;
+  border: 1px solid rgba(251, 113, 133, 0.25);
+  border-radius: 15px;
+  background: rgba(251, 113, 133, 0.08);
+  color: var(--danger);
+}
+
+.fatal-error-card h1 {
+  margin: 9px 0 0;
+  color: var(--text-primary);
+  font-size: 23px;
+  line-height: 1.2;
+}
+
+.fatal-error-card p {
+  max-width: 430px;
+  margin: 12px auto 20px;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.fatal-error-card .cyber-btn {
+  margin: 0 auto;
+}
