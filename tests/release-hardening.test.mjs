@@ -252,3 +252,75 @@ test('offline deletion markers win over stale cloud rows', () => {
   assert.equal(merged.sessions.length, 0)
   assert.equal(merged.advancedGoals.length, 0)
 })
+
+test('mutation merge preserves unrelated newer cloud fields', () => {
+  const cloud = snapshot({
+    dailyGoal: 180,
+    settings: {
+      ...settings,
+      theme: 'dark',
+      soundVolume: 90,
+    },
+    advancedGoals: [
+      {
+        id: 'goal-cloud',
+        title: 'Newer cloud title',
+        targetMinutes: 120,
+        deadline: '2026-02-01T00:00:00.000Z',
+        priority: 'high',
+        status: 'active',
+        createdAt: '2026-01-01T00:00:00.000Z',
+      },
+    ],
+  })
+
+  const local = snapshot({
+    dailyGoal: 60,
+    settings: {
+      ...settings,
+      theme: 'light',
+      soundVolume: 35,
+    },
+    advancedGoals: [
+      {
+        id: 'goal-cloud',
+        title: 'Stale local title',
+        targetMinutes: 120,
+        deadline: '2026-02-01T00:00:00.000Z',
+        priority: 'high',
+        status: 'active',
+        createdAt: '2026-01-01T00:00:00.000Z',
+      },
+    ],
+  })
+
+  const changes =
+    createOfflineMutationState()
+  changes.settingsKeys.push(
+    'soundVolume',
+  )
+
+  const merged = mergeOfflineMutations(
+    cloud,
+    local,
+    changes,
+  )
+
+  assert.equal(
+    merged.settings.theme,
+    'dark',
+  )
+  assert.equal(
+    merged.settings.soundVolume,
+    35,
+  )
+  assert.equal(
+    merged.dailyGoal,
+    180,
+  )
+  assert.equal(
+    merged.advancedGoals[0].title,
+    'Newer cloud title',
+  )
+})
+
