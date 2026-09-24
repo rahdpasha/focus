@@ -10,6 +10,7 @@ Checked items below were actually verified during V3 hardening. Re-run the autom
 - [x] Latest Vercel preview deployment is **READY**.
 - [x] Vercel runtime error check shows no new application errors.
 - [x] Supabase migrations through `harden_legacy_new_user_trigger` are applied.
+- [x] Repository migration versions match live Supabase migration history exactly; baseline migrations are recorded remotely and the fresh-schema chain includes client IDs and realtime publication setup.
 - [x] Supabase `study-advisor` Edge Function is ACTIVE with JWT verification enabled.
 - [x] Supabase Security Advisor findings have been reviewed.
 - [x] All user-facing data tables have RLS enabled.
