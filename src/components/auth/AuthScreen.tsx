@@ -1,30 +1,104 @@
-import { useState } from 'react'
-import { useAuth } from '../../auth/useAuth'
+import {
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  Mail,
+  ShieldCheck,
+  UserRound,
+} from 'lucide-react'
+import {
+  useState,
+} from 'react'
+import {
+  useAuth,
+} from '../../auth/useAuth'
 
 export default function AuthScreen() {
-  const { signIn, signUp } = useAuth()
+  const {
+    signIn,
+    signUp,
+  } = useAuth()
 
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [displayName, setDisplayName] = useState('')
-  const [message, setMessage] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [
+    mode,
+    setMode,
+  ] = useState<
+    'signin' | 'signup'
+  >('signin')
 
-  const submit = async (event: React.FormEvent) => {
+  const [email, setEmail] =
+    useState('')
+  const [
+    password,
+    setPassword,
+  ] = useState('')
+  const [
+    displayName,
+    setDisplayName,
+  ] = useState('')
+  const [
+    message,
+    setMessage,
+  ] = useState('')
+  const [
+    loading,
+    setLoading,
+  ] = useState(false)
+  const [
+    showPassword,
+    setShowPassword,
+  ] = useState(false)
+
+  const signingUp =
+    mode === 'signup'
+
+  const passwordReady =
+    !signingUp ||
+    password.length >= 10
+
+  const submit = async (
+    event: React.FormEvent,
+  ) => {
     event.preventDefault()
     setMessage('')
+
+    const cleanEmail =
+      email.trim()
+    const cleanName =
+      displayName.trim()
+
+    if (
+      signingUp &&
+      !cleanName
+    ) {
+      setMessage(
+        'Add a display name before creating your account.',
+      )
+      return
+    }
+
+    if (!passwordReady) {
+      setMessage(
+        'Use at least 10 characters for a new password.',
+      )
+      return
+    }
+
     setLoading(true)
 
     try {
       if (mode === 'signin') {
-        await signIn(email, password)
-      } else {
-        const session = await signUp(
-          email,
+        await signIn(
+          cleanEmail,
           password,
-          displayName,
         )
+      } else {
+        const session =
+          await signUp(
+            cleanEmail,
+            password,
+            cleanName,
+          )
 
         setMessage(
           session
@@ -43,142 +117,256 @@ export default function AuthScreen() {
     }
   }
 
+  const changeMode = () => {
+    setMode(
+      mode === 'signin'
+        ? 'signup'
+        : 'signin',
+    )
+    setMessage('')
+    setPassword('')
+    setShowPassword(false)
+  }
+
   return (
-    <main
-      style={{
-        minHeight: '100vh',
-        display: 'grid',
-        placeItems: 'center',
-        padding: '24px',
-        background: 'var(--void-bg)',
-      }}
-    >
-      <form
-        onSubmit={submit}
-        className="glass-panel"
-        style={{
-          width: '100%',
-          maxWidth: '420px',
-          padding: '32px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px',
-        }}
-      >
-        <div>
-          <div
-            style={{
-              fontFamily: 'Orbitron, sans-serif',
-              fontSize: '24px',
-              fontWeight: 700,
-              marginBottom: '8px',
-            }}
-          >
-            FOCUS
+    <main className="auth-screen">
+      <section className="auth-shell">
+        <aside className="auth-intro">
+          <div className="auth-mark">
+            F
           </div>
 
-          <div style={{ color: 'var(--text-secondary)' }}>
+          <div>
+            <div className="eyebrow">
+              Personal study system
+            </div>
+
+            <h1>
+              Turn focused time
+              into visible progress.
+            </h1>
+
+            <p>
+              Sessions, plans,
+              goals, analytics and
+              your study advisor stay
+              connected in one place.
+            </p>
+          </div>
+
+          <div className="auth-trust">
+            <ShieldCheck
+              size={17}
+            />
+            <span>
+              Your private study data
+              stays tied to your
+              account.
+            </span>
+          </div>
+        </aside>
+
+        <form
+          onSubmit={submit}
+          className="glass-panel auth-card"
+        >
+          <div className="auth-card-head">
+            <span>
+              FOCUS
+            </span>
+
+            <h2>
+              {signingUp
+                ? 'Create your account'
+                : 'Welcome back'}
+            </h2>
+
+            <p>
+              {signingUp
+                ? 'Build a study system that follows you across devices.'
+                : 'Sign in and continue from your latest synced state.'}
+            </p>
+          </div>
+
+          {signingUp && (
+            <label className="auth-field">
+              <span>
+                Display name
+              </span>
+
+              <div className="auth-input-wrap">
+                <UserRound
+                  size={16}
+                />
+                <input
+                  value={
+                    displayName
+                  }
+                  onChange={(
+                    event,
+                  ) =>
+                    setDisplayName(
+                      event.target
+                        .value,
+                    )
+                  }
+                  placeholder="Your name"
+                  autoComplete="name"
+                  maxLength={60}
+                  required
+                />
+              </div>
+            </label>
+          )}
+
+          <label className="auth-field">
+            <span>
+              Email
+            </span>
+
+            <div className="auth-input-wrap">
+              <Mail size={16} />
+              <input
+                type="email"
+                value={email}
+                onChange={(
+                  event,
+                ) =>
+                  setEmail(
+                    event.target
+                      .value,
+                  )
+                }
+                placeholder="you@example.com"
+                autoComplete="email"
+                required
+              />
+            </div>
+          </label>
+
+          <label className="auth-field">
+            <span>
+              Password
+            </span>
+
+            <div className="auth-input-wrap">
+              <LockKeyhole
+                size={16}
+              />
+              <input
+                type={
+                  showPassword
+                    ? 'text'
+                    : 'password'
+                }
+                value={password}
+                onChange={(
+                  event,
+                ) =>
+                  setPassword(
+                    event.target
+                      .value,
+                  )
+                }
+                placeholder={
+                  signingUp
+                    ? 'At least 10 characters'
+                    : 'Your password'
+                }
+                autoComplete={
+                  mode === 'signin'
+                    ? 'current-password'
+                    : 'new-password'
+                }
+                minLength={
+                  signingUp
+                    ? 10
+                    : undefined
+                }
+                required
+              />
+
+              <button
+                type="button"
+                className="auth-password-toggle"
+                onClick={() =>
+                  setShowPassword(
+                    (value) =>
+                      !value,
+                  )
+                }
+                aria-label={
+                  showPassword
+                    ? 'Hide password'
+                    : 'Show password'
+                }
+              >
+                {showPassword ? (
+                  <EyeOff
+                    size={16}
+                  />
+                ) : (
+                  <Eye
+                    size={16}
+                  />
+                )}
+              </button>
+            </div>
+
+            {signingUp && (
+              <small
+                className={
+                  password.length ===
+                  0
+                    ? ''
+                    : passwordReady
+                      ? 'ready'
+                      : 'warning'
+                }
+              >
+                Use 10+ characters.
+                A longer unique
+                password is better.
+              </small>
+            )}
+          </label>
+
+          <button
+            type="submit"
+            className="cyber-btn auth-submit"
+            disabled={
+              loading ||
+              !passwordReady
+            }
+          >
+            {loading
+              ? 'PLEASE WAIT...'
+              : mode === 'signin'
+                ? 'SIGN IN'
+                : 'CREATE ACCOUNT'}
+          </button>
+
+          {message && (
+            <div
+              className="auth-message"
+              role="status"
+              aria-live="polite"
+            >
+              {message}
+            </div>
+          )}
+
+          <button
+            type="button"
+            className="auth-mode-switch"
+            onClick={changeMode}
+          >
             {mode === 'signin'
-              ? 'Sign in to continue your study journey.'
-              : 'Create your FOCUS account.'}
-          </div>
-        </div>
-
-        {mode === 'signup' && (
-          <input
-            value={displayName}
-            onChange={(event) => setDisplayName(event.target.value)}
-            placeholder="Display name"
-            autoComplete="name"
-            style={{
-              padding: '12px',
-              borderRadius: '8px',
-              border: '1px solid var(--void-border)',
-              background: 'var(--void-surface-hover)',
-              color: 'var(--text-primary)',
-            }}
-          />
-        )}
-
-        <input
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          placeholder="Email"
-          autoComplete="email"
-          required
-          style={{
-            padding: '12px',
-            borderRadius: '8px',
-            border: '1px solid var(--void-border)',
-            background: 'var(--void-surface-hover)',
-            color: 'var(--text-primary)',
-          }}
-        />
-
-        <input
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          placeholder="Password"
-          autoComplete={
-            mode === 'signin'
-              ? 'current-password'
-              : 'new-password'
-          }
-          minLength={6}
-          required
-          style={{
-            padding: '12px',
-            borderRadius: '8px',
-            border: '1px solid var(--void-border)',
-            background: 'var(--void-surface-hover)',
-            color: 'var(--text-primary)',
-          }}
-        />
-
-        <button
-          type="submit"
-          className="cyber-btn"
-          disabled={loading}
-        >
-          {loading
-            ? 'PLEASE WAIT...'
-            : mode === 'signin'
-              ? 'SIGN IN'
-              : 'CREATE ACCOUNT'}
-        </button>
-
-        {message && (
-          <div
-            style={{
-              color: 'var(--text-secondary)',
-              fontSize: '13px',
-              lineHeight: 1.5,
-            }}
-          >
-            {message}
-          </div>
-        )}
-
-        <button
-          type="button"
-          onClick={() => {
-            setMode(mode === 'signin' ? 'signup' : 'signin')
-            setMessage('')
-          }}
-          style={{
-            border: 0,
-            background: 'transparent',
-            color: 'var(--text-secondary)',
-            cursor: 'pointer',
-          }}
-        >
-          {mode === 'signin'
-            ? 'Create a new account'
-            : 'Already have an account? Sign in'}
-        </button>
-      </form>
+              ? 'Create a new account'
+              : 'Already have an account? Sign in'}
+          </button>
+        </form>
+      </section>
     </main>
   )
 }
