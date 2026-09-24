@@ -34,6 +34,7 @@ type StudySessionRow = {
   subtasks: unknown
   created_at: string
   updated_at: string
+  deleted_at: string | null
 }
 
 type GoalRow = {
@@ -68,6 +69,7 @@ type AdvancedGoalRow = {
   status: 'active' | 'completed'
   created_at: string
   updated_at: string
+  deleted_at: string | null
 }
 
 type UserSettingsRow = {
@@ -160,6 +162,7 @@ export async function loadSupabaseSnapshot(userId: string): Promise<FocusDataSna
       .from('study_sessions')
       .select('*')
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .order('started_at', { ascending: false }),
 
     client
@@ -179,6 +182,7 @@ export async function loadSupabaseSnapshot(userId: string): Promise<FocusDataSna
       .from('advanced_goals')
       .select('*')
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false }),
 
     client
@@ -355,7 +359,6 @@ export async function saveSupabaseSnapshot(
           name: subject.name,
           color: subject.color,
           icon: subject.icon ?? null,
-          archived_at: null,
           updated_at: now,
         }),
       )
@@ -672,10 +675,14 @@ export async function deleteSupabaseAdvancedGoal(
   clientId: string,
 ): Promise<void> {
   const client = requireSupabase()
+  const now = new Date().toISOString()
 
   const { error } = await client
     .from('advanced_goals')
-    .delete()
+    .update({
+      deleted_at: now,
+      updated_at: now,
+    })
     .eq('user_id', userId)
     .eq('client_id', clientId)
 
@@ -689,10 +696,14 @@ export async function deleteSupabaseSession(
   clientId: string,
 ): Promise<void> {
   const client = requireSupabase()
+  const now = new Date().toISOString()
 
   const { error } = await client
     .from('study_sessions')
-    .delete()
+    .update({
+      deleted_at: now,
+      updated_at: now,
+    })
     .eq('user_id', userId)
     .eq('client_id', clientId)
 
