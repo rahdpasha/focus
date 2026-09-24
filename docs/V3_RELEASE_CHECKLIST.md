@@ -51,7 +51,7 @@ Checked items below were actually verified during V3 hardening. Re-run the autom
 - [x] Local recovery considers advanced goals, targets and settings as meaningful data, not only subjects/sessions/history.
 - [x] Reconnect recovery merges only locally changed subjects, sessions, goals, targets and settings into freshly loaded cloud state instead of pushing an entire stale snapshot.
 - [x] Account-scoped local recovery snapshots preserve unsynced data across same-browser account switching without exposing one account's workspace to another.
-- [x] Online sign-out flushes pending cloud changes first; offline pending mutation metadata remains account-scoped for recovery on the next same-account connection.
+- [x] Online sign-out flushes pending cloud changes first and now refuses to sign out if that flush fails; offline pending mutation metadata remains account-scoped for recovery on the next same-account connection.
 - [x] Signed-in backup restore uses an explicit cloud-replacement path; ordinary background sync remains non-destructive.
 - [x] Session deletion, advanced-goal deletion and backup import require an explicit second confirmation action.
 - [ ] With two signed-in browsers/devices, delete a session on one and confirm the stale second device cannot resurrect it.
