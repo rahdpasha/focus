@@ -47,6 +47,8 @@ Checked items below were actually verified during V3 hardening. Re-run the autom
 - [x] Realtime refresh stops polling after a failed queued cloud save instead of spinning indefinitely.
 - [x] Archived-only cloud subject history is treated as meaningful cloud state, so an intentionally empty subject workspace is not repopulated from local defaults.
 - [x] Pending local mutations are persisted per account until the cloud confirms the matching snapshot.
+- [x] Offline session/goal deletions and subject archives are tracked explicitly and replay their server tombstone/archive operations on reconnect.
+- [x] Local recovery considers advanced goals, targets and settings as meaningful data, not only subjects/sessions/history.
 - [x] Reconnect recovery merges only locally changed subjects, sessions, goals, targets and settings into freshly loaded cloud state instead of pushing an entire stale snapshot.
 - [x] Account-scoped local recovery snapshots preserve unsynced data across same-browser account switching without exposing one account's workspace to another.
 - [x] Online sign-out flushes pending cloud changes first; offline pending mutation metadata remains account-scoped for recovery on the next same-account connection.
