@@ -300,7 +300,10 @@ function AuthenticatedApp({
             onSignOut={
               auth.session
                 ? () => {
-                    void auth.signOut()
+                    void (async () => {
+                      await data.flushCloudChanges()
+                      await auth.signOut()
+                    })()
                   }
                 : undefined
             }
