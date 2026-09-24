@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Subject, StudySession } from '../types'
 import type { AppSettings } from '../app/settings'
 import { normalizeSettings } from '../app/settings'

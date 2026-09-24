@@ -174,20 +174,40 @@ export function useFocusData(
   const queuedCloudSnapshot = useRef<typeof initial | null>(null)
   const cloudReplaceRequested = useRef(false)
   const lastCloudFingerprint = useRef<string | null>(null)
-  const offlineMutations = useRef<OfflineMutationState>(
-    loadOfflineMutationState(
-      authSession?.user.id,
-    ),
+  const [
+    initialOfflineMutations,
+  ] = useState<OfflineMutationState>(
+    () =>
+      loadOfflineMutationState(
+        authSession?.user.id,
+      ),
   )
-  const offlineRecoveryRequested = useRef(
-    hasOfflineMutations(
-      offlineMutations.current,
-    ),
-  )
+  const offlineMutations =
+    useRef<OfflineMutationState>(
+      initialOfflineMutations,
+    )
+  const offlineRecoveryRequested =
+    useRef(
+      hasOfflineMutations(
+        initialOfflineMutations,
+      ),
+    )
   const latestLocalSnapshot =
     useRef<FocusDataSnapshot>(initial)
 
-  latestLocalSnapshot.current = {
+  useEffect(() => {
+    latestLocalSnapshot.current = {
+      sessions,
+      subjects,
+      dailyGoal,
+      weeklyGoal,
+      weeklyGoalsHistory,
+      advancedGoals,
+      activeSubjectId,
+      settings,
+      workspacePreferencesVersion,
+    }
+  }, [
     sessions,
     subjects,
     dailyGoal,
@@ -197,7 +217,7 @@ export function useFocusData(
     activeSubjectId,
     settings,
     workspacePreferencesVersion,
-  }
+  ])
 
   const recordPendingMutation =
     useCallback(
