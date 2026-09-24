@@ -2,7 +2,7 @@ import {
   ArrowRight,
   Clock3,
   Plus,
-  Trash2,
+  Archive,
   X,
 } from 'lucide-react'
 import {
@@ -334,10 +334,11 @@ export default function SubjectsPage({
                         )
                       }
                       aria-label={
-                        `${t('deleteSubject')} ${subject.name}`
+                        `${t('deleteSubject')} ${subject.name}. Study history is preserved.`
                       }
+                      title="Remove subject; study history is preserved"
                     >
-                      <Trash2
+                      <Archive
                         size={14}
                       />
                     </button>

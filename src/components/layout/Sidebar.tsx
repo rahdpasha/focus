@@ -13,7 +13,7 @@ import {
   Plus,
   Settings,
   Swords,
-  Trash2,
+  Archive,
   Trophy,
   X,
 } from 'lucide-react'
@@ -365,10 +365,11 @@ export default function Sidebar({
                         )
                       }
                       aria-label={
-                        `${t('deleteSubject')} ${subject.name}`
+                        `${t('deleteSubject')} ${subject.name}. Study history is preserved.`
                       }
+                      title="Remove subject; study history is preserved"
                     >
-                      <Trash2
+                      <Archive
                         size={13}
                       />
                     </button>

@@ -36,7 +36,7 @@ export const translations = {
     subjectName: 'Subject name',
     color: 'COLOR',
     createSubject: 'CREATE SUBJECT',
-    deleteSubject: 'Delete',
+    deleteSubject: 'Remove',
 
     // Duration selector
     custom: 'CUSTOM',
@@ -221,7 +221,7 @@ export const translations = {
     subjectName: 'ناوی بابەت',
     color: 'ڕەنگ',
     createSubject: 'دروستکردنی بابەت',
-    deleteSubject: 'سڕینەوە',
+    deleteSubject: 'لابردن',
 
     // Duration selector
     custom: 'خۆت دیاری بکە',

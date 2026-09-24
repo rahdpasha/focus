@@ -14,7 +14,8 @@ FOCUS V3 is developed on `feature/focus-league-v3`. Keep `main` unchanged until 
 ## Core product smoke test
 
 - [ ] Sign in and sign out.
-- [ ] Add, select and delete a subject.
+- [ ] Add, select and remove a subject.
+- [ ] Remove a subject with completed sessions and confirm its historical sessions remain in History/Statistics after refresh.
 - [ ] Start a session from Dashboard, Subjects and Study Plan.
 - [ ] Complete a focus session and confirm it appears in History and Statistics.
 - [ ] Add session notes and checklist items, complete the session, refresh, and confirm they persist.

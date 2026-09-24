@@ -415,8 +415,8 @@ export async function saveSupabaseSnapshot(
 
   /*
    * IMPORTANT:
-   * Sessions must be reconciled BEFORE deleting stale subjects
-   * because study_sessions.subject_id uses ON DELETE RESTRICT.
+   * Sessions must be reconciled before stale active subjects are
+   * archived so existing history always keeps a valid subject link.
    */
   const {
     data: cloudSessionRows,
