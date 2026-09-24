@@ -342,9 +342,38 @@ export function useFocusData(
         return true
       }
 
+      if (
+        typeof navigator !== "undefined" &&
+        !navigator.onLine
+      ) {
+        return true
+      }
+
+      if (!cloudHydrated.current) {
+        return true
+      }
+
       if (cloudSaveTimer.current) {
         clearTimeout(cloudSaveTimer.current)
         cloudSaveTimer.current = null
+      }
+
+      const latestSnapshot =
+        latestLocalSnapshot.current
+      const fingerprint =
+        getCloudFingerprint(
+          latestSnapshot,
+        )
+
+      if (
+        fingerprint !==
+          lastCloudFingerprint.current ||
+        hasOfflineMutations(
+          offlineMutations.current,
+        )
+      ) {
+        queuedCloudSnapshot.current =
+          latestSnapshot
       }
 
       if (
