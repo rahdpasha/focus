@@ -4,7 +4,7 @@ import type { AppSettings } from "../app/settings"
 import { defaultSettings, normalizeSettings } from "../app/settings"
 import { subjects as defaultSubjects } from "../data/subjects"
 import { getWeekKey, type WeeklyGoalMap } from "../utils/goalHistory"
-import { createSubject } from "../utils/subjectManager"
+import { createSubject, normalizeSubjectName } from "../utils/subjectManager"
 import { localStorageStore } from "../storage/localStorage"
 import type { AdvancedGoal, CloudSyncStatus, FocusDataSnapshot, FocusDataStore } from "../storage/types"
 import type { TranslationKey } from "../translations"
@@ -701,63 +701,334 @@ export function useFocusData(
         const data = backup as Record<string, unknown>
         if (!Array.isArray(data.sessions)) throw new Error("Invalid sessions")
         if (!Array.isArray(data.subjects)) throw new Error("Invalid subjects")
-        const importedSessions: StudySession[] =
-          data.sessions
-            .map((session: StudySession) => ({
-              ...session,
-              startedAt: session.startedAt
-                ? new Date(session.startedAt)
-                : undefined,
-              completedAt: new Date(session.completedAt),
-              totalPausedSeconds:
-                session.totalPausedSeconds ?? 0,
-            }))
-            .filter(
-              (session) =>
-                !Number.isNaN(
-                  session.completedAt.getTime(),
-                ) &&
-                (!session.startedAt ||
-                  !Number.isNaN(
-                    session.startedAt.getTime(),
-                  )),
-            )
+        const seenSubjectIds = new Set<string>()
+        const seenSubjectNames = new Set<string>()
 
         const importedSubjects =
-          (data.subjects as Subject[]).filter(
-            (subject) =>
-              Boolean(
-                subject &&
-                  typeof subject.id === "string" &&
-                  typeof subject.name === "string" &&
-                  typeof subject.color === "string",
-              ),
+          (data.subjects as unknown[]).flatMap(
+            (candidate): Subject[] => {
+              if (
+                !candidate ||
+                typeof candidate !== "object" ||
+                Array.isArray(candidate)
+              ) {
+                return []
+              }
+
+              const value =
+                candidate as Record<string, unknown>
+              const id =
+                typeof value.id === "string"
+                  ? value.id.trim()
+                  : ""
+              const name =
+                typeof value.name === "string"
+                  ? normalizeSubjectName(value.name)
+                  : ""
+              const color =
+                typeof value.color === "string"
+                  ? value.color.trim()
+                  : ""
+              const normalizedName =
+                name.toLocaleLowerCase()
+
+              if (
+                !id ||
+                !name ||
+                !color ||
+                seenSubjectIds.has(id) ||
+                seenSubjectNames.has(normalizedName)
+              ) {
+                return []
+              }
+
+              seenSubjectIds.add(id)
+              seenSubjectNames.add(normalizedName)
+
+              return [{
+                id,
+                name,
+                color,
+                icon:
+                  typeof value.icon === "string"
+                    ? value.icon
+                    : undefined,
+              }]
+            },
+          )
+
+        const importedSubjectIds =
+          new Set(
+            importedSubjects.map(
+              (subject) => subject.id,
+            ),
+          )
+
+        const seenSessionIds = new Set<string>()
+
+        const importedSessions: StudySession[] =
+          data.sessions.flatMap(
+            (candidate): StudySession[] => {
+              if (
+                !candidate ||
+                typeof candidate !== "object" ||
+                Array.isArray(candidate)
+              ) {
+                return []
+              }
+
+              const value =
+                candidate as Record<string, unknown>
+              const id =
+                typeof value.id === "string"
+                  ? value.id.trim()
+                  : ""
+              const subjectId =
+                typeof value.subjectId === "string"
+                  ? value.subjectId.trim()
+                  : ""
+              const completedAt =
+                new Date(
+                  typeof value.completedAt === "string"
+                    ? value.completedAt
+                    : "",
+                )
+              const startedAt =
+                typeof value.startedAt === "string"
+                  ? new Date(value.startedAt)
+                  : undefined
+
+              if (
+                !id ||
+                !subjectId ||
+                seenSessionIds.has(id) ||
+                Number.isNaN(
+                  completedAt.getTime(),
+                ) ||
+                (startedAt &&
+                  Number.isNaN(
+                    startedAt.getTime(),
+                  ))
+              ) {
+                return []
+              }
+
+              const duration =
+                typeof value.duration === "number" &&
+                Number.isFinite(value.duration)
+                  ? Math.max(
+                      0,
+                      value.duration,
+                    )
+                  : 0
+              const actualDuration =
+                typeof value.actualDuration === "number" &&
+                Number.isFinite(
+                  value.actualDuration,
+                )
+                  ? Math.max(
+                      0,
+                      value.actualDuration,
+                    )
+                  : duration
+              const interruptions =
+                typeof value.interruptions === "number" &&
+                Number.isFinite(
+                  value.interruptions,
+                )
+                  ? Math.max(
+                      0,
+                      Math.round(
+                        value.interruptions,
+                      ),
+                    )
+                  : 0
+              const totalPausedSeconds =
+                typeof value.totalPausedSeconds === "number" &&
+                Number.isFinite(
+                  value.totalPausedSeconds,
+                )
+                  ? Math.max(
+                      0,
+                      Math.round(
+                        value.totalPausedSeconds,
+                      ),
+                    )
+                  : 0
+              const activeSubject =
+                importedSubjects.find(
+                  (subject) =>
+                    subject.id === subjectId,
+                )
+              const subjectName =
+                typeof value.subjectName === "string" &&
+                value.subjectName.trim()
+                  ? value.subjectName.trim()
+                  : activeSubject?.name ??
+                    "Archived subject"
+              const subjectColor =
+                typeof value.subjectColor === "string" &&
+                value.subjectColor.trim()
+                  ? value.subjectColor.trim()
+                  : activeSubject?.color ??
+                    "#8b5cf6"
+
+              const subtasks = Array.isArray(
+                value.subtasks,
+              )
+                ? value.subtasks.flatMap(
+                    (subtask): NonNullable<
+                      StudySession["subtasks"]
+                    > => {
+                      if (
+                        !subtask ||
+                        typeof subtask !== "object" ||
+                        Array.isArray(subtask)
+                      ) {
+                        return []
+                      }
+
+                      const item =
+                        subtask as Record<string, unknown>
+
+                      if (
+                        typeof item.id !== "string" ||
+                        typeof item.text !== "string" ||
+                        typeof item.completed !== "boolean"
+                      ) {
+                        return []
+                      }
+
+                      return [{
+                        id: item.id,
+                        text: item.text,
+                        completed: item.completed,
+                      }]
+                    },
+                  )
+                : undefined
+
+              seenSessionIds.add(id)
+
+              return [{
+                id,
+                subjectId,
+                subjectName,
+                subjectColor,
+                duration,
+                actualDuration,
+                startedAt,
+                completedAt,
+                completed:
+                  typeof value.completed === "boolean"
+                    ? value.completed
+                    : true,
+                interruptions,
+                totalPausedSeconds,
+                notes:
+                  typeof value.notes === "string"
+                    ? value.notes
+                    : undefined,
+                subtasks,
+              }]
+            },
           )
 
         setSessions(importedSessions)
         setSubjects(importedSubjects)
+
         if (Array.isArray(data.advancedGoals)) {
-          const importedAdvancedGoals = data.advancedGoals.filter(
-            (goal): goal is AdvancedGoal => {
-              if (!goal || typeof goal !== "object") return false
-              const value = goal as Record<string, unknown>
-              return (
-                typeof value.id === "string" &&
-                typeof value.title === "string" &&
-                (value.subjectId === undefined ||
-                  typeof value.subjectId === "string") &&
-                typeof value.targetMinutes === "number" &&
-                typeof value.deadline === "string" &&
-                (value.priority === "low" ||
-                  value.priority === "medium" ||
-                  value.priority === "high") &&
-                (value.status === "active" ||
-                  value.status === "completed") &&
-                typeof value.createdAt === "string"
-              )
-            },
+          const seenGoalIds = new Set<string>()
+          const importedAdvancedGoals =
+            data.advancedGoals.flatMap(
+              (goal): AdvancedGoal[] => {
+                if (
+                  !goal ||
+                  typeof goal !== "object" ||
+                  Array.isArray(goal)
+                ) {
+                  return []
+                }
+
+                const value =
+                  goal as Record<string, unknown>
+                const id =
+                  typeof value.id === "string"
+                    ? value.id.trim()
+                    : ""
+                const title =
+                  typeof value.title === "string"
+                    ? value.title.trim()
+                    : ""
+                const targetMinutes =
+                  typeof value.targetMinutes === "number" &&
+                  Number.isFinite(
+                    value.targetMinutes,
+                  )
+                    ? Math.max(
+                        1,
+                        Math.round(
+                          value.targetMinutes,
+                        ),
+                      )
+                    : 0
+                const deadline =
+                  typeof value.deadline === "string"
+                    ? new Date(value.deadline)
+                    : new Date(Number.NaN)
+                const createdAt =
+                  typeof value.createdAt === "string"
+                    ? new Date(value.createdAt)
+                    : new Date(Number.NaN)
+
+                if (
+                  !id ||
+                  !title ||
+                  targetMinutes <= 0 ||
+                  seenGoalIds.has(id) ||
+                  Number.isNaN(
+                    deadline.getTime(),
+                  ) ||
+                  Number.isNaN(
+                    createdAt.getTime(),
+                  ) ||
+                  (value.priority !== "low" &&
+                    value.priority !== "medium" &&
+                    value.priority !== "high") ||
+                  (value.status !== "active" &&
+                    value.status !== "completed")
+                ) {
+                  return []
+                }
+
+                seenGoalIds.add(id)
+
+                const subjectId =
+                  typeof value.subjectId === "string" &&
+                  importedSubjectIds.has(
+                    value.subjectId,
+                  )
+                    ? value.subjectId
+                    : undefined
+
+                return [{
+                  id,
+                  title,
+                  subjectId,
+                  targetMinutes,
+                  deadline:
+                    deadline.toISOString(),
+                  priority: value.priority,
+                  status: value.status,
+                  createdAt:
+                    createdAt.toISOString(),
+                }]
+              },
+            )
+
+          setAdvancedGoals(
+            importedAdvancedGoals,
           )
-          setAdvancedGoals(importedAdvancedGoals)
         } else {
           setAdvancedGoals([])
         }
