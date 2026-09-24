@@ -340,25 +340,11 @@ export async function saveSupabaseSnapshot(
     }
   }
 
-  const currentSubjectIds = new Set(
+  const activeSubjectIds = new Set(
     snapshot.subjects.map(
       (subject) => subject.id,
     ),
   )
-
-  const staleSubjectCloudIds =
-    cloudSubjects
-      .filter(
-        (row) =>
-          !row.archived_at &&
-          (
-            !row.client_id ||
-            !currentSubjectIds.has(
-              row.client_id,
-            )
-          ),
-      )
-      .map((row) => row.id)
 
   if (snapshot.subjects.length > 0) {
     const subjectRows =
@@ -414,27 +400,10 @@ export async function saveSupabaseSnapshot(
   }
 
   /*
-   * IMPORTANT:
-   * Sessions must be reconciled before stale active subjects are
-   * archived so existing history always keeps a valid subject link.
+   * Historical sessions may reference archived subjects. Missing
+   * historical subject rows are reconstructed above before sessions
+   * are written so portable backups remain restorable.
    */
-  const {
-    data: cloudSessionRows,
-    error: cloudSessionReadError,
-  } = await client
-    .from('study_sessions')
-    .select('id, client_id')
-    .eq('user_id', userId)
-
-  if (cloudSessionReadError) {
-    throw cloudSessionReadError
-  }
-
-  const cloudSessions =
-    (cloudSessionRows ?? []) as Array<{
-      id: string
-      client_id: string | null
-    }>
 
   if (snapshot.sessions.length > 0) {
     const sessionRows =
@@ -514,45 +483,9 @@ export async function saveSupabaseSnapshot(
     }
   }
 
-  const currentSessionIds =
-    new Set(
-      snapshot.sessions.map(
-        (session) => session.id,
-      ),
-    )
-
-  // @ts-expect-error - preserved for future cache cleanup logic
-  const staleSessionCloudIds =
-    cloudSessions
-      .filter(
-        (row) =>
-          !row.client_id ||
-          !currentSessionIds.has(
-            row.client_id,
-          ),
-      )
-      .map((row) => row.id)
-
-  // Stale session bulk deletion disabled to prevent sync data loss
-
-  if (
-    staleSubjectCloudIds.length > 0
-  ) {
-    const { error } =
-      await client
-        .from('subjects')
-        .update({
-          archived_at: now,
-          updated_at: now,
-        })
-        .eq('user_id', userId)
-        .in(
-          'id',
-          staleSubjectCloudIds,
-        )
-
-    if (error) throw error
-  }
+  // Snapshot saves are intentionally non-destructive. Entity
+  // deletion/archival uses explicit per-entity operations so a stale
+  // device cannot remove newer data created on another device.
 
   const { data: existingGoals, error: goalReadError } =
     await client
@@ -619,18 +552,6 @@ export async function saveSupabaseSnapshot(
     if (error) throw error
   }
 
-  const {
-    data: existingAdvancedGoalRows,
-    error: advancedGoalReadError,
-  } = await client
-    .from('advanced_goals')
-    .select('id, client_id')
-    .eq('user_id', userId)
-
-  if (advancedGoalReadError) {
-    throw advancedGoalReadError
-  }
-
   const advancedGoalRows = snapshot.advancedGoals.map((goal) => ({
     client_id: goal.id,
     user_id: userId,
@@ -650,31 +571,6 @@ export async function saveSupabaseSnapshot(
       .upsert(advancedGoalRows, {
         onConflict: 'user_id,client_id',
       })
-
-    if (error) throw error
-  }
-
-  const currentAdvancedGoalIds =
-    new Set(snapshot.advancedGoals.map((goal) => goal.id))
-
-  const staleAdvancedGoalCloudIds =
-    ((existingAdvancedGoalRows ?? []) as Array<{
-      id: string
-      client_id: string | null
-    }>)
-      .filter(
-        (row) =>
-          !row.client_id ||
-          !currentAdvancedGoalIds.has(row.client_id),
-      )
-      .map((row) => row.id)
-
-  if (staleAdvancedGoalCloudIds.length > 0) {
-    const { error } = await client
-      .from('advanced_goals')
-      .delete()
-      .eq('user_id', userId)
-      .in('id', staleAdvancedGoalCloudIds)
 
     if (error) throw error
   }
@@ -715,6 +611,23 @@ export async function saveSupabaseSnapshot(
 
   if (settingsError) {
     throw settingsError
+  }
+}
+
+export async function deleteSupabaseAdvancedGoal(
+  userId: string,
+  clientId: string,
+): Promise<void> {
+  const client = requireSupabase()
+
+  const { error } = await client
+    .from('advanced_goals')
+    .delete()
+    .eq('user_id', userId)
+    .eq('client_id', clientId)
+
+  if (error) {
+    throw error
   }
 }
 
