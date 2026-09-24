@@ -60,6 +60,8 @@ export function useFocusData(
     useState<CloudSyncStatus>(
       authSession ? "loading" : "local",
     )
+  const [networkRevision, setNetworkRevision] =
+    useState(0)
   const cloudSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const cloudHydrationStarted = useRef(false)
   const cloudSaveInFlight = useRef(false)
@@ -93,6 +95,14 @@ export function useFocusData(
 
   useEffect(() => {
     if (!authSession || cloudHydrationStarted.current) return
+
+    if (
+      typeof navigator !== "undefined" &&
+      !navigator.onLine
+    ) {
+      setCloudStatus("offline")
+      return
+    }
 
     cloudHydrationStarted.current = true
 
@@ -204,14 +214,41 @@ export function useFocusData(
           error,
         )
 
+        if (
+          typeof navigator !== "undefined" &&
+          !navigator.onLine
+        ) {
+          cloudHydrationStarted.current = false
+          cloudHydrated.current = false
+          setCloudStatus("offline")
+          return
+        }
+
         cloudHydrated.current = true
         setCloudStatus("error")
       }
     })()
-  }, [initial, authSession])
+  }, [
+    initial,
+    authSession,
+    networkRevision,
+  ])
 
   useEffect(() => {
-    if (!authSession || !cloudHydrated.current) return
+    if (
+      !authSession ||
+      !cloudHydrated.current
+    ) {
+      return
+    }
+
+    if (
+      typeof navigator !== "undefined" &&
+      !navigator.onLine
+    ) {
+      setCloudStatus("offline")
+      return
+    }
 
     const snapshot = {
       sessions,
@@ -331,7 +368,54 @@ export function useFocusData(
     activeSubjectId,
     settings,
     workspacePreferencesVersion,
+    networkRevision,
   ])
+
+  useEffect(() => {
+    if (!authSession) {
+      setCloudStatus("local")
+      return
+    }
+
+    const handleOffline = () => {
+      setCloudStatus("offline")
+    }
+
+    const handleOnline = () => {
+      setCloudStatus(
+        cloudHydrated.current
+          ? "saving"
+          : "loading",
+      )
+      setNetworkRevision(
+        (value) => value + 1,
+      )
+    }
+
+    window.addEventListener(
+      "offline",
+      handleOffline,
+    )
+    window.addEventListener(
+      "online",
+      handleOnline,
+    )
+
+    if (!navigator.onLine) {
+      handleOffline()
+    }
+
+    return () => {
+      window.removeEventListener(
+        "offline",
+        handleOffline,
+      )
+      window.removeEventListener(
+        "online",
+        handleOnline,
+      )
+    }
+  }, [authSession])
 
   const setWeeklyGoal = (goal: number) => {
     if (!Number.isFinite(goal) || goal <= 0) return

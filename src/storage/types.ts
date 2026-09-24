@@ -41,4 +41,5 @@ export type CloudSyncStatus =
   | "loading"
   | "saving"
   | "synced"
+  | "offline"
   | "error"

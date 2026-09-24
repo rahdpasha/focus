@@ -622,12 +622,15 @@ export default function Settings({
               className={
                 cloudStatus === 'error'
                   ? 'settings-sync-status error'
-                  : cloudStatus === 'synced'
-                    ? 'settings-sync-status synced'
-                    : 'settings-sync-status'
+                  : cloudStatus === 'offline'
+                    ? 'settings-sync-status offline'
+                    : cloudStatus === 'synced'
+                      ? 'settings-sync-status synced'
+                      : 'settings-sync-status'
               }
             >
-              {cloudStatus === 'error' ? (
+              {cloudStatus === 'error' ||
+              cloudStatus === 'offline' ? (
                 <CloudOff size={13} />
               ) : (
                 <Cloud size={13} />
@@ -641,7 +644,9 @@ export default function Settings({
                       ? 'Saving changes…'
                       : cloudStatus === 'synced'
                         ? 'Cloud synced'
-                        : 'Cloud sync needs attention'}
+                        : cloudStatus === 'offline'
+                          ? 'Offline · changes stay on this device'
+                          : 'Cloud sync needs attention'}
               </span>
             </div>
           </div>
