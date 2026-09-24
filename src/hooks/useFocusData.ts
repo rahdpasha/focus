@@ -5,7 +5,11 @@ import { defaultSettings, normalizeSettings } from "../app/settings"
 import { subjects as defaultSubjects } from "../data/subjects"
 import { getWeekKey, type WeeklyGoalMap } from "../utils/goalHistory"
 import { createSubject, normalizeSubjectName } from "../utils/subjectManager"
-import { localStorageStore } from "../storage/localStorage"
+import {
+  loadAccountSnapshot,
+  localStorageStore,
+  saveAccountSnapshot,
+} from "../storage/localStorage"
 import type { AdvancedGoal, CloudSyncStatus, FocusDataSnapshot, FocusDataStore } from "../storage/types"
 import {
   addOfflineMutationId,
@@ -81,7 +85,10 @@ function loadInitialSnapshot(
     return snapshot
   }
 
-  return createFreshSnapshot()
+  return (
+    loadAccountSnapshot(userId) ??
+    createFreshSnapshot()
+  )
 }
 
 function hasMeaningfulCloudData(
@@ -478,6 +485,20 @@ export function useFocusData(
     ) {
       writeLocalOwnerId(
         authSession.user.id,
+      )
+      saveAccountSnapshot(
+        authSession.user.id,
+        {
+          sessions,
+          subjects,
+          dailyGoal,
+          weeklyGoal,
+          weeklyGoalsHistory,
+          advancedGoals,
+          activeSubjectId,
+          settings,
+          workspacePreferencesVersion,
+        },
       )
     }
   }, [
