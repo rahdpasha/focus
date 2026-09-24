@@ -18,6 +18,7 @@ import {
   hasOfflineMutations,
   loadOfflineMutationState,
   mergeOfflineMutations,
+  removeOfflineMutationId,
   saveOfflineMutationState,
   type OfflineMutationState,
 } from "../storage/offlineSync"
@@ -564,6 +565,49 @@ export function useFocusData(
             offlineMutations.current
 
           if (
+            !offlineChanges.replaceWorkspace
+          ) {
+            const deletionTasks = [
+              ...offlineChanges.deletedSessionIds.map(
+                (id) =>
+                  deleteSupabaseSession(
+                    authSession.user.id,
+                    id,
+                  ),
+              ),
+              ...offlineChanges.deletedAdvancedGoalIds.map(
+                (id) =>
+                  deleteSupabaseAdvancedGoal(
+                    authSession.user.id,
+                    id,
+                  ),
+              ),
+              ...offlineChanges.deletedSubjectIds.map(
+                (id) =>
+                  deleteSupabaseSubject(
+                    authSession.user.id,
+                    id,
+                  ),
+              ),
+            ]
+
+            if (deletionTasks.length > 0) {
+              await Promise.all(
+                deletionTasks,
+              )
+
+              cloudSnapshot =
+                await loadSupabaseSnapshot(
+                  authSession.user.id,
+                )
+              cloudHasData =
+                hasMeaningfulCloudData(
+                  cloudSnapshot,
+                )
+            }
+          }
+
+          if (
             offlineChanges.replaceWorkspace
           ) {
             await replaceSupabaseSnapshot(
@@ -918,6 +962,28 @@ export function useFocusData(
       )
     }
 
+    if (
+      authSession &&
+      typeof navigator !== "undefined" &&
+      !navigator.onLine
+    ) {
+      removeLocal()
+      recordPendingMutation(
+        (mutations) => {
+          removeOfflineMutationId(
+            mutations.sessionIds,
+            id,
+          )
+          addOfflineMutationId(
+            mutations.deletedSessionIds,
+            id,
+          )
+        },
+      )
+      setCloudStatus("offline")
+      return
+    }
+
     if (authSession) {
       void (async () => {
         const ready =
@@ -987,6 +1053,28 @@ export function useFocusData(
         (current) =>
           current === id ? null : current,
       )
+    }
+
+    if (
+      authSession &&
+      typeof navigator !== "undefined" &&
+      !navigator.onLine
+    ) {
+      removeLocal()
+      recordPendingMutation(
+        (mutations) => {
+          removeOfflineMutationId(
+            mutations.subjectIds,
+            id,
+          )
+          addOfflineMutationId(
+            mutations.deletedSubjectIds,
+            id,
+          )
+        },
+      )
+      setCloudStatus("offline")
+      return
     }
 
     if (authSession) {
@@ -1113,6 +1201,28 @@ export function useFocusData(
           (goal) => goal.id !== id,
         ),
       )
+    }
+
+    if (
+      authSession &&
+      typeof navigator !== "undefined" &&
+      !navigator.onLine
+    ) {
+      removeLocal()
+      recordPendingMutation(
+        (mutations) => {
+          removeOfflineMutationId(
+            mutations.advancedGoalIds,
+            id,
+          )
+          addOfflineMutationId(
+            mutations.deletedAdvancedGoalIds,
+            id,
+          )
+        },
+      )
+      setCloudStatus("offline")
+      return
     }
 
     if (authSession) {
