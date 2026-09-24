@@ -9,12 +9,12 @@ Checked items below were actually verified during V3 hardening. Re-run the autom
 - [x] GitHub **Quality / Lint and build** check passes.
 - [x] Latest Vercel preview deployment is **READY**.
 - [x] Vercel runtime error check shows no new application errors.
-- [x] Supabase migrations through `guard_advanced_goal_subject_scope` are applied.
+- [x] Supabase migrations through `harden_legacy_new_user_trigger` are applied.
 - [x] Supabase `study-advisor` Edge Function is ACTIVE with JWT verification enabled.
 - [x] Supabase Security Advisor findings have been reviewed.
 - [x] All user-facing data tables have RLS enabled.
 - [x] League helper/trigger SECURITY DEFINER functions are not client-executable; only the two intentional authenticated League RPCs remain callable.
-- [x] SECURITY DEFINER search paths are pinned to `pg_catalog, public`.
+- [x] SECURITY DEFINER search paths are pinned to `pg_catalog, public`, including the legacy auth profile trigger helper.
 
 ## Core product smoke test
 
