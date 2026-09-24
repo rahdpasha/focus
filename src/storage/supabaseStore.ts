@@ -141,7 +141,13 @@ function dateOnly(date: Date): string {
   return date.toISOString().slice(0, 10)
 }
 
-export async function loadSupabaseSnapshot(userId: string): Promise<FocusDataSnapshot> {
+export async function loadSupabaseSnapshot(
+  userId: string,
+): Promise<
+  FocusDataSnapshot & {
+    hasArchivedSubjects: boolean
+  }
+> {
   const client = requireSupabase()
 
   const [
@@ -298,6 +304,11 @@ export async function loadSupabaseSnapshot(userId: string): Promise<FocusDataSna
     settings,
     workspacePreferencesVersion:
       settingsRow?.workspace_preferences_version ?? 0,
+    hasArchivedSubjects:
+      subjectRows.some(
+        (row) =>
+          Boolean(row.archived_at),
+      ),
   }
 }
 
