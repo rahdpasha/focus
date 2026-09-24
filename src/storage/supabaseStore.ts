@@ -372,6 +372,59 @@ export async function saveSupabaseSnapshot(
 
     }
 
+  const historicalSubjectRows = Array.from(
+    snapshot.sessions.reduce(
+      (rows, session) => {
+        if (
+          !session.subjectId ||
+          activeSubjectIds.has(session.subjectId) ||
+          cloudSubjectByClientId.has(session.subjectId) ||
+          rows.has(session.subjectId)
+        ) {
+          return rows
+        }
+
+        rows.set(session.subjectId, {
+          client_id: session.subjectId,
+          user_id: userId,
+          name:
+            session.subjectName.trim() ||
+            'Archived subject',
+          color:
+            session.subjectColor ||
+            '#8b5cf6',
+          icon: null,
+          archived_at: now,
+          updated_at: now,
+        })
+
+        return rows
+      },
+      new Map<
+        string,
+        {
+          client_id: string
+          user_id: string
+          name: string
+          color: string
+          icon: null
+          archived_at: string
+          updated_at: string
+        }
+      >(),
+    ).values(),
+  )
+
+  if (historicalSubjectRows.length > 0) {
+    const { error } = await client
+      .from('subjects')
+      .upsert(historicalSubjectRows, {
+        onConflict: 'user_id,client_id',
+      })
+
+    if (error) throw error
+  }
+
   const {
     data: refreshedSubjectRows,
     error: refreshedSubjectReadError,
@@ -410,9 +463,9 @@ export async function saveSupabaseSnapshot(
       snapshot.sessions.flatMap(
         (session) => {
           const cloudSubjectId =
-        cloudSubjectByClientId.get(
-          session.subjectId,
-        ) ?? session.subjectId
+            cloudSubjectByClientId.get(
+              session.subjectId,
+            )
 
           if (!cloudSubjectId) {
             console.warn(
