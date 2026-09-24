@@ -170,6 +170,7 @@ function AuthenticatedApp({
           onAddAdvancedGoal={data.addAdvancedGoal}
           onUpdateAdvancedGoal={data.updateAdvancedGoal}
           onDeleteAdvancedGoal={data.deleteAdvancedGoal}
+          onStartSession={startRecommendedSession}
         />
       )}
 

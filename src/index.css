@@ -3417,3 +3417,57 @@ select option {
     justify-content: center;
   }
 }
+
+
+/* V3 study plan actions */
+.study-plan-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.study-plan-start,
+.subject-allocation-footer button {
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid var(--primary-border);
+  border-radius: 9px;
+  background: var(--primary-soft);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.study-plan-start:hover,
+.subject-allocation-footer button:hover {
+  border-color: var(--primary-glow);
+  color: var(--primary-glow);
+}
+
+.subject-allocation-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.subject-allocation-footer button {
+  min-height: 28px;
+  padding: 5px 8px;
+  font-size: 8px;
+}
+
+@media (max-width: 640px) {
+  .study-plan-action {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .study-plan-start {
+    min-width: 92px;
+  }
+}

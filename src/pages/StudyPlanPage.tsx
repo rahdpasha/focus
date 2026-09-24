@@ -26,6 +26,10 @@ interface StudyPlanPageProps {
     patch: Partial<Omit<AdvancedGoal, "id" | "createdAt">>,
   ) => void
   onDeleteAdvancedGoal: (id: string) => void
+  onStartSession: (
+    subjectId?: string,
+    minutes?: number,
+  ) => void
 }
 
 export default function StudyPlanPage({
@@ -39,6 +43,7 @@ export default function StudyPlanPage({
   onAddAdvancedGoal,
   onUpdateAdvancedGoal,
   onDeleteAdvancedGoal,
+  onStartSession,
 }: StudyPlanPageProps) {
   const { t } = useI18n()
   const [goalTitle, setGoalTitle] = useState("")
@@ -49,10 +54,39 @@ export default function StudyPlanPage({
 
   const advancedGoalCards = useMemo(
     () =>
-      advancedGoals.map((goal) => ({
-        goal,
-        progress: getAdvancedGoalProgress(goal, sessions),
-      })),
+      advancedGoals
+        .map((goal) => ({
+          goal,
+          progress: getAdvancedGoalProgress(goal, sessions),
+        }))
+        .sort((a, b) => {
+          if (a.progress.completed !== b.progress.completed) {
+            return a.progress.completed ? 1 : -1
+          }
+
+          if (a.progress.overdue !== b.progress.overdue) {
+            return a.progress.overdue ? -1 : 1
+          }
+
+          const priorityWeight = {
+            high: 3,
+            medium: 2,
+            low: 1,
+          }
+
+          const priorityDifference =
+            priorityWeight[b.goal.priority] -
+            priorityWeight[a.goal.priority]
+
+          if (priorityDifference !== 0) {
+            return priorityDifference
+          }
+
+          return (
+            new Date(a.goal.deadline).getTime() -
+            new Date(b.goal.deadline).getTime()
+          )
+        }),
     [advancedGoals, sessions],
   )
 
@@ -182,15 +216,30 @@ export default function StudyPlanPage({
                   </div>
                 </div>
 
-                <div style={{ textAlign: "right" }}>
-                  <div className="mono" style={{ color: "var(--primary-glow)", fontSize: "15px", fontWeight: 600 }}>
-                    {item.minutes}m
-                  </div>
-                  {item.todayCompletedMinutes > 0 && (
-                    <div style={{ color: "var(--text-muted)", fontSize: "10px", marginTop: "2px" }}>
-                      {item.todayCompletedMinutes}m done today
+                <div className="study-plan-action">
+                  <div>
+                    <div className="mono" style={{ color: "var(--primary-glow)", fontSize: "15px", fontWeight: 600 }}>
+                      {item.minutes}m
                     </div>
-                  )}
+                    {item.todayCompletedMinutes > 0 && (
+                      <div style={{ color: "var(--text-muted)", fontSize: "10px", marginTop: "2px" }}>
+                        {item.todayCompletedMinutes}m done today
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    className="study-plan-start"
+                    onClick={() =>
+                      onStartSession(
+                        item.subjectId,
+                        item.minutes,
+                      )
+                    }
+                  >
+                    START
+                  </button>
                 </div>
               </div>
             ))
@@ -244,8 +293,22 @@ export default function StudyPlanPage({
                 <div style={{ width: `${sa.percent}%`, height: "100%", background: sa.subjectColor || "var(--primary-glow)", transition: "width 300ms ease" }} />
               </div>
 
-              <div style={{ color: "var(--text-muted)", fontSize: "10px" }}>
-                {sa.remainingMinutes > 0 ? `${sa.remainingMinutes}m left this week` : "Target met"}
+              <div className="subject-allocation-footer">
+                <span>
+                  {sa.remainingMinutes > 0 ? `${sa.remainingMinutes}m left this week` : "Target met"}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    onStartSession(
+                      sa.subjectId,
+                      25,
+                    )
+                  }
+                >
+                  25M
+                </button>
               </div>
             </div>
           ))}
@@ -261,7 +324,10 @@ export default function StudyPlanPage({
               Track a focused objective across multiple sessions without turning the plan into a to-do list.
             </p>
           </div>
-          <span className="mono">{advancedGoals.filter((goal) => goal.status === "active").length} active</span>
+          <span className="mono">
+            {advancedGoals.filter((goal) => goal.status === "active").length} active ·{" "}
+            {advancedGoalCards.filter(({ progress }) => progress.overdue).length} overdue
+          </span>
         </div>
 
         <div className="advanced-goal-create">
