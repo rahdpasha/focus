@@ -140,7 +140,10 @@ export default function AdvisorPage({
       />
 
       <div className="advisor-shell">
-        <section className="glass-panel advisor-hero">
+        <section
+          className="glass-panel advisor-hero"
+          aria-busy={loading}
+        >
           <div
             style={{
               position: 'relative',
@@ -208,6 +211,7 @@ export default function AdvisorPage({
               </div>
 
               <textarea
+                aria-label="Ask the FOCUS Advisor"
                 value={question}
                 maxLength={500}
                 onChange={(
@@ -240,6 +244,7 @@ export default function AdvisorPage({
 
             {error && (
               <div
+                role="alert"
                 style={{
                   marginTop:
                     '14px',
@@ -254,7 +259,11 @@ export default function AdvisorPage({
             )}
 
             {response && (
-              <div className="advisor-answer">
+              <div
+                className="advisor-answer"
+                role="status"
+                aria-live="polite"
+              >
                 <div
                   style={{
                     display:

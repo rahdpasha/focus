@@ -28,6 +28,12 @@ export default function AppShell({
 }: AppShellProps) {
   return (
     <>
+      <a
+        className="skip-link"
+        href="#focus-main"
+      >
+        Skip to content
+      </a>
       <BackgroundEffects />
       <div className="app-shell">
         <Sidebar
@@ -39,7 +45,11 @@ export default function AppShell({
           onAddSubject={onAddSubject}
           onDeleteSubject={onDeleteSubject}
         />
-        <div className="app-content">
+        <div
+          id="focus-main"
+          className="app-content"
+          tabIndex={-1}
+        >
           {children}
         </div>
         <MobileDock

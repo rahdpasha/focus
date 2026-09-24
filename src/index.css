@@ -3471,3 +3471,75 @@ select option {
     min-width: 92px;
   }
 }
+
+
+/* V3 accessibility and motion */
+.skip-link {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 3000;
+  padding: 9px 12px;
+  border: 1px solid var(--primary-border);
+  border-radius: 9px;
+  background: var(--space-black);
+  color: var(--text-primary);
+  font-size: 10px;
+  font-weight: 700;
+  transform: translateY(-160%);
+  transition: transform 0.16s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.study-plan-item {
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .study-plan-item {
+    flex-wrap: wrap;
+  }
+
+  .study-plan-item > div:first-child {
+    min-width: 0;
+    flex: 1 1 220px;
+  }
+
+  .study-plan-action {
+    flex: 1 1 100%;
+  }
+
+  .mobile-dock-item {
+    min-height: 50px;
+  }
+
+  .sidebar-nav-item,
+  .sidebar-add-subject,
+  .settings-secondary-action,
+  .settings-danger-action,
+  .study-plan-start,
+  .subject-start,
+  .subject-select {
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .glass-panel,
+  .focus-pulse,
+  .focus-timer-stage {
+    transform: none !important;
+  }
+}

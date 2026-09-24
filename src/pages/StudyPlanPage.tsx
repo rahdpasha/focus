@@ -186,6 +186,7 @@ export default function StudyPlanPage({
             plan.items.map((item, index) => (
               <div
                 key={`${item.subjectId}-${index}`}
+                className="study-plan-item"
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
@@ -332,6 +333,7 @@ export default function StudyPlanPage({
 
         <div className="advanced-goal-create">
           <input
+            aria-label="Goal title"
             value={goalTitle}
             maxLength={80}
             onChange={(event) => setGoalTitle(event.target.value)}
@@ -356,6 +358,7 @@ export default function StudyPlanPage({
           />
 
           <select
+            aria-label="Goal priority"
             value={goalPriority}
             onChange={(event) =>
               setGoalPriority(event.target.value as AdvancedGoal["priority"])
