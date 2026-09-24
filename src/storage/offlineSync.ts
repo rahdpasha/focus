@@ -266,11 +266,64 @@ export function mergeOfflineMutations(
       changes.deletedAdvancedGoalIds,
     )
 
+  const cloudSubjectByName =
+    new Map(
+      cloud.subjects.map(
+        (subject) => [
+          subject.name
+            .trim()
+            .toLocaleLowerCase(),
+          subject,
+        ],
+      ),
+    )
+
+  const subjectIdAliases =
+    new Map<string, string>()
+
+  for (const subjectId of changes.subjectIds) {
+    const localSubject =
+      local.subjects.find(
+        (subject) =>
+          subject.id === subjectId,
+      )
+
+    if (!localSubject) {
+      continue
+    }
+
+    const matchingCloudSubject =
+      cloudSubjectByName.get(
+        localSubject.name
+          .trim()
+          .toLocaleLowerCase(),
+      )
+
+    if (
+      matchingCloudSubject &&
+      matchingCloudSubject.id !==
+        localSubject.id
+    ) {
+      subjectIdAliases.set(
+        localSubject.id,
+        matchingCloudSubject.id,
+      )
+    }
+  }
+
   const subjects =
     mergeById(
       cloud.subjects,
-      local.subjects,
-      changes.subjectIds,
+      local.subjects.filter(
+        (subject) =>
+          !subjectIdAliases.has(
+            subject.id,
+          ),
+      ),
+      changes.subjectIds.filter(
+        (id) =>
+          !subjectIdAliases.has(id),
+      ),
     ).filter(
       (subject) =>
         !deletedSubjectIds.has(
@@ -278,10 +331,52 @@ export function mergeOfflineMutations(
         ),
     )
 
+  const subjectById =
+    new Map(
+      subjects.map(
+        (subject) => [
+          subject.id,
+          subject,
+        ],
+      ),
+    )
+
+  const remapSessionSubject = (
+    session:
+      FocusDataSnapshot['sessions'][number],
+  ) => {
+    const mappedSubjectId =
+      subjectIdAliases.get(
+        session.subjectId,
+      )
+
+    if (!mappedSubjectId) {
+      return session
+    }
+
+    const subject =
+      subjectById.get(
+        mappedSubjectId,
+      )
+
+    return {
+      ...session,
+      subjectId: mappedSubjectId,
+      subjectName:
+        subject?.name ??
+        session.subjectName,
+      subjectColor:
+        subject?.color ??
+        session.subjectColor,
+    }
+  }
+
   const sessions =
     mergeById(
       cloud.sessions,
-      local.sessions,
+      local.sessions.map(
+        remapSessionSubject,
+      ),
       changes.sessionIds,
     ).filter(
       (session) =>
@@ -293,7 +388,26 @@ export function mergeOfflineMutations(
   const advancedGoals =
     mergeById(
       cloud.advancedGoals,
-      local.advancedGoals,
+      local.advancedGoals.map(
+        (goal) => {
+          if (!goal.subjectId) {
+            return goal
+          }
+
+          const mappedSubjectId =
+            subjectIdAliases.get(
+              goal.subjectId,
+            )
+
+          return mappedSubjectId
+            ? {
+                ...goal,
+                subjectId:
+                  mappedSubjectId,
+              }
+            : goal
+        },
+      ),
       changes.advancedGoalIds,
     ).filter(
       (goal) =>
