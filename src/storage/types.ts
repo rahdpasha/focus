@@ -7,6 +7,7 @@ export type AdvancedGoalPriority = "low" | "medium" | "high"
 export interface AdvancedGoal {
   id: string
   title: string
+  subjectId?: string
   targetMinutes: number
   deadline: string
   priority: AdvancedGoalPriority

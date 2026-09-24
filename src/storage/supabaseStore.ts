@@ -61,6 +61,7 @@ type AdvancedGoalRow = {
   client_id: string | null
   user_id: string
   title: string
+  subject_client_id: string | null
   target_minutes: number
   deadline: string
   priority: 'low' | 'medium' | 'high'
@@ -241,6 +242,7 @@ export async function loadSupabaseSnapshot(userId: string): Promise<FocusDataSna
     advancedGoalRows.map((row) => ({
       id: row.client_id ?? row.id,
       title: row.title,
+      subjectId: row.subject_client_id ?? undefined,
       targetMinutes: row.target_minutes,
       deadline: row.deadline,
       priority: row.priority,
@@ -613,6 +615,7 @@ export async function saveSupabaseSnapshot(
     client_id: goal.id,
     user_id: userId,
     title: goal.title.trim(),
+    subject_client_id: goal.subjectId ?? null,
     target_minutes: Math.max(1, Math.round(goal.targetMinutes)),
     deadline: new Date(goal.deadline).toISOString(),
     priority: goal.priority,

@@ -79,6 +79,8 @@ export function loadAdvancedGoals(): AdvancedGoal[] {
       return (
         typeof value.id === "string" &&
         typeof value.title === "string" &&
+        (value.subjectId === undefined ||
+          typeof value.subjectId === "string") &&
         typeof value.targetMinutes === "number" &&
         Number.isFinite(value.targetMinutes) &&
         value.targetMinutes > 0 &&

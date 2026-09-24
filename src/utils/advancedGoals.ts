@@ -25,6 +25,12 @@ export function getAdvancedGoalProgress(
 
   const seconds = sessions.reduce((total, session) => {
     if (!session.completed) return total
+    if (
+      goal.subjectId &&
+      session.subjectId !== goal.subjectId
+    ) {
+      return total
+    }
 
     const completedAt = safeDate(session.completedAt)
     if (!completedAt) return total
