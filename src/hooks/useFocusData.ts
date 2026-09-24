@@ -15,6 +15,7 @@ import {
   deleteSupabaseSession,
   deleteSupabaseSubject,
   loadSupabaseSnapshot,
+  replaceSupabaseSnapshot,
   saveSupabaseSnapshot,
 } from "../storage/supabaseStore"
 
@@ -133,6 +134,7 @@ export function useFocusData(
   const cloudHydrationStarted = useRef(false)
   const cloudSaveInFlight = useRef(false)
   const queuedCloudSnapshot = useRef<typeof initial | null>(null)
+  const cloudReplaceRequested = useRef(false)
   const lastCloudFingerprint = useRef<string | null>(null)
 
   useEffect(() => {
@@ -379,17 +381,36 @@ export function useFocusData(
 
             queuedCloudSnapshot.current = null
 
+            const replaceCloud =
+              cloudReplaceRequested.current
+
+            if (replaceCloud) {
+              cloudReplaceRequested.current =
+                false
+            }
+
             try {
-              await saveSupabaseSnapshot(
-                latestSnapshot,
-                authSession.user.id,
-              )
+              if (replaceCloud) {
+                await replaceSupabaseSnapshot(
+                  latestSnapshot,
+                  authSession.user.id,
+                )
+              } else {
+                await saveSupabaseSnapshot(
+                  latestSnapshot,
+                  authSession.user.id,
+                )
+              }
 
               lastCloudFingerprint.current =
                 getCloudFingerprint(
                   latestSnapshot,
                 )
             } catch (error) {
+              if (replaceCloud) {
+                cloudReplaceRequested.current =
+                  true
+              }
               console.error(
                 "FOCUS cloud save failed:",
                 error,
@@ -925,6 +946,11 @@ export function useFocusData(
               }]
             },
           )
+
+        if (authSession) {
+          cloudReplaceRequested.current =
+            true
+        }
 
         setSessions(importedSessions)
         setSubjects(importedSubjects)
