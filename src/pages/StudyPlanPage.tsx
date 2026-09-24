@@ -20,6 +20,7 @@ interface StudyPlanPageProps {
     targetMinutes: number,
     deadline: string,
     priority: AdvancedGoal["priority"],
+    subjectId?: string,
   ) => void
   onUpdateAdvancedGoal: (
     id: string,
@@ -49,6 +50,7 @@ export default function StudyPlanPage({
   const [goalTitle, setGoalTitle] = useState("")
   const [goalTarget, setGoalTarget] = useState(300)
   const [goalDeadline, setGoalDeadline] = useState("")
+  const [goalSubjectId, setGoalSubjectId] = useState("")
   const [goalPriority, setGoalPriority] =
     useState<AdvancedGoal["priority"]>("medium")
 
@@ -98,11 +100,13 @@ export default function StudyPlanPage({
       goalTarget,
       goalDeadline,
       goalPriority,
+      goalSubjectId || undefined,
     )
 
     setGoalTitle("")
     setGoalTarget(300)
     setGoalDeadline("")
+    setGoalSubjectId("")
     setGoalPriority("medium")
   }
 
@@ -340,6 +344,26 @@ export default function StudyPlanPage({
             placeholder="Example: 10 hours of Operating Systems"
           />
 
+          <select
+            aria-label="Goal subject"
+            value={goalSubjectId}
+            onChange={(event) =>
+              setGoalSubjectId(event.target.value)
+            }
+          >
+            <option value="">
+              All focus sessions
+            </option>
+            {subjects.map((subject) => (
+              <option
+                key={subject.id}
+                value={subject.id}
+              >
+                {subject.name}
+              </option>
+            ))}
+          </select>
+
           <input
             type="number"
             min={30}
@@ -385,7 +409,16 @@ export default function StudyPlanPage({
               No deadline goals yet. Your daily and weekly targets still work normally.
             </div>
           ) : (
-            advancedGoalCards.map(({ goal, progress }) => (
+            advancedGoalCards.map(({ goal, progress }) => {
+              const linkedSubject =
+                goal.subjectId
+                  ? subjects.find(
+                      (subject) =>
+                        subject.id === goal.subjectId,
+                    )
+                  : undefined
+
+              return (
               <article
                 key={goal.id}
                 className={
@@ -402,6 +435,11 @@ export default function StudyPlanPage({
                       {goal.priority}
                     </span>
                     <h3>{goal.title}</h3>
+                    <span className="advanced-goal-scope">
+                      {linkedSubject
+                        ? linkedSubject.name
+                        : "All focus sessions"}
+                    </span>
                   </div>
 
                   <div className="advanced-goal-actions">
@@ -452,9 +490,32 @@ export default function StudyPlanPage({
                   <span>
                     Due {new Date(goal.deadline).toLocaleString()}
                   </span>
+
+                  {linkedSubject &&
+                    !progress.completed && (
+                    <button
+                      type="button"
+                      className="advanced-goal-start"
+                      onClick={() =>
+                        onStartSession(
+                          linkedSubject.id,
+                          Math.min(
+                            60,
+                            Math.max(
+                              25,
+                              progress.remainingMinutes,
+                            ),
+                          ),
+                        )
+                      }
+                    >
+                      START FOCUS
+                    </button>
+                  )}
                 </div>
               </article>
-            ))
+              )
+            })
           )}
         </div>
       </div>

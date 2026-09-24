@@ -50,7 +50,7 @@ function localFallback(
 
   if (urgentGoal) {
     reasons.push(
-      `Goal "${urgentGoal.title}" is ${urgentGoal.percent}% complete with ${urgentGoal.remainingMinutes} minutes remaining`,
+      `Goal "${urgentGoal.title}"${urgentGoal.subjectName ? ` for ${urgentGoal.subjectName}` : ''} is ${urgentGoal.percent}% complete with ${urgentGoal.remainingMinutes} minutes remaining`,
     )
   }
 
@@ -80,8 +80,10 @@ function localFallback(
         : 'medium',
     action: {
       subjectId:
+        urgentGoal?.subjectId ??
         recommended.subjectId,
       subjectName:
+        urgentGoal?.subjectName ??
         recommended.subjectName,
       minutes:
         recommended.minutes,

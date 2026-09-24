@@ -65,6 +65,8 @@ export interface AdvisorContext {
   advancedGoals: Array<{
     id: string
     title: string
+    subjectId?: string
+    subjectName?: string
     priority:
       | 'low'
       | 'medium'
@@ -409,6 +411,15 @@ export function buildAdvisorContext(
         return {
           id: goal.id,
           title: goal.title,
+          subjectId: goal.subjectId,
+          subjectName:
+            goal.subjectId
+              ? subjects.find(
+                  (subject) =>
+                    subject.id ===
+                    goal.subjectId,
+                )?.name
+              : undefined,
           priority: goal.priority,
           status: goal.status,
           deadline: goal.deadline,

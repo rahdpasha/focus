@@ -338,6 +338,17 @@ export function useFocusData(
         ),
       )
 
+      setAdvancedGoals((previous) =>
+        previous.map((goal) =>
+          goal.subjectId === id
+            ? {
+                ...goal,
+                subjectId: undefined,
+              }
+            : goal,
+        ),
+      )
+
       setActiveSubjectId(
         (current) =>
           current === id ? null : current,
@@ -371,6 +382,7 @@ export function useFocusData(
     targetMinutes: number,
     deadline: string,
     priority: AdvancedGoal["priority"],
+    subjectId?: string,
   ) => {
     const cleanTitle = title.trim()
     const safeTarget = Math.max(1, Math.round(targetMinutes))
@@ -387,6 +399,7 @@ export function useFocusData(
     const goal: AdvancedGoal = {
       id: `goal-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       title: cleanTitle,
+      subjectId: subjectId || undefined,
       targetMinutes: safeTarget,
       deadline: deadlineDate.toISOString(),
       priority,
@@ -449,6 +462,8 @@ export function useFocusData(
               return (
                 typeof value.id === "string" &&
                 typeof value.title === "string" &&
+                (value.subjectId === undefined ||
+                  typeof value.subjectId === "string") &&
                 typeof value.targetMinutes === "number" &&
                 typeof value.deadline === "string" &&
                 (value.priority === "low" ||
