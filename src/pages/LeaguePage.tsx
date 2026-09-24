@@ -167,6 +167,36 @@ export default function LeaguePage({
     [entries],
   )
 
+  const nextRank = useMemo(() => {
+    if (!currentUser) {
+      return null
+    }
+
+    const currentIndex =
+      entries.findIndex(
+        (entry) =>
+          entry.isCurrentUser,
+      )
+
+    if (currentIndex <= 0) {
+      return null
+    }
+
+    const target =
+      entries[currentIndex - 1]
+
+    return {
+      target,
+      pointsNeeded:
+        Math.max(
+          3,
+          target.points -
+            currentUser.points +
+            3,
+        ),
+    }
+  }, [currentUser, entries])
+
   const switchPeriod = async (
     nextPeriod: LeaguePeriod,
   ) => {
@@ -751,25 +781,29 @@ export default function LeaguePage({
             </button>
 
             {currentUser && (
-              <div
-                style={{
-                  marginTop:
-                    '14px',
-                  padding: '12px',
-                  borderRadius:
-                    '10px',
-                  background:
-                    'var(--void-surface-hover)',
-                  color:
-                    'var(--text-secondary)',
-                  fontSize:
-                    '12px',
-                }}
-              >
-                Current rank: #
-                {currentUser.rank} ·{' '}
-                {currentUser.points}{' '}
-                points
+              <div className="league-user-progress">
+                <div>
+                  <span>Current rank</span>
+                  <strong>
+                    #{currentUser.rank}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Score</span>
+                  <strong>
+                    {currentUser.points} pts
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Next step</span>
+                  <strong>
+                    {nextRank
+                      ? `${nextRank.pointsNeeded} pts to pass #${nextRank.target.rank}`
+                      : 'You are at the top'}
+                  </strong>
+                </div>
               </div>
             )}
           </div>

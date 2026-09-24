@@ -2212,3 +2212,40 @@ select option {
     grid-template-columns: 1fr;
   }
 }
+
+
+.league-user-progress {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.league-user-progress > div {
+  padding: 10px;
+  border: 1px solid var(--void-border);
+  border-radius: 10px;
+  background: var(--void-surface-hover);
+}
+
+.league-user-progress span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.league-user-progress strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--text-primary);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+@media (max-width: 520px) {
+  .league-user-progress {
+    grid-template-columns: 1fr;
+  }
+}
