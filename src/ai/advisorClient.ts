@@ -19,6 +19,85 @@ export interface AiAdvisorResponse {
   }
 }
 
+function getUrgentGoal(
+  context: AdvisorContext,
+): AdvisorContext['advancedGoals'][number] | undefined {
+  const generatedAt =
+    new Date(
+      context.generatedAt,
+    ).getTime()
+
+  return context.advancedGoals
+    .filter(
+      (goal) => {
+        if (
+          goal.status !== 'active' ||
+          goal.remainingMinutes <= 0
+        ) {
+          return false
+        }
+
+        if (goal.overdue) {
+          return true
+        }
+
+        const deadline =
+          new Date(
+            goal.deadline,
+          ).getTime()
+
+        if (
+          !Number.isFinite(deadline) ||
+          !Number.isFinite(generatedAt)
+        ) {
+          return false
+        }
+
+        const hoursRemaining =
+          (deadline - generatedAt) /
+          3_600_000
+
+        return (
+          hoursRemaining <= 48 ||
+          (
+            goal.priority === 'high' &&
+            hoursRemaining <= 168
+          )
+        )
+      },
+    )
+    .sort(
+      (a, b) => {
+        if (a.overdue !== b.overdue) {
+          return a.overdue ? -1 : 1
+        }
+
+        const priorityRank = {
+          high: 0,
+          medium: 1,
+          low: 2,
+        } as const
+
+        const priorityDifference =
+          priorityRank[a.priority] -
+          priorityRank[b.priority]
+
+        if (priorityDifference !== 0) {
+          return priorityDifference
+        }
+
+        return (
+          new Date(
+            a.deadline,
+          ).getTime() -
+          new Date(
+            b.deadline,
+          ).getTime()
+        )
+      },
+    )[0]
+}
+
 function localFallback(
   context: AdvisorContext,
 ): AiAdvisorResponse {
@@ -27,20 +106,7 @@ function localFallback(
       .deterministicRecommendation
 
   const urgentGoal =
-    context.advancedGoals
-      .filter(
-        (goal) =>
-          goal.status === 'active',
-      )
-      .sort(
-        (a, b) =>
-          new Date(
-            a.deadline,
-          ).getTime() -
-          new Date(
-            b.deadline,
-          ).getTime(),
-      )[0]
+    getUrgentGoal(context)
 
   const reasons = [
     `${context.today.minutes}/${context.today.goalMinutes} minutes completed today`,
@@ -62,31 +128,57 @@ function localFallback(
     )
   }
 
+  const actionSubjectId =
+    urgentGoal?.subjectId ??
+    recommended.subjectId
+  const actionSubjectName =
+    urgentGoal?.subjectName ??
+    recommended.subjectName
+  const actionMinutes =
+    urgentGoal
+      ? Math.min(
+          recommended.minutes,
+          Math.max(
+            10,
+            urgentGoal.remainingMinutes,
+          ),
+        )
+      : recommended.minutes
+
+  const headline =
+    urgentGoal
+      ? urgentGoal.overdue
+        ? `Recover your overdue goal: ${urgentGoal.title}.`
+        : urgentGoal.subjectName
+          ? `Prioritize ${urgentGoal.subjectName} for ${urgentGoal.title}.`
+          : `Make progress on ${urgentGoal.title}.`
+      : recommended.subjectName
+        ? `Focus on ${recommended.subjectName} next.`
+        : 'Take one focused step next.'
+
+  const answer =
+    urgentGoal
+      ? `${urgentGoal.remainingMinutes} minutes remain on this goal. Use the next focused block to move it forward.`
+      : recommended.summary
+
   return {
     source: 'local',
-    headline:
-      urgentGoal?.overdue
-        ? `Recover your overdue goal: ${urgentGoal.title}.`
-        : recommended.subjectName
-          ? `Focus on ${recommended.subjectName} next.`
-          : 'Take one focused step next.',
-    answer:
-      recommended.summary,
+    headline,
+    answer,
     reasons,
     confidence:
+      urgentGoal ||
       recommended.priority ===
-      'high'
+        'high'
         ? 'high'
         : 'medium',
     action: {
       subjectId:
-        urgentGoal?.subjectId ??
-        recommended.subjectId,
+        actionSubjectId,
       subjectName:
-        urgentGoal?.subjectName ??
-        recommended.subjectName,
+        actionSubjectName,
       minutes:
-        recommended.minutes,
+        actionMinutes,
     },
   }
 }
