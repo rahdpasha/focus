@@ -2,6 +2,7 @@ import {
   BarChart3,
   BookOpen,
   BrainCircuit,
+  Check,
   CalendarRange,
   ChevronLeft,
   ChevronRight,
@@ -131,6 +132,12 @@ export default function Sidebar({
   ] = useState(false)
   const [name, setName] =
     useState('')
+  const [
+    pendingRemoval,
+    setPendingRemoval,
+  ] = useState<string | null>(
+    null,
+  )
   const [color, setColor] =
     useState<string>(
       SUBJECT_COLORS[0],
@@ -358,20 +365,53 @@ export default function Sidebar({
                   {showLabels && (
                     <button
                       type="button"
-                      className="sidebar-subject-delete"
-                      onClick={() =>
-                        onDeleteSubject(
+                      className={
+                        pendingRemoval ===
+                        subject.id
+                          ? 'sidebar-subject-delete confirm'
+                          : 'sidebar-subject-delete'
+                      }
+                      onClick={() => {
+                        if (
+                          pendingRemoval ===
+                          subject.id
+                        ) {
+                          onDeleteSubject(
+                            subject.id,
+                          )
+                          setPendingRemoval(
+                            null,
+                          )
+                          return
+                        }
+
+                        setPendingRemoval(
                           subject.id,
                         )
-                      }
+                      }}
                       aria-label={
-                        `${t('deleteSubject')} ${subject.name}. Study history is preserved.`
+                        pendingRemoval ===
+                        subject.id
+                          ? `Confirm removal of ${subject.name}`
+                          : `${t('deleteSubject')} ${subject.name}. Study history is preserved.`
                       }
-                      title="Remove subject; study history is preserved"
+                      title={
+                        pendingRemoval ===
+                        subject.id
+                          ? 'Click again to confirm'
+                          : 'Remove subject; study history is preserved'
+                      }
                     >
-                      <Archive
-                        size={13}
-                      />
+                      {pendingRemoval ===
+                      subject.id ? (
+                        <Check
+                          size={13}
+                        />
+                      ) : (
+                        <Archive
+                          size={13}
+                        />
+                      )}
                     </button>
                   )}
                 </div>

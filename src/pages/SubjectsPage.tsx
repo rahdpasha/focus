@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  Check,
   Clock3,
   Plus,
   Archive,
@@ -103,6 +104,12 @@ export default function SubjectsPage({
   ] = useState(false)
   const [name, setName] =
     useState('')
+  const [
+    pendingRemoval,
+    setPendingRemoval,
+  ] = useState<string | null>(
+    null,
+  )
   const [color, setColor] =
     useState<string>(
       SUBJECT_COLORS[
@@ -327,20 +334,53 @@ export default function SubjectsPage({
 
                     <button
                       type="button"
-                      className="subject-card-delete"
-                      onClick={() =>
-                        onDeleteSubject(
+                      className={
+                        pendingRemoval ===
+                        subject.id
+                          ? 'subject-card-delete confirm'
+                          : 'subject-card-delete'
+                      }
+                      onClick={() => {
+                        if (
+                          pendingRemoval ===
+                          subject.id
+                        ) {
+                          onDeleteSubject(
+                            subject.id,
+                          )
+                          setPendingRemoval(
+                            null,
+                          )
+                          return
+                        }
+
+                        setPendingRemoval(
                           subject.id,
                         )
-                      }
+                      }}
                       aria-label={
-                        `${t('deleteSubject')} ${subject.name}. Study history is preserved.`
+                        pendingRemoval ===
+                        subject.id
+                          ? `Confirm removal of ${subject.name}`
+                          : `${t('deleteSubject')} ${subject.name}. Study history is preserved.`
                       }
-                      title="Remove subject; study history is preserved"
+                      title={
+                        pendingRemoval ===
+                        subject.id
+                          ? 'Click again to confirm'
+                          : 'Remove subject; study history is preserved'
+                      }
                     >
-                      <Archive
-                        size={14}
-                      />
+                      {pendingRemoval ===
+                      subject.id ? (
+                        <Check
+                          size={14}
+                        />
+                      ) : (
+                        <Archive
+                          size={14}
+                        />
+                      )}
                     </button>
                   </div>
 
