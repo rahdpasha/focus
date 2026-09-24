@@ -11,6 +11,7 @@ import type {
 import Timer from '../timer/Timer'
 import StatCard from './StatCard'
 import RecentSessions from './RecentSessions'
+import FocusPulse from './FocusPulse'
 import { useI18n } from '../../useI18n'
 import {
   getStreakStats,
@@ -302,7 +303,8 @@ export default function Dashboard({
     getStudyPlan(
       sessions,
       subjects,
-      weeklyGoal
+      weeklyGoal,
+      dailyGoal
     )
 
 
@@ -575,6 +577,14 @@ export default function Dashboard({
           )}
         </span>
       </div>
+
+      <FocusPulse
+        sessions={sessions}
+        subjects={subjects}
+        dailyGoal={dailyGoal}
+        weeklyGoal={weeklyGoal}
+        onStart={onStartRecommendedSession}
+      />
 
       {/* Stats */}
       <div
@@ -875,7 +885,7 @@ export default function Dashboard({
                 color: 'var(--text-muted)',
               }}
             >
-              {(studyPlan as unknown as { totalMinutes?: number }).totalMinutes}m planned
+              {studyPlan.totalPlannedTodayMinutes}m planned
               {studyPlan.bestTime
                 ? ` · Best time ${studyPlan.bestTime}`
                 : ''}
