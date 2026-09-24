@@ -364,75 +364,67 @@ export function useFocusData(
     }
 
     cloudSaveTimer.current = setTimeout(() => {
-      const saveLatest = async () => {
-        if (
-          cloudSaveInFlight.current ||
-          !queuedCloudSnapshot.current
-        ) {
+      const flushCloudSaveQueue = async () => {
+        if (cloudSaveInFlight.current) {
           return
         }
 
         cloudSaveInFlight.current = true
-
-        const latestSnapshot =
-          queuedCloudSnapshot.current
-
-        queuedCloudSnapshot.current = null
+        let saveFailed = false
 
         try {
-          
-
-          await saveSupabaseSnapshot(
-            latestSnapshot,
-            authSession.user.id,
-          )
-
-          
-
-          lastCloudFingerprint.current =
-            getCloudFingerprint(latestSnapshot)
-          setCloudStatus("synced")
-        } catch (error) {
-          console.error(
-            "FOCUS cloud save failed:",
-            error,
-          )
-
-          queuedCloudSnapshot.current =
-            latestSnapshot
-          setCloudStatus("error")
-        } finally {
-          cloudSaveInFlight.current = false
-
-          if (queuedCloudSnapshot.current) {
-            const nextSnapshot =
+          while (queuedCloudSnapshot.current) {
+            const latestSnapshot =
               queuedCloudSnapshot.current
 
             queuedCloudSnapshot.current = null
 
             try {
               await saveSupabaseSnapshot(
-                nextSnapshot,
+                latestSnapshot,
                 authSession.user.id,
               )
 
-              lastCloudFingerprint.current = getCloudFingerprint(nextSnapshot)
-              setCloudStatus("synced")
+              lastCloudFingerprint.current =
+                getCloudFingerprint(
+                  latestSnapshot,
+                )
             } catch (error) {
               console.error(
-                "FOCUS cloud retry failed:",
+                "FOCUS cloud save failed:",
                 error,
               )
 
-              queuedCloudSnapshot.current =
-                nextSnapshot
+              if (!queuedCloudSnapshot.current) {
+                queuedCloudSnapshot.current =
+                  latestSnapshot
+              }
+
+              saveFailed = true
               setCloudStatus("error")
+              break
             }
+          }
+
+          if (
+            !saveFailed &&
+            !queuedCloudSnapshot.current
+          ) {
+            setCloudStatus("synced")
+          }
+        } finally {
+          cloudSaveInFlight.current = false
+
+          if (
+            !saveFailed &&
+            queuedCloudSnapshot.current
+          ) {
+            void flushCloudSaveQueue()
           }
         }
       }
 
-      void saveLatest()
+      void flushCloudSaveQueue()
     }, 800)
 
     return () => {
@@ -1091,20 +1083,23 @@ export function useFocusData(
     let refreshTimer: ReturnType<typeof setTimeout> | null = null
     let refreshing = false
 
-    const refreshFromCloud = () => {
-      if (refreshTimer) {
-        clearTimeout(refreshTimer)
+    const runRefreshFromCloud = () => {
+      if (
+        refreshing ||
+        cloudSaveInFlight.current ||
+        queuedCloudSnapshot.current
+      ) {
+        refreshTimer = setTimeout(
+          runRefreshFromCloud,
+          300,
+        )
+        return
       }
 
-      refreshTimer = setTimeout(() => {
-        if (refreshing) {
-          return
-        }
+      refreshing = true
 
-        refreshing = true
-
-        void loadSupabaseSnapshot(userId)
-          .then((cloudSnapshot) => {
+      void loadSupabaseSnapshot(userId)
+        .then((cloudSnapshot) => {
             const fingerprint = getCloudFingerprint(cloudSnapshot)
 
             if (
@@ -1153,13 +1148,21 @@ export function useFocusData(
             )
             setCloudStatus("error")
           })
-          .finally(() => {
-            refreshing = false
-          })
-      }, 300)
+        .finally(() => {
+          refreshing = false
+        })
     }
 
-    
+    const refreshFromCloud = () => {
+      if (refreshTimer) {
+        clearTimeout(refreshTimer)
+      }
+
+      refreshTimer = setTimeout(
+        runRefreshFromCloud,
+        300,
+      )
+    }
 
     const channel = supabase
       .channel(
