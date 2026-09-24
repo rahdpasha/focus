@@ -72,7 +72,7 @@ export default function LeaguePage({
     setLastMonthChampion,
   ] = useState<LeagueEntry | null>(null)
   const [loading, setLoading] =
-    useState(true)
+    useState(() => Boolean(userId))
   const [saving, setSaving] =
     useState(false)
   const [message, setMessage] =
@@ -109,7 +109,6 @@ export default function LeaguePage({
 
   useEffect(() => {
     if (!userId) {
-      setLoading(false)
       return
     }
 
