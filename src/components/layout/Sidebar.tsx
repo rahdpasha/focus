@@ -348,7 +348,7 @@ export default function Sidebar({
 
         {showLabels && (
           <div className="sidebar-section-label">
-            Your subjects
+            Subjects
           </div>
         )}
 
