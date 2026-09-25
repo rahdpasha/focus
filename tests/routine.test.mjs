@@ -2,10 +2,12 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
+  getRecoverableRoutineOccurrences,
   getRotationItemForDate,
   getRoutineItemsForDate,
   getRoutineMinutesForDate,
   getRoutineStatus,
+  getRoutineStreakStats,
 } from '../src/utils/routine.ts'
 
 const fixed = {
@@ -209,6 +211,143 @@ test('routine history does not mark days before an item was created', () => {
       afterCreation,
     ),
     'off',
+  )
+})
+
+test('fixed routine rules honor selected weekdays', () => {
+  const weekdaysOnly = {
+    ...fixed,
+    daysOfWeek: [1, 3, 5],
+    recoveryDays: 1,
+  }
+
+  const friday =
+    new Date(2026, 8, 25, 12)
+  const saturday =
+    new Date(2026, 8, 26, 12)
+  const monday =
+    new Date(2026, 8, 28, 12)
+
+  assert.deepEqual(
+    getRoutineItemsForDate(
+      [weekdaysOnly],
+      friday,
+    ).map((item) => item.id),
+    ['fixed-cs'],
+  )
+
+  assert.equal(
+    getRoutineItemsForDate(
+      [weekdaysOnly],
+      saturday,
+    ).length,
+    0,
+  )
+
+  assert.deepEqual(
+    getRoutineItemsForDate(
+      [weekdaysOnly],
+      monday,
+    ).map((item) => item.id),
+    ['fixed-cs'],
+  )
+})
+
+test('missed routine can be recovered by a tagged later session', () => {
+  const recoverableItem = {
+    ...fixed,
+    daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+    recoveryDays: 1,
+  }
+
+  const missedDate =
+    new Date(2026, 8, 25, 12)
+  const nextDay =
+    new Date(2026, 8, 26, 12)
+
+  assert.equal(
+    getRoutineStatus(
+      recoverableItem,
+      [recoverableItem],
+      [],
+      missedDate,
+      nextDay,
+    ),
+    'recoverable',
+  )
+
+  const queue =
+    getRecoverableRoutineOccurrences(
+      [recoverableItem],
+      [],
+      nextDay,
+    )
+
+  assert.equal(queue.length, 1)
+  assert.equal(
+    queue[0].dateKey,
+    '2026-09-25',
+  )
+  assert.equal(
+    queue[0].remainingMinutes,
+    25,
+  )
+
+  const recoverySession = {
+    id: 'recovery-session',
+    subjectId: 'cs',
+    subjectName: 'CS',
+    subjectColor: '#111111',
+    duration: 25 * 60,
+    actualDuration: 25 * 60,
+    completedAt:
+      new Date(2026, 8, 26, 10),
+    completed: true,
+    interruptions: 0,
+    totalPausedSeconds: 0,
+    routineItemId: 'fixed-cs',
+    routineDate: '2026-09-25',
+  }
+
+  assert.equal(
+    getRoutineStatus(
+      recoverableItem,
+      [recoverableItem],
+      [recoverySession],
+      missedDate,
+      nextDay,
+    ),
+    'recovered',
+  )
+
+  const streak =
+    getRoutineStreakStats(
+      [recoverableItem],
+      [recoverySession],
+      nextDay,
+    )
+
+  assert.equal(streak.current, 1)
+  assert.equal(streak.recovered, 1)
+  assert.equal(streak.atRisk, false)
+})
+
+test('expired recovery window becomes a real miss', () => {
+  const recoverableItem = {
+    ...fixed,
+    daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+    recoveryDays: 1,
+  }
+
+  assert.equal(
+    getRoutineStatus(
+      recoverableItem,
+      [recoverableItem],
+      [],
+      new Date(2026, 8, 25, 12),
+      new Date(2026, 8, 27, 12),
+    ),
+    'missed',
   )
 })
 
