@@ -87,7 +87,11 @@ export default function LeaguePage({
   const { tr } = useI18n()
   const [period, setPeriod] = useState<LeaguePeriod>('week')
   const [profile, setProfile] = useState<LeagueProfile>(
-    () => defaultProfile(displayName),
+    () =>
+      defaultProfile(
+        displayName ||
+          tr('Focused learner', 'خوێنەری سەرنجدار'),
+      ),
   )
   const [entries, setEntries] = useState<LeagueEntry[]>([])
   const [lastWeekChampion, setLastWeekChampion] =
@@ -122,7 +126,8 @@ export default function LeaguePage({
       try {
         let loadedProfile = await loadLeagueProfile(
           userId,
-          displayName,
+          displayName ||
+            tr('Focused learner', 'خوێنەری سەرنجدار'),
         )
 
         if (cancelled) return
@@ -314,11 +319,11 @@ export default function LeaguePage({
     ? `#${currentUser.rank}`
     : profile.optIn
       ? '—'
-      : 'OFF'
+      : tr('Off', 'ناچالاک')
 
   const scoreText = currentUser
-    ? `${currentUser.points} pts`
-    : '0 pts'
+    ? tr(`${currentUser.points} pts`, `${currentUser.points} خاڵ`)
+    : tr('0 pts', '٠ خاڵ')
 
   const totalTimeText = currentUser
     ? formatFocusedTime(currentUser.totalSeconds)
@@ -357,7 +362,7 @@ export default function LeaguePage({
   return (
     <PageContainer>
       <PageHeader
-        title="FOCUS League"
+        title={tr('FOCUS League', 'پێشبڕکێی FOCUS')}
         description={tr('A competitive layer for consistency. Build points, climb the board, and protect your momentum.', 'پێشبڕکێیەک بۆ بەردەوامی. خاڵ کۆبکەرەوە، لە ڕیزبەندی بەرزببەوە و ڕێتمەکەت بپارێزە.')}
       />
 
@@ -580,7 +585,7 @@ export default function LeaguePage({
             <div className="league-v4-command-head">
               <div>
                 <span>{tr('Your League profile', 'پڕۆفایلی پێشبڕکێی تۆ')}</span>
-                <h3>{profile.publicName || 'Focused learner'}</h3>
+                <h3>{profile.publicName || tr('Focused learner', 'خوێنەری سەرنجدار')}</h3>
               </div>
               <ShieldCheck size={21} />
             </div>
@@ -644,7 +649,7 @@ export default function LeaguePage({
                 }
               >
                 <i />
-                <span>Podium</span>
+                <span>{tr('Podium', 'سەکۆ')}</span>
               </div>
             </div>
 
