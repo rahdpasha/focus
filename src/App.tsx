@@ -161,6 +161,7 @@ function AuthenticatedApp({
           sessions={data.sessions}
           dailyGoal={data.dailyGoal}
           weeklyGoal={data.weeklyGoal}
+          routineItems={data.routineItems}
           onDeleteSession={data.deleteSession}
           onStartRecommendedSession={
             startRecommendedSession
