@@ -243,6 +243,11 @@ export default function Settings({
         </div>
       </section>
 
+      <div className="settings-group-label settings-section-wide">
+        <span>Focus</span>
+        <small>Goals and timer behavior</small>
+      </div>
+
       <section className="glass-panel settings-section">
         <div className="settings-section-head">
           <div className="settings-section-icon">
@@ -473,6 +478,11 @@ export default function Settings({
         />
       </section>
 
+      <div className="settings-group-label settings-section-wide">
+        <span>Notifications</span>
+        <small>Sound and alerts</small>
+      </div>
+
       <section className="glass-panel settings-section">
         <div className="settings-section-head">
           <div className="settings-section-icon">
@@ -601,6 +611,11 @@ export default function Settings({
           }
         />
       </section>
+
+      <div className="settings-group-label settings-section-wide">
+        <span>Data / Account</span>
+        <small>Sync, backups and account actions</small>
+      </div>
 
       <section className="glass-panel settings-section settings-section-wide">
         <div className="settings-section-head">
