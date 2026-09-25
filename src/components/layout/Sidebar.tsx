@@ -59,6 +59,7 @@ interface SidebarProps {
 const navGroups = [
   {
     label: 'Workspace',
+    labelKu: 'شوێنی کار',
     items: [
       {
         page: 'dashboard' as const,
@@ -94,6 +95,7 @@ const navGroups = [
   },
   {
     label: 'Progress',
+    labelKu: 'پێشکەوتن',
     items: [
       {
         page: 'statistics' as const,
@@ -119,6 +121,7 @@ const navGroups = [
   },
   {
     label: 'Preferences',
+    labelKu: 'هەڵبژاردەکان',
     items: [
       {
         page: 'settings' as const,
@@ -138,7 +141,7 @@ export default function Sidebar({
   onAddSubject,
   onDeleteSubject,
 }: SidebarProps) {
-  const { t } = useI18n()
+  const { t, tr } = useI18n()
   const [
     collapsed,
     setCollapsed,
@@ -212,7 +215,7 @@ export default function Sidebar({
         onClick={() =>
           setMobileOpen(true)
         }
-        aria-label="Open navigation"
+        aria-label={tr('Open navigation', 'کردنەوەی ڕێنوێنی')}
       >
         <Menu size={21} />
       </button>
@@ -222,7 +225,7 @@ export default function Sidebar({
           type="button"
           className="mobile-sidebar-overlay"
           onClick={closeMobile}
-          aria-label="Close navigation"
+          aria-label={tr('Close navigation', 'داخستنی ڕێنوێنی')}
         />
       )}
 
@@ -253,7 +256,7 @@ export default function Sidebar({
                 FOCUS
               </strong>
               <span>
-                Build the day.
+                {tr('Build the day.', 'ڕۆژەکەت دروست بکە.')}
               </span>
             </div>
           )}
@@ -262,7 +265,7 @@ export default function Sidebar({
             type="button"
             className="sidebar-mobile-close"
             onClick={closeMobile}
-            aria-label="Close navigation"
+            aria-label={tr('Close navigation', 'داخستنی ڕێنوێنی')}
           >
             <X size={17} />
           </button>
@@ -270,7 +273,7 @@ export default function Sidebar({
 
         <nav
           className="sidebar-nav"
-          aria-label="Application navigation"
+          aria-label={tr('Application navigation', 'ڕێنوێنی بەرنامە')}
         >
           {navGroups.map(
             (group) => (
@@ -280,7 +283,7 @@ export default function Sidebar({
               >
                 {showLabels && (
                   <div className="sidebar-nav-group-label">
-                    {group.label}
+                    {tr(group.label, group.labelKu)}
                   </div>
                 )}
 
@@ -439,8 +442,8 @@ export default function Sidebar({
                       title={
                         pendingRemoval ===
                         subject.id
-                          ? 'Click again to confirm'
-                          : 'Remove subject; study history is preserved'
+                          ? tr('Click again to confirm', 'دووبارە کرتە بکە بۆ پشتڕاستکردنەوە')
+                          : tr('Remove subject; study history is preserved', 'بابەت لاببە؛ مێژووی خوێندن دەپارێزرێت')
                       }
                     >
                       {pendingRemoval ===
@@ -492,8 +495,8 @@ export default function Sidebar({
           }
           aria-label={
             collapsed
-              ? 'Expand navigation'
-              : 'Collapse navigation'
+              ? tr('Expand navigation', 'فراوانکردنی ڕێنوێنی')
+              : tr('Collapse navigation', 'کەمکردنەوەی ڕێنوێنی')
           }
         >
           {collapsed ? (
@@ -547,7 +550,7 @@ export default function Sidebar({
               <button
                 type="button"
                 onClick={closeAdd}
-                aria-label="Close"
+                aria-label={tr('Close', 'داخستن')}
               >
                 <X size={17} />
               </button>
@@ -602,7 +605,7 @@ export default function Sidebar({
                       setColor(item)
                     }
                     aria-label={
-                      `Choose ${item}`
+                      `${tr('Choose', 'هەڵبژێرە')} ${item}`
                     }
                     aria-pressed={
                       color === item
