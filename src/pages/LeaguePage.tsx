@@ -166,7 +166,7 @@ export default function LeaguePage({
     return () => {
       cancelled = true
     }
-  }, [displayName, loadStandings, period, userId])
+  }, [displayName, loadStandings, period, tr, userId])
 
   const currentUser = useMemo(
     () => entries.find((entry) => entry.isCurrentUser) ?? null,
@@ -192,8 +192,14 @@ export default function LeaguePage({
         target,
         label:
           secondsGap < 60
-            ? `${secondsGap}s to pass #${target.rank}`
-            : `${Math.ceil(secondsGap / 60)}m to pass #${target.rank}`,
+            ? tr(
+                `${secondsGap}s to pass #${target.rank}`,
+                `${secondsGap} چرکە بۆ تێپەڕاندنی #${target.rank}`,
+              )
+            : tr(
+                `${Math.ceil(secondsGap / 60)}m to pass #${target.rank}`,
+                `${Math.ceil(secondsGap / 60)} خولەک بۆ تێپەڕاندنی #${target.rank}`,
+              ),
       }
     }
 
