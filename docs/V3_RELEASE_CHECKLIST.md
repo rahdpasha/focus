@@ -7,9 +7,9 @@ Checked items below were actually verified during V3 hardening. Re-run the autom
 ## Automated gates
 
 - [x] GitHub **Quality** passes: install, lint, V3 regression tests, client-secret guard, migration-version guard and build.
-- [x] Latest Vercel preview deployment is **READY**.
-- [x] Vercel runtime error check shows no new application errors.
-- [x] Supabase migrations through `harden_legacy_new_user_trigger` are applied.
+- [ ] Latest Vercel preview deployment is **READY**. Current blocker: Vercel free-plan daily deployment limit (`api-deployments-free-per-day`), not an application build failure.
+- [ ] Re-run the Vercel runtime error check on the latest preview after the deployment limit clears.
+- [x] Supabase migrations through `custom_theme_pack_persistence` are applied.
 - [x] Repository migration versions match live Supabase migration history exactly; baseline migrations are recorded remotely and the fresh-schema chain includes client IDs and realtime publication setup.
 - [x] Supabase `study-advisor` Edge Function is ACTIVE with JWT verification enabled.
 - [x] Supabase Security Advisor findings have been reviewed.
@@ -31,6 +31,7 @@ Checked items below were actually verified during V3 hardening. Re-run the autom
 - [ ] Delete a session and confirm it disappears from the app/cloud view.
 - [ ] Change daily/weekly targets and confirm they survive refresh.
 - [ ] Change theme, language, timer, sound and notification settings.
+- [ ] Import a valid custom theme pack, confirm it applies/syncs, export it again, and confirm invalid/oversized packs are rejected.
 - [ ] Export a backup and import it into a safe test account/browser profile.
 - [ ] Restore a backup containing history for an archived/removed subject and confirm that history remains readable.
 
