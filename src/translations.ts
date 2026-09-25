@@ -3,7 +3,7 @@ export type Language = 'en' | 'ku'
 export const translations = {
   en: {
     // Language
-    english: 'ئینگلیزی',
+    english: 'English',
     kurdishSorani: 'کوردی',
     language: 'Language',
     appearance: 'Appearance',

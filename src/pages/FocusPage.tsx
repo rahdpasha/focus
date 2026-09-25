@@ -428,9 +428,11 @@ export default function FocusPage({
             </div>
 
             <div className="focus-advisor-priority">
-              {
-                advisor.priority
-              }{' '}
+              {advisor.priority === 'high'
+                ? tr('High', 'زۆر')
+                : advisor.priority === 'medium'
+                  ? tr('Medium', 'ناوەند')
+                  : tr('Low', 'کەم')}{' '}
               {tr('priority', 'گرنگی')}
             </div>
 

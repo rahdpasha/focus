@@ -43,18 +43,24 @@ function previousMonthDate(): Date {
   return date
 }
 
-function formatFocusedTime(totalSeconds: number): string {
-  if (totalSeconds <= 0) return '0m'
-  if (totalSeconds < 60) return '<1m'
+function formatFocusedTime(
+  totalSeconds: number,
+  language: 'en' | 'ku',
+): string {
+  const minuteUnit = language === 'ku' ? ' خولەک' : 'm'
+  const hourUnit = language === 'ku' ? ' کاتژمێر' : 'h'
+
+  if (totalSeconds <= 0) return `0${minuteUnit}`
+  if (totalSeconds < 60) return `<1${minuteUnit}`
 
   const minutes = Math.floor(totalSeconds / 60)
   const hours = Math.floor(minutes / 60)
   const remainingMinutes = minutes % 60
 
-  if (hours === 0) return `${minutes}m`
-  if (remainingMinutes === 0) return `${hours}h`
+  if (hours === 0) return `${minutes}${minuteUnit}`
+  if (remainingMinutes === 0) return `${hours}${hourUnit}`
 
-  return `${hours}h ${remainingMinutes}m`
+  return `${hours}${hourUnit} ${remainingMinutes}${minuteUnit}`
 }
 
 function championLabel(entries: LeagueEntry[]): string | null {
@@ -84,7 +90,7 @@ export default function LeaguePage({
   userId,
   displayName,
 }: LeaguePageProps) {
-  const { tr } = useI18n()
+  const { language, tr } = useI18n()
   const [period, setPeriod] = useState<LeaguePeriod>('week')
   const [profile, setProfile] = useState<LeagueProfile>(
     () =>
@@ -326,8 +332,8 @@ export default function LeaguePage({
     : tr('0 pts', '٠ خاڵ')
 
   const totalTimeText = currentUser
-    ? formatFocusedTime(currentUser.totalSeconds)
-    : '0m'
+    ? formatFocusedTime(currentUser.totalSeconds, language)
+    : language === 'ku' ? '0 خولەک' : '0m'
 
   const scoredDaysText = currentUser
     ? String(currentUser.scoredDays)
@@ -515,8 +521,8 @@ export default function LeaguePage({
                 <span>
                   <Clock size={13} />
                   {entry
-                    ? formatFocusedTime(entry.totalSeconds)
-                    : '0m'}
+                    ? formatFocusedTime(entry.totalSeconds, language)
+                    : language === 'ku' ? '0 خولەک' : '0m'}
                 </span>
               </div>
             </article>
@@ -566,7 +572,7 @@ export default function LeaguePage({
                     </strong>
                     <span>
                       {entry.scoredDays} {tr('scored days', 'ڕۆژی خاڵدار')} ·{' '}
-                      {formatFocusedTime(entry.totalSeconds)} {tr('focused', 'سەرنج')}
+                      {formatFocusedTime(entry.totalSeconds, language)} {tr('focused', 'سەرنج')}
                     </span>
                   </div>
 
