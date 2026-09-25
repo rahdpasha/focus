@@ -12141,3 +12141,130 @@ small {
     width: 70%;
   }
 }
+
+
+/* Soft Light polish */
+[data-theme='light'] {
+  --void-black: #f7f8fc;
+  --space-black: #eef1f7;
+  --void-bg: #f5f7fb;
+
+  --void-surface: rgba(255, 255, 255, 0.86);
+  --void-surface-hover: rgba(255, 255, 255, 0.98);
+  --void-border: rgba(63, 69, 91, 0.12);
+
+  --primary: #5f5bd8;
+  --primary-glow: #514cc5;
+  --primary-dim: #8581df;
+  --primary-soft: rgba(95, 91, 216, 0.085);
+  --primary-border: rgba(95, 91, 216, 0.22);
+
+  --cyber-blue: #3c7ea8;
+  --cyber-glow: #5b98bd;
+  --energy: #9a6819;
+  --energy-glow: #b9832d;
+  --teal: #18786f;
+  --teal-glow: #2b958b;
+
+  --text-primary: #20222a;
+  --text-secondary: #555a68;
+  --text-muted: #7a808f;
+
+  --card-bg: rgba(255, 255, 255, 0.82);
+  --card-border: rgba(63, 69, 91, 0.105);
+
+  --shadow-sm:
+    0 1px 2px rgba(31, 35, 48, 0.035),
+    0 10px 30px rgba(55, 62, 84, 0.055);
+
+  --shadow-md:
+    0 3px 10px rgba(31, 35, 48, 0.04),
+    0 22px 58px rgba(55, 62, 84, 0.08);
+
+  --shadow-glow:
+    0 0 0 1px rgba(95, 91, 216, 0.025) inset,
+    0 16px 44px rgba(95, 91, 216, 0.055);
+}
+
+[data-theme='light'] body {
+  background:
+    radial-gradient(
+      ellipse 64% 48% at 88% -8%,
+      rgba(95, 91, 216, 0.095),
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 52% 42% at -10% 88%,
+      rgba(60, 126, 168, 0.055),
+      transparent 74%
+    ),
+    linear-gradient(
+      180deg,
+      #fbfcff 0%,
+      #f6f8fc 48%,
+      #eef1f7 100%
+    );
+}
+
+[data-theme='light'] .glass-panel {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.76),
+      rgba(255, 255, 255, 0.30) 42%,
+      transparent 76%
+    ),
+    var(--card-bg);
+  border-color: var(--card-border);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme='light'] .glass-panel::before {
+  opacity: 0.72;
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(95, 91, 216, 0.28),
+      rgba(60, 126, 168, 0.16),
+      transparent
+    );
+}
+
+[data-theme='light'] .glass-panel:hover {
+  border-color: rgba(95, 91, 216, 0.18);
+  box-shadow:
+    var(--shadow-md),
+    var(--shadow-glow);
+}
+
+[data-theme='light'] .app-sidebar,
+[data-theme='light'] .mobile-dock {
+  background: rgba(248, 249, 253, 0.88);
+  border-color: rgba(63, 69, 91, 0.105);
+  box-shadow: 0 14px 38px rgba(55, 62, 84, 0.08);
+}
+
+[data-theme='light'] input,
+[data-theme='light'] select,
+[data-theme='light'] textarea {
+  background: rgba(255, 255, 255, 0.90);
+  border-color: rgba(63, 69, 91, 0.13);
+  color: var(--text-primary);
+  box-shadow: 0 1px 2px rgba(31, 35, 48, 0.025);
+}
+
+[data-theme='light'] input:focus,
+[data-theme='light'] select:focus,
+[data-theme='light'] textarea:focus {
+  border-color: rgba(95, 91, 216, 0.42);
+  box-shadow:
+    0 0 0 3px rgba(95, 91, 216, 0.08),
+    0 8px 20px rgba(55, 62, 84, 0.05);
+}
+
+[data-theme='light'] .cyber-btn {
+  box-shadow:
+    0 8px 20px rgba(95, 91, 216, 0.11),
+    inset 0 1px 0 rgba(255, 255, 255, 0.58);
+}
