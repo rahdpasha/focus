@@ -77,27 +77,27 @@ const themeOptions: Array<{
   },
   {
     value: 'dark',
-    label: 'Dark',
+    label: 'Midnight',
     icon: Moon,
   },
   {
     value: 'light',
-    label: 'Light',
+    label: 'Soft Light',
     icon: Sun,
   },
   {
     value: 'black',
-    label: 'Black',
+    label: 'Pure Black',
     icon: Moon,
   },
   {
     value: 'white',
-    label: 'White',
+    label: 'Pure White',
     icon: Sun,
   },
   {
     value: 'custom',
-    label: 'Custom',
+    label: 'Custom Pack',
     icon: SlidersHorizontal,
   },
 ]
@@ -222,7 +222,7 @@ export default function Settings({
               Appearance
             </h2>
             <p>
-              System stays the default. Choose a clean monochrome mode when you want zero visual noise.
+              FOCUS follows your system by default. Switch to a curated light, dark, or monochrome mode whenever you want a different atmosphere.
             </p>
           </div>
         </div>
@@ -257,11 +257,12 @@ export default function Settings({
                         option.value
                       }
                       type="button"
-                      className={
-                        active
-                          ? 'active'
-                          : ''
-                      }
+                      className={[
+                        active ? 'active' : '',
+                        `theme-option-${option.value}`,
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
                       aria-pressed={
                         active
                       }
@@ -297,7 +298,7 @@ export default function Settings({
                 }
               >
                 <Upload size={14} />
-                Import pack
+                Import theme
               </button>
 
               <button
@@ -307,7 +308,7 @@ export default function Settings({
                 onClick={exportThemePack}
               >
                 <Download size={14} />
-                Export pack
+                Export theme
               </button>
             </div>
 
