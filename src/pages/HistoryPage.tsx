@@ -467,7 +467,7 @@ export default function HistoryPage({
                 onClick={() =>
                   moveMonth(-1)
                 }
-                aria-label="Previous month"
+                aria-label={tr('Previous month', 'مانگی پێشوو')}
               >
                 <ChevronLeft
                   size={17}
@@ -488,7 +488,7 @@ export default function HistoryPage({
                 onClick={() =>
                   moveMonth(1)
                 }
-                aria-label="Next month"
+                aria-label={tr('Next month', 'مانگی داهاتوو')}
               >
                 <ChevronRight
                   size={17}
