@@ -152,21 +152,14 @@ export default function RoutinePage({
       window.clearInterval(timer)
   }, [])
 
-  useEffect(() => {
-    if (
-      subjectId &&
-      subjects.some(
-        (subject) =>
-          subject.id === subjectId,
-      )
-    ) {
-      return
-    }
-
-    setSubjectId(
-      subjects[0]?.id ?? '',
+  const selectedSubjectId =
+    subjectId &&
+    subjects.some(
+      (subject) =>
+        subject.id === subjectId,
     )
-  }, [subjectId, subjects])
+      ? subjectId
+      : subjects[0]?.id ?? ''
 
   const recentDates = useMemo(
     () =>
@@ -237,7 +230,7 @@ export default function RoutinePage({
     const subject =
       subjects.find(
         (item) =>
-          item.id === subjectId,
+          item.id === selectedSubjectId,
       )
 
     if (!subject) return
@@ -988,7 +981,7 @@ export default function RoutinePage({
             />
 
             <select
-              value={subjectId}
+              value={selectedSubjectId}
               onChange={(event) =>
                 setSubjectId(
                   event.target
