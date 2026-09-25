@@ -8,6 +8,7 @@ export interface I18nContextValue {
   language: Language
   setLanguage: (language: Language) => void
   t: (key: TranslationKey) => string
+  tr: (english: string, kurdish: string) => string
 }
 
 export const I18nContext =
