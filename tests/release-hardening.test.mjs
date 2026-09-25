@@ -29,6 +29,7 @@ function snapshot(overrides = {}) {
     weeklyGoal: 600,
     weeklyGoalsHistory: {},
     advancedGoals: [],
+    routineItems: [],
     activeSubjectId: null,
     settings,
     workspacePreferencesVersion: 1,
