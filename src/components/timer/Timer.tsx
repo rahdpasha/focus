@@ -54,7 +54,7 @@ export default function Timer({
   onSessionEnd,
   initialFocusMinutes = 25,
 }: TimerProps) {
-  const { t } = useI18n()
+  const { t, tr } = useI18n()
 
   const initialSeconds = Math.max(1, initialFocusMinutes) * 60
   const [focusDuration, setFocusDuration] = useState(initialSeconds)
@@ -247,12 +247,15 @@ export default function Timer({
       }
 
       const title = isBreakComplete
-        ? 'Break complete'
-        : 'Focus session complete'
+        ? tr('Break complete', 'پشوودان تەواو بوو')
+        : tr('Focus session complete', 'سێشنی سەرنج تەواو بوو')
 
       const body = isBreakComplete
-        ? 'Break finished. Ready to focus again.'
-        : `${subjectName} session complete. Time for a break.`
+        ? tr('Break finished. Ready to focus again.', 'پشوودان تەواو بوو. ئامادەیت دووبارە سەرنج بدەیت.')
+        : tr(
+            `${subjectName} session complete. Time for a break.`,
+            `سێشنی ${subjectName} تەواو بوو. کاتی پشوودانە.`,
+          )
 
       new Notification(title, {
         body,
@@ -262,6 +265,7 @@ export default function Timer({
     [
       notificationsEnabled,
       subjectName,
+      tr,
     ]
   )
 
@@ -798,7 +802,7 @@ export default function Timer({
             Session complete
           </span>
           <h2>
-            {subjectName} is done.
+            {tr(`${subjectName} is done.`, `${subjectName} تەواو بوو.`)}
           </h2>
         </div>
 
