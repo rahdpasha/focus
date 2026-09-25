@@ -1,6 +1,4 @@
-import type {
-  ReactNode,
-} from 'react'
+import type { ReactNode } from 'react'
 
 interface PageHeaderProps {
   title: string
@@ -15,15 +13,15 @@ export default function PageHeader({
 }: PageHeaderProps) {
   return (
     <header className="page-header">
-      <div>
-        <h1>
-          {title}
-        </h1>
+      <div className="page-header-copy">
+        <div className="page-header-kicker">
+          FOCUS / {title}
+        </div>
+
+        <h1>{title}</h1>
 
         {description && (
-          <p>
-            {description}
-          </p>
+          <p>{description}</p>
         )}
       </div>
 
