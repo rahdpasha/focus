@@ -42,6 +42,16 @@ export default class AppErrorBoundary extends Component<
   }
 
   render() {
+    const isKurdish =
+      document.documentElement.lang === 'ku'
+    const tr = (
+      english: string,
+      kurdish: string,
+    ) =>
+      isKurdish
+        ? kurdish
+        : english
+
     if (!this.state.hasError) {
       return this.props.children
     }
@@ -56,15 +66,15 @@ export default class AppErrorBoundary extends Component<
           </div>
 
           <div className="eyebrow">
-            App recovery
+            {tr('App recovery', 'گەڕاندنەوەی بەرنامە')}
           </div>
 
           <h1>
-            Something went wrong.
+            {tr('Something went wrong.', 'هەڵەیەک ڕوویدا.')}
           </h1>
 
           <p>
-            Your saved study data is still safe. Reload app to restore the latest local or synced state.
+            {tr('Your saved study data is still safe. Reload app to restore the latest local or synced state.', 'داتای خوێدنی پاشەکەوتکراوت پارێزراوە. بەرنامەکە نوێ بکەرەوە بۆ گەڕاندنەوەی دوا دۆخی ناوخۆیی یان هاوکاتکراو.')}
           </p>
 
           <button
@@ -77,7 +87,7 @@ export default class AppErrorBoundary extends Component<
             <RefreshCcw
               size={15}
             />
-            Reload FOCUS
+            {tr('Reload FOCUS', 'FOCUS نوێ بکەرەوە')}
           </button>
         </section>
       </main>
