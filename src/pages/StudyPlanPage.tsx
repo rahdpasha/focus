@@ -14,6 +14,7 @@ import {
   getAdvancedGoalProgress,
 } from '../utils/advancedGoals'
 import { useI18n } from '../useI18n'
+import { localizeUiText } from '../utils/localizeUiText'
 import { getStudyPlan } from '../utils/studyPlan'
 import PageContainer from './PageContainer'
 import PageHeader from '../components/layout/PageHeader'
@@ -57,7 +58,7 @@ export default function StudyPlanPage({
   onDeleteAdvancedGoal,
   onStartSession,
 }: StudyPlanPageProps) {
-  const { t, tr } = useI18n()
+  const { language, t, tr } = useI18n()
   const [goalTitle, setGoalTitle] = useState('')
   const [goalTarget, setGoalTarget] = useState(300)
   const [goalDeadline, setGoalDeadline] = useState('')
@@ -267,7 +268,7 @@ export default function StudyPlanPage({
                 {plan.priority} {tr('priority', 'گرنگی')}
               </strong>
             </div>
-            <p>{plan.rationale}</p>
+            <p>{localizeUiText(language, plan.rationale)}</p>
           </div>
 
           <div className="study-plan-list">
@@ -296,7 +297,7 @@ export default function StudyPlanPage({
                           {item.subjectName}
                         </strong>
                         <p>
-                          {item.reason}
+                          {localizeUiText(language, item.reason)}
                         </p>
                       </div>
                     </div>
