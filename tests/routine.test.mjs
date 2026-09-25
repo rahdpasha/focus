@@ -17,6 +17,8 @@ const fixed = {
   targetMinutes: 25,
   mode: 'fixed',
   rotationOrder: 0,
+  daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+  recoveryDays: 0,
   enabled: true,
   createdAt: '2026-09-25T08:00:00.000Z',
 }
@@ -39,6 +41,8 @@ const history = {
   targetMinutes: 25,
   mode: 'rotation',
   rotationOrder: 1,
+  daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+  recoveryDays: 0,
   enabled: true,
   createdAt: '2026-09-25T08:00:00.000Z',
 }
