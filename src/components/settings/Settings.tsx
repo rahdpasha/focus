@@ -81,6 +81,16 @@ const themeOptions: Array<{
     label: 'Light',
     icon: Sun,
   },
+  {
+    value: 'black',
+    label: 'Black',
+    icon: Moon,
+  },
+  {
+    value: 'white',
+    label: 'White',
+    icon: Sun,
+  },
 ]
 
 export default function Settings({
@@ -126,11 +136,10 @@ export default function Settings({
 
           <div>
             <h2>
-              Workspace
+              Appearance
             </h2>
             <p>
-              Choose how FOCUS
-              looks and speaks.
+              System stays the default. Choose a clean monochrome mode when you want zero visual noise.
             </p>
           </div>
         </div>
@@ -142,7 +151,7 @@ export default function Settings({
             </span>
 
             <div
-              className="settings-segmented"
+              className="settings-theme-grid"
               role="group"
               aria-label={t(
                 'theme',
