@@ -17,6 +17,9 @@
   --primary: #8b5cf6;
   --primary-glow: #b59cff;
   --primary-dim: #6d3fd3;
+  --primary-soft: rgba(139, 92, 246, 0.12);
+  --primary-border: rgba(139, 92, 246, 0.28);
+  --void-bg: #07070c;
 
   --cyber-blue: #38bdf8;
   --cyber-glow: #7dd3fc;
@@ -33,6 +36,7 @@
 
   --success: #34d399;
   --danger: #fb7185;
+  --warning: #fbbf24;
 
   --card-bg: rgba(15, 17, 25, 0.78);
   --card-border: rgba(255, 255, 255, 0.075);
@@ -74,6 +78,80 @@
     0 12px 35px rgba(139, 92, 246, 0.06);
 }
 
+[data-theme='black'] {
+  --void-black: #000000;
+  --space-black: #000000;
+  --void-bg: #000000;
+  --void-surface: #080808;
+  --void-surface-hover: #111111;
+  --void-border: rgba(255, 255, 255, 0.16);
+
+  --primary: #ffffff;
+  --primary-glow: #ffffff;
+  --primary-dim: #bdbdbd;
+  --primary-soft: rgba(255, 255, 255, 0.08);
+  --primary-border: rgba(255, 255, 255, 0.28);
+
+  --cyber-blue: #d9d9d9;
+  --cyber-glow: #ffffff;
+  --energy: #f2f2f2;
+  --energy-glow: #ffffff;
+  --teal: #c8c8c8;
+  --teal-glow: #ffffff;
+
+  --text-primary: #ffffff;
+  --text-secondary: #d0d0d0;
+  --text-muted: #8c8c8c;
+
+  --success: #ffffff;
+  --danger: #d7d7d7;
+  --warning: #ececec;
+
+  --card-bg: #080808;
+  --card-border: rgba(255, 255, 255, 0.14);
+
+  --shadow-sm: 0 8px 28px rgba(0, 0, 0, 0.7);
+  --shadow-md: 0 18px 46px rgba(0, 0, 0, 0.82);
+  --shadow-glow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+[data-theme='white'] {
+  --void-black: #ffffff;
+  --space-black: #ffffff;
+  --void-bg: #ffffff;
+  --void-surface: #ffffff;
+  --void-surface-hover: #f4f4f4;
+  --void-border: rgba(0, 0, 0, 0.15);
+
+  --primary: #000000;
+  --primary-glow: #000000;
+  --primary-dim: #444444;
+  --primary-soft: rgba(0, 0, 0, 0.055);
+  --primary-border: rgba(0, 0, 0, 0.26);
+
+  --cyber-blue: #222222;
+  --cyber-glow: #000000;
+  --energy: #333333;
+  --energy-glow: #000000;
+  --teal: #555555;
+  --teal-glow: #111111;
+
+  --text-primary: #000000;
+  --text-secondary: #333333;
+  --text-muted: #707070;
+
+  --success: #000000;
+  --danger: #333333;
+  --warning: #222222;
+
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.14);
+
+  --shadow-sm: 0 6px 20px rgba(0, 0, 0, 0.055);
+  --shadow-md: 0 14px 36px rgba(0, 0, 0, 0.08);
+  --shadow-glow: 0 0 0 1px rgba(0, 0, 0, 0.035) inset;
+}
+
 html,
 body,
 #root {
@@ -85,8 +163,13 @@ html {
   color-scheme: dark;
 }
 
-html[data-theme='light'] {
+html[data-theme='light'],
+html[data-theme='white'] {
   color-scheme: light;
+}
+
+html[data-theme='black'] {
+  color-scheme: dark;
 }
 
 body {
@@ -127,6 +210,34 @@ body {
       #f7f8fb 0%,
       #eef0f5 100%
     );
+}
+
+[data-theme='black'] body {
+  background: #000000;
+}
+
+[data-theme='white'] body {
+  background: #ffffff;
+}
+
+[data-theme='black'] .glass-panel::before,
+[data-theme='white'] .glass-panel::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--primary),
+    transparent
+  );
+}
+
+[data-theme='black'] select option {
+  background: #000000;
+  color: #ffffff;
+}
+
+[data-theme='white'] select option {
+  background: #ffffff;
+  color: #000000;
 }
 
 #root {
@@ -3208,6 +3319,43 @@ select option {
 .settings-segmented button.active {
   background: var(--primary-soft);
   color: var(--primary-glow);
+}
+
+.settings-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.settings-theme-grid button {
+  min-height: 62px;
+  display: grid;
+  place-items: center;
+  gap: 5px;
+  padding: 8px 5px;
+  border: 1px solid var(--void-border);
+  border-radius: 10px;
+  background: var(--void-surface-hover);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.settings-theme-grid button.active {
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+  color: var(--primary-glow);
+}
+
+@media (max-width: 700px) {
+  .settings-theme-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .settings-theme-grid button:first-child {
+    grid-column: 1 / -1;
+  }
 }
 
 .settings-toggle-row {
