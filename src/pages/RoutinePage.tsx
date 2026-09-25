@@ -304,241 +304,64 @@ export default function RoutinePage({
       />
 
       <div className="routine-v5">
-        <section
-          className="glass-panel routine-panel"
-          style={{
-            padding: '20px',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent:
-                'space-between',
-              alignItems: 'center',
-              gap: '14px',
-              flexWrap: 'wrap',
-            }}
-          >
+        <section className="glass-panel routine-panel routine-summary">
+          <div className="routine-summary-head">
             <div>
-              <div className="eyebrow">
-                Today
-              </div>
-              <h2
-                style={{
-                  margin:
-                    '5px 0 0',
-                }}
-              >
-                {completedToday}/{
-                  todaysItems.length
-                } complete
+              <div className="eyebrow">Today</div>
+              <h2>
+                {completedToday}/{todaysItems.length} complete
               </h2>
             </div>
 
             {rotationToday && (
-              <div
-                style={{
-                  padding:
-                    '10px 12px',
-                  border:
-                    '1px solid var(--primary-border)',
-                  borderRadius:
-                    '12px',
-                  background:
-                    'var(--primary-soft)',
-                  color:
-                    'var(--text-secondary)',
-                  fontSize:
-                    '12px',
-                }}
-              >
-                <RotateCw
-                  size={14}
-                  style={{
-                    verticalAlign:
-                      'middle',
-                    marginRight:
-                      '7px',
-                  }}
-                />
-                Rotation:{' '}
-                <strong>
-                  {
-                    rotationToday.title
-                  }
-                </strong>
-                {rotationTomorrow && (
-                  <span
-                    style={{
-                      marginLeft:
-                        '8px',
-                      color:
-                        'var(--text-muted)',
-                    }}
-                  >
-                    · Tomorrow:{' '}
-                    {
-                      rotationTomorrow.title
-                    }
-                  </span>
-                )}
+              <div className="routine-rotation-note">
+                <RotateCw size={14} />
+                <span>
+                  Rotation: <strong>{rotationToday.title}</strong>
+                  {rotationTomorrow && (
+                    <small> · Tomorrow: {rotationTomorrow.title}</small>
+                  )}
+                </span>
               </div>
             )}
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns:
-                'repeat(auto-fit, minmax(150px, 1fr))',
-              gap: '10px',
-              marginTop: '14px',
-            }}
-          >
-            <div
-              style={{
-                padding: '12px',
-                border:
-                  '1px solid var(--void-border)',
-                borderRadius:
-                  '11px',
-                background:
-                  'var(--void-surface-hover)',
-              }}
-            >
-              <div
-                className="eyebrow"
-                style={{
-                  display: 'flex',
-                  alignItems:
-                    'center',
-                  gap: '6px',
-                }}
-              >
+          <div className="routine-summary-grid">
+            <div className="routine-summary-stat">
+              <span className="eyebrow routine-summary-label">
                 <Flame size={13} />
                 Current streak
-              </div>
-              <strong
-                className="mono"
-                style={{
-                  display: 'block',
-                  marginTop: '6px',
-                  fontSize: '18px',
-                }}
-              >
-                {streak.current}d
-              </strong>
+              </span>
+              <strong className="mono">{streak.current}d</strong>
             </div>
 
-            <div
-              style={{
-                padding: '12px',
-                border:
-                  '1px solid var(--void-border)',
-                borderRadius:
-                  '11px',
-                background:
-                  'var(--void-surface-hover)',
-              }}
-            >
-              <div className="eyebrow">
-                Best streak
-              </div>
-              <strong
-                className="mono"
-                style={{
-                  display: 'block',
-                  marginTop: '6px',
-                  fontSize: '18px',
-                }}
-              >
-                {streak.best}d
-              </strong>
+            <div className="routine-summary-stat">
+              <span className="eyebrow">Best streak</span>
+              <strong className="mono">{streak.best}d</strong>
             </div>
 
-            <div
-              style={{
-                padding: '12px',
-                border:
-                  '1px solid var(--void-border)',
-                borderRadius:
-                  '11px',
-                background:
-                  'var(--void-surface-hover)',
-              }}
-            >
-              <div className="eyebrow">
-                Today completed
-              </div>
-              <strong
-                className="mono"
-                style={{
-                  display: 'block',
-                  marginTop: '6px',
-                  fontSize: '18px',
-                }}
-              >
+            <div className="routine-summary-stat">
+              <span className="eyebrow">Today completed</span>
+              <strong className="mono">
                 {completedToday}/{todaysItems.length}
               </strong>
             </div>
 
-            <div
-              style={{
-                padding: '12px',
-                border:
-                  '1px solid var(--void-border)',
-                borderRadius:
-                  '11px',
-                background:
-                  'var(--void-surface-hover)',
-              }}
-            >
-              <div
-                className="eyebrow"
-                style={{
-                  display: 'flex',
-                  alignItems:
-                    'center',
-                  gap: '6px',
-                }}
-              >
-                <ShieldCheck
-                  size={13}
-                />
+            <div className="routine-summary-stat">
+              <span className="eyebrow routine-summary-label">
+                <ShieldCheck size={13} />
                 Recovery
-              </div>
-              <strong
-                className="mono"
-                style={{
-                  display: 'block',
-                  marginTop: '6px',
-                  fontSize: '18px',
-                }}
-              >
-                {recoveryQueue.length} open
-              </strong>
+              </span>
+              <strong className="mono">{recoveryQueue.length} open</strong>
               {streak.atRisk && (
-                <span
-                  style={{
-                    color:
-                      'var(--energy)',
-                    fontSize: '10px',
-                  }}
-                >
-                  streak protected while recovery is open
-                </span>
+                <small>Streak protected while recovery is open.</small>
               )}
             </div>
           </div>
         </section>
 
-        <section
-          style={{
-            display: 'grid',
-            gap: '12px',
-          }}
-        >
+        <section className="routine-today-list">
+
           {todaysItems.length ===
           0 ? (
             <div
