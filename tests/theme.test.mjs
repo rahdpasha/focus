@@ -5,6 +5,9 @@ import {
   MONOCHROME_THEME_PACKS,
   normalizeThemeTokenPack,
 } from '../src/app/themeTokens.ts'
+import {
+  normalizeSettings,
+} from '../src/app/settings.ts'
 
 test('built-in monochrome packs pass token validation', () => {
   assert.deepEqual(
@@ -90,5 +93,41 @@ test('theme pack validation accepts a constrained custom color preset', () => {
   assert.equal(
     normalized?.tokens.voidBg,
     '#f8f8f8',
+  )
+})
+
+
+test('settings accept a validated custom theme and reject invalid custom mode', () => {
+  const pack = normalizeThemeTokenPack({
+    version: 1,
+    id: 'paper-gray',
+    name: 'Paper Gray',
+    base: 'light',
+    tokens: {
+      voidBg: '#f8f8f8',
+      textPrimary: '#141414',
+    },
+  })
+
+  const accepted = normalizeSettings({
+    theme: 'custom',
+    customThemePack: pack,
+  })
+
+  assert.equal(accepted.theme, 'custom')
+  assert.equal(
+    accepted.customThemePack?.id,
+    'paper-gray',
+  )
+
+  const rejected = normalizeSettings({
+    theme: 'custom',
+    customThemePack: null,
+  })
+
+  assert.equal(rejected.theme, 'system')
+  assert.equal(
+    rejected.customThemePack,
+    null,
   )
 })
