@@ -10818,3 +10818,209 @@ small {
     gap: 8px;
   }
 }
+
+
+/* V5 dashboard insight cards */
+.dashboard-insight-card {
+  min-width: 0;
+  padding: 22px;
+  border-color: var(--focus-hairline);
+  border-radius: var(--focus-radius-lg);
+  background: var(--focus-surface-soft);
+  box-shadow: var(--shadow-sm);
+}
+
+.subject-balance-v5 {
+  min-height: 340px;
+  flex: 1 1 340px;
+}
+
+.dashboard-insight-head,
+.dashboard-insight-subhead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dashboard-insight-head {
+  margin-bottom: 18px;
+}
+
+.dashboard-insight-kicker,
+.dashboard-insight-subhead > div > span {
+  display: block;
+  color: var(--text-primary);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.dashboard-insight-head p,
+.dashboard-insight-subhead p {
+  max-width: 520px;
+  margin: 5px 0 0;
+  color: var(--text-muted);
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+.dashboard-insight-meta {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  font-size: 8px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.dashboard-insight-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.dashboard-insight-summary > div {
+  min-width: 92px;
+  padding: 9px 11px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 10px;
+  background: var(--void-surface-hover);
+}
+
+.dashboard-insight-summary span,
+.weekly-trend-v5-footer span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.035em;
+  text-transform: none;
+}
+
+.dashboard-insight-summary strong,
+.weekly-trend-v5-footer strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.dashboard-insight-empty {
+  min-height: 230px;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  border: 1px dashed var(--focus-hairline);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--void-surface-hover) 52%, transparent);
+  color: var(--text-muted);
+  font-size: 9px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.dashboard-insight-chart {
+  min-height: 270px;
+}
+
+.weekly-trend-v5-hourly {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--focus-hairline);
+}
+
+.dashboard-insight-subhead {
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.dashboard-insight-subhead strong {
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 550;
+}
+
+.weekly-trend-v5-footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--focus-hairline);
+}
+
+.weekly-trend-v5-footer p {
+  max-width: 280px;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 8px;
+  line-height: 1.5;
+  text-align: right;
+}
+
+[data-theme='black'] .dashboard-insight-card,
+[data-theme='white'] .dashboard-insight-card {
+  background: var(--void-surface);
+  box-shadow: none;
+}
+
+[data-theme='black'] .dashboard-insight-summary > div,
+[data-theme='white'] .dashboard-insight-summary > div {
+  background: var(--void-surface-hover);
+}
+
+@media (max-width: 760px) {
+  .dashboard-insight-card {
+    padding: 17px;
+    border-radius: 15px;
+  }
+
+  .dashboard-insight-head {
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .weekly-trend-v5-head {
+    flex-direction: column;
+  }
+
+  .dashboard-insight-summary {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .dashboard-insight-summary > div {
+    flex: 1 1 120px;
+  }
+}
+
+@media (max-width: 520px) {
+  .dashboard-insight-head,
+  .dashboard-insight-subhead,
+  .weekly-trend-v5-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dashboard-insight-meta {
+    align-self: flex-start;
+  }
+
+  .dashboard-insight-empty {
+    min-height: 190px;
+    padding: 20px 16px;
+  }
+
+  .dashboard-insight-subhead strong,
+  .weekly-trend-v5-footer p {
+    text-align: left;
+  }
+
+  .weekly-trend-v5-footer {
+    gap: 10px;
+  }
+}
