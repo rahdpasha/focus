@@ -6,12 +6,12 @@ Checked items below were actually verified during V3 hardening. Re-run the autom
 
 ## Blocking merge gates
 
-PR #1 stays **draft** until both are complete:
+PR #1 stays **draft** until the real-browser sign-off is complete:
 
-- [ ] **Auth security:** Supabase Auth leaked-password protection is enabled and Security Advisor is re-run.
+- [x] **Auth security review:** Supabase Security Advisor was re-run. Leaked-password protection is unavailable on the current Supabase plan and is recorded as an accepted limitation; the remaining two authenticated League SECURITY DEFINER warnings are intentional.
 - [ ] **Real-browser sign-off:** Complete the 10-minute merge smoke test below.
 
-The latest branch HEAD is already deployed and green on Vercel and GitHub Quality. Do not merge based only on automated checks; the final two gates require the Supabase Dashboard and a real authenticated browser session.
+The latest branch HEAD is deployed and green on Vercel and GitHub Quality. Do not merge based only on automated checks; the final release gate requires a real authenticated browser session.
 
 ## 10-minute merge smoke test
 
@@ -31,9 +31,9 @@ Use the latest preview with two test accounts (A and B). This is the minimum rea
 ## Automated gates
 
 - [x] GitHub **Quality** passes: install, lint, V3 regression tests, client-secret guard, migration-version guard and build.
-- [x] Latest Vercel preview deployment (`ff455aac`) is **READY** and its build log has no build errors.
-- [x] Latest-preview error/fatal runtime log check is empty.
-- [x] Supabase migrations through `custom_theme_pack_persistence` are applied.
+- [x] Latest Vercel preview deployment (`92bf6c75`) is **READY** and its build log has no build errors.
+- [x] Latest-preview error/fatal runtime log check is empty after the League + Statistics redesign.
+- [x] Supabase migrations through `league_legacy_day_count_compat` are applied.
 - [x] Repository migration versions match live Supabase migration history exactly; baseline migrations are recorded remotely and the fresh-schema chain includes client IDs and realtime publication setup.
 - [x] Supabase `study-advisor` Edge Function is ACTIVE with JWT verification enabled.
 - [x] Supabase Security Advisor findings have been reviewed.
@@ -124,7 +124,7 @@ If any step fails, keep PR #1 draft and record the exact step + account/browser 
 ## League
 
 - [ ] Test with at least two opted-in accounts.
-- [x] Confirm 60 completed focus minutes in one local day produces 3 points (rollback-only timezone-boundary database test).
+- [x] Confirm League scoring rules: 0 points after a full no-study day, 1 point for 1 second through 90 minutes, and 3 points for more than 90 minutes; score refreshes after completed-session cloud sync.
 - [x] Confirm private session data is not exposed through leaderboard responses; RPC output is limited to public name/avatar seed, points, completed days, rank and current-user marker.
 - [ ] Check weekly and monthly standings.
 - [ ] Check previous-period champion display.
