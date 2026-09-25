@@ -3370,6 +3370,26 @@ select option {
   color: var(--primary-glow);
 }
 
+.settings-theme-grid button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.settings-theme-actions {
+  display: flex;
+  gap: 7px;
+  margin-top: 9px;
+  flex-wrap: wrap;
+}
+
+.settings-theme-error {
+  display: block;
+  margin-top: 7px;
+  color: var(--danger);
+  font-size: 8px;
+  line-height: 1.45;
+}
+
 @media (max-width: 700px) {
   .settings-theme-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
