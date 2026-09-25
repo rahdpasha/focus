@@ -3,7 +3,7 @@ import type { AppSettings } from '../app/settings'
 import { normalizeSettings } from '../app/settings'
 import { supabase } from '../api/supabaseClient'
 import type { WeeklyGoalMap } from '../utils/goalHistory'
-import type { AdvancedGoal, FocusDataSnapshot } from './types'
+import type { AdvancedGoal, FocusDataSnapshot, RoutineItem } from './types'
 import type { OfflineMutationState } from './offlineSync'
 
 type SubjectRow = {
@@ -67,6 +67,21 @@ type AdvancedGoalRow = {
   deadline: string
   priority: 'low' | 'medium' | 'high'
   status: 'active' | 'completed'
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+}
+
+type RoutineItemRow = {
+  id: string
+  client_id: string
+  user_id: string
+  title: string
+  subject_client_id: string
+  target_minutes: number
+  mode: 'fixed' | 'rotation'
+  rotation_order: number
+  enabled: boolean
   created_at: string
   updated_at: string
   deleted_at: string | null
@@ -156,6 +171,7 @@ export async function loadSupabaseSnapshot(
     goalsResult,
     weeklyGoalsResult,
     advancedGoalsResult,
+    routineItemsResult,
     settingsResult,
   ] = await Promise.all([
     client
@@ -192,6 +208,15 @@ export async function loadSupabaseSnapshot(
       .order('created_at', { ascending: false }),
 
     client
+      .from('routine_items')
+      .select('*')
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .order('mode', { ascending: true })
+      .order('rotation_order', { ascending: true })
+      .order('created_at', { ascending: true }),
+
+    client
       .from('user_settings')
       .select('*')
       .eq('user_id', userId)
@@ -203,6 +228,7 @@ export async function loadSupabaseSnapshot(
   if (goalsResult.error) throw goalsResult.error
   if (weeklyGoalsResult.error) throw weeklyGoalsResult.error
   if (advancedGoalsResult.error) throw advancedGoalsResult.error
+  if (routineItemsResult.error) throw routineItemsResult.error
   if (settingsResult.error) throw settingsResult.error
 
   const subjectRows =
@@ -215,6 +241,8 @@ export async function loadSupabaseSnapshot(
     (weeklyGoalsResult.data ?? []) as WeeklyGoalHistoryRow[]
   const advancedGoalRows =
     (advancedGoalsResult.data ?? []) as AdvancedGoalRow[]
+  const routineRows =
+    (routineItemsResult.data ?? []) as RoutineItemRow[]
   const settingsRow =
     settingsResult.data as UserSettingsRow | null
 
@@ -266,6 +294,22 @@ export async function loadSupabaseSnapshot(
       createdAt: row.created_at,
     }))
 
+  const routineItems: RoutineItem[] =
+    routineRows.map((row) => ({
+      id: row.client_id,
+      title: row.title,
+      subjectId:
+        row.subject_client_id,
+      targetMinutes:
+        row.target_minutes,
+      mode: row.mode,
+      rotationOrder:
+        row.rotation_order,
+      enabled: row.enabled,
+      createdAt:
+        row.created_at,
+    }))
+
   const settings: AppSettings =
     normalizeSettings(
       settingsRow
@@ -301,6 +345,7 @@ export async function loadSupabaseSnapshot(
       latestGoal?.weekly_minutes ?? 600,
     weeklyGoalsHistory,
     advancedGoals,
+    routineItems,
     settings,
     workspacePreferencesVersion:
       settingsRow?.workspace_preferences_version ?? 0,
@@ -637,6 +682,46 @@ export async function saveSupabaseSnapshot(
       .from('advanced_goals')
       .upsert(advancedGoalRows, {
         onConflict: 'user_id,client_id',
+      })
+
+    if (error) throw error
+  }
+
+  const routineRows =
+    snapshot.routineItems.map(
+      (item) => ({
+        client_id: item.id,
+        user_id: userId,
+        title: item.title.trim(),
+        subject_client_id:
+          item.subjectId,
+        target_minutes: Math.max(
+          1,
+          Math.round(
+            item.targetMinutes,
+          ),
+        ),
+        mode: item.mode,
+        rotation_order:
+          Math.max(
+            0,
+            Math.round(
+              item.rotationOrder,
+            ),
+          ),
+        enabled: item.enabled,
+        created_at:
+          item.createdAt,
+        updated_at: now,
+      }),
+    )
+
+  if (routineRows.length > 0) {
+    const { error } = await client
+      .from('routine_items')
+      .upsert(routineRows, {
+        onConflict:
+          'user_id,client_id',
       })
 
     if (error) throw error
@@ -1033,6 +1118,56 @@ export async function saveSupabaseMutations(
     if (error) throw error
   }
 
+  const routineRows =
+    snapshot.routineItems
+      .filter((item) =>
+        changes.routineItemIds.includes(
+          item.id,
+        ),
+      )
+      .map((item) => ({
+        client_id: item.id,
+        user_id: userId,
+        title:
+          item.title.trim(),
+        subject_client_id:
+          item.subjectId,
+        target_minutes:
+          Math.max(
+            1,
+            Math.round(
+              item.targetMinutes,
+            ),
+          ),
+        mode: item.mode,
+        rotation_order:
+          Math.max(
+            0,
+            Math.round(
+              item.rotationOrder,
+            ),
+          ),
+        enabled:
+          item.enabled,
+        created_at:
+          item.createdAt,
+        updated_at: now,
+      }))
+
+  if (routineRows.length > 0) {
+    const { error } = await client
+      .from('routine_items')
+      .upsert(
+        routineRows,
+        {
+          onConflict:
+            'user_id,client_id',
+        },
+      )
+
+    if (error) throw error
+  }
+
   if (
     changes.settingsKeys.length >
     0
@@ -1167,6 +1302,7 @@ export async function replaceSupabaseSnapshot(
     subjectsResult,
     sessionsResult,
     advancedGoalsResult,
+    routineItemsResult,
   ] = await Promise.all([
     client
       .from('subjects')
@@ -1180,6 +1316,10 @@ export async function replaceSupabaseSnapshot(
       .from('advanced_goals')
       .select('id, client_id, deleted_at')
       .eq('user_id', userId),
+    client
+      .from('routine_items')
+      .select('id, client_id, deleted_at')
+      .eq('user_id', userId),
   ])
 
   if (subjectsResult.error) {
@@ -1190,6 +1330,9 @@ export async function replaceSupabaseSnapshot(
   }
   if (advancedGoalsResult.error) {
     throw advancedGoalsResult.error
+  }
+  if (routineItemsResult.error) {
+    throw routineItemsResult.error
   }
 
   const importedSubjectIds =
@@ -1208,6 +1351,12 @@ export async function replaceSupabaseSnapshot(
     new Set(
       snapshot.advancedGoals.map(
         (goal) => goal.id,
+      ),
+    )
+  const importedRoutineIds =
+    new Set(
+      snapshot.routineItems.map(
+        (item) => item.id,
       ),
     )
 
@@ -1298,6 +1447,35 @@ export async function replaceSupabaseSnapshot(
     if (error) throw error
   }
 
+  const staleRoutineIds =
+    (
+      routineItemsResult.data ?? []
+    )
+      .filter(
+        (row) =>
+          !row.deleted_at &&
+          (
+            !row.client_id ||
+            !importedRoutineIds.has(
+              row.client_id,
+            )
+          ),
+      )
+      .map((row) => row.id)
+
+  if (staleRoutineIds.length > 0) {
+    const { error } = await client
+      .from('routine_items')
+      .update({
+        deleted_at: now,
+        updated_at: now,
+      })
+      .eq('user_id', userId)
+      .in('id', staleRoutineIds)
+
+    if (error) throw error
+  }
+
   const subjectIds =
     Array.from(importedSubjectIds)
 
@@ -1326,6 +1504,22 @@ export async function replaceSupabaseSnapshot(
       })
       .eq('user_id', userId)
       .in('client_id', sessionIds)
+
+    if (error) throw error
+  }
+
+  const routineIds =
+    Array.from(importedRoutineIds)
+
+  if (routineIds.length > 0) {
+    const { error } = await client
+      .from('routine_items')
+      .update({
+        deleted_at: null,
+        updated_at: now,
+      })
+      .eq('user_id', userId)
+      .in('client_id', routineIds)
 
     if (error) throw error
   }
@@ -1361,6 +1555,27 @@ export async function deleteSupabaseAdvancedGoal(
 
   const { error } = await client
     .from('advanced_goals')
+    .update({
+      deleted_at: now,
+      updated_at: now,
+    })
+    .eq('user_id', userId)
+    .eq('client_id', clientId)
+
+  if (error) {
+    throw error
+  }
+}
+
+export async function deleteSupabaseRoutineItem(
+  userId: string,
+  clientId: string,
+): Promise<void> {
+  const client = requireSupabase()
+  const now = new Date().toISOString()
+
+  const { error } = await client
+    .from('routine_items')
     .update({
       deleted_at: now,
       updated_at: now,
