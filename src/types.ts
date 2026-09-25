@@ -25,6 +25,8 @@ export interface StudySession {
   totalPausedSeconds: number
   notes?: string
   subtasks?: Subtask[]
+  routineItemId?: string
+  routineDate?: string
 }
 
 export interface DailyStats {
