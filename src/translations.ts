@@ -3,7 +3,7 @@ export type Language = 'en' | 'ku'
 export const translations = {
   en: {
     // Language
-    english: 'English',
+    english: 'ئینگلیزی',
     kurdishSorani: 'کوردی',
     language: 'Language',
     appearance: 'Appearance',
@@ -209,7 +209,7 @@ export const translations = {
     statistics: 'ئامار',
     settings: 'ڕێکخستنەکان',
     subjects: 'بابەتەکان',
-    studyPlan: 'پلانێ خوێندن',
+    studyPlan: 'پلانی خوێندن',
     routine: 'ڕوتین',
     records: 'تۆمارەکان',
     history: 'مێژوو',
@@ -253,8 +253,8 @@ export const translations = {
       'دووبارە کرتە بکە بۆ سڕینەوەی سێشن',
 
     // Dashboard
-    goodEvening: 'بەیانی باش، برا',
-    systemStatus: 'دۆخی سیستەم: باشە',
+    goodEvening: 'ئێوارە باش',
+    systemStatus: 'هەموو شتێک ئامادەیە',
     activeFocus: 'سەرنجی چالاک',
     sessions: 'سێشنەکان',
     streak: 'زنجیرە',
