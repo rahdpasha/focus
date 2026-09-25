@@ -364,8 +364,8 @@ export default function SubjectsPage({
                       title={
                         pendingRemoval ===
                         subject.id
-                          ? tr('Click again to confirm', 'دووبارە کرتە بکە بۆ پشتڕاستکردنەوە')
-                          : tr('Remove subject; study history is preserved', 'بابەت لاببە؛ مێژووی خوێندن دەپارێزرێت')
+                          ? tr(tr('Click again to confirm', 'دووبارە کرتە بکە بۆ پشتڕاستکردنەوە'), 'دووبارە کرتە بکە بۆ پشتڕاستکردنەوە')
+                          : tr(tr('Remove subject; study history is preserved', 'بابەت لاببە؛ مێژووی خوێندن دەپارێزرێت'), 'بابەت لاببە؛ مێژووی خوێندن دەپارێزرێت')
                       }
                     >
                       {pendingRemoval ===
