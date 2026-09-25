@@ -1,6 +1,7 @@
 import type { Subject, StudySession } from '../types'
 import type { AppSettings } from '../app/settings'
 import { normalizeSettings } from '../app/settings'
+import { normalizeThemeTokenPack } from '../app/themeTokens'
 import { supabase } from '../api/supabaseClient'
 import type { WeeklyGoalMap } from '../utils/goalHistory'
 import type { AdvancedGoal, FocusDataSnapshot, RoutineItem } from './types'
