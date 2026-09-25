@@ -56,61 +56,76 @@ interface SidebarProps {
   ) => void
 }
 
-const navItems = [
+const navGroups = [
   {
-    page: 'dashboard' as const,
-    labelKey: 'dashboard' as const,
-    icon: Gauge,
+    label: 'Study',
+    items: [
+      {
+        page: 'dashboard' as const,
+        labelKey: 'dashboard' as const,
+        icon: Gauge,
+      },
+      {
+        page: 'focus' as const,
+        labelKey: 'focus' as const,
+        icon: Clock3,
+      },
+      {
+        page: 'subjects' as const,
+        labelKey: 'subjects' as const,
+        icon: BookOpen,
+      },
+      {
+        page: 'study-plan' as const,
+        labelKey: 'studyPlan' as const,
+        icon: CalendarRange,
+      },
+      {
+        page: 'routine' as const,
+        labelKey: 'routine' as const,
+        icon: Repeat2,
+      },
+      {
+        page: 'advisor' as const,
+        labelKey: 'advisor' as const,
+        icon: BrainCircuit,
+      },
+    ],
   },
   {
-    page: 'focus' as const,
-    labelKey: 'focus' as const,
-    icon: Clock3,
+    label: 'Insights',
+    items: [
+      {
+        page: 'statistics' as const,
+        labelKey: 'statistics' as const,
+        icon: BarChart3,
+      },
+      {
+        page: 'records' as const,
+        labelKey: 'records' as const,
+        icon: Trophy,
+      },
+      {
+        page: 'history' as const,
+        labelKey: 'history' as const,
+        icon: History,
+      },
+      {
+        page: 'league' as const,
+        labelKey: 'league' as const,
+        icon: Swords,
+      },
+    ],
   },
   {
-    page: 'subjects' as const,
-    labelKey: 'subjects' as const,
-    icon: BookOpen,
-  },
-  {
-    page: 'study-plan' as const,
-    labelKey: 'studyPlan' as const,
-    icon: CalendarRange,
-  },
-  {
-    page: 'routine' as const,
-    labelKey: 'routine' as const,
-    icon: Repeat2,
-  },
-  {
-    page: 'advisor' as const,
-    labelKey: 'advisor' as const,
-    icon: BrainCircuit,
-  },
-  {
-    page: 'statistics' as const,
-    labelKey: 'statistics' as const,
-    icon: BarChart3,
-  },
-  {
-    page: 'records' as const,
-    labelKey: 'records' as const,
-    icon: Trophy,
-  },
-  {
-    page: 'history' as const,
-    labelKey: 'history' as const,
-    icon: History,
-  },
-  {
-    page: 'league' as const,
-    labelKey: 'league' as const,
-    icon: Swords,
-  },
-  {
-    page: 'settings' as const,
-    labelKey: 'settings' as const,
-    icon: Settings,
+    label: 'System',
+    items: [
+      {
+        page: 'settings' as const,
+        labelKey: 'settings' as const,
+        icon: Settings,
+      },
+    ],
   },
 ]
 
@@ -257,55 +272,75 @@ export default function Sidebar({
           className="sidebar-nav"
           aria-label="Application navigation"
         >
-          {navItems.map(
-            (item) => {
-              const Icon =
-                item.icon
-              const active =
-                page === item.page
+          {navGroups.map(
+            (group) => (
+              <div
+                key={group.label}
+                className="sidebar-nav-group"
+              >
+                {showLabels && (
+                  <div className="sidebar-nav-group-label">
+                    {group.label}
+                  </div>
+                )}
 
-              return (
-                <button
-                  key={item.page}
-                  type="button"
-                  className={
-                    active
-                      ? 'sidebar-nav-item active'
-                      : 'sidebar-nav-item'
-                  }
-                  onClick={() =>
-                    changePage(
-                      item.page,
+                {group.items.map(
+                  (item) => {
+                    const Icon =
+                      item.icon
+                    const active =
+                      page ===
+                      item.page
+
+                    return (
+                      <button
+                        key={
+                          item.page
+                        }
+                        type="button"
+                        className={
+                          active
+                            ? 'sidebar-nav-item active'
+                            : 'sidebar-nav-item'
+                        }
+                        onClick={() =>
+                          changePage(
+                            item.page,
+                          )
+                        }
+                        title={
+                          collapsed
+                            ? t(
+                                item.labelKey,
+                              )
+                            : undefined
+                        }
+                        aria-current={
+                          active
+                            ? 'page'
+                            : undefined
+                        }
+                      >
+                        <Icon
+                          size={17}
+                          strokeWidth={
+                            1.8
+                          }
+                        />
+
+                        {showLabels && (
+                          <span>
+                            {t(
+                              item.labelKey,
+                            )}
+                          </span>
+                        )}
+                      </button>
                     )
-                  }
-                  title={
-                    collapsed
-                      ? t(
-                          item.labelKey,
-                        )
-                      : undefined
-                  }
-                  aria-current={
-                    active
-                      ? 'page'
-                      : undefined
-                  }
-                >
-                  <Icon
-                    size={17}
-                    strokeWidth={1.8}
-                  />
-
-                  {showLabels && (
-                    <span>
-                      {t(
-                        item.labelKey,
-                      )}
-                    </span>
-                  )}
-                </button>
-              )
-            },
+                  },
+                )}
+              </div>
+            ),
           )}
         </nav>
 
