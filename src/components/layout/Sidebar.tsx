@@ -58,7 +58,7 @@ interface SidebarProps {
 
 const navGroups = [
   {
-    label: 'Study',
+    label: 'Workspace',
     items: [
       {
         page: 'dashboard' as const,
@@ -93,7 +93,7 @@ const navGroups = [
     ],
   },
   {
-    label: 'Insights',
+    label: 'Progress',
     items: [
       {
         page: 'statistics' as const,
@@ -118,7 +118,7 @@ const navGroups = [
     ],
   },
   {
-    label: 'System',
+    label: 'Preferences',
     items: [
       {
         page: 'settings' as const,
@@ -253,7 +253,7 @@ export default function Sidebar({
                 FOCUS
               </strong>
               <span>
-                Study system
+                Build the day.
               </span>
             </div>
           )}
