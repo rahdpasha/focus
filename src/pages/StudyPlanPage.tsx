@@ -57,7 +57,7 @@ export default function StudyPlanPage({
   onDeleteAdvancedGoal,
   onStartSession,
 }: StudyPlanPageProps) {
-  const { t } = useI18n()
+  const { t, tr } = useI18n()
   const [goalTitle, setGoalTitle] = useState('')
   const [goalTarget, setGoalTarget] = useState(300)
   const [goalDeadline, setGoalDeadline] = useState('')
@@ -175,7 +175,7 @@ export default function StudyPlanPage({
           <article className="glass-panel study-plan-progress-card">
             <div className="study-plan-progress-head">
               <div>
-                <span>Today</span>
+                <span>{tr('Today', 'ئەمڕۆ')}</span>
                 <strong className="mono">
                   {plan.todayCompletedMinutes}m
                   <small>
@@ -199,14 +199,14 @@ export default function StudyPlanPage({
             <p>
               {plan.todayRemainingMinutes > 0
                 ? `${plan.todayRemainingMinutes}m left to close today.`
-                : 'Daily target complete. Keep the rhythm, not the pressure.'}
+                : tr('Daily target complete. Keep the rhythm, not the pressure.', 'ئامانجی ڕۆژانە تەواو بوو. ڕێتمەکەت بپارێزە، نە فشارەکە.')}
             </p>
           </article>
 
           <article className="glass-panel study-plan-progress-card">
             <div className="study-plan-progress-head">
               <div>
-                <span>This week</span>
+                <span>{tr('This week', 'ئەم هەفتەیە')}</span>
                 <strong className="mono">
                   {weeklyHours}h
                   <small>
@@ -234,7 +234,7 @@ export default function StudyPlanPage({
                       60) *
                       10,
                   ) / 10}h left this week.`
-                : 'Weekly target complete. Protect the consistency you built.'}
+                : tr('Weekly target complete. Protect the consistency you built.', 'ئامانجی هەفتانە تەواو بوو. بەردەوامییەکەی دروستت کردووە بپارێزە.')}
             </p>
           </article>
         </section>
@@ -252,7 +252,7 @@ export default function StudyPlanPage({
 
             {plan.bestTime && (
               <div className="study-plan-best-time">
-                <span>Best window</span>
+                <span>{tr('Best window', 'باشترین کات')}</span>
                 <strong>
                   {plan.bestTime}
                 </strong>
@@ -262,9 +262,9 @@ export default function StudyPlanPage({
 
           <div className="study-plan-rationale">
             <div>
-              <span>Why this plan</span>
+              <span>{tr('Why this plan', 'بۆچی ئەم پلانە')}</span>
               <strong>
-                {plan.priority} priority
+                {plan.priority} {tr('priority', 'گرنگی')}
               </strong>
             </div>
             <p>{plan.rationale}</p>
@@ -273,7 +273,7 @@ export default function StudyPlanPage({
           <div className="study-plan-list">
             {plan.items.length === 0 ? (
               <div className="study-plan-empty">
-                Add a subject and FOCUS will build the first useful plan from it.
+                {tr('Add a subject and FOCUS will build the first useful plan from it.', 'بابەتێک زیاد بکە و FOCUS یەکەم پلانی بەسوودت بۆ دروست دەکات.')}
               </div>
             ) : (
               plan.items.map(
@@ -375,11 +375,11 @@ export default function StudyPlanPage({
                     >
                       {allocation.status ===
                       'needs_attention'
-                        ? 'Behind'
+                        ? tr('Behind', 'دواکەوتوو')
                         : allocation.status ===
                             'completed'
-                          ? 'Done'
-                          : 'On track'}
+                          ? tr('Done', 'تەواو')
+                          : tr('On track', 'لە ڕێگای دروستدایە')}
                     </span>
                   </div>
 
@@ -406,7 +406,7 @@ export default function StudyPlanPage({
                       {allocation.remainingMinutes >
                       0
                         ? `${allocation.remainingMinutes}m left this week`
-                        : 'Target met'}
+                        : tr('Target met', 'ئامانج پێکرا')}
                     </span>
 
                     <button
@@ -437,7 +437,7 @@ export default function StudyPlanPage({
                 Deadline goals
               </h2>
               <p>
-                Give important work a clear target without turning FOCUS into a crowded task manager.
+                {tr('Give important work a clear target without turning FOCUS into a crowded task manager.', 'بۆ کارە گرنگەکان ئامانجێکی ڕوون دابنێ بەبێ ئەوەی FOCUS ببێتە بەڕێوەبەری ئەرکی قەرەباڵغ.')}
               </p>
             </div>
 
@@ -468,7 +468,7 @@ export default function StudyPlanPage({
                   event.target.value,
                 )
               }
-              placeholder="Goal name"
+              placeholder={tr('Goal name', 'ناوی ئامانج')}
             />
 
             <select
@@ -562,7 +562,7 @@ export default function StudyPlanPage({
             {advancedGoalCards.length ===
             0 ? (
               <div className="advanced-goal-empty">
-                No deadline goals yet. Add one only when a real deadline deserves its own target.
+                {tr('No deadline goals yet. Add one only when a real deadline deserves its own target.', 'هێشتا ئامانجی کاتدار نییە. تەنها کاتێک زیاد بکە کە بەڕاستی پێویستی بە کاتی دیاریکراو هەیە.')}
               </div>
             ) : (
               advancedGoalCards.map(
@@ -624,8 +624,8 @@ export default function StudyPlanPage({
                           >
                             {goal.status ===
                             'completed'
-                              ? 'Reopen'
-                              : 'Complete'}
+                              ? tr('Reopen', 'کردنەوە')
+                               : tr('Complete', 'تەواو')}
                           </button>
 
                           <button
@@ -667,8 +667,8 @@ export default function StudyPlanPage({
                           >
                             {pendingGoalDelete ===
                             goal.id
-                              ? 'Confirm delete'
-                              : 'Delete'}
+                              ? tr('Confirm delete', 'پشتڕاستکردنەوەی سڕینەوە')
+                               : tr('Delete', 'سڕینەوە')}
                           </button>
                         </div>
                       </div>
@@ -680,9 +680,9 @@ export default function StudyPlanPage({
                         </span>
                         <span>
                           {progress.completed
-                            ? 'Completed'
-                            : progress.overdue
-                              ? 'Overdue'
+                            ? tr('Completed', 'تەواوکراو')
+                             : progress.overdue
+                              ? tr('Overdue', 'کاتی تێپەڕیوە')
                               : `${progress.remainingMinutes}m remaining`}
                         </span>
                       </div>
@@ -747,14 +747,14 @@ export default function StudyPlanPage({
                 Planning baseline
               </h2>
               <p>
-                Set the amount of focused time FOCUS should plan around.
+                {tr('Set the amount of focused time FOCUS should plan around.', 'بڕی کاتی سەرنج دیاری بکە کە FOCUS پلانی لەسەر بنیات بنێت.')}
               </p>
             </div>
           </div>
 
           <div className="planning-targets-grid">
             <label>
-              <span>Daily focus</span>
+              <span>{tr('Daily focus', 'سەرنجی ڕۆژانە')}</span>
               <select
                 value={dailyGoal}
                 onChange={(event) =>
@@ -787,7 +787,7 @@ export default function StudyPlanPage({
             </label>
 
             <label>
-              <span>Weekly focus</span>
+              <span>{tr('Weekly focus', 'سەرنجی هەفتانە')}</span>
               <select
                 value={weeklyGoal}
                 onChange={(event) =>
