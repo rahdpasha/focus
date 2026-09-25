@@ -1881,6 +1881,18 @@ export function useFocusData(
                     ? value.notes
                     : undefined,
                 subtasks,
+                routineItemId:
+                  typeof value.routineItemId === "string" &&
+                  value.routineItemId.trim()
+                    ? value.routineItemId.trim()
+                    : undefined,
+                routineDate:
+                  typeof value.routineDate === "string" &&
+                  /^\d{4}-\d{2}-\d{2}$/.test(
+                    value.routineDate,
+                  )
+                    ? value.routineDate
+                    : undefined,
               }]
             },
           )
