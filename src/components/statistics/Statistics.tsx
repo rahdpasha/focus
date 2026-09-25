@@ -141,7 +141,9 @@ function buildDayPulse(
       key: start.toISOString(),
       label:
         offset === 0
-          ? tr('Today', 'ئەمڕۆ')
+          ? locale === 'ku-IQ'
+            ? 'ئەمڕۆ'
+            : 'Today'
           : start.toLocaleDateString(locale, { weekday: 'long' }),
       shortLabel: start.toLocaleDateString(locale, {
         weekday: 'short',
