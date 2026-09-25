@@ -1933,6 +1933,26 @@ select option {
   gap: 2px;
 }
 
+.sidebar-nav-group {
+  display: grid;
+  gap: 2px;
+}
+
+.sidebar-nav-group + .sidebar-nav-group {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--void-border);
+}
+
+.sidebar-nav-group-label {
+  padding: 2px 10px 4px;
+  color: var(--text-muted);
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
 .sidebar-nav-item {
   width: 100%;
   min-height: 39px;
