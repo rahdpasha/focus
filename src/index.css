@@ -10635,3 +10635,186 @@ small {
     width: 100%;
   }
 }
+
+
+/* V5 final consistency sweep: League + Statistics */
+.league-v4-kicker,
+.stats-v4-kicker,
+.league-v4-section-head > div > span,
+.stats-v4-section-head > div:first-child > span,
+.league-v4-command-head span,
+.league-v4-next-move > div,
+.league-v4-status > div span,
+.league-v4-milestones > div {
+  text-transform: none;
+  letter-spacing: 0.045em;
+}
+
+.league-v4-podium-top span,
+.league-v4-row-points span,
+.stats-v4-day-top span,
+.stats-v4-record-grid article > span {
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+
+.league-v4-section-head svg,
+.stats-v4-section-head > svg,
+.league-v4-command-head svg,
+.stats-v4-record-grid article > svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.8;
+}
+
+.league-v4-podium-top svg {
+  width: 19px;
+  height: 19px;
+  stroke-width: 1.8;
+}
+
+.league-v4-period-bar,
+.league-v4-section-head,
+.stats-v4-section-head {
+  gap: 14px;
+}
+
+.league-v4-period-switch button {
+  min-width: 76px;
+}
+
+.league-v4-save {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+
+.league-v4-empty,
+.stats-v4-empty {
+  min-height: 104px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  padding-inline: 20px;
+}
+
+[data-theme='black'] .league-v4-podium-shell,
+[data-theme='black'] .league-v4-board,
+[data-theme='black'] .league-v4-champions,
+[data-theme='black'] .league-v4-period-bar,
+[data-theme='black'] .stats-v4-rhythm,
+[data-theme='black'] .stats-v4-weekly,
+[data-theme='black'] .stats-v4-subjects,
+[data-theme='black'] .stats-v4-records,
+[data-theme='black'] .stats-v4-metrics article,
+[data-theme='white'] .league-v4-podium-shell,
+[data-theme='white'] .league-v4-board,
+[data-theme='white'] .league-v4-champions,
+[data-theme='white'] .league-v4-period-bar,
+[data-theme='white'] .stats-v4-rhythm,
+[data-theme='white'] .stats-v4-weekly,
+[data-theme='white'] .stats-v4-subjects,
+[data-theme='white'] .stats-v4-records,
+[data-theme='white'] .stats-v4-metrics article {
+  box-shadow: none;
+}
+
+[data-theme='black'] .league-v4-rank-ring,
+[data-theme='black'] .stats-v4-orb-ring,
+[data-theme='white'] .league-v4-rank-ring,
+[data-theme='white'] .stats-v4-orb-ring {
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--text-primary) 4%, transparent);
+}
+
+[data-theme='black'] .league-v4-save,
+[data-theme='white'] .league-v4-save {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  color: var(--void-bg);
+  box-shadow: none;
+}
+
+@media (max-width: 760px) {
+  .league-v4-period-bar,
+  .league-v4-podium-shell,
+  .league-v4-board,
+  .league-v4-command,
+  .league-v4-champions,
+  .stats-v4-rhythm,
+  .stats-v4-weekly,
+  .stats-v4-subjects,
+  .stats-v4-records {
+    border-radius: 15px;
+  }
+
+  .league-v4-period-bar {
+    padding: 14px 15px;
+  }
+
+  .league-v4-section-head,
+  .stats-v4-section-head {
+    margin-bottom: 14px;
+  }
+
+  .league-v4-podium {
+    gap: 8px;
+  }
+
+  .league-v4-podium-card {
+    padding: 14px;
+  }
+
+  .league-v4-command {
+    gap: 0;
+  }
+
+  .stats-v4-metrics {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 520px) {
+  .league-v4-hero,
+  .stats-v4-hero {
+    padding: 19px 16px;
+  }
+
+  .league-v4-hero h2,
+  .stats-v4-hero h1 {
+    font-size: clamp(32px, 9.5vw, 40px);
+    line-height: 1.02;
+  }
+
+  .league-v4-period-switch button {
+    min-width: 0;
+  }
+
+  .league-v4-podium {
+    gap: 7px;
+  }
+
+  .league-v4-podium-card {
+    min-height: 0;
+  }
+
+  .league-v4-row {
+    min-height: 60px;
+  }
+
+  .league-v4-row-person span {
+    line-height: 1.35;
+  }
+
+  .stats-v4-day-grid article {
+    min-height: 128px;
+    padding: 10px 8px;
+  }
+
+  .stats-v4-signal-track {
+    min-height: 76px;
+  }
+
+  .stats-v4-record-grid {
+    gap: 8px;
+  }
+}
