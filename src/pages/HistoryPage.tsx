@@ -41,6 +41,7 @@ function dayKey(
 
 function durationLabel(
   seconds: number,
+  language: 'en' | 'ku',
 ): string {
   const totalMinutes =
     Math.round(
@@ -51,7 +52,9 @@ function durationLabel(
     )
 
   if (totalMinutes < 60) {
-    return `${totalMinutes}m`
+    return language === 'ku'
+      ? `${totalMinutes} خولەک`
+      : `${totalMinutes}m`
   }
 
   const hours =
@@ -61,8 +64,14 @@ function durationLabel(
   const minutes =
     totalMinutes % 60
 
-  return minutes > 0
-    ? `${hours}h ${minutes}m`
+  if (minutes > 0) {
+    return language === 'ku'
+      ? `${hours} کاتژمێر ${minutes} خولەک`
+      : `${hours}h ${minutes}m`
+  }
+
+  return language === 'ku'
+    ? `${hours} کاتژمێر`
     : `${hours}h`
 }
 
