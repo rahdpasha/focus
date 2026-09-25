@@ -404,7 +404,7 @@ export default function HistoryPage({
     <PageContainer>
       <PageHeader
         title="Study History"
-        description="See your rhythm, then inspect what happened inside each day."
+        description="Move through your study history by day, then open the sessions behind the pattern."
       />
 
       <section className="history-overview">
@@ -454,7 +454,7 @@ export default function HistoryPage({
           <div className="history-calendar-head">
             <div>
               <div className="eyebrow">
-                Activity calendar
+                Focus calendar
               </div>
               <h2>
                 {monthLabel}
@@ -694,8 +694,7 @@ export default function HistoryPage({
           {selectedSessions.length ===
           0 ? (
             <div className="history-empty-state">
-              No completed focus
-              sessions on this day.
+              Nothing was recorded here. Choose another day or complete a focus session to add history.
             </div>
           ) : (
             <div className="history-session-list">
