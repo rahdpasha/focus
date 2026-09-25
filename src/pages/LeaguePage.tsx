@@ -526,6 +526,19 @@ export default function LeaguePage({
                           : undefined,
                     }}
                   >
+                    <div
+                      className="mono"
+                      style={{
+                        marginBottom: '8px',
+                        color: 'var(--text-muted)',
+                        fontSize: '10px',
+                        fontWeight: 800,
+                        letterSpacing: '0.08em',
+                      }}
+                    >
+                      TOP {place}
+                    </div>
+
                     <Crown
                       size={
                         index === 0
