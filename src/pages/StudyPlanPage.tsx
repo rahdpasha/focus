@@ -269,7 +269,12 @@ export default function StudyPlanPage({
             <div>
               <span>{tr('Why this plan', 'بۆچی ئەم پلانە')}</span>
               <strong>
-                {plan.priority} {tr('priority', 'گرنگی')}
+                {plan.priority === 'high'
+                  ? tr('High', 'زۆر')
+                  : plan.priority === 'medium'
+                    ? tr('Medium', 'ناوەند')
+                    : tr('Low', 'کەم')}{' '}
+                {tr('priority', 'گرنگی')}
               </strong>
             </div>
             <p>{localizeUiText(language, plan.rationale)}</p>
@@ -329,7 +334,7 @@ export default function StudyPlanPage({
                           )
                         }
                       >
-                        Start focus
+                        {tr('Start focus', 'دەستپێکردنی سەرنج')}
                       </button>
                     </div>
                   </article>

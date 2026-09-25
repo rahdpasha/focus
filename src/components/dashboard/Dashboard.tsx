@@ -23,6 +23,7 @@ import {
   getStudyPlan,
 } from '../../utils/studyPlan'
 import { useI18n } from '../../useI18n'
+import { localizeUiText } from '../../utils/localizeUiText'
 import {
   getRotationItemForDate,
   getRoutineItemsForDate,
@@ -447,7 +448,7 @@ export default function Dashboard({
                           }
                         </strong>
                         <span>
-                          {item.reason}
+                          {localizeUiText(language, item.reason)}
                         </span>
                       </div>
 

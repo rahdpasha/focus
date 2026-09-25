@@ -342,12 +342,16 @@ export default function RoutinePage({
                 <Flame size={13} />
                 {tr('Current streak', 'زنجیرەی ئێستا')}
               </span>
-              <strong className="mono">{streak.current}d</strong>
+              <strong className="mono">{language === 'ku'
+                  ? `${streak.current} ڕۆژ`
+                  : `${streak.current}d`}</strong>
             </div>
 
             <div className="routine-summary-stat">
               <span className="eyebrow">{tr('Best streak', 'باشترین زنجیرە')}</span>
-              <strong className="mono">{streak.best}d</strong>
+              <strong className="mono">{language === 'ku'
+                  ? `${streak.best} ڕۆژ`
+                  : `${streak.best}d`}</strong>
             </div>
 
             <div className="routine-summary-stat">
@@ -464,8 +468,9 @@ export default function RoutinePage({
                     <div>
                       <div className="routine-progress-meta">
                         <span>
-                          {minutes}m
-                          focused
+                          {language === 'ku'
+                            ? `${minutes} خولەک سەرنج`
+                            : `${minutes}m focused`}
                         </span>
                         <span>
                           {
@@ -572,7 +577,9 @@ export default function RoutinePage({
                       </strong>
                       <div className="routine-recovery-meta">
                         {entry.date.toLocaleDateString(
-                          undefined,
+                          language === 'ku'
+                            ? 'ku-IQ'
+                            : 'en-US',
                           {
                             weekday:
                               'short',
@@ -837,15 +844,19 @@ export default function RoutinePage({
                         · {
                           item.targetMinutes
                         }m · {
-                          item.mode
+                          item.mode === 'fixed'
+                            ? tr('Fixed', 'جێگیر')
+                            : tr('Rotation', 'گۆڕاو')
                         } · {
                           dayRuleLabel(
                             item.daysOfWeek,
                             language,
                           )
-                        } · recovery {
-                          item.recoveryDays
-                        }d
+                        } · {tr('recovery', 'گەڕاندنەوە')} {
+                          language === 'ku'
+                            ? `${item.recoveryDays} ڕۆژ`
+                            : `${item.recoveryDays}d`
+                        }
                       </div>
                     </div>
 

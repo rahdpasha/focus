@@ -41,6 +41,7 @@ const exactSorani: Record<string, string> = {
   'BEST DAILY STREAK': 'باشترین زنجیرەی ڕۆژانە',
   'BEST WEEKDAY': 'باشترین ڕۆژی هەفتە',
   'DAY AVERAGE': 'ناوەندی ڕۆژ',
+  'Take one focused step next.': 'یەک هەنگاوی سەرنجی داهاتوو هەڵبگرە.',
 }
 
 function replacePatterns(text: string): string {
@@ -96,6 +97,58 @@ function replacePatterns(text: string): string {
     .replace(
       /^Start (\d+)m focus$/,
       'دەست پێ بکە $1 خولەک سەرنج',
+    )
+    .replace(
+      /^(\d+)\/(\d+) minutes completed today$/,
+      '$1/$2 خولەک ئەمڕۆ تەواو کرا',
+    )
+    .replace(
+      /^(\d+)\/(\d+) minutes completed this week$/,
+      '$1/$2 خولەک ئەم هەفتەیە تەواو کرا',
+    )
+    .replace(
+      /^Consistency is improving$/,
+      'بەردەوامی باشتر دەبێت',
+    )
+    .replace(
+      /^Consistency is declining$/,
+      'بەردەوامی خراپتر دەبێت',
+    )
+    .replace(
+      /^Consistency is stable$/,
+      'بەردەوامی جێگیرە',
+    )
+    .replace(
+      /^Your strongest recent study window is (.+)$/,
+      'بەهێزترین کاتی خوێدنی نوێت $1 ـە',
+    )
+    .replace(
+      /^Recover your overdue goal: (.+)\.$/,
+      'ئامانجی کات‌تێپەڕیوت بگەڕێنەوە: $1.',
+    )
+    .replace(
+      /^Prioritize (.+) for (.+)\.$/,
+      '$1 بۆ $2 بخەرە پێشەوە.',
+    )
+    .replace(
+      /^Make progress on (.+)\.$/,
+      'لە $1 پێشکەوتن بکە.',
+    )
+    .replace(
+      /^Focus on (.+) next\.$/,
+      'دواتر سەرنج بخەرە سەر $1.',
+    )
+    .replace(
+      /^(\d+) minutes remain on this goal\. Use the next focused block to move it forward\.$/,
+      '$1 خولەک بۆ ئەم ئامانجە ماوە. بڵۆکی سەرنجی داهاتوو بۆ پێشبردنی بەکاربهێنە.',
+    )
+    .replace(
+      /^Goal "(.+)" for (.+) is (\d+)% complete with (\d+) minutes remaining$/,
+      'ئامانجی "$1" بۆ $2، $3% تەواو بووە و $4 خولەک ماوە.',
+    )
+    .replace(
+      /^Goal "(.+)" is (\d+)% complete with (\d+) minutes remaining$/,
+      'ئامانجی "$1"، $2% تەواو بووە و $3 خولەک ماوە.',
     )
 }
 

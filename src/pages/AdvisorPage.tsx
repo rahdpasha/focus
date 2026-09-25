@@ -18,6 +18,7 @@ import type {
 import PageContainer from './PageContainer'
 import PageHeader from '../components/layout/PageHeader'
 import { useI18n } from '../useI18n'
+import { localizeUiText } from '../utils/localizeUiText'
 import {
   buildAdvisorContext,
 } from '../ai/advisorContext'
@@ -46,7 +47,7 @@ export default function AdvisorPage({
   advancedGoals,
   onStartSession,
 }: AdvisorPageProps) {
-  const { tr } = useI18n()
+  const { language, tr } = useI18n()
   const quickPrompts = [
     tr('What should I study now?', 'ئێستا چی بخوێنم؟'),
     tr('What is hurting my consistency?', 'چی بەردەوامییەکەم لاواز دەکات؟'),
@@ -246,12 +247,12 @@ export default function AdvisorPage({
 
                 <h3>
                   {
-                    response.headline
+                    localizeUiText(language, response.headline)
                   }
                 </h3>
 
                 <p>
-                  {response.answer}
+                  {localizeUiText(language, response.answer)}
                 </p>
 
                 <ul className="advisor-reasons">
@@ -266,7 +267,7 @@ export default function AdvisorPage({
                           index
                         }
                       >
-                        {reason}
+                        {localizeUiText(language, reason)}
                       </li>
                     ),
                   )}
@@ -371,9 +372,14 @@ export default function AdvisorPage({
                 </span>
                 <strong>
                   {
-                    context
-                      .consistency
-                      .trend
+                    tr(
+                      context.consistency.trend,
+                      context.consistency.trend === 'improving'
+                        ? 'باشتر دەبێت'
+                        : context.consistency.trend === 'declining'
+                          ? 'خراپتر دەبێت'
+                          : 'جێگیرە',
+                    )
                   }
                 </strong>
               </div>
