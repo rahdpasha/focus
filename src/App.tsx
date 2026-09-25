@@ -14,6 +14,7 @@ import type { AuthState } from './auth/types'
 import FocusPage from './pages/FocusPage'
 import SubjectsPage from './pages/SubjectsPage'
 import StudyPlanPage from './pages/StudyPlanPage'
+import RoutinePage from './pages/RoutinePage'
 import RecordsPage from './pages/RecordsPage'
 import HistoryPage from './pages/HistoryPage'
 import LeaguePage from './pages/LeaguePage'
@@ -214,6 +215,18 @@ function AuthenticatedApp({
           onAddAdvancedGoal={data.addAdvancedGoal}
           onUpdateAdvancedGoal={data.updateAdvancedGoal}
           onDeleteAdvancedGoal={data.deleteAdvancedGoal}
+          onStartSession={startRecommendedSession}
+        />
+      )}
+
+      {page === 'routine' && (
+        <RoutinePage
+          subjects={data.subjects}
+          sessions={data.sessions}
+          routineItems={data.routineItems}
+          onAddRoutineItem={data.addRoutineItem}
+          onUpdateRoutineItem={data.updateRoutineItem}
+          onDeleteRoutineItem={data.deleteRoutineItem}
           onStartSession={startRecommendedSession}
         />
       )}
