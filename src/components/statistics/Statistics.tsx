@@ -1,3 +1,18 @@
+import {
+  Activity,
+  BrainCircuit,
+  CalendarDays,
+  Clock3,
+  Flame,
+  Gauge,
+  Layers3,
+  Medal,
+  Sparkles,
+  Target,
+  TimerReset,
+  Trophy,
+  Zap,
+} from 'lucide-react'
 import type { StudySession } from '../../types'
 import { useI18n } from '../../useI18n'
 import {
@@ -5,19 +20,11 @@ import {
   getStreakStats,
   type WeeklyGoalMap,
 } from '../../utils/goalHistory'
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from 'recharts'
 import { getPersonalRecords } from '../../utils/personalRecords'
-import { getStatisticsOverview, getStatisticsWeeklyHistory } from '../../utils/statisticsInsights'
-import WeeklyTrend from '../dashboard/WeeklyTrend'
-import SubjectBalance from '../dashboard/SubjectBalance'
+import {
+  getStatisticsOverview,
+  getStatisticsWeeklyHistory,
+} from '../../utils/statisticsInsights'
 import AdvancedInsights from './AdvancedInsights'
 
 interface StatisticsProps {
@@ -26,167 +33,154 @@ interface StatisticsProps {
   weeklyGoalsHistory: WeeklyGoalMap
 }
 
-function formatMinutesHuman(
-  minutes: number
-): string {
-  const hours = Math.floor(
-    minutes / 60
-  )
+interface DayPulse {
+  key: string
+  label: string
+  shortLabel: string
+  seconds: number
+  sessions: number
+}
 
-  const remaining =
-    minutes % 60
+interface SubjectPulse {
+  name: string
+  color: string
+  seconds: number
+  sessions: number
+}
+
+function formatMinutesHuman(minutes: number): string {
+  const hours = Math.floor(minutes / 60)
+  const remaining = minutes % 60
 
   if (hours > 0) {
-    return remaining > 0
-      ? `${hours}h ${remaining}m`
-      : `${hours}h`
+    return remaining > 0 ? `${hours}h ${remaining}m` : `${hours}h`
   }
 
   return `${minutes}m`
 }
 
-function formatDuration(
-  seconds: number
-): string {
-  const minutes =
-    Math.floor(seconds / 60)
+function formatDuration(seconds: number): string {
+  const safeSeconds = Math.max(0, Math.round(seconds))
+  const hours = Math.floor(safeSeconds / 3600)
+  const minutes = Math.floor((safeSeconds % 3600) / 60)
+  const remainingSeconds = safeSeconds % 60
 
-  const remainingSeconds =
-    seconds % 60
-
-  if (minutes === 0) {
-    return `${remainingSeconds}s`
+  if (hours > 0) {
+    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
   }
 
-  if (remainingSeconds === 0) {
-    return `${minutes}m`
+  if (minutes > 0) {
+    return remainingSeconds > 0
+      ? `${minutes}m ${remainingSeconds}s`
+      : `${minutes}m`
   }
 
-  return `${minutes}m ${remainingSeconds}s`
+  return `${remainingSeconds}s`
 }
 
 function formatWeekLabel(
   date: Date,
   locale: string,
-  currentWeek: boolean
+  currentWeek: boolean,
 ): string {
   if (currentWeek) {
-    return locale === 'ku-IQ'
-      ? 'ئەم هەفتە'
-      : 'THIS WEEK'
+    return locale === 'ku-IQ' ? 'ئەم هەفتە' : 'THIS WEEK'
   }
 
-  const end =
-    new Date(date)
+  const end = new Date(date)
+  end.setDate(end.getDate() + 6)
 
-  end.setDate(
-    end.getDate() + 6
-  )
+  const startLabel = date.toLocaleDateString(locale, {
+    month: 'short',
+    day: 'numeric',
+  })
 
-  const startLabel =
-    date.toLocaleDateString(
-      locale,
-      {
-        month: 'short',
-        day: 'numeric',
-      }
-    )
-
-  const endLabel =
-    end.toLocaleDateString(
-      locale,
-      {
-        month: 'short',
-        day: 'numeric',
-      }
-    )
+  const endLabel = end.toLocaleDateString(locale, {
+    month: 'short',
+    day: 'numeric',
+  })
 
   return `${startLabel} - ${endLabel}`
 }
 
-interface GoalChartTooltipProps {
-  active?: boolean
-  payload?: Array<{
-    dataKey?: string
-    value?: number
-  }>
-  label?: string
+function getWeekKeySafe(): string {
+  const start = getStartOfWeek(new Date())
+  const year = start.getFullYear()
+  const month = String(start.getMonth() + 1).padStart(2, '0')
+  const day = String(start.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
-function GoalChartTooltip({
-  active,
-  payload,
-  label,
-}: GoalChartTooltipProps) {
-  if (
-    !active ||
-    !payload ||
-    payload.length === 0
-  ) {
-    return null
-  }
+function buildDayPulse(
+  sessions: StudySession[],
+  locale: string,
+): DayPulse[] {
+  const now = new Date()
 
-  const goal =
-    payload.find(
-      (item) =>
-        item.dataKey === 'goal'
-    )?.value ?? 0
+  return Array.from({ length: 7 }, (_, index) => {
+    const offset = 6 - index
+    const start = new Date(now)
+    start.setDate(start.getDate() - offset)
+    start.setHours(0, 0, 0, 0)
 
-  const actual =
-    payload.find(
-      (item) =>
-        item.dataKey === 'actual'
-    )?.value ?? 0
+    const end = new Date(start)
+    end.setDate(end.getDate() + 1)
 
-  return (
-    <div
-      style={{
-        background:
-          'rgba(10,10,30,0.96)',
-        border:
-          '1px solid var(--void-border)',
-        borderRadius: '10px',
-        padding: '12px 16px',
-        backdropFilter: 'blur(20px)',
-      }}
-    >
-      <div
-        style={{
-          fontSize: '10px',
-          color:
-            'var(--text-muted)',
-          marginBottom: '8px',
-          fontFamily:
-            'Orbitron, sans-serif',
-        }}
-      >
-        {label}
-      </div>
+    const daySessions = sessions.filter((session) => {
+      if (!session.completed) return false
+      const completedAt = new Date(session.completedAt).getTime()
+      return completedAt >= start.getTime() && completedAt < end.getTime()
+    })
 
-      <div
-        className="mono"
-        style={{
-          fontSize: '12px',
-          color:
-            'var(--text-secondary)',
-          marginBottom: '4px',
-        }}
-      >
-        Goal: {goal}m
-      </div>
+    const seconds = daySessions.reduce(
+      (sum, session) => sum + Math.max(0, session.actualDuration),
+      0,
+    )
 
-      <div
-        className="mono"
-        style={{
-          fontSize: '12px',
-          color:
-            'var(--primary-glow)',
-        }}
-      >
-        Focus: {actual}m
-      </div>
-    </div>
-  )
+    return {
+      key: start.toISOString(),
+      label:
+        offset === 0
+          ? 'Today'
+          : start.toLocaleDateString(locale, { weekday: 'long' }),
+      shortLabel: start.toLocaleDateString(locale, {
+        weekday: 'short',
+      }),
+      seconds,
+      sessions: daySessions.length,
+    }
+  })
+}
+
+function buildSubjectPulse(
+  sessions: StudySession[],
+): SubjectPulse[] {
+  const map = new Map<
+    string,
+    { color: string; seconds: number; sessions: number }
+  >()
+
+  sessions.forEach((session) => {
+    if (!session.completed || session.actualDuration <= 0) return
+
+    const current = map.get(session.subjectName) ?? {
+      color: session.subjectColor,
+      seconds: 0,
+      sessions: 0,
+    }
+
+    current.seconds += session.actualDuration
+    current.sessions += 1
+    map.set(session.subjectName, current)
+  })
+
+  return Array.from(map.entries())
+    .map(([name, value]) => ({
+      name,
+      ...value,
+    }))
+    .sort((a, b) => b.seconds - a.seconds)
+    .slice(0, 6)
 }
 
 export default function Statistics({
@@ -194,995 +188,357 @@ export default function Statistics({
   weeklyGoal,
   weeklyGoalsHistory,
 }: StatisticsProps) {
-  const { language, t } =
-    useI18n()
-
-  const locale =
-    language === 'ku'
-      ? 'ku-IQ'
-      : 'en-US'
+  const { language, t } = useI18n()
+  const locale = language === 'ku' ? 'ku-IQ' : 'en-US'
 
   const overview = getStatisticsOverview(sessions)
   const completed = sessions.filter((session) => session.completed)
-  const todayFocusSeconds = overview.todayFocusSeconds
-  const weekFocusSeconds = overview.weekFocusSeconds
-  const totalFocusSeconds = overview.totalFocusSeconds
-  const averageSession = overview.averageSessionSeconds
-  const longestSession = overview.longestSessionSeconds
-
   const weeklyHistory = getStatisticsWeeklyHistory(
     sessions,
     weeklyGoalsHistory,
     weeklyGoal,
-    4
+    4,
   )
-
-  const chartData = [...weeklyHistory].reverse().map((item) => ({
-    week: formatWeekLabel(
-      new Date(`${item.weekStart}T00:00:00`),
-      locale,
-      item.weekStart === getWeekKeySafe()
-    ),
-    goal: item.goalMinutes,
-    actual: item.completedMinutes,
-  }))
-
   const personalRecords = getPersonalRecords(sessions, weeklyGoal)
-
   const streakStats = getStreakStats(
     sessions,
     weeklyGoalsHistory,
-    weeklyGoal
+    weeklyGoal,
+  )
+  const dayPulse = buildDayPulse(sessions, locale)
+  const subjectPulse = buildSubjectPulse(sessions)
+
+  const maxDaySeconds = Math.max(
+    1,
+    ...dayPulse.map((day) => day.seconds),
+  )
+  const maxSubjectSeconds = Math.max(
+    1,
+    ...subjectPulse.map((subject) => subject.seconds),
   )
 
+  const currentWeek = weeklyHistory[0]
+  const weeklyProgress = currentWeek?.progressPercent ?? 0
+  const activeDays = dayPulse.filter((day) => day.seconds > 0).length
+
+  const strongestDay = [...dayPulse].sort(
+    (a, b) => b.seconds - a.seconds,
+  )[0]
+
+  const headline =
+    overview.weekFocusSeconds <= 0
+      ? 'Your signal is waiting.'
+      : weeklyProgress >= 100
+        ? 'You cleared the weekly target.'
+        : activeDays >= 5
+          ? 'Your consistency is building.'
+          : 'Your focus rhythm is taking shape.'
+
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection:
-          'column',
-        gap: '16px',
-      }}
-    >
-      {/* Overview */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '24px',
-        }}
-      >
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns:
-              'repeat(auto-fit, minmax(160px, 1fr))',
-            gap: '12px',
-          }}
-        >
-          <div>
-            <span
-              style={{
-                fontSize: '10px',
-                color:
-                  'var(--text-muted)',
-                fontFamily:
-                  'Orbitron, sans-serif',
-              }}
-            >
-              {t('today')}
+    <div className="stats-v4">
+      <section className="stats-v4-hero">
+        <div className="stats-v4-hero-grid" />
+
+        <div className="stats-v4-hero-copy">
+          <div className="stats-v4-kicker">
+            <BrainCircuit size={15} />
+            FOCUS INTELLIGENCE
+          </div>
+
+          <h1>{headline}</h1>
+
+          <p>
+            A live read of your time, rhythm, consistency and strongest
+            performance patterns — without noisy dashboard charts.
+          </p>
+
+          <div className="stats-v4-hero-chips">
+            <span>
+              <Flame size={13} />
+              {streakStats.currentDailyStreak}d streak
             </span>
-
-            <div
-              className="mono"
-              style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '22px',
-                color:
-                  'var(--primary-glow)',
-              }}
-            >
-              {formatDuration(
-                todayFocusSeconds
-              )}
-            </div>
-          </div>
-
-          <div>
-            <span
-              style={{
-                fontSize: '10px',
-                color:
-                  'var(--text-muted)',
-                fontFamily:
-                  'Orbitron, sans-serif',
-              }}
-            >
-              {t('last7Days')}
+            <span>
+              <CalendarDays size={13} />
+              {activeDays}/7 active days
             </span>
-
-            <div
-              className="mono"
-              style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '22px',
-                color:
-                  'var(--cyber-blue)',
-              }}
-            >
-              {formatDuration(
-                weekFocusSeconds
-              )}
-            </div>
-          </div>
-
-          <div>
-            <span
-              style={{
-                fontSize: '10px',
-                color:
-                  'var(--text-muted)',
-                fontFamily:
-                  'Orbitron, sans-serif',
-              }}
-            >
-              {t('totalFocus')}
+            <span>
+              <Target size={13} />
+              {weeklyProgress}% weekly goal
             </span>
-
-            <div
-              className="mono"
-              style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '22px',
-                color:
-                  'var(--teal)',
-              }}
-            >
-              {formatDuration(
-                totalFocusSeconds
-              )}
-            </div>
-          </div>
-
-          <div>
-            <span
-              style={{
-                fontSize: '10px',
-                color:
-                  'var(--text-muted)',
-                fontFamily:
-                  'Orbitron, sans-serif',
-              }}
-            >
-              {t('sessions')}
-            </span>
-
-            <div
-              className="mono"
-              style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '22px',
-                color:
-                  'var(--energy)',
-              }}
-            >
-              {
-                completed.length
-              }
-            </div>
-          </div>
-
-          <div>
-            <span
-              style={{
-                fontSize: '10px',
-                color:
-                  'var(--text-muted)',
-                fontFamily:
-                  'Orbitron, sans-serif',
-              }}
-            >
-              {t('avgSession')}
-            </span>
-
-            <div
-              className="mono"
-              style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '22px',
-                color:
-                  'var(--text-primary)',
-              }}
-            >
-              {formatDuration(
-                averageSession
-              )}
-            </div>
-          </div>
-
-          <div>
-            <span
-              style={{
-                fontSize: '10px',
-                color:
-                  'var(--text-muted)',
-                fontFamily:
-                  'Orbitron, sans-serif',
-              }}
-            >
-              {t('longest')}
-            </span>
-
-            <div
-              className="mono"
-              style={{
-                marginTop:
-                  '8px',
-                fontSize:
-                  '22px',
-                color:
-                  'var(--text-primary)',
-              }}
-            >
-              {formatDuration(
-                longestSession
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Analytics workspace */}
-      <div
-        style={{
-          display: 'grid',
-          gap: '18px',
-        }}
-      >
-        <div
-          className="glass-panel"
-          style={{
-            padding: '24px',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'flex-end',
-              justifyContent: 'space-between',
-              gap: '20px',
-              marginBottom: '20px',
-              flexWrap: 'wrap',
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontSize: '11px',
-                  fontFamily: 'Space Grotesk, sans-serif',
-                  fontWeight: 600,
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.12em',
-                }}
-              >
-                FOCUS ANALYTICS
-              </div>
-
-              <div
-                style={{
-                  marginTop: '5px',
-                  fontSize: '12px',
-                  color: 'var(--text-secondary)',
-                }}
-              >
-                Your performance, rhythm, and personal records.
-              </div>
-            </div>
-
-            <div
-              className="mono"
-              style={{
-                fontSize: '11px',
-                color: 'var(--text-muted)',
-              }}
-            >
-              LAST 7 DAYS
-            </div>
-          </div>
-
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns:
-                'repeat(auto-fit, minmax(150px, 1fr))',
-              gap: '10px',
-            }}
-          >
-            <div
-              style={{
-                padding: '14px',
-                borderRadius: '12px',
-                background: 'rgba(139,92,246,0.07)',
-                border:
-                  '1px solid rgba(139,92,246,0.10)',
-              }}
-            >
-              <div
-                style={{
-                  fontSize: '9px',
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                }}
-              >
-                This week
-              </div>
-
-              <div
-                className="mono"
-                style={{
-                  marginTop: '6px',
-                  fontSize: '20px',
-                  color: 'var(--primary-glow)',
-                }}
-              >
-                {formatDuration(
-                  weekFocusSeconds
-                )}
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: '14px',
-                borderRadius: '12px',
-                background: 'rgba(56,189,248,0.06)',
-                border:
-                  '1px solid rgba(56,189,248,0.09)',
-              }}
-            >
-              <div
-                style={{
-                  fontSize: '9px',
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                }}
-              >
-                Sessions
-              </div>
-
-              <div
-                className="mono"
-                style={{
-                  marginTop: '6px',
-                  fontSize: '20px',
-                  color: 'var(--cyber-glow)',
-                }}
-              >
-                {completed.length}
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: '14px',
-                borderRadius: '12px',
-                background: 'rgba(20,184,166,0.06)',
-                border:
-                  '1px solid rgba(20,184,166,0.09)',
-              }}
-            >
-              <div
-                style={{
-                  fontSize: '9px',
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                }}
-              >
-                Average
-              </div>
-
-              <div
-                className="mono"
-                style={{
-                  marginTop: '6px',
-                  fontSize: '20px',
-                  color: 'var(--teal-glow)',
-                }}
-              >
-                {formatDuration(
-                  averageSession
-                )}
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: '14px',
-                borderRadius: '12px',
-                background: 'rgba(245,158,11,0.06)',
-                border:
-                  '1px solid rgba(245,158,11,0.09)',
-              }}
-            >
-              <div
-                style={{
-                  fontSize: '9px',
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                }}
-              >
-                Current streak
-              </div>
-
-              <div
-                className="mono"
-                style={{
-                  marginTop: '6px',
-                  fontSize: '20px',
-                  color: 'var(--energy-glow)',
-                }}
-              >
-                {streakStats.currentDailyStreak}d
-              </div>
-            </div>
           </div>
         </div>
 
-        <WeeklyTrend
-          sessions={sessions}
-        />
-
-        <AdvancedInsights sessions={sessions} />
-
-        <div
-          className="glass-panel"
-          style={{
-            padding: '24px',
-          }}
-        >
-          <SubjectBalance
-            sessions={sessions}
-          />
-        </div>
-
-        <div
-          className="glass-panel"
-          style={{
-            padding: '24px',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '12px',
-              marginBottom: '18px',
-              flexWrap: 'wrap',
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontSize: '11px',
-                  fontFamily: 'Space Grotesk, sans-serif',
-                  fontWeight: 600,
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.12em',
-                }}
-              >
-                PERSONAL RECORDS
-              </div>
-
-              <div
-                style={{
-                  marginTop: '4px',
-                  fontSize: '11px',
-                  color: 'var(--text-secondary)',
-                }}
-              >
-                Your strongest performances so far.
-              </div>
-            </div>
-
-            <div
-              className="mono"
-              style={{
-                fontSize: '10px',
-                color: 'var(--text-muted)',
-              }}
-            >
-              {formatDuration(
-                longestSession
-              )}{' '}
-              LONGEST
-            </div>
-          </div>
-
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns:
-                'repeat(auto-fit, minmax(160px, 1fr))',
-              gap: '10px',
-            }}
-          >
-            <div
-              style={{
-                padding: '14px',
-                borderRadius: '11px',
-                background:
-                  'rgba(139,92,246,0.06)',
-              }}
-            >
-              <div
-                style={{
-                  fontSize: '9px',
-                  color: 'var(--text-muted)',
-                }}
-              >
-                LONGEST SESSION
-              </div>
-              <div
-                className="mono"
-                style={{
-                  marginTop: '6px',
-                  fontSize: '18px',
-                  color: 'var(--primary-glow)',
-                }}
-              >
-                {formatDuration(
-                  personalRecords.longestSessionSeconds
-                )}
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: '14px',
-                borderRadius: '11px',
-                background:
-                  'rgba(34,197,94,0.05)',
-              }}
-            >
-              <div
-                style={{
-                  fontSize: '9px',
-                  color: 'var(--text-muted)',
-                }}
-              >
-                BEST DAY
-              </div>
-              <div
-                className="mono"
-                style={{
-                  marginTop: '6px',
-                  fontSize: '18px',
-                  color: 'var(--success)',
-                }}
-              >
-                {formatMinutesHuman(
-                  personalRecords.bestDayMinutes
-                )}
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: '14px',
-                borderRadius: '11px',
-                background:
-                  'rgba(56,189,248,0.05)',
-              }}
-            >
-              <div
-                style={{
-                  fontSize: '9px',
-                  color: 'var(--text-muted)',
-                }}
-              >
-                BEST WEEK
-              </div>
-              <div
-                className="mono"
-                style={{
-                  marginTop: '6px',
-                  fontSize: '18px',
-                  color: 'var(--cyber-glow)',
-                }}
-              >
-                {formatMinutesHuman(
-                  personalRecords.bestWeekMinutes
-                )}
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: '14px',
-                borderRadius: '11px',
-                background:
-                  'rgba(245,158,11,0.05)',
-              }}
-            >
-              <div
-                style={{
-                  fontSize: '9px',
-                  color: 'var(--text-muted)',
-                }}
-              >
-                BEST SUBJECT
-              </div>
-              <div
-                style={{
-                  marginTop: '6px',
-                  fontSize: '14px',
-                  color: 'var(--text-primary)',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-                title={
-                  personalRecords.bestSubjectName ??
-                  undefined
-                }
-              >
-                {personalRecords.bestSubjectName ??
-                  '—'}
-              </div>
-              <div
-                className="mono"
-                style={{
-                  marginTop: '3px',
-                  fontSize: '10px',
-                  color: 'var(--text-muted)',
-                }}
-              >
-                {formatMinutesHuman(
-                  personalRecords.bestSubjectMinutes
-                )}
-              </div>
-            </div>
+        <div className="stats-v4-orb">
+          <div className="stats-v4-orb-ring">
+            <span>THIS WEEK</span>
+            <strong>{formatDuration(overview.weekFocusSeconds)}</strong>
+            <small>{weeklyProgress}% of target</small>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Goal History Chart */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '24px',
-        }}
-      >
-        <div
-          style={{
-            marginBottom:
-              '20px',
-          }}
-        >
-          <div
-            style={{
-              fontSize:
-                '11px',
-              fontFamily:
-                'Orbitron, sans-serif',
-              color:
-                'var(--text-muted)',
-              textTransform:
-                'uppercase',
-              letterSpacing:
-                '0.12em',
-              marginBottom:
-                '6px',
-            }}
-          >
-            WEEKLY GOAL HISTORY
+      <section className="stats-v4-metrics">
+        <article>
+          <div className="stats-v4-metric-icon">
+            <Zap size={17} />
+          </div>
+          <span>{t('today')}</span>
+          <strong>{formatDuration(overview.todayFocusSeconds)}</strong>
+          <small>focused today</small>
+        </article>
+
+        <article>
+          <div className="stats-v4-metric-icon">
+            <CalendarDays size={17} />
+          </div>
+          <span>{t('last7Days')}</span>
+          <strong>{formatDuration(overview.weekFocusSeconds)}</strong>
+          <small>{activeDays} active days</small>
+        </article>
+
+        <article>
+          <div className="stats-v4-metric-icon">
+            <Clock3 size={17} />
+          </div>
+          <span>{t('totalFocus')}</span>
+          <strong>{formatDuration(overview.totalFocusSeconds)}</strong>
+          <small>all recorded focus</small>
+        </article>
+
+        <article>
+          <div className="stats-v4-metric-icon">
+            <Activity size={17} />
+          </div>
+          <span>{t('sessions')}</span>
+          <strong>{completed.length}</strong>
+          <small>completed sessions</small>
+        </article>
+
+        <article>
+          <div className="stats-v4-metric-icon">
+            <Gauge size={17} />
+          </div>
+          <span>{t('avgSession')}</span>
+          <strong>{formatDuration(overview.averageSessionSeconds)}</strong>
+          <small>average depth</small>
+        </article>
+
+        <article>
+          <div className="stats-v4-metric-icon">
+            <TimerReset size={17} />
+          </div>
+          <span>{t('longest')}</span>
+          <strong>{formatDuration(overview.longestSessionSeconds)}</strong>
+          <small>longest session</small>
+        </article>
+      </section>
+
+      <section className="stats-v4-rhythm">
+        <div className="stats-v4-section-head">
+          <div>
+            <span>7-DAY SIGNAL</span>
+            <h2>Focus rhythm</h2>
           </div>
 
-          <div
-            style={{
-              fontSize:
-                '12px',
-              color:
-                'var(--text-muted)',
-            }}
-          >
-            Goal compared with actual focus time.
+          <div className="stats-v4-head-stat">
+            <span>Strongest day</span>
+            <strong>
+              {strongestDay && strongestDay.seconds > 0
+                ? `${strongestDay.label} · ${formatDuration(
+                    strongestDay.seconds,
+                  )}`
+                : 'Still learning'}
+            </strong>
           </div>
         </div>
 
-        <ResponsiveContainer
-          width="100%"
-          height={280}
-        >
-          <BarChart
-            data={chartData}
-            margin={{
-              top: 10,
-              right: 10,
-              left: -15,
-              bottom: 0,
-            }}
-          >
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="rgba(106,106,136,0.18)"
-              vertical={false}
-            />
+        <div className="stats-v4-day-grid">
+          {dayPulse.map((day) => {
+            const intensity = Math.max(
+              day.seconds > 0 ? 8 : 2,
+              Math.round((day.seconds / maxDaySeconds) * 100),
+            )
 
-            <XAxis
-              dataKey="week"
-              axisLine={false}
-              tickLine={false}
-              tick={{
-                fill: '#6a6a88',
-                fontSize: 10,
-              }}
-            />
-
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{
-                fill: '#6a6a88',
-                fontSize: 10,
-              }}
-              unit="m"
-            />
-
-            <Tooltip
-              content={
-                <GoalChartTooltip />
-              }
-              cursor={{
-                fill:
-                  'rgba(139,92,246,0.06)',
-              }}
-            />
-
-            <Bar
-              dataKey="goal"
-              name="Goal"
-              fill="#06b6d4"
-              radius={[
-                4,
-                4,
-                0,
-                0,
-              ]}
-              maxBarSize={34}
-            />
-
-            <Bar
-              dataKey="actual"
-              name="Focus"
-              fill="#8b5cf6"
-              radius={[
-                4,
-                4,
-                0,
-                0,
-              ]}
-              maxBarSize={34}
-            />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Weekly History */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '24px',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems:
-              'center',
-            justifyContent:
-              'space-between',
-            gap: '12px',
-            marginBottom:
-              '20px',
-            flexWrap:
-              'wrap',
-          }}
-        >
-          <span
-            style={{
-              fontSize:
-                '11px',
-              fontFamily:
-                'Orbitron, sans-serif',
-              color:
-                'var(--text-muted)',
-              textTransform:
-                'uppercase',
-              letterSpacing:
-                '0.12em',
-            }}
-          >
-            {t('weeklyFocusTrend')}
-          </span>
-
-          <span
-            className="mono"
-            style={{
-              fontSize:
-                '11px',
-              color:
-                'var(--text-secondary)',
-            }}
-          >
-            {weeklyGoal}m / week
-          </span>
-        </div>
-
-        <div
-          style={{
-            display:
-              'flex',
-            flexDirection:
-              'column',
-            gap:
-              '12px',
-          }}
-        >
-          {weeklyHistory.map(
-            (
-              item,
-              index
-            ) => (
-              <div
-                key={
-                  item.weekStart
-                }
-                style={{
-                  padding:
-                    '14px 16px',
-                  borderRadius:
-                    '10px',
-                  background:
-                    index === 0
-                      ? 'rgba(139,92,246,0.08)'
-                      : 'rgba(255,255,255,0.02)',
-                  border:
-                    '1px solid var(--void-border)',
-                }}
+            return (
+              <article
+                key={day.key}
+                className={day.seconds > 0 ? 'active' : ''}
+                title={`${day.label}: ${formatDuration(day.seconds)}`}
               >
-                <div
-                  style={{
-                    display:
-                      'flex',
-                    justifyContent:
-                      'space-between',
-                    alignItems:
-                      'center',
-                    gap:
-                      '12px',
-                    marginBottom:
-                      '10px',
-                    flexWrap:
-                      'wrap',
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize:
-                        '11px',
-                      fontFamily:
-                        'Orbitron, sans-serif',
-                      color:
-                        'var(--text-secondary)',
-                    }}
-                  >
-                    {formatWeekLabel(
-                      new Date(
-                        `${item.weekStart}T00:00:00`
-                      ),
-                      locale,
-                      index === 0
-                    )}
-                  </span>
-
-                  <span
-                    className="mono"
-                    style={{
-                      fontSize:
-                        '11px',
-                      color:
-                        item.completed
-                          ? 'var(--success)'
-                          : 'var(--text-primary)',
-                    }}
-                  >
-                    {
-                      item.completedMinutes
-                    }
-                    m /{' '}
-                    {
-                      item.goalMinutes
-                    }
-                    m
-                  </span>
+                <div className="stats-v4-day-top">
+                  <span>{day.shortLabel}</span>
+                  <small>{day.sessions}x</small>
                 </div>
 
-                <div
-                  style={{
-                    height:
-                      '7px',
-                    background:
-                      'var(--void-border)',
-                    borderRadius:
-                      '999px',
-                    overflow:
-                      'hidden',
-                  }}
-                >
+                <div className="stats-v4-signal-track">
                   <div
-                    style={{
-                      width:
-                        `${item.progressPercent}%`,
-                      height:
-                        '100%',
-                      background:
-                        item.completed
-                          ? 'var(--success)'
-                          : 'linear-gradient(90deg, var(--cyber-blue), var(--teal))',
-                      borderRadius:
-                        '999px',
-                      transition:
-                        'width 0.4s ease',
-                    }}
+                    className="stats-v4-signal-fill"
+                    style={{ height: `${intensity}%` }}
                   />
                 </div>
 
-                <div
-                  className="mono"
-                  style={{
-                    marginTop:
-                      '8px',
-                    fontSize:
-                      '10px',
-                    color:
-                      item.completed
-                        ? 'var(--success)'
-                        : 'var(--text-muted)',
-                  }}
-                >
-                  {
-                    item.progressPercent
-                  }
-                  %
-                </div>
-              </div>
+                <strong>{formatDuration(day.seconds)}</strong>
+              </article>
             )
-          )}
+          })}
         </div>
+      </section>
+
+      <div className="stats-v4-split">
+        <section className="stats-v4-weekly">
+          <div className="stats-v4-section-head">
+            <div>
+              <span>GOAL TRAJECTORY</span>
+              <h2>Weekly execution</h2>
+            </div>
+
+            <div className="stats-v4-head-stat">
+              <span>Target</span>
+              <strong>{weeklyGoal}m / week</strong>
+            </div>
+          </div>
+
+          <div className="stats-v4-week-stack">
+            {weeklyHistory.map((item, index) => (
+              <article
+                key={item.weekStart}
+                className={index === 0 ? 'current' : ''}
+              >
+                <div className="stats-v4-week-copy">
+                  <div>
+                    <span>
+                      {formatWeekLabel(
+                        new Date(`${item.weekStart}T00:00:00`),
+                        locale,
+                        item.weekStart === getWeekKeySafe(),
+                      )}
+                    </span>
+                    <strong>
+                      {formatMinutesHuman(item.completedMinutes)}
+                    </strong>
+                  </div>
+
+                  <div className="stats-v4-week-score">
+                    <strong>{item.progressPercent}%</strong>
+                    <span>{item.completed ? 'CLEARED' : 'IN PROGRESS'}</span>
+                  </div>
+                </div>
+
+                <div className="stats-v4-week-track">
+                  <div
+                    className={item.completed ? 'complete' : ''}
+                    style={{
+                      width: `${Math.min(100, item.progressPercent)}%`,
+                    }}
+                  />
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="stats-v4-subjects">
+          <div className="stats-v4-section-head">
+            <div>
+              <span>FOCUS ALLOCATION</span>
+              <h2>Subject gravity</h2>
+            </div>
+            <Layers3 size={20} />
+          </div>
+
+          {subjectPulse.length === 0 ? (
+            <div className="stats-v4-empty">
+              Complete sessions to reveal your subject balance.
+            </div>
+          ) : (
+            <div className="stats-v4-subject-stack">
+              {subjectPulse.map((subject, index) => (
+                <article key={subject.name}>
+                  <div className="stats-v4-subject-rank">
+                    {String(index + 1).padStart(2, '0')}
+                  </div>
+
+                  <div className="stats-v4-subject-main">
+                    <div>
+                      <strong>{subject.name}</strong>
+                      <span>
+                        {subject.sessions} sessions ·{' '}
+                        {formatDuration(subject.seconds)}
+                      </span>
+                    </div>
+
+                    <div className="stats-v4-subject-track">
+                      <div
+                        style={{
+                          width: `${Math.max(
+                            4,
+                            Math.round(
+                              (subject.seconds / maxSubjectSeconds) * 100,
+                            ),
+                          )}%`,
+                          background: subject.color,
+                        }}
+                      />
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
+
+      <AdvancedInsights sessions={sessions} />
+
+      <section className="stats-v4-records">
+        <div className="stats-v4-section-head">
+          <div>
+            <span>PERSONAL BESTS</span>
+            <h2>Your performance vault</h2>
+          </div>
+          <Trophy size={21} />
+        </div>
+
+        <div className="stats-v4-record-grid">
+          <article className="hero-record">
+            <Medal size={20} />
+            <span>LONGEST SESSION</span>
+            <strong>
+              {formatDuration(personalRecords.longestSessionSeconds)}
+            </strong>
+            <small>deepest single focus block</small>
+          </article>
+
+          <article>
+            <Sparkles size={18} />
+            <span>BEST DAY</span>
+            <strong>
+              {formatMinutesHuman(personalRecords.bestDayMinutes)}
+            </strong>
+            <small>highest daily output</small>
+          </article>
+
+          <article>
+            <Flame size={18} />
+            <span>BEST WEEK</span>
+            <strong>
+              {formatMinutesHuman(personalRecords.bestWeekMinutes)}
+            </strong>
+            <small>strongest seven-day run</small>
+          </article>
+
+          <article>
+            <Layers3 size={18} />
+            <span>BEST SUBJECT</span>
+            <strong title={personalRecords.bestSubjectName ?? undefined}>
+              {personalRecords.bestSubjectName ?? '—'}
+            </strong>
+            <small>
+              {formatMinutesHuman(personalRecords.bestSubjectMinutes)}
+            </small>
+          </article>
+        </div>
+      </section>
     </div>
   )
-}
-
-
-
-function getWeekKeySafe(): string {
-  const start = getStartOfWeek(new Date())
-  const year = start.getFullYear()
-  const month = String(start.getMonth() + 1).padStart(2, "0")
-  const day = String(start.getDate()).padStart(2, "0")
-  return `${year}-${month}-${day}`
 }
