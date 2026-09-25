@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import PageContainer from './PageContainer'
 import PageHeader from '../components/layout/PageHeader'
+import { supabase } from '../api/supabaseClient'
 import {
   getLeaderboard,
   loadLeagueProfile,
@@ -33,6 +34,20 @@ function previousMonthDate(): Date {
   date.setDate(1)
   date.setMonth(date.getMonth() - 1)
   return date
+}
+
+function formatFocusedTime(totalSeconds: number): string {
+  if (totalSeconds <= 0) return '0m'
+  if (totalSeconds < 60) return '<1m'
+
+  const minutes = Math.floor(totalSeconds / 60)
+  const hours = Math.floor(minutes / 60)
+  const remainingMinutes = minutes % 60
+
+  if (hours === 0) return `${minutes}m`
+  if (remainingMinutes === 0) return `${hours}h`
+
+  return `${hours}h ${remainingMinutes}m`
 }
 
 function championLabel(
@@ -239,22 +254,55 @@ export default function LeaguePage({
         target,
         label: `${Math.max(
           1,
-          target.totalMinutes -
-            currentUser.totalMinutes +
-            1,
-        )}m to pass #${target.rank}`,
+          Math.floor(
+          (target.totalSeconds -
+            currentUser.totalSeconds) /
+            60,
+        ) + 1,
+      )}m to pass #${target.rank}`,
       }
     }
 
     return {
       target,
       label: `${Math.max(
-        3,
+        1,
         target.points -
           currentUser.points,
       )} pts to reach #${target.rank}`,
     }
   }, [currentUser, entries])
+
+  useEffect(() => {
+    if (!supabase || !userId || !profile.optIn) {
+      return
+    }
+
+    const channel = supabase
+      .channel(`league-score-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'daily_scores',
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          void loadStandings(period)
+        },
+      )
+      .subscribe()
+
+    return () => {
+      void supabase?.removeChannel(channel)
+    }
+  }, [
+    loadStandings,
+    period,
+    profile.optIn,
+    userId,
+  ])
 
   const switchPeriod = async (
     nextPeriod: LeaguePeriod,
@@ -296,7 +344,7 @@ export default function LeaguePage({
 
       setMessage(
         profile.optIn
-          ? 'You are in the League. Points come only from real completed study sessions.'
+          ? 'You are in the League. Completed timers update your score immediately after cloud sync.'
           : 'League participation is off. Your private study data stays private.',
       )
     } catch (error) {
@@ -328,13 +376,16 @@ export default function LeaguePage({
     )
   }
 
-  const podium = entries.slice(0, 3)
+  const podium = [0, 1, 2].map((index) => ({
+    place: index + 1,
+    entry: entries[index] ?? null,
+  }))
 
   return (
     <PageContainer>
       <PageHeader
         title="FOCUS League"
-        description="Consistency wins. Study at least 60 focused minutes in a day to earn 3 points. Ties are broken by total focused minutes."
+        description="Daily League scoring: any completed focus time earns 1 point, and more than 90 minutes earns 3 points. No-study days become 0 only after the day closes."
       />
 
       <div className="league-layout">
@@ -394,16 +445,19 @@ export default function LeaguePage({
                     lineHeight: 1.6,
                   }}
                 >
-                  Every successful study
-                  day is worth exactly 3
-                  points. If points are
-                  tied, the learner with
-                  more focused minutes
-                  ranks higher. Weekly
-                  standings reset every
-                  Monday and monthly
-                  standings reset on the
-                  first day.
+                  Your score updates as soon
+                  as a completed timer reaches
+                  the cloud: 1 second through
+                  90 minutes earns 1 point;
+                  more than 90 minutes earns
+                  3 points. If you study
+                  nothing, the day becomes
+                  0 points only after it
+                  closes. Ties are broken by
+                  total focused time. Weekly
+                  standings reset every Monday
+                  and monthly standings reset
+                  on the first day.
                 </div>
               </div>
 
@@ -449,15 +503,16 @@ export default function LeaguePage({
             </div>
           </div>
 
-          {podium.length > 0 && (
-            <div className="league-podium">
+          <div className="league-podium">
               {podium.map(
-                (entry, index) => (
+                ({ entry, place }, index) => (
                   <div
                     key={
-                      entry.publicName +
-                      '-' +
-                      entry.rank
+                      entry
+                        ? entry.publicName +
+                          '-' +
+                          entry.rank
+                        : `open-${place}`
                     }
                     className="glass-panel"
                     style={{
@@ -506,9 +561,11 @@ export default function LeaguePage({
                         fontWeight: 800,
                       }}
                     >
-                      {entry.publicName
-                        .slice(0, 1)
-                        .toUpperCase()}
+                      {entry
+                        ? entry.publicName
+                            .slice(0, 1)
+                            .toUpperCase()
+                        : place}
                     </div>
 
                     <div
@@ -520,9 +577,9 @@ export default function LeaguePage({
                           '14px',
                       }}
                     >
-                      {
-                        entry.publicName
-                      }
+                      {entry
+                        ? entry.publicName
+                        : `Top ${place} · Open`}
                     </div>
 
                     <div
@@ -536,7 +593,7 @@ export default function LeaguePage({
                           '17px',
                       }}
                     >
-                      {entry.points} pts
+                      {entry?.points ?? 0} pts
                     </div>
 
                     <div
@@ -549,18 +606,14 @@ export default function LeaguePage({
                           '10px',
                       }}
                     >
-                      {
-                        entry.completedDays
-                      }{' '}
-                      winning days · {
-                        entry.totalMinutes
-                      }m
+                      {entry
+                        ? `${entry.scoredDays} scored days · ${formatFocusedTime(entry.totalSeconds)} focused`
+                        : 'No learner yet'}
                     </div>
                   </div>
                 ),
               )}
             </div>
-          )}
 
           <div
             className="glass-panel"
@@ -692,13 +745,12 @@ export default function LeaguePage({
                               '10px',
                           }}
                         >
-                          {
-                            entry.completedDays
-                          }{' '}
-                          successful
-                          days · {
-                            entry.totalMinutes
-                          }m focused
+                          {entry.scoredDays}{' '}
+                          scored days ·{' '}
+                          {formatFocusedTime(
+                            entry.totalSeconds,
+                          )}{' '}
+                          focused
                         </div>
                       </div>
 
@@ -821,9 +873,9 @@ export default function LeaguePage({
                 Join public
                 standings. Only your
                 public name, score,
-                successful-day count
-                and aggregate focused
-                minutes are shown. Your email,
+                scored-day count and
+                aggregate focused time
+                are shown. Your email,
                 subjects, session
                 notes and study
                 history stay private.
