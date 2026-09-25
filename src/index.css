@@ -11653,3 +11653,45 @@ small {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+
+/* V5 shared chart tooltip */
+.focus-chart-tooltip {
+  min-width: 150px;
+  padding: 11px 13px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--void-surface) 96%, transparent);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(18px);
+}
+
+.focus-chart-tooltip-wide {
+  min-width: 184px;
+}
+
+.focus-chart-tooltip > span,
+.focus-chart-tooltip > small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.focus-chart-tooltip > strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.focus-chart-tooltip > small {
+  margin-top: 5px;
+}
+
+[data-theme='black'] .focus-chart-tooltip,
+[data-theme='white'] .focus-chart-tooltip {
+  background: var(--void-surface);
+  box-shadow: none;
+}
