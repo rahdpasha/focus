@@ -53,29 +53,49 @@
 }
 
 [data-theme='light'] {
-  --void-black: #f4f5f8;
-  --space-black: #ffffff;
+  --void-black: #f5f6fa;
+  --space-black: #fbfbfd;
+  --void-bg: #f4f5f9;
 
-  --void-surface: rgba(255, 255, 255, 0.88);
-  --void-surface-hover: rgba(247, 248, 252, 0.96);
-  --void-border: rgba(25, 30, 45, 0.09);
+  --void-surface: rgba(255, 255, 255, 0.82);
+  --void-surface-hover: rgba(250, 250, 253, 0.96);
+  --void-border: rgba(39, 43, 58, 0.085);
 
-  --text-primary: #161a24;
-  --text-secondary: #596176;
-  --text-muted: #8b92a3;
+  --primary: #6f62df;
+  --primary-glow: #6558d9;
+  --primary-dim: #8176e8;
+  --primary-soft: rgba(111, 98, 223, 0.085);
+  --primary-border: rgba(111, 98, 223, 0.22);
 
-  --card-bg: rgba(255, 255, 255, 0.86);
-  --card-border: rgba(25, 30, 45, 0.08);
+  --cyber-blue: #3c8fc7;
+  --cyber-glow: #5aa6d4;
+  --energy: #b77612;
+  --energy-glow: #d59a31;
+  --teal: #168b80;
+  --teal-glow: #2ba69a;
+
+  --text-primary: #181a22;
+  --text-secondary: #5b6070;
+  --text-muted: #8d92a0;
+
+  --success: #168a63;
+  --danger: #c84f67;
+  --warning: #b77612;
+
+  --card-bg: rgba(255, 255, 255, 0.78);
+  --card-border: rgba(39, 43, 58, 0.075);
 
   --shadow-sm:
-    0 6px 20px rgba(25, 30, 45, 0.06);
+    0 8px 24px rgba(45, 48, 63, 0.055),
+    0 1px 2px rgba(45, 48, 63, 0.03);
 
   --shadow-md:
-    0 14px 40px rgba(25, 30, 45, 0.08);
+    0 18px 48px rgba(45, 48, 63, 0.08),
+    0 2px 7px rgba(45, 48, 63, 0.035);
 
   --shadow-glow:
-    0 0 0 1px rgba(139, 92, 246, 0.04) inset,
-    0 12px 35px rgba(139, 92, 246, 0.06);
+    0 0 0 1px rgba(111, 98, 223, 0.035) inset,
+    0 16px 42px rgba(111, 98, 223, 0.055);
 }
 
 [data-theme='black'] {
@@ -201,14 +221,20 @@ body {
 [data-theme='light'] body {
   background:
     radial-gradient(
-      circle at 15% 0%,
-      rgba(139, 92, 246, 0.08),
-      transparent 28%
+      ellipse 62% 44% at 82% -6%,
+      rgba(111, 98, 223, 0.10),
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 44% 32% at 6% 72%,
+      rgba(60, 143, 199, 0.045),
+      transparent 72%
     ),
     linear-gradient(
       180deg,
-      #f7f8fb 0%,
-      #eef0f5 100%
+      #fafafd 0%,
+      #f3f4f8 55%,
+      #eff1f5 100%
     );
 }
 
