@@ -173,9 +173,9 @@ test('routine completion aggregates real completed focus time for the linked sub
 
 test('unfinished past routine becomes missed instead of pending', () => {
   const yesterday =
-    new Date(2026, 8, 24, 12)
-  const today =
     new Date(2026, 8, 25, 12)
+  const today =
+    new Date(2026, 8, 26, 12)
 
   assert.equal(
     getRoutineStatus(
