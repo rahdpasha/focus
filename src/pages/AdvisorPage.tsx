@@ -136,7 +136,7 @@ export default function AdvisorPage({
     <PageContainer>
       <PageHeader
         title="FOCUS Advisor"
-        description="Ask one question. Get one evidence-based next action."
+        description="Ask about your study pattern and get one clear next action grounded in your own data."
       />
 
       <div className="advisor-shell">
@@ -153,11 +153,11 @@ export default function AdvisorPage({
             </div>
 
             <h2>
-              Ask about the pattern behind your study.
+              Turn your study pattern into a next move.
             </h2>
 
             <p className="advisor-v5-intro">
-              FOCUS calculates your study facts first. AI interprets that evidence and turns it into one useful next action.
+              FOCUS starts with your real study data, then turns the pattern into one practical recommendation.
             </p>
 
             <div className="advisor-form">
