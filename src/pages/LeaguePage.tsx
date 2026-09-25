@@ -892,7 +892,7 @@ export default function LeaguePage({
                       optIn: nextOptIn,
                     }),
                   )
-                }
+                }}
               />
 
               <span>
