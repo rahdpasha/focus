@@ -22,6 +22,7 @@ import {
 import {
   getStudyPlan,
 } from '../../utils/studyPlan'
+import { useI18n } from '../../useI18n'
 import {
   getRotationItemForDate,
   getRoutineItemsForDate,
@@ -99,34 +100,35 @@ export default function Dashboard({
   onDeleteSession,
   onStartRecommendedSession,
 }: DashboardProps) {
+  const { language, tr } = useI18n()
   const now = new Date()
   const todayStart =
     startOfDay(now)
   const weekStart =
     startOfWeek(now)
 
-  const completed =
+  const {tr('complete', 'تەواو')}d =
     sessions.filter(
       (session) =>
-        session.completed &&
+        session.{tr('complete', 'تەواو')}d &&
         session.actualDuration > 0,
     )
 
   const todaySessions =
-    completed.filter(
+    {tr('complete', 'تەواو')}d.filter(
       (session) =>
         startOfDay(
           new Date(
-            session.completedAt,
+            session.{tr('complete', 'تەواو')}dAt,
           ),
         ) === todayStart,
     )
 
   const weekSessions =
-    completed.filter(
+    {tr('complete', 'تەواو')}d.filter(
       (session) =>
         new Date(
-          session.completedAt,
+          session.{tr('complete', 'تەواو')}dAt,
         ).getTime() >=
         weekStart,
     )
@@ -202,14 +204,13 @@ export default function Dashboard({
       <header className="dashboard-v3-header">
         <div>
           <div className="eyebrow">
-            Today
+            {tr('Today', 'ئەمڕۆ')}
           </div>
           <h1>
-            Make the next session count.
+            {tr('Make the next session count.', 'سێشنی داهاتوو بەهێز بکە.')}
           </h1>
           <p>
-            Your next move, current momentum,
-            and today's plan — all in one place.
+            {tr("Your next move, current momentum, and today's plan — all in one place.", 'هەنگاوی داهاتوو، بەردەوامی ئێستا و پلانی ئەمڕۆ هەمووی لە یەک شوێندایە.')}
           </p>
         </div>
 
@@ -218,7 +219,7 @@ export default function Dashboard({
             size={15}
           />
           {now.toLocaleDateString(
-            'en-US',
+            language === 'ku' ? 'ku-IQ' : 'en-US',
             {
               weekday: 'long',
               month: 'short',
@@ -241,7 +242,7 @@ export default function Dashboard({
       <section className="dashboard-stat-grid">
         <StatCard
           icon={Clock3}
-          label="Today"
+          label="{tr('Today', 'ئەمڕۆ')}"
           value={minutesLabel(
             todayMinutes,
           )}
@@ -250,7 +251,7 @@ export default function Dashboard({
 
         <StatCard
           icon={Layers3}
-          label="Today's sessions"
+          label="{tr('Today', 'ئەمڕۆ')}'s sessions"
           value={String(
             todaySessions.length,
           )}
@@ -259,14 +260,14 @@ export default function Dashboard({
 
         <StatCard
           icon={Flame}
-          label="Current streak"
+          label={tr('Current streak', 'زنجیرەی ئێستا')}
           value={`${streak}d`}
           accentColor="var(--energy)"
         />
 
         <StatCard
           icon={Clock3}
-          label="This week"
+          label={tr('This week', 'ئەم هەفتەیە')}
           value={minutesLabel(
             weekMinutes,
           )}
@@ -278,18 +279,18 @@ export default function Dashboard({
         <div className="dashboard-section-head dashboard-routine-head">
           <div>
             <div className="eyebrow">
-              Today's routine
+              {tr('Today', 'ئەمڕۆ')}'s routine
             </div>
             <h2>
               {routineCompleted}/{
                 todaysRoutine.length
-              } complete
+              } {tr('complete', 'تەواو')}
             </h2>
           </div>
 
           {todaysRotation && (
             <span className="mono">
-              Rotation · {
+              {tr('Rotation', 'گۆڕانکاری')} · {
                 todaysRotation.title
               }
             </span>
@@ -298,8 +299,7 @@ export default function Dashboard({
 
         {todaysRoutine.length === 0 ? (
           <div className="dashboard-empty">
-            Add fixed or rotating
-            study items in Routine.
+            {tr('Add fixed or rotating study items in Routine.', 'لە بەشی ڕوتیندا بڕگەی جێگیر یان گۆڕاو زیاد بکە.')}
           </div>
         ) : (
           <div className="dashboard-routine-grid">
@@ -347,8 +347,8 @@ export default function Dashboard({
                     <span
                       aria-label={
                         done
-                          ? 'Completed'
-                          : 'Pending'
+                          ? tr('Completed', 'تەواوکراو')
+                          : tr('Pending', 'چاوەڕوان')
                       }
                       className={`dashboard-routine-state ${done ? 'done' : ''}`}
                     >
@@ -366,9 +366,9 @@ export default function Dashboard({
                           item.targetMinutes
                         }m · {
                           item.mode ===
-                          'rotation'
-                            ? 'rotation'
-                            : 'daily'
+                          tr('rotation', 'گۆڕاو')
+                            ? tr('rotation', 'گۆڕاو')
+                            : tr('daily', 'ڕۆژانە')
                         }
                       </small>
                     </span>
@@ -379,7 +379,7 @@ export default function Dashboard({
 
             {hiddenRoutineCount > 0 && (
               <div className="dashboard-routine-more">
-                +{hiddenRoutineCount} more in Routine
+                +{hiddenRoutineCount} {tr('more in Routine', 'زیاتر لە ڕوتین')}
               </div>
             )}
           </div>
@@ -391,27 +391,25 @@ export default function Dashboard({
           <div className="dashboard-section-head">
             <div>
               <div className="eyebrow">
-                Today's route
+                {tr('Today', 'ئەمڕۆ')}'s route
               </div>
               <h2>
-                Your next study
-                blocks
+                {tr('Your next study blocks', 'بڵۆکەکانی خوێندنی داهاتووت')}
               </h2>
             </div>
 
             <span className="mono">
               {
-                plan.totalPlannedTodayMinutes
+                plan.totalPlanned{tr('Today', 'ئەمڕۆ')}Minutes
               }
-              m planned
+              m {tr('planned', 'پلانکراو')}
             </span>
           </div>
 
           <div className="dashboard-route-list">
             {plan.items.length === 0 ? (
               <div className="dashboard-empty">
-                Add a subject to
-                generate your plan.
+                {tr('Add a subject to generate your plan.', 'بابەتێک زیاد بکە بۆ دروستکردنی پلانەکەت.')}
               </div>
             ) : (
               plan.items
@@ -476,7 +474,7 @@ export default function Dashboard({
 
           <div className="dashboard-route-footer">
             <span>
-              Daily remaining
+              {tr('Daily remaining', 'ماوەی ڕۆژانە')}
             </span>
             <strong>
               {
@@ -486,7 +484,7 @@ export default function Dashboard({
             </strong>
 
             <span>
-              Weekly remaining
+              {tr('Weekly remaining', 'ماوەی هەفتانە')}
             </span>
             <strong>
               {
@@ -496,11 +494,11 @@ export default function Dashboard({
             </strong>
 
             <span>
-              Best window
+              {tr('Best window', 'باشترین کات')}
             </span>
             <strong>
               {plan.bestTime ??
-                'Still learning'}
+                tr('Still learning', 'هێشتا فێردەبێت')}
             </strong>
           </div>
         </div>
