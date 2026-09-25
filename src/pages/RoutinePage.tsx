@@ -475,7 +475,10 @@ export default function RoutinePage({
                         <span>
                           {
                             item.targetMinutes
-                          }m {tr('target', 'ئامانج')}
+                          }{language === 'ku'
+                            ? ' خولەک '
+                            : 'm '}
+                          {tr('target', 'ئامانج')}
                         </span>
                       </div>
 
@@ -591,7 +594,10 @@ export default function RoutinePage({
                         )}{' '}
                         · {
                           entry.remainingMinutes
-                        }m {tr('remaining', 'ماوە')}
+                        }{language === 'ku'
+                          ? ' خولەک '
+                          : 'm '}
+                        {tr('remaining', 'ماوە')}
                       </div>
                     </div>
 
@@ -843,7 +849,9 @@ export default function RoutinePage({
                           tr('Subject removed', 'بابەت لابراوە')}{' '}
                         · {
                           item.targetMinutes
-                        }m · {
+                        }{language === 'ku'
+                          ? ' خولەک'
+                          : 'm'} · {
                           item.mode === 'fixed'
                             ? tr('Fixed', 'جێگیر')
                             : tr('Rotation', 'گۆڕاو')
