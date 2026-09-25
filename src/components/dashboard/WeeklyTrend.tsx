@@ -103,7 +103,8 @@ function formatAxisDuration(
 
 function buildDays(
   sessions: StudySession[],
-  dayNames: string[]
+  dayNames: string[],
+  todayLabel: string,
 ): DayPoint[] {
   const now = new Date()
   const days: DayPoint[] = []
@@ -159,7 +160,7 @@ function buildDays(
     days.push({
       day:
         offset === 0
-          ? 'Today'
+          ? todayLabel
           : dayNames[
               start.getDay()
             ],
@@ -333,7 +334,8 @@ export default function WeeklyTrend({
 
     return buildDays(
       sessions,
-      dayNames
+      dayNames,
+      t('today'),
     )
   }, [sessions, t])
 
@@ -413,7 +415,7 @@ export default function WeeklyTrend({
 
       {!hasData ? (
         <div className="dashboard-insight-empty">
-          Complete a focus session to reveal your weekly rhythm.
+          {tr('Complete a focus session to reveal your weekly rhythm.', 'سێشنێکی سەرنج تەواو بکە بۆ بینینی ڕێتمی هەفتانەت.')}
         </div>
       ) : (
         <>
@@ -568,8 +570,8 @@ export default function WeeklyTrend({
 
               <strong className="mono">
                 {peakHour && peakHour.seconds > 0
-                  ? `Peak · ${peakHour.label}`
-                  : 'No peak yet'}
+                  ? `${tr('Peak', 'لووتکە')} · ${peakHour.label}`
+                  : tr('No peak yet', 'هێشتا لووتکە نییە')}
               </strong>
             </div>
 
