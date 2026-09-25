@@ -97,7 +97,7 @@ export default function FocusPage({
   onAddSession,
   onSelectSubject,
 }: FocusPageProps) {
-  const { t } = useI18n()
+  const { t, tr } = useI18n()
 
   const [
     ambientSound,
@@ -125,6 +125,37 @@ export default function FocusPage({
       subjects,
       weeklyGoal,
     )
+
+  const advisorSummary =
+    advisor.recommendation.type === 'unstudiedSubject'
+      ? tr(
+          `${advisor.recommendation.subjectName ?? ''} has not been studied this week.`,
+          `${advisor.recommendation.subjectName ?? ''} ئەم هەفتەیە نەخوێندراوەتەوە.`,
+        )
+      : advisor.recommendation.type === 'understudiedSubject'
+        ? tr(
+            `${advisor.recommendation.subjectName ?? ''} is receiving very little study time.`,
+            `${advisor.recommendation.subjectName ?? ''} کاتی خوێندنی زۆر کەمی پێدراوە.`,
+          )
+        : advisor.recommendation.type === 'shortSessions'
+          ? tr(
+              `Your average session is ${advisor.evidence.find((item) => item.label === 'averageSessionMinutes')?.value ?? 0} minutes; a focused 25-minute block is recommended.`,
+              'ناوەندی سێشنەکانت کورتە؛ بلۆکێکی ٢٥ خولەکی سەرنج پێشنیار دەکرێت.',
+            )
+          : advisor.recommendation.type === 'weeklyGoal'
+            ? tr(
+                `You are ${advisor.recommendation.remainingMinutes ?? 0} minutes short of your weekly goal.`,
+                `${advisor.recommendation.remainingMinutes ?? 0} خولەک لە ئامانجی هەفتانەت کەمە.`,
+              )
+            : advisor.recommendation.type === 'maintain'
+              ? tr(
+                  advisor.summary,
+                  'ڕێتمی خوێندنت باشە. بە هەمان خێرایی بەردەوام بە.',
+                )
+              : tr(
+                  advisor.summary,
+                  'یەک سێشنی سەرنج دەست پێ بکە تا FOCUS داتای پێویست بۆ ڕێنماییت هەبێت.',
+                )
 
   const targetSubject =
     activeSubject ??
@@ -195,7 +226,7 @@ export default function FocusPage({
           <div className="focus-stage-head">
             <div>
               <div className="eyebrow">
-                Current session
+                {tr('Current session', 'سێشنی ئێستا')}
               </div>
               <h2>
                 {targetSubject
@@ -222,7 +253,7 @@ export default function FocusPage({
                       targetSubject.color,
                   }}
                 />
-                Ready
+                {tr('Ready', 'ئامادە')}
               </span>
             )}
           </div>
@@ -337,7 +368,7 @@ export default function FocusPage({
                 />
               )}
               <span>
-                Ambient audio
+                {tr('Ambient audio', 'دەنگی ژینگە')}
               </span>
             </div>
 
@@ -362,7 +393,15 @@ export default function FocusPage({
                     }
                   >
                     {
-                      option.label
+                      option.value === 'off'
+                        ? tr('Off', 'کوژاوە')
+                        : option.value === 'brown'
+                          ? tr('Brown', 'براون')
+                          : option.value === 'pink'
+                            ? tr('Pink', 'پینک')
+                            : option.value === 'white'
+                              ? tr('White', 'سپێ')
+                              : tr('Alpha', 'ئەلفا')
                     }
                   </button>
                 ),
@@ -378,7 +417,7 @@ export default function FocusPage({
                 size={16}
               />
               <span>
-                Smart cue
+                {tr('Smart cue', 'ئاماژەی زیرەک')}
               </span>
             </div>
 
@@ -386,11 +425,11 @@ export default function FocusPage({
               {
                 advisor.priority
               }{' '}
-              priority
+              {tr('priority', 'گرنگی')}
             </div>
 
             <p>
-              {advisor.summary}
+              {advisorSummary}
             </p>
 
             {advisor.action
@@ -411,10 +450,10 @@ export default function FocusPage({
                     )
                   }
                 >
-                  Switch to{' '}
+                  {tr('Switch to', 'بگۆڕە بۆ')}{' '}
                   {advisor.action
                     .subjectName ??
-                    'recommended subject'}
+                    tr('recommended subject', 'بابەتی پێشنیارکراو')}
                 </button>
               )}
           </section>
@@ -425,14 +464,12 @@ export default function FocusPage({
                 size={16}
               />
               <span>
-                Session intent
+                {tr('Session intent', 'مەبەستی سێشن')}
               </span>
             </div>
 
             <p className="focus-intent-helper">
-              Define what success
-              looks like before you
-              start.
+              {tr('Define what success looks like before you start.', 'پێش دەستپێکردن دیاری بکە سەرکەوتن بۆ ئەم سێشنە چییە.')}
             </p>
 
             <textarea
@@ -447,7 +484,7 @@ export default function FocusPage({
                     .value,
                 )
               }
-              placeholder="What are you trying to finish, understand, or practice?"
+              placeholder={tr('What are you trying to finish, understand, or practice?', 'دەتەوێت چی تەواو بکەیت، تێبگەیت یان ڕاهێنان بکەیت؟')}
               rows={3}
               maxLength={1000}
               className="focus-intent-notes"
@@ -507,7 +544,7 @@ export default function FocusPage({
 
                     <button
                       type="button"
-                      aria-label="Remove checklist item"
+                      aria-label={tr('Remove checklist item', 'لابردنی خاڵی لیست')}
                       className="focus-checklist-remove"
                       onClick={() =>
                         setSubtasks(
@@ -554,7 +591,7 @@ export default function FocusPage({
                       addSubtask()
                     }
                   }}
-                  placeholder="Add a small step"
+                  placeholder={tr('Add a small step', 'هەنگاوێکی بچووک زیاد بکە')}
                   maxLength={160}
                 />
 
@@ -568,7 +605,7 @@ export default function FocusPage({
                     !subtaskDraft.trim()
                   }
                 >
-                  ADD
+                  {tr('ADD', 'زیادکردن')}
                 </button>
               </div>
             </div>
@@ -585,7 +622,7 @@ export default function FocusPage({
                 {
                   subtasks.length
                 }{' '}
-                steps complete
+                {tr('steps complete', 'هەنگاو تەواو')}
               </span>
 
               {(sessionNotes ||
@@ -597,7 +634,7 @@ export default function FocusPage({
                     resetIntent
                   }
                 >
-                  Clear
+                  {tr('Clear', 'پاککردنەوە')}
                 </button>
               )}
             </div>
