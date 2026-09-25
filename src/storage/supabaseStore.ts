@@ -339,7 +339,9 @@ export async function loadSupabaseSnapshot(
             theme:
               settingsRow.theme,
             customThemePack:
-              settingsRow.custom_theme_pack,
+              normalizeThemeTokenPack(
+                settingsRow.custom_theme_pack,
+              ),
             language:
               settingsRow.language,
             shortBreak:
