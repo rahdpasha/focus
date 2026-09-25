@@ -97,15 +97,10 @@ export default function RecordsPage({
         <section className="glass-panel records-empty">
           <Trophy size={24} />
           <h2>
-            Your records start with
-            the first completed
-            session.
+            Nothing to beat yet.
           </h2>
           <p>
-            FOCUS will preserve your
-            strongest days, weeks,
-            subjects and streaks as
-            your history grows.
+            Complete a focus session and FOCUS will begin preserving the days, weeks, subjects and streaks worth remembering.
           </p>
         </section>
       ) : (
@@ -155,8 +150,7 @@ export default function RecordsPage({
               </strong>
 
               <span>
-                Consecutive active
-                study days
+                Your longest run of active study days
               </span>
             </article>
 
@@ -192,12 +186,11 @@ export default function RecordsPage({
                   <Sparkles
                     size={15}
                   />
-                  Personal bests
+                  Performance archive
                 </div>
 
                 <h2>
-                  Your strongest
-                  study moments
+                  The work worth remembering
                 </h2>
               </div>
 
