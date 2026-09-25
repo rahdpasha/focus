@@ -404,7 +404,7 @@ export default function HistoryPage({
     <PageContainer>
       <PageHeader
         title={tr('Study History', 'مێژووی خوێندن')}
-        description="See how your study rhythm changes over time, then open any day to understand what happened."
+        description={tr('See how your study rhythm changes over time, then open any day to understand what happened.', 'ببینە ڕێتمی خوێندنت بە تێپەڕبوونی کات چۆن دەگۆڕێت، پاشان هەر ڕۆژێک بکەرەوە بۆ تێگەیشتن لەوەی چی ڕوویداوە.')}
       />
 
       <section className="history-overview">
@@ -454,7 +454,7 @@ export default function HistoryPage({
           <div className="history-calendar-head">
             <div>
               <div className="eyebrow">
-                Focus calendar
+                {tr('Focus calendar', 'ڕۆژژمێری سەرنج')}
               </div>
               <h2>
                 {monthLabel}
@@ -480,7 +480,7 @@ export default function HistoryPage({
                   jumpToday
                 }
               >
-                Today
+                {tr('Today', 'ئەمڕۆ')}
               </button>
 
               <button
@@ -587,7 +587,7 @@ export default function HistoryPage({
                         locale,
                       )}, ${durationLabel(
                         seconds,
-                      )}, ${daySessions.length} sessions`
+                      )}, ${daySessions.length} ${tr('sessions', 'سێشن')}`
                     }
                   >
                     <div className="history-day-top">
@@ -624,7 +624,7 @@ export default function HistoryPage({
                           {
                             daySessions.length
                           }{' '}
-                          session
+                          {tr('session', 'سێشن')}
                           {daySessions.length ===
                           1
                             ? ''
@@ -694,7 +694,7 @@ export default function HistoryPage({
           {selectedSessions.length ===
           0 ? (
             <div className="history-empty-state">
-              Nothing was recorded here. Choose another day or complete a focus session to add history.
+              {tr('Nothing was recorded here. Choose another day or complete a focus session to add history.', 'لێرە هیچ شتێک تۆمار نەکراوە. ڕۆژێکی تر هەڵبژێرە یان سێشنێکی سەرنج تەواو بکە بۆ زیادکردنی مێژوو.')}
             </div>
           ) : (
             <div className="history-session-list">
