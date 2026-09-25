@@ -58,26 +58,32 @@ interface FocusPageProps {
 const ambientOptions: Array<{
   value: AmbientSoundType
   label: string
+  labelKu: string
 }> = [
   {
     value: 'off',
     label: 'Off',
+    labelKu: 'کوژاوە',
   },
   {
     value: 'brown',
     label: 'Brown',
+    labelKu: 'براون',
   },
   {
     value: 'pink',
     label: 'Pink',
+    labelKu: 'پینک',
   },
   {
     value: 'white',
     label: 'White',
+    labelKu: 'وایت',
   },
   {
     value: 'binaural',
     label: 'Alpha',
+    labelKu: 'ئەلفا',
   },
 ]
 
@@ -454,7 +460,7 @@ export default function FocusPage({
                   {tr('Switch to', 'بگۆڕە بۆ')}{' '}
                   {advisor.action
                     .subjectName ??
-                    tr('recommended subject', 'بابەتی پێشنیارکراو')}
+                    tr(tr('recommended subject', 'بابەتی پێشنیارکراو'), 'بابەتی پێشنیارکراو')}
                 </button>
               )}
           </section>
