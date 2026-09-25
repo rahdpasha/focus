@@ -14,6 +14,9 @@ import type {
   StudySession,
   Subtask,
 } from '../types'
+import type {
+  RoutineSessionContext,
+} from '../storage/types'
 import {
   useI18n,
 } from '../useI18n'
@@ -42,6 +45,7 @@ interface FocusPageProps {
   soundVolume: number
   notificationsEnabled: boolean
   initialFocusMinutes?: number
+  routineContext?: RoutineSessionContext
   onAddSession: (
     session: StudySession,
   ) => void
@@ -89,6 +93,7 @@ export default function FocusPage({
   soundVolume,
   notificationsEnabled,
   initialFocusMinutes,
+  routineContext,
   onAddSession,
   onSelectSubject,
 }: FocusPageProps) {
@@ -306,6 +311,12 @@ export default function FocusPage({
                     0
                       ? subtasks
                       : undefined,
+                  routineItemId:
+                    routineContext
+                      ?.itemId,
+                  routineDate:
+                    routineContext
+                      ?.routineDate,
                 })
 
                 resetIntent()
