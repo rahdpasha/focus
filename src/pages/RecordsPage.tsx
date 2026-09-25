@@ -97,10 +97,10 @@ export default function RecordsPage({
         <section className="glass-panel records-empty">
           <Trophy size={24} />
           <h2>
-            Nothing to beat yet.
+            Your first record starts with one session.
           </h2>
           <p>
-            Complete a focus session and FOCUS will begin preserving the days, weeks, subjects and streaks worth remembering.
+            Complete a focus session and FOCUS will begin saving the days, weeks, subjects and streaks that become your personal bests.
           </p>
         </section>
       ) : (
