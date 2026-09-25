@@ -403,12 +403,10 @@ export default function Settings({
 
           <div>
             <h2>
-              Focus targets
+              {tr('Focus targets', 'ئامانجەکانی سەرنج')}
             </h2>
             <p>
-              Define your baseline
-              daily and weekly
-              commitment.
+              {tr('Define your baseline daily and weekly commitment.', 'بنەمای پابەندبوونی ڕۆژانە و هەفتانەت دیاری بکە.')}
             </p>
           </div>
         </div>
@@ -462,7 +460,7 @@ export default function Settings({
 
           <label className="settings-field">
             <span className="settings-label">
-              Weekly focus goal
+              {tr('Weekly focus goal', 'ئامانجی سەرنجی هەفتانە')}
             </span>
 
             <select
@@ -513,12 +511,10 @@ export default function Settings({
 
           <div>
             <h2>
-              Timer cycle
+              {tr('Timer cycle', 'خولی کاتژمێر')}
             </h2>
             <p>
-              Tune breaks without
-              changing your study
-              history.
+              {tr('Tune breaks without changing your study history.', 'پشوودانەکان ڕێکبخە بەبێ گۆڕینی مێژووی خوێندنت.')}
             </p>
           </div>
         </div>
@@ -580,7 +576,7 @@ export default function Settings({
 
           <label className="settings-field">
             <span className="settings-label">
-              Sessions / cycle
+              {tr('Sessions / cycle', 'سێشن / خول')}
             </span>
             <input
               type="number"
@@ -644,11 +640,10 @@ export default function Settings({
 
           <div>
             <h2>
-              Sound
+              {t('sound')}
             </h2>
             <p>
-              Control timer feedback
-              volume.
+              {tr('Control timer feedback volume.', 'قەبارەی دەنگی وەڵامدانەوەی کاتژمێر ڕێکبخە.')}
             </p>
           </div>
         </div>
@@ -728,12 +723,10 @@ export default function Settings({
 
           <div>
             <h2>
-              Notifications
+              {t('notifications')}
             </h2>
             <p>
-              Decide whether FOCUS
-              can alert you when a
-              timer changes state.
+              {tr('Decide whether FOCUS can alert you when a timer changes state.', 'دیاری بکە FOCUS کاتێک دۆخی کاتژمێر دەگۆڕێت ئاگادارت بکاتەوە یان نا.')}
             </p>
           </div>
         </div>
@@ -772,12 +765,10 @@ export default function Settings({
 
           <div>
             <h2>
-              Data & account
+              {tr('Data & account', 'داتا و هەژمار')}
             </h2>
             <p>
-              Keep a portable backup
-              and control the current
-              session.
+              {tr('Keep a portable backup and control the current session.', 'باکاپێکی گواستنەوەهەڵگر بپارێزە و هەژماری ئێستا کۆنترۆڵ بکە.')}
             </p>
           </div>
         </div>
@@ -785,7 +776,7 @@ export default function Settings({
         <div className="settings-data-row">
           <div className="settings-account-copy">
             <span>
-              Account
+              {tr('Account', 'هەژمار')}
             </span>
             <strong>
               {accountEmail ??
@@ -898,7 +889,7 @@ export default function Settings({
                 <LogOut
                   size={15}
                 />
-                Sign out
+                {tr('Sign out', 'چوونەدەرەوە')}
               </button>
             )}
           </div>
