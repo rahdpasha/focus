@@ -58,6 +58,13 @@ export function I18nProvider({
       t: (
         key: keyof typeof translations.en
       ) => translations[language][key],
+      tr: (
+        english: string,
+        kurdish: string,
+      ) =>
+        language === 'ku'
+          ? kurdish
+          : english,
     }),
     [language]
   )
