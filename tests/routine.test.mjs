@@ -355,3 +355,152 @@ test('expired recovery window becomes a real miss', () => {
   )
 })
 
+
+
+test('rotation advances only across scheduled rotation days', () => {
+  const rotationDays = [1, 3, 5]
+  const items = [
+    {
+      ...psychology,
+      daysOfWeek: rotationDays,
+      recoveryDays: 1,
+      createdAt: '2026-09-28T08:00:00.000Z',
+    },
+    {
+      ...history,
+      daysOfWeek: rotationDays,
+      recoveryDays: 1,
+      createdAt: '2026-09-28T08:00:00.000Z',
+    },
+    {
+      ...history,
+      id: 'rotation-philosophy',
+      title: 'Philosophy',
+      subjectId: 'philosophy',
+      rotationOrder: 2,
+      daysOfWeek: rotationDays,
+      recoveryDays: 1,
+      createdAt: '2026-09-28T08:00:00.000Z',
+    },
+  ]
+
+  const monday = new Date(2026, 8, 28, 12)
+  const tuesday = new Date(2026, 8, 29, 12)
+  const wednesday = new Date(2026, 8, 30, 12)
+  const friday = new Date(2026, 9, 2, 12)
+
+  assert.equal(getRotationItemForDate(items, monday)?.title, 'Psychology')
+  assert.equal(getRotationItemForDate(items, tuesday), null)
+  assert.equal(getRotationItemForDate(items, wednesday)?.title, 'History')
+  assert.equal(getRotationItemForDate(items, friday)?.title, 'Philosophy')
+})
+
+test('legacy routine items without schedule fields default to every day', () => {
+  const legacy = {
+    ...psychology,
+    createdAt: '2026-09-25T08:00:00.000Z',
+  }
+
+  assert.equal(
+    getRoutineItemsForDate([legacy], new Date(2026, 8, 26, 12))[0]?.id,
+    legacy.id,
+  )
+  assert.equal(
+    getRoutineItemsForDate([legacy], new Date(2026, 8, 27, 12))[0]?.id,
+    legacy.id,
+  )
+})
+
+test('recovery minutes stay attached to the original routine date', () => {
+  const item = {
+    ...fixed,
+    recoveryDays: 1,
+  }
+  const yesterday = new Date(2026, 8, 25, 12)
+  const today = new Date(2026, 8, 26, 12)
+  const recoverySession = {
+    id: 'recovery-isolated',
+    subjectId: 'cs',
+    subjectName: 'CS',
+    subjectColor: '#111111',
+    duration: 25 * 60,
+    actualDuration: 25 * 60,
+    completedAt: new Date(2026, 8, 26, 10),
+    completed: true,
+    interruptions: 0,
+    totalPausedSeconds: 0,
+    routineItemId: item.id,
+    routineDate: '2026-09-25',
+  }
+
+  assert.equal(getRoutineMinutesForDate(item, [recoverySession], yesterday), 25)
+  assert.equal(getRoutineMinutesForDate(item, [recoverySession], today), 0)
+  assert.equal(
+    getRoutineStatus(item, [item], [recoverySession], yesterday, today),
+    'recovered',
+  )
+  assert.equal(
+    getRoutineStatus(item, [item], [recoverySession], today, today),
+    'pending',
+  )
+})
+
+test('streaks skip off days and include recovered successful days', () => {
+  const item = {
+    ...fixed,
+    daysOfWeek: [1, 3, 5],
+    recoveryDays: 2,
+    createdAt: '2026-09-28T08:00:00.000Z',
+  }
+
+  const sessions = [
+    {
+      id: 'monday',
+      subjectId: 'cs',
+      subjectName: 'CS',
+      subjectColor: '#111111',
+      duration: 25 * 60,
+      actualDuration: 25 * 60,
+      completedAt: new Date(2026, 8, 28, 10),
+      completed: true,
+      interruptions: 0,
+      totalPausedSeconds: 0,
+    },
+    {
+      id: 'wednesday-recovery',
+      subjectId: 'cs',
+      subjectName: 'CS',
+      subjectColor: '#111111',
+      duration: 25 * 60,
+      actualDuration: 25 * 60,
+      completedAt: new Date(2026, 9, 1, 10),
+      completed: true,
+      interruptions: 0,
+      totalPausedSeconds: 0,
+      routineItemId: item.id,
+      routineDate: '2026-09-30',
+    },
+    {
+      id: 'friday',
+      subjectId: 'cs',
+      subjectName: 'CS',
+      subjectColor: '#111111',
+      duration: 25 * 60,
+      actualDuration: 25 * 60,
+      completedAt: new Date(2026, 9, 2, 10),
+      completed: true,
+      interruptions: 0,
+      totalPausedSeconds: 0,
+    },
+  ]
+
+  const streak = getRoutineStreakStats(
+    [item],
+    sessions,
+    new Date(2026, 9, 2, 12),
+  )
+
+  assert.equal(streak.current, 3)
+  assert.equal(streak.best, 3)
+  assert.equal(streak.recovered, 1)
+})
