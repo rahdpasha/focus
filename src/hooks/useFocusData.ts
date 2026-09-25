@@ -1017,10 +1017,19 @@ export function useFocusData(
   }
 
   const addSession = (session: StudySession) => {
-    setSessions((previous) => [
+    const nextSessions = [
       session,
-      ...previous,
-    ])
+      ...latestLocalSnapshot.current.sessions,
+    ]
+    const nextSnapshot = {
+      ...latestLocalSnapshot.current,
+      sessions: nextSessions,
+    }
+
+    latestLocalSnapshot.current =
+      nextSnapshot
+    setSessions(nextSessions)
+
     recordPendingMutation(
       (mutations) => {
         addOfflineMutationId(
@@ -1029,6 +1038,25 @@ export function useFocusData(
         )
       },
     )
+
+    if (
+      authSession &&
+      cloudHydrated.current &&
+      typeof navigator !== "undefined" &&
+      navigator.onLine
+    ) {
+      if (cloudSaveTimer.current) {
+        clearTimeout(
+          cloudSaveTimer.current,
+        )
+        cloudSaveTimer.current = null
+      }
+
+      queuedCloudSnapshot.current =
+        nextSnapshot
+      setCloudStatus("saving")
+      void flushCloudSaveQueue()
+    }
   }
 
   const deleteSession = (id: string) => {
