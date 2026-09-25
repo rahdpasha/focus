@@ -321,7 +321,7 @@ export default function LeaguePage({
     <PageContainer>
       <PageHeader
         title="FOCUS League"
-        description="Consistency wins. Study at least 60 focused minutes in a day to earn 3 points."
+        description="Consistency wins. Study at least 60 focused minutes in a day to earn 3 points. Ties are broken by total focused minutes."
       />
 
       <div className="league-layout">
@@ -383,12 +383,14 @@ export default function LeaguePage({
                 >
                   Every successful study
                   day is worth exactly 3
-                  points. Weekly standings
-                  reset every Monday and
-                  monthly standings reset
-                  on the first day, while
-                  previous winners remain
-                  available.
+                  points. If points are
+                  tied, the learner with
+                  more focused minutes
+                  ranks higher. Weekly
+                  standings reset every
+                  Monday and monthly
+                  standings reset on the
+                  first day.
                 </div>
               </div>
 
@@ -537,7 +539,9 @@ export default function LeaguePage({
                       {
                         entry.completedDays
                       }{' '}
-                      winning days
+                      winning days · {
+                        entry.totalMinutes
+                      }m
                     </div>
                   </div>
                 ),
@@ -679,7 +683,9 @@ export default function LeaguePage({
                             entry.completedDays
                           }{' '}
                           successful
-                          days
+                          days · {
+                            entry.totalMinutes
+                          }m focused
                         </div>
                       </div>
 
@@ -801,9 +807,10 @@ export default function LeaguePage({
               <span>
                 Join public
                 standings. Only your
-                public name, score and
+                public name, score,
                 successful-day count
-                are shown. Your email,
+                and aggregate focused
+                minutes are shown. Your email,
                 subjects, session
                 notes and study
                 history stay private.
