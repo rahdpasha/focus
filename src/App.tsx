@@ -40,10 +40,10 @@ function App() {
           placeItems: 'center',
           background: 'var(--void-bg)',
           color: 'var(--text-secondary)',
-          fontFamily: 'Orbitron, sans-serif',
+          fontFamily: 'Space Grotesk, sans-serif',
         }}
       >
-        LOADING FOCUS...
+        Preparing FOCUS…
       </div>
     )
   }
@@ -314,7 +314,10 @@ function AuthenticatedApp({
 
       {page === 'statistics' && (
         <PageContainer>
-          <PageHeader title={t('statistics')} />
+          <PageHeader
+            title={t('statistics')}
+            description="Understand your focus rhythm, consistency, and strongest patterns without the noise."
+          />
 
           <Suspense
             fallback={
@@ -348,7 +351,10 @@ function AuthenticatedApp({
 
       {page === 'settings' && (
         <PageContainer>
-          <PageHeader title={t('settings')} />
+          <PageHeader
+            title={t('settings')}
+            description="Shape how FOCUS looks, feels, syncs, and supports your daily work."
+          />
 
           <Settings
             settings={data.settings}
