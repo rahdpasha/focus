@@ -7,14 +7,14 @@ Checked items below were actually verified during V3 hardening. Re-run the autom
 ## Automated gates
 
 - [x] GitHub **Quality** passes: install, lint, V3 regression tests, client-secret guard, migration-version guard and build.
-- [ ] Latest Vercel preview deployment is **READY**. Current blocker: Vercel free-plan daily deployment limit (`api-deployments-free-per-day`), not an application build failure.
-- [ ] Re-run the Vercel runtime error check on the latest preview after the deployment limit clears.
+- [ ] Latest Vercel preview deployment is **READY**. Current blocker: Vercel free-plan daily deployment limit (`api-deployments-free-per-day`), not an application build failure. The most recent successful preview (`642d7d3`) is READY and its Vercel build log has no build errors.
+- [ ] Re-run the Vercel runtime error check on the latest preview after the deployment limit clears. Project-level Vercel runtime errors currently show none in the last 24 hours.
 - [x] Supabase migrations through `custom_theme_pack_persistence` are applied.
 - [x] Repository migration versions match live Supabase migration history exactly; baseline migrations are recorded remotely and the fresh-schema chain includes client IDs and realtime publication setup.
 - [x] Supabase `study-advisor` Edge Function is ACTIVE with JWT verification enabled.
 - [x] Supabase Security Advisor findings have been reviewed.
-- [x] All user-facing data tables have RLS enabled.
-- [x] Authenticated cross-user RLS probe confirmed all 8 user-facing tables hide rows owned by other accounts.
+- [x] All 9 user-facing data tables, including `routine_items`, have RLS enabled.
+- [x] Authenticated cross-user RLS probe confirmed all 9 user-facing tables hide rows owned by other accounts.
 - [x] League helper/trigger SECURITY DEFINER functions are not client-executable; only the two intentional authenticated League RPCs remain callable.
 - [x] SECURITY DEFINER search paths are pinned to `pg_catalog, public`, including the legacy auth profile trigger helper.
 
