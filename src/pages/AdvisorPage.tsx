@@ -144,12 +144,7 @@ export default function AdvisorPage({
           className="glass-panel advisor-hero"
           aria-busy={loading}
         >
-          <div
-            style={{
-              position: 'relative',
-              zIndex: 1,
-            }}
-          >
+          <div className="advisor-v5-main">
             <div className="focus-pulse-kicker">
               <BrainCircuit
                 size={16}
@@ -157,38 +152,12 @@ export default function AdvisorPage({
               Study intelligence
             </div>
 
-            <h2
-              style={{
-                margin:
-                  '12px 0 8px',
-                fontSize:
-                  'clamp(22px, 3vw, 34px)',
-                color:
-                  'var(--text-primary)',
-                lineHeight: 1.15,
-              }}
-            >
-              Ask about your actual
-              study behavior.
+            <h2>
+              Ask about the pattern behind your study.
             </h2>
 
-            <p
-              style={{
-                margin: 0,
-                maxWidth:
-                  '720px',
-                color:
-                  'var(--text-secondary)',
-                fontSize:
-                  '13px',
-                lineHeight: 1.65,
-              }}
-            >
-              FOCUS calculates the
-              facts first. AI only
-              interprets those facts;
-              it does not invent your
-              statistics.
+            <p className="advisor-v5-intro">
+              FOCUS calculates your study facts first. AI interprets that evidence and turns it into one useful next action.
             </p>
 
             <div className="advisor-form">
@@ -237,22 +206,15 @@ export default function AdvisorPage({
                 }
               >
                 {loading
-                  ? 'ANALYZING...'
-                  : 'ASK FOCUS'}
+                  ? 'Analyzing…'
+                  : 'Ask FOCUS'}
               </button>
             </div>
 
             {error && (
               <div
                 role="alert"
-                style={{
-                  marginTop:
-                    '14px',
-                  color:
-                    'var(--danger)',
-                  fontSize:
-                    '12px',
-                }}
+                className="advisor-v5-error"
               >
                 {error}
               </div>
@@ -265,26 +227,11 @@ export default function AdvisorPage({
                 aria-live="polite"
               >
                 <div
-                  style={{
-                    display:
-                      'flex',
-                    alignItems:
-                      'center',
-                    gap: '8px',
-                    color:
-                      response.source ===
-                      'ai'
-                        ? 'var(--primary-glow)'
-                        : 'var(--energy)',
-                    fontSize:
-                      '10px',
-                    fontWeight:
-                      700,
-                    textTransform:
-                      'uppercase',
-                    letterSpacing:
-                      '0.08em',
-                  }}
+                  className={
+                    response.source === 'ai'
+                      ? 'advisor-v5-source ai'
+                      : 'advisor-v5-source local'
+                  }
                 >
                   <Sparkles
                     size={14}
@@ -349,31 +296,9 @@ export default function AdvisorPage({
           </div>
         </section>
 
-        <aside
-          style={{
-            display: 'grid',
-            gap: '16px',
-          }}
-        >
-          <div
-            className="glass-panel"
-            style={{
-              padding: '20px',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems:
-                  'center',
-                gap: '8px',
-                color:
-                  'var(--text-primary)',
-                fontWeight: 700,
-                marginBottom:
-                  '14px',
-              }}
-            >
+        <aside className="advisor-v5-side">
+          <div className="glass-panel advisor-v5-facts-card">
+            <div className="advisor-v5-facts-title">
               <LockKeyhole
                 size={17}
               />
@@ -476,17 +401,7 @@ export default function AdvisorPage({
               </div>
             </div>
 
-            <p
-              style={{
-                margin:
-                  '14px 0 0',
-                color:
-                  'var(--text-muted)',
-                fontSize:
-                  '10px',
-                lineHeight: 1.55,
-              }}
-            >
+            <p className="advisor-v5-privacy">
               Raw session notes are
               not sent. The advisor
               receives summarized
