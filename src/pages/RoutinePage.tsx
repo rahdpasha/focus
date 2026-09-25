@@ -484,7 +484,7 @@ export default function RoutinePage({
                   fontSize: '18px',
                 }}
               >
-                {todayDone}/{todaysItems.length}
+                {completedToday}/{todaysItems.length}
               </strong>
             </div>
 
