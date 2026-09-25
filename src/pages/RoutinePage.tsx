@@ -98,6 +98,23 @@ function dayRuleLabel(
     return 'Every day'
   }
 
+  if (
+    normalized.length === 5 &&
+    [1, 2, 3, 4, 5].every(
+      (day) => normalized.includes(day),
+    )
+  ) {
+    return 'Weekdays'
+  }
+
+  if (
+    normalized.length === 2 &&
+    normalized.includes(0) &&
+    normalized.includes(6)
+  ) {
+    return 'Weekends'
+  }
+
   return normalized
     .map(
       (day) =>
@@ -442,6 +459,32 @@ export default function RoutinePage({
                 }}
               >
                 {streak.best}d
+              </strong>
+            </div>
+
+            <div
+              style={{
+                padding: '12px',
+                border:
+                  '1px solid var(--void-border)',
+                borderRadius:
+                  '11px',
+                background:
+                  'var(--void-surface-hover)',
+              }}
+            >
+              <div className="eyebrow">
+                Today completed
+              </div>
+              <strong
+                className="mono"
+                style={{
+                  display: 'block',
+                  marginTop: '6px',
+                  fontSize: '18px',
+                }}
+              >
+                {todayDone}/{todaysItems.length}
               </strong>
             </div>
 
@@ -1098,7 +1141,89 @@ export default function RoutinePage({
                 marginRight: '4px',
               }}
             >
-              Days
+              Schedule
+            </span>
+
+            {[
+              {
+                label: 'Every day',
+                days: [0, 1, 2, 3, 4, 5, 6],
+              },
+              {
+                label: 'Weekdays',
+                days: [1, 2, 3, 4, 5],
+              },
+              {
+                label: 'Weekends',
+                days: [0, 6],
+              },
+            ].map((preset) => {
+              const active =
+                preset.days.length ===
+                  daysOfWeek.length &&
+                preset.days.every((day) =>
+                  daysOfWeek.includes(day),
+                )
+
+              return (
+                <button
+                  key={preset.label}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() =>
+                    setDaysOfWeek(
+                      preset.days,
+                    )
+                  }
+                  style={{
+                    minHeight: '34px',
+                    padding: '0 10px',
+                    borderRadius: '9px',
+                    border: active
+                      ? '1px solid var(--primary-border)'
+                      : '1px solid var(--void-border)',
+                    background: active
+                      ? 'var(--primary-soft)'
+                      : 'var(--void-surface-hover)',
+                    color: active
+                      ? 'var(--primary-glow)'
+                      : 'var(--text-muted)',
+                  }}
+                >
+                  {preset.label}
+                </button>
+              )
+            })}
+
+            <span
+              style={{
+                color:
+                  'var(--text-muted)',
+                fontSize: '11px',
+              }}
+            >
+              {dayRuleLabel(daysOfWeek)}
+            </span>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '6px',
+              marginTop: '8px',
+              alignItems: 'center',
+            }}
+          >
+            <span
+              style={{
+                color:
+                  'var(--text-muted)',
+                fontSize: '11px',
+                marginRight: '4px',
+              }}
+            >
+              Custom days
             </span>
 
             {WEEKDAYS.map(
