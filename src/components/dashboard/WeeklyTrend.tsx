@@ -47,7 +47,8 @@ interface HourTooltipProps {
 }
 
 function formatDuration(
-  seconds: number
+  seconds: number,
+  language: 'en' | 'ku',
 ): string {
   const totalMinutes =
     Math.floor(seconds / 60)
@@ -63,25 +64,36 @@ function formatDuration(
 
   if (hours > 0) {
     if (minutes > 0) {
-      return `${hours}h ${minutes}m`
+      return language === 'ku'
+        ? `${hours} کاتژمێر ${minutes} خولەک`
+        : `${hours}h ${minutes}m`
     }
 
-    return `${hours}h`
+    return language === 'ku'
+      ? `${hours} کاتژمێر`
+      : `${hours}h`
   }
 
   if (minutes > 0) {
     if (remainingSeconds > 0) {
-      return `${minutes}m ${remainingSeconds}s`
+      return language === 'ku'
+        ? `${minutes} خولەک ${remainingSeconds} چرکە`
+        : `${minutes}m ${remainingSeconds}s`
     }
 
-    return `${minutes}m`
+    return language === 'ku'
+      ? `${minutes} خولەک`
+      : `${minutes}m`
   }
 
-  return `${remainingSeconds}s`
+  return language === 'ku'
+    ? `${remainingSeconds} چرکە`
+    : `${remainingSeconds}s`
 }
 
 function formatAxisDuration(
-  seconds: number
+  seconds: number,
+  language: 'en' | 'ku',
 ): string {
   const totalMinutes =
     Math.round(seconds / 60)
@@ -93,11 +105,19 @@ function formatAxisDuration(
     totalMinutes % 60
 
   if (hours === 0) {
-    return `${minutes}m`
+    return language === 'ku'
+      ? `${minutes} خولەک`
+      : `${minutes}m`
   }
 
-  return minutes > 0
-    ? `${hours}h ${minutes}m`
+  if (minutes > 0) {
+    return language === 'ku'
+      ? `${hours} کاتژمێر ${minutes} خولەک`
+      : `${hours}h ${minutes}m`
+  }
+
+  return language === 'ku'
+    ? `${hours} کاتژمێر`
     : `${hours}h`
 }
 
@@ -105,6 +125,7 @@ function buildDays(
   sessions: StudySession[],
   dayNames: string[],
   todayLabel: string,
+  locale: string,
 ): DayPoint[] {
   const now = new Date()
   const days: DayPoint[] = []
@@ -166,7 +187,7 @@ function buildDays(
             ],
       dateLabel:
         start.toLocaleDateString(
-          undefined,
+          locale,
           {
             weekday: 'long',
             month: 'short',
@@ -252,7 +273,7 @@ function DayTooltip({
   active,
   payload,
 }: TooltipProps) {
-  const { tr } = useI18n()
+  const { language, tr } = useI18n()
   if (
     !active ||
     !payload ||
@@ -272,7 +293,7 @@ function DayTooltip({
     <div className="focus-chart-tooltip focus-chart-tooltip-wide">
       <span>{point.dateLabel}</span>
       <strong className="mono">
-        {formatDuration(point.seconds)}
+        {formatDuration(point.seconds, language)}
       </strong>
       <small>
         {point.sessions}{' '}
@@ -286,6 +307,7 @@ function HourTooltip({
   active,
   payload,
 }: HourTooltipProps) {
+  const { language } = useI18n()
   if (
     !active ||
     !payload ||
@@ -319,7 +341,7 @@ function HourTooltip({
 export default function WeeklyTrend({
   sessions,
 }: WeeklyTrendProps) {
-  const { t, tr } = useI18n()
+  const { language, t, tr } = useI18n()
 
   const data = useMemo(() => {
     const dayNames = [
@@ -336,8 +358,11 @@ export default function WeeklyTrend({
       sessions,
       dayNames,
       t('today'),
+      language === 'ku'
+        ? 'ku-IQ'
+        : 'en-US',
     )
-  }, [sessions, t])
+  }, [language, sessions, t])
 
   const hourlyData = useMemo(
     () =>
@@ -399,14 +424,14 @@ export default function WeeklyTrend({
         <div className="dashboard-insight-summary">
           <div>
             <span>{tr('Total', 'کۆی گشتی')}</span>
-            <strong className="mono">{formatDuration(totalSeconds)}</strong>
+            <strong className="mono">{formatDuration(totalSeconds, language)}</strong>
           </div>
 
           <div>
             <span>{tr('Peak day', 'بەهێزترین ڕۆژ')}</span>
             <strong className="mono">
               {peakDay
-                ? `${peakDay.day} · ${formatDuration(peakDay.seconds)}`
+                ? `${peakDay.day} · ${formatDuration(peakDay.seconds, language)}`
                 : '—'}
             </strong>
           </div>
@@ -511,8 +536,11 @@ export default function WeeklyTrend({
                     'var(--text-muted)',
                   fontSize: 10,
                 }}
-                tickFormatter={
-                  formatAxisDuration
+                tickFormatter={(value: number) =>
+                  formatAxisDuration(
+                    value,
+                    language,
+                  )
                 }
                 width={60}
               />
@@ -669,7 +697,7 @@ export default function WeeklyTrend({
           <div className="weekly-trend-v5-footer">
             <div>
               <span>{tr('Daily average', 'ناوەندی ڕۆژانە')}</span>
-              <strong className="mono">{formatDuration(averageSeconds)}</strong>
+              <strong className="mono">{formatDuration(averageSeconds, language)}</strong>
             </div>
 
             <p>{tr('Hover any day or hour for exact recorded time.', 'لەسەر هەر ڕۆژ یان کاتژمێرێک بوەستە بۆ بینینی کاتی ورد.')}</p>
