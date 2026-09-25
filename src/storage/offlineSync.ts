@@ -8,9 +8,11 @@ export interface OfflineMutationState {
   subjectIds: string[]
   sessionIds: string[]
   advancedGoalIds: string[]
+  routineItemIds: string[]
   deletedSubjectIds: string[]
   deletedSessionIds: string[]
   deletedAdvancedGoalIds: string[]
+  deletedRoutineItemIds: string[]
   settingsKeys: Array<keyof AppSettings>
   weeklyHistoryKeys: string[]
   dailyGoal: boolean
@@ -23,9 +25,11 @@ export function createOfflineMutationState(): OfflineMutationState {
     subjectIds: [],
     sessionIds: [],
     advancedGoalIds: [],
+    routineItemIds: [],
     deletedSubjectIds: [],
     deletedSessionIds: [],
     deletedAdvancedGoalIds: [],
+    deletedRoutineItemIds: [],
     settingsKeys: [],
     weeklyHistoryKeys: [],
     dailyGoal: false,
@@ -43,6 +47,9 @@ export function cloneOfflineMutationState(
     advancedGoalIds: [
       ...state.advancedGoalIds,
     ],
+    routineItemIds: [
+      ...state.routineItemIds,
+    ],
     deletedSubjectIds: [
       ...state.deletedSubjectIds,
     ],
@@ -51,6 +58,9 @@ export function cloneOfflineMutationState(
     ],
     deletedAdvancedGoalIds: [
       ...state.deletedAdvancedGoalIds,
+    ],
+    deletedRoutineItemIds: [
+      ...state.deletedRoutineItemIds,
     ],
     settingsKeys: [
       ...state.settingsKeys,
@@ -75,9 +85,11 @@ export function hasOfflineMutations(
     state.subjectIds.length > 0 ||
     state.sessionIds.length > 0 ||
     state.advancedGoalIds.length > 0 ||
+    state.routineItemIds.length > 0 ||
     state.deletedSubjectIds.length > 0 ||
     state.deletedSessionIds.length > 0 ||
     state.deletedAdvancedGoalIds.length > 0 ||
+    state.deletedRoutineItemIds.length > 0 ||
     state.settingsKeys.length > 0 ||
     state.weeklyHistoryKeys.length > 0
   )
@@ -172,6 +184,10 @@ export function loadOfflineMutationState(
         stringArray(
           value.advancedGoalIds,
         ),
+      routineItemIds:
+        stringArray(
+          value.routineItemIds,
+        ),
       deletedSubjectIds:
         stringArray(
           value.deletedSubjectIds,
@@ -183,6 +199,10 @@ export function loadOfflineMutationState(
       deletedAdvancedGoalIds:
         stringArray(
           value.deletedAdvancedGoalIds,
+        ),
+      deletedRoutineItemIds:
+        stringArray(
+          value.deletedRoutineItemIds,
         ),
       settingsKeys,
       weeklyHistoryKeys:
@@ -295,6 +315,10 @@ export function mergeOfflineMutations(
   const deletedAdvancedGoalIds =
     new Set(
       changes.deletedAdvancedGoalIds,
+    )
+  const deletedRoutineItemIds =
+    new Set(
+      changes.deletedRoutineItemIds,
     )
 
   const cloudSubjectByName =
@@ -447,6 +471,33 @@ export function mergeOfflineMutations(
         ),
     )
 
+  const routineItems =
+    mergeById(
+      cloud.routineItems,
+      local.routineItems.map(
+        (item) => {
+          const mappedSubjectId =
+            subjectIdAliases.get(
+              item.subjectId,
+            )
+
+          return mappedSubjectId
+            ? {
+                ...item,
+                subjectId:
+                  mappedSubjectId,
+              }
+            : item
+        },
+      ),
+      changes.routineItemIds,
+    ).filter(
+      (item) =>
+        !deletedRoutineItemIds.has(
+          item.id,
+        ),
+    )
+
   const settings: AppSettings = {
     ...cloud.settings,
   }
@@ -516,6 +567,7 @@ export function mergeOfflineMutations(
     subjects,
     sessions,
     advancedGoals,
+    routineItems,
     activeSubjectId,
     dailyGoal:
       changes.dailyGoal
