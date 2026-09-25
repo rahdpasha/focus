@@ -48,34 +48,64 @@ interface SubjectPulse {
   sessions: number
 }
 
-function formatMinutesHuman(minutes: number): string {
+function formatMinutesHuman(
+  minutes: number,
+  language: 'en' | 'ku',
+): string {
   const hours = Math.floor(minutes / 60)
   const remaining = minutes % 60
 
   if (hours > 0) {
-    return remaining > 0 ? `${hours}h ${remaining}m` : `${hours}h`
+    if (remaining > 0) {
+      return language === 'ku'
+        ? `${hours} کاتژمێر ${remaining} خولەک`
+        : `${hours}h ${remaining}m`
+    }
+
+    return language === 'ku'
+      ? `${hours} کاتژمێر`
+      : `${hours}h`
   }
 
-  return `${minutes}m`
+  return language === 'ku'
+    ? `${minutes} خولەک`
+    : `${minutes}m`
 }
 
-function formatDuration(seconds: number): string {
+function formatDuration(
+  seconds: number,
+  language: 'en' | 'ku',
+): string {
   const safeSeconds = Math.max(0, Math.round(seconds))
   const hours = Math.floor(safeSeconds / 3600)
   const minutes = Math.floor((safeSeconds % 3600) / 60)
   const remainingSeconds = safeSeconds % 60
 
   if (hours > 0) {
-    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
+    if (minutes > 0) {
+      return language === 'ku'
+        ? `${hours} کاتژمێر ${minutes} خولەک`
+        : `${hours}h ${minutes}m`
+    }
+
+    return language === 'ku'
+      ? `${hours} کاتژمێر`
+      : `${hours}h`
   }
 
   if (minutes > 0) {
     return remainingSeconds > 0
-      ? `${minutes}m ${remainingSeconds}s`
-      : `${minutes}m`
+      ? language === 'ku'
+        ? `${minutes} خولەک ${remainingSeconds} چرکە`
+        : `${minutes}m ${remainingSeconds}s`
+      : language === 'ku'
+        ? `${minutes} خولەک`
+        : `${minutes}m`
   }
 
-  return `${remainingSeconds}s`
+  return language === 'ku'
+    ? `${remainingSeconds} چرکە`
+    : `${remainingSeconds}s`
 }
 
 function formatWeekLabel(
@@ -275,7 +305,7 @@ export default function Statistics({
         <div className="stats-v4-orb">
           <div className="stats-v4-orb-ring">
             <span>{tr('This week', 'ئەم هەفتەیە')}</span>
-            <strong>{formatDuration(overview.weekFocusSeconds)}</strong>
+            <strong>{formatDuration(overview.weekFocusSeconds, language)}</strong>
             <small>{weeklyProgress}% {tr('of target', 'لە ئامانج')}</small>
           </div>
         </div>
@@ -287,7 +317,7 @@ export default function Statistics({
             <Zap size={17} />
           </div>
           <span>{t('today')}</span>
-          <strong>{formatDuration(overview.todayFocusSeconds)}</strong>
+          <strong>{formatDuration(overview.todayFocusSeconds, language)}</strong>
           <small>{tr('focused today', 'سەرنجی ئەمڕۆ')}</small>
         </article>
 
@@ -296,7 +326,7 @@ export default function Statistics({
             <CalendarDays size={17} />
           </div>
           <span>{t('last7Days')}</span>
-          <strong>{formatDuration(overview.weekFocusSeconds)}</strong>
+          <strong>{formatDuration(overview.weekFocusSeconds, language)}</strong>
           <small>{activeDays} {tr('active days', 'ڕۆژی چالاک')}</small>
         </article>
 
@@ -305,7 +335,7 @@ export default function Statistics({
             <Clock3 size={17} />
           </div>
           <span>{t('totalFocus')}</span>
-          <strong>{formatDuration(overview.totalFocusSeconds)}</strong>
+          <strong>{formatDuration(overview.totalFocusSeconds, language)}</strong>
           <small>{tr('all recorded focus', 'هەموو سەرنجی تۆمارکراو')}</small>
         </article>
 
@@ -323,7 +353,7 @@ export default function Statistics({
             <Gauge size={17} />
           </div>
           <span>{t('avgSession')}</span>
-          <strong>{formatDuration(overview.averageSessionSeconds)}</strong>
+          <strong>{formatDuration(overview.averageSessionSeconds, language)}</strong>
           <small>{tr('average depth', 'ناوەندی قووڵی')}</small>
         </article>
 
@@ -332,7 +362,7 @@ export default function Statistics({
             <TimerReset size={17} />
           </div>
           <span>{t('longest')}</span>
-          <strong>{formatDuration(overview.longestSessionSeconds)}</strong>
+          <strong>{formatDuration(overview.longestSessionSeconds, language)}</strong>
           <small>{tr('longest session', 'درێژترین سێشن')}</small>
         </article>
       </section>
@@ -367,11 +397,13 @@ export default function Statistics({
               <article
                 key={day.key}
                 className={day.seconds > 0 ? 'active' : ''}
-                title={`${day.label}: ${formatDuration(day.seconds)}`}
+                title={`${day.label}: ${formatDuration(day.seconds, language)}`}
               >
                 <div className="stats-v4-day-top">
                   <span>{day.shortLabel}</span>
-                  <small>{day.sessions}x</small>
+                  <small>
+                    {day.sessions}{language === 'ku' ? ' سێشن' : 'x'}
+                  </small>
                 </div>
 
                 <div className="stats-v4-signal-track">
@@ -381,7 +413,7 @@ export default function Statistics({
                   />
                 </div>
 
-                <strong>{formatDuration(day.seconds)}</strong>
+                <strong>{formatDuration(day.seconds, language)}</strong>
               </article>
             )
           })}
@@ -398,7 +430,13 @@ export default function Statistics({
 
             <div className="stats-v4-head-stat">
               <span>{tr('Target', 'ئامانج')}</span>
-              <strong>{weeklyGoal}m / {tr('week', 'هەفتە')}</strong>
+              <strong>
+                {weeklyGoal}
+                {language === 'ku'
+                  ? ' خولەک / '
+                  : 'm / '}
+                {tr('week', 'هەفتە')}
+              </strong>
             </div>
           </div>
 
@@ -418,7 +456,7 @@ export default function Statistics({
                       )}
                     </span>
                     <strong>
-                      {formatMinutesHuman(item.completedMinutes)}
+                      {formatMinutesHuman(item.completedMinutes, language)}
                     </strong>
                   </div>
 
@@ -467,7 +505,7 @@ export default function Statistics({
                       <strong>{subject.name}</strong>
                       <span>
                         {subject.sessions} {tr('sessions', 'سێشن')} ·{' '}
-                        {formatDuration(subject.seconds)}
+                        {formatDuration(subject.seconds, language)}
                       </span>
                     </div>
 
@@ -508,7 +546,7 @@ export default function Statistics({
             <Medal size={20} />
             <span>{tr('Longest session', 'درێژترین سێشن')}</span>
             <strong>
-              {formatDuration(personalRecords.longestSessionSeconds)}
+              {formatDuration(personalRecords.longestSessionSeconds, language)}
             </strong>
             <small>{tr('deepest single focus block', 'قووڵترین بڵۆکی تاکە سەرنج')}</small>
           </article>
@@ -517,7 +555,7 @@ export default function Statistics({
             <Sparkles size={18} />
             <span>{tr('Best day', 'باشترین ڕۆژ')}</span>
             <strong>
-              {formatMinutesHuman(personalRecords.bestDayMinutes)}
+              {formatMinutesHuman(personalRecords.bestDayMinutes, language)}
             </strong>
             <small>{tr('highest daily output', 'زۆرترین ئەنجامی ڕۆژانە')}</small>
           </article>
@@ -526,7 +564,7 @@ export default function Statistics({
             <Flame size={18} />
             <span>{tr('Best week', 'باشترین هەفتە')}</span>
             <strong>
-              {formatMinutesHuman(personalRecords.bestWeekMinutes)}
+              {formatMinutesHuman(personalRecords.bestWeekMinutes, language)}
             </strong>
             <small>{tr('strongest seven-day run', 'بەهێزترین ٧ ڕۆژ')}</small>
           </article>
@@ -538,7 +576,7 @@ export default function Statistics({
               {personalRecords.bestSubjectName ?? '—'}
             </strong>
             <small>
-              {formatMinutesHuman(personalRecords.bestSubjectMinutes)}
+              {formatMinutesHuman(personalRecords.bestSubjectMinutes, language)}
             </small>
           </article>
         </div>
