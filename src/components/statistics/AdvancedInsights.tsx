@@ -12,6 +12,7 @@ import type {
 import {
   getAdvancedAnalytics,
 } from '../../utils/advancedAnalytics'
+import { useI18n } from '../../useI18n'
 
 interface AdvancedInsightsProps {
   sessions: StudySession[]
@@ -28,6 +29,7 @@ function signedPercent(
 export default function AdvancedInsights({
   sessions,
 }: AdvancedInsightsProps) {
+  const { tr } = useI18n()
   const analytics =
     getAdvancedAnalytics(
       sessions,
@@ -41,7 +43,7 @@ export default function AdvancedInsights({
             <BrainCircuit
               size={15}
             />
-            Advanced analytics
+            {tr('Advanced analytics', 'شیکردنەوەی پێشکەوتوو')}
           </div>
 
           <h2>
@@ -51,15 +53,13 @@ export default function AdvancedInsights({
           </h2>
 
           <p>
-            Last 30 days for quality
-            signals · last 7 days for
-            momentum.
+            {tr('Last 30 days for quality signals · last 7 days for momentum.', '٣٠ ڕۆژی ڕابردوو بۆ نیشانەکانی کوالێتی · ٧ ڕۆژی ڕابردوو بۆ هێزی بەردەوامی.')}
           </p>
         </div>
 
         <div className="quality-orb">
           <span>
-            Focus quality
+            {tr('Focus quality', 'کوالێتی سەرنج')}
           </span>
           <strong>
             {
@@ -78,7 +78,7 @@ export default function AdvancedInsights({
         <article className="analytics-v3-card">
           <div>
             <Activity size={16} />
-            Momentum
+            {tr('Momentum', 'هێزی بەردەوامی')}
           </div>
           <strong>
             {signedPercent(
@@ -86,8 +86,8 @@ export default function AdvancedInsights({
             )}
           </strong>
           <span>
-            {analytics.current7Minutes}m
-            this 7d vs{' '}
+            {analytics.current7Minutes}m{' '}
+            {tr('this 7d vs', 'ئەم ٧ ڕۆژە بەراورد بە')}{' '}
             {analytics.previous7Minutes}m
           </span>
         </article>
@@ -97,7 +97,7 @@ export default function AdvancedInsights({
             <CalendarCheck2
               size={16}
             />
-            Active days
+            {tr('Active days', 'ڕۆژە چالاکەکان')}
           </div>
           <strong>
             {
@@ -106,7 +106,7 @@ export default function AdvancedInsights({
             /7
           </strong>
           <span>
-            Previous 7d:{' '}
+            {tr('Previous 7d', '٧ ڕۆژی پێشوو')}: {' '}
             {
               analytics.previous7ActiveDays
             }
@@ -118,7 +118,7 @@ export default function AdvancedInsights({
             <CheckCircle2
               size={16}
             />
-            Completion
+            {tr('Completion', 'تەواوکردن')}
           </div>
           <strong>
             {
@@ -127,15 +127,14 @@ export default function AdvancedInsights({
             %
           </strong>
           <span>
-            Completed vs ended
-            sessions
+            {tr('Completed vs ended sessions', 'سێشنە تەواوکراوەکان بەراورد بە سێشنە کۆتاییهێنراوەکان')}
           </span>
         </article>
 
         <article className="analytics-v3-card">
           <div>
             <Zap size={16} />
-            Interruptions
+            {tr('Interruptions', 'وەستاندنەکان')}
           </div>
           <strong>
             {
@@ -143,15 +142,14 @@ export default function AdvancedInsights({
             }
           </strong>
           <span>
-            Average per completed
-            session
+            {tr('Average per completed session', 'ناوەند بۆ هەر سێشنێکی تەواوکراو')}
           </span>
         </article>
 
         <article className="analytics-v3-card">
           <div>
             <Layers3 size={16} />
-            Deep work
+            {tr('Deep work', 'کاری قووڵ')}
           </div>
           <strong>
             {
@@ -160,8 +158,7 @@ export default function AdvancedInsights({
             %
           </strong>
           <span>
-            Time inside 45m+
-            sessions
+            {tr('Time inside 45m+ sessions', 'کات لە سێشنە ٤٥ خولەک و زیاترەکاندا')}
           </span>
         </article>
 
@@ -170,7 +167,7 @@ export default function AdvancedInsights({
             <BrainCircuit
               size={16}
             />
-            Checklist
+            {tr('Checklist', 'لیستی هەنگاوەکان')}
           </div>
           <strong>
             {analytics
@@ -183,8 +180,8 @@ export default function AdvancedInsights({
             {analytics
               .checklistCompletion ===
             null
-              ? 'Use session checklists to unlock'
-              : 'Average task completion'}
+              ? tr('Use session checklists to unlock', 'لیستی هەنگاوەکانی سێشن بەکاربهێنە بۆ کردنەوەی ئەم داتا')
+              : tr('Average task completion', 'ناوەندی تەواوکردنی ئەرکەکان')}
           </span>
         </article>
       </div>
@@ -192,17 +189,17 @@ export default function AdvancedInsights({
       <div className="analytics-v3-footer">
         <div>
           <span>
-            Strongest weekday
+            {tr('Strongest weekday', 'بەهێزترین ڕۆژی هەفتە')}
           </span>
           <strong>
             {analytics.strongestWeekday ??
-              'Still learning'}
+              tr('Still learning', 'هێشتا فێردەبێت')}
           </strong>
         </div>
 
         <div>
           <span>
-            Focus on that day
+            {tr('Focus on that day', 'سەرنج لەو ڕۆژەدا')}
           </span>
           <strong>
             {
@@ -213,12 +210,7 @@ export default function AdvancedInsights({
         </div>
 
         <p>
-          Quality index blends
-          completion, interruptions,
-          deep-work share and
-          checklist follow-through.
-          It is a behavioral signal,
-          not a grade.
+          {tr('Quality index blends completion, interruptions, deep-work share and checklist follow-through. It is a behavioral signal, not a grade.', 'پێوەری کوالێتی تەواوکردن، وەستاندن، بەشی کاری قووڵ و جێبەجێکردنی لیستی هەنگاوەکان تێکەڵ دەکات. ئەمە نیشانەی هەڵسوکەوتە، نە نمرە.')}
         </p>
       </div>
     </section>
