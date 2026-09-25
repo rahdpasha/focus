@@ -188,6 +188,15 @@ export default function Dashboard({
         ) >= item.targetMinutes,
     ).length
 
+  const routinePreview =
+    todaysRoutine.slice(0, 4)
+  const hiddenRoutineCount =
+    Math.max(
+      0,
+      todaysRoutine.length -
+        routinePreview.length,
+    )
+
   return (
     <main className="dashboard dashboard-v3">
       <header className="dashboard-v3-header">
@@ -267,19 +276,8 @@ export default function Dashboard({
         />
       </section>
 
-      <section
-        className="glass-panel"
-        style={{
-          padding: '18px',
-          marginBottom: '18px',
-        }}
-      >
-        <div
-          className="dashboard-section-head"
-          style={{
-            marginBottom: '12px',
-          }}
-        >
+      <section className="glass-panel dashboard-routine-preview">
+        <div className="dashboard-section-head dashboard-routine-head">
           <div>
             <div className="eyebrow">
               Today's routine
@@ -306,15 +304,8 @@ export default function Dashboard({
             study items in Routine.
           </div>
         ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns:
-                'repeat(auto-fit, minmax(180px, 1fr))',
-              gap: '10px',
-            }}
-          >
-            {todaysRoutine.map(
+          <div className="dashboard-routine-grid">
+            {routinePreview.map(
               (item) => {
                 const subject =
                   subjects.find(
@@ -353,26 +344,7 @@ export default function Dashboard({
                         },
                       )
                     }
-                    style={{
-                      minHeight: '76px',
-                      padding:
-                        '12px 14px',
-                      border:
-                        '1px solid var(--void-border)',
-                      borderRadius:
-                        '12px',
-                      background:
-                        'var(--void-surface-hover)',
-                      display: 'grid',
-                      gridTemplateColumns:
-                        '42px minmax(0, 1fr)',
-                      gap: '10px',
-                      alignItems: 'center',
-                      textAlign: 'left',
-                      cursor: subject
-                        ? 'pointer'
-                        : 'default',
-                    }}
+                    className="dashboard-routine-card"
                   >
                     <span
                       aria-label={
@@ -380,49 +352,18 @@ export default function Dashboard({
                           ? 'Completed'
                           : 'Pending'
                       }
-                      style={{
-                        width: '38px',
-                        height: '38px',
-                        display: 'grid',
-                        placeItems:
-                          'center',
-                        borderRadius:
-                          '10px',
-                        background: done
-                          ? 'var(--primary-soft)'
-                          : 'var(--void-surface)',
-                        border: done
-                          ? '1px solid var(--primary-border)'
-                          : '1px solid var(--void-border)',
-                        fontSize: '19px',
-                      }}
+                      className={`dashboard-routine-state ${done ? 'done' : ''}`}
                     >
                       {done
                         ? '✅'
                         : '⬜'}
                     </span>
 
-                    <span
-                      style={{
-                        minWidth: 0,
-                      }}
-                    >
-                      <strong
-                        style={{
-                          display:
-                            'block',
-                          color:
-                            'var(--text-primary)',
-                        }}
-                      >
+                    <span className="dashboard-routine-copy">
+                      <strong>
                         {item.title}
                       </strong>
-                      <small
-                        style={{
-                          color:
-                            'var(--text-muted)',
-                        }}
-                      >
+                      <small>
                         {minutes}/{
                           item.targetMinutes
                         }m · {
@@ -436,6 +377,12 @@ export default function Dashboard({
                   </button>
                 )
               },
+            )}
+
+            {hiddenRoutineCount > 0 && (
+              <div className="dashboard-routine-more">
+                +{hiddenRoutineCount} more in Routine
+              </div>
             )}
           </div>
         )}
