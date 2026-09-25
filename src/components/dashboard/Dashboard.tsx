@@ -202,16 +202,14 @@ export default function Dashboard({
       <header className="dashboard-v3-header">
         <div>
           <div className="eyebrow">
-            FOCUS command center
+            Today
           </div>
           <h1>
-            What should you do next?
+            Make the next session count.
           </h1>
           <p>
-            One recommendation,
-            your current momentum,
-            and the next useful
-            session.
+            Your next move, current momentum,
+            and today's plan — all in one place.
           </p>
         </div>
 
