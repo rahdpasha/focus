@@ -54,7 +54,7 @@ export default function Timer({
   onSessionEnd,
   initialFocusMinutes = 25,
 }: TimerProps) {
-  const { t, tr } = useI18n()
+  const { language, t, tr } = useI18n()
 
   const initialSeconds = Math.max(1, initialFocusMinutes) * 60
   const [focusDuration, setFocusDuration] = useState(initialSeconds)
@@ -947,8 +947,14 @@ export default function Timer({
           {isPaused && (
             <span className="mono timer-v5-paused">
               {t('paused')} ·{' '}
-              {pauseMinutes}m{' '}
-              {pauseSecs}s
+              {pauseMinutes}
+              {language === 'ku'
+                ? ' خولەک '
+                : 'm '}
+              {pauseSecs}
+              {language === 'ku'
+                ? ' چرکە'
+                : 's'}
             </span>
           )}
 
@@ -964,10 +970,15 @@ export default function Timer({
                   focusedSeconds /
                     60,
                 )}
-                m{' '}
+                {language === 'ku'
+                  ? ' خولەک '
+                  : 'm '}
                 {focusedSeconds %
                   60}
-                s {t('focused')}
+                {language === 'ku'
+                  ? ' چرکە '
+                  : 's '}
+                {t('focused')}
               </span>
             )}
         </div>
