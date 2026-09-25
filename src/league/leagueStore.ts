@@ -15,6 +15,7 @@ export interface LeagueEntry {
   avatarSeed: string
   points: number
   completedDays: number
+  totalMinutes: number
   isCurrentUser: boolean
 }
 
@@ -24,6 +25,7 @@ type LeagueRow = {
   avatar_seed: string | null
   points: number | string
   completed_days: number | string
+  total_minutes: number | string
   is_current_user: boolean
 }
 
@@ -134,6 +136,7 @@ export async function getLeaderboard(
     avatarSeed: row.avatar_seed ?? row.public_name,
     points: Number(row.points),
     completedDays: Number(row.completed_days),
+    totalMinutes: Number(row.total_minutes),
     isCurrentUser: Boolean(row.is_current_user),
   }))
 }
