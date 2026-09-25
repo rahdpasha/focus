@@ -11,7 +11,7 @@ PR #1 stays **draft** until the real-browser sign-off is complete:
 - [x] **Auth security review:** Supabase Security Advisor was re-run. Leaked-password protection is unavailable on the current Supabase plan and is recorded as an accepted limitation; the remaining two authenticated League SECURITY DEFINER warnings are intentional.
 - [ ] **Real-browser sign-off:** Complete the 10-minute merge smoke test below.
 
-The latest branch HEAD is deployed and green on Vercel and GitHub Quality. Do not merge based only on automated checks; the final release gate requires a real authenticated browser session.
+The latest branch HEAD passes GitHub Quality. A fresh Vercel preview is currently blocked by the account build-rate limit, so do not treat the earlier READY preview as verification of the current HEAD. The final release gate still requires a real authenticated browser session.
 
 ## 10-minute merge smoke test
 
@@ -31,8 +31,8 @@ Use the latest preview with two test accounts (A and B). This is the minimum rea
 ## Automated gates
 
 - [x] GitHub **Quality** passes: install, lint, V3 regression tests, client-secret guard, migration-version guard and build.
-- [x] Latest Vercel preview deployment (`92bf6c75`) is **READY** and its build log has no build errors.
-- [x] Latest-preview error/fatal runtime log check is empty after the League + Statistics redesign.
+- [ ] **Current-HEAD Vercel preview:** blocked by the account build-rate limit. Re-run/verify a fresh preview for the final HEAD before merge.
+- [ ] **Current-HEAD runtime check:** re-check error/fatal logs after a fresh preview is available. Earlier redesign previews were clean, but they do not verify the final HEAD.
 - [x] Supabase migrations through `league_legacy_day_count_compat` are applied.
 - [x] Repository migration versions match live Supabase migration history exactly; baseline migrations are recorded remotely and the fresh-schema chain includes client IDs and realtime publication setup.
 - [x] Supabase `study-advisor` Edge Function is ACTIVE with JWT verification enabled.
@@ -139,7 +139,7 @@ If any step fails, keep PR #1 draft and record the exact step + account/browser 
 - [ ] Navigate major flows with keyboard only.
 - [ ] Confirm the skip link reaches main content.
 - [ ] Test with reduced-motion enabled.
-- [ ] Check dark, light and system themes.
+- [ ] Check System, Dark, Light, Black and White themes.
 
 ## Security before production
 
@@ -147,7 +147,7 @@ If any step fails, keep PR #1 draft and record the exact step + account/browser 
 - [x] Confirm anonymous users cannot execute League RPCs.
 - [x] Confirm only the two intentional League RPCs are authenticated-callable SECURITY DEFINER functions.
 - [x] Keep SECURITY DEFINER search paths pinned to `pg_catalog, public`.
-- [ ] Enable Supabase Auth leaked-password protection in the dashboard.
+- [x] Supabase Auth leaked-password protection was reviewed and is unavailable on the current plan; keep this recorded as an accepted release limitation unless the plan changes.
 - [x] Confirm no service-role key or Gemini key is present in Vite/client variables in the V3 diff.
 
 ## Release
