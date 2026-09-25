@@ -28,9 +28,11 @@ interface RecordsPageProps {
 
 function prettyDate(
   value: string | null,
+  locale: string,
+  waitingLabel: string,
 ): string {
   if (!value) {
-    return 'Still waiting'
+    return waitingLabel
   }
 
   const date =
@@ -47,7 +49,7 @@ function prettyDate(
   }
 
   return date.toLocaleDateString(
-    undefined,
+    locale,
     {
       month: 'short',
       day: 'numeric',
@@ -60,7 +62,8 @@ export default function RecordsPage({
   sessions,
   weeklyGoal,
 }: RecordsPageProps) {
-  const { t } = useI18n()
+  const { language, t, tr } = useI18n()
+  const locale = language === 'ku' ? 'ku-IQ' : 'en-US'
 
   const records =
     getPersonalRecords(
@@ -97,10 +100,10 @@ export default function RecordsPage({
         <section className="glass-panel records-empty">
           <Trophy size={24} />
           <h2>
-            Your first record starts with one session.
+            {tr('Your first record starts with one session.', 'یەکەم تۆمارەکەت بە یەک سێشن دەست پێ دەکات.')}
           </h2>
           <p>
-            Complete a focus session and FOCUS will begin saving the days, weeks, subjects and streaks that become your personal bests.
+            {tr('Complete a focus session and FOCUS will begin saving the days, weeks, subjects and streaks that become your personal bests.', 'سێشنێکی سەرنج تەواو بکە و FOCUS ڕۆژ، هەفتە، بابەت و زنجیرە باشترینەکانت پاشەکەوت دەکات.')}
           </p>
         </section>
       ) : (
@@ -114,7 +117,7 @@ export default function RecordsPage({
               </div>
 
               <div className="eyebrow">
-                Best day
+                {tr('Best day', 'باشترین ڕۆژ')}
               </div>
 
               <strong>
@@ -127,6 +130,8 @@ export default function RecordsPage({
               <span>
                 {prettyDate(
                   records.bestDayDate,
+                  locale,
+                  tr('Still waiting', 'هێشتا چاوەڕوانە'),
                 )}
               </span>
             </article>
@@ -139,18 +144,18 @@ export default function RecordsPage({
               </div>
 
               <div className="eyebrow">
-                Best streak
+                {tr('Best streak', 'باشترین زنجیرە')}
               </div>
 
               <strong>
                 {
                   records.bestDailyStreak
                 }{' '}
-                days
+                {tr('days', 'ڕۆژ')}
               </strong>
 
               <span>
-                Your longest run of active study days
+                {tr('Your longest run of active study days', 'درێژترین زنجیرەی ڕۆژە چالاکەکانی خوێندنت')}
               </span>
             </article>
 
@@ -162,7 +167,7 @@ export default function RecordsPage({
               </div>
 
               <div className="eyebrow">
-                Strongest subject
+                {tr('Strongest subject', 'بەهێزترین بابەت')}
               </div>
 
               <strong className="records-hero-subject">
@@ -174,7 +179,7 @@ export default function RecordsPage({
                 {
                   records.bestSubjectMinutes
                 }
-                m accumulated
+                m {tr('accumulated', 'کۆکراوەتەوە')}
               </span>
             </article>
           </section>
@@ -186,11 +191,11 @@ export default function RecordsPage({
                   <Sparkles
                     size={15}
                   />
-                  Performance archive
+                  {tr('Performance archive', 'ئەرشیفی کارکردن')}
                 </div>
 
                 <h2>
-                  The work worth remembering
+                  {tr('The work worth remembering', 'ئەو کارەی شایەنی بیرکردنەوەیە')}
                 </h2>
               </div>
 
@@ -198,7 +203,7 @@ export default function RecordsPage({
                 {
                   completedSessions.length
                 }{' '}
-                completed sessions
+                {tr('completed sessions', 'سێشنی تەواوکراو')}
               </span>
             </div>
 
@@ -247,7 +252,7 @@ export default function RecordsPage({
               />
               <div>
                 <span>
-                  Longest session
+                  {tr('Longest session', 'درێژترین سێشن')}
                 </span>
                 <strong>
                   {Math.round(
@@ -265,11 +270,13 @@ export default function RecordsPage({
               />
               <div>
                 <span>
-                  Best week began
+                  {tr('Best week began', 'باشترین هەفتە دەستی پێکرد')}
                 </span>
                 <strong>
                   {prettyDate(
                     records.bestWeekStart,
+                    locale,
+                    tr('Still waiting', 'هێشتا چاوەڕوانە'),
                   )}
                 </strong>
               </div>
@@ -281,11 +288,11 @@ export default function RecordsPage({
               />
               <div>
                 <span>
-                  Strongest weekday
+                  {tr('Strongest weekday', 'بەهێزترین ڕۆژی هەفتە')}
                 </span>
                 <strong>
                   {records.bestDayWeekday ??
-                    'Still learning'}
+                    tr('Still learning', 'هێشتا فێردەبێت')}
                 </strong>
               </div>
             </article>
