@@ -267,58 +267,15 @@ function DayTooltip({
   }
 
   return (
-    <div
-      style={{
-        minWidth: '190px',
-        padding: '14px 16px',
-        borderRadius: '14px',
-        background:
-          'rgba(8,10,18,0.97)',
-        border:
-          '1px solid rgba(139,92,246,0.28)',
-        boxShadow:
-          '0 18px 45px rgba(0,0,0,0.32)',
-        backdropFilter:
-          'blur(20px)',
-      }}
-    >
-      <div
-        style={{
-          fontSize: '10px',
-          color:
-            'var(--text-muted)',
-          marginBottom: '7px',
-        }}
-      >
-        {point.dateLabel}
-      </div>
-
-      <div
-        className="mono"
-        style={{
-          fontSize: '20px',
-          color:
-            'var(--primary-glow)',
-        }}
-      >
-        {formatDuration(
-          point.seconds
-        )}
-      </div>
-
-      <div
-        style={{
-          marginTop: '6px',
-          fontSize: '10px',
-          color:
-            'var(--text-muted)',
-        }}
-      >
+    <div className="focus-chart-tooltip focus-chart-tooltip-wide">
+      <span>{point.dateLabel}</span>
+      <strong className="mono">
+        {formatDuration(point.seconds)}
+      </strong>
+      <small>
         {point.sessions}{' '}
-        {point.sessions === 1
-          ? 'session'
-          : 'sessions'}
-      </div>
+        {point.sessions === 1 ? 'session' : 'sessions'}
+      </small>
     </div>
   )
 }
@@ -346,49 +303,13 @@ function HourTooltip({
     (point.hour + 1) % 24
 
   return (
-    <div
-      style={{
-        minWidth: '155px',
-        padding: '12px 14px',
-        borderRadius: '12px',
-        background:
-          'rgba(8,10,18,0.97)',
-        border:
-          '1px solid rgba(56,189,248,0.24)',
-        boxShadow:
-          '0 16px 40px rgba(0,0,0,0.28)',
-        backdropFilter:
-          'blur(18px)',
-      }}
-    >
-      <div
-        style={{
-          fontSize: '10px',
-          color:
-            'var(--text-muted)',
-        }}
-      >
-        {point.label} →{' '}
-        {String(nextHour).padStart(
-          2,
-          '0'
-        )}
-        :00
-      </div>
-
-      <div
-        className="mono"
-        style={{
-          marginTop: '5px',
-          fontSize: '17px',
-          color:
-            'var(--cyber-glow)',
-        }}
-      >
-        {formatDuration(
-          point.seconds
-        )}
-      </div>
+    <div className="focus-chart-tooltip">
+      <span>
+        {point.label} → {String(nextHour).padStart(2, '0')}:00
+      </span>
+      <strong className="mono">
+        {formatDuration(point.seconds)}
+      </strong>
     </div>
   )
 }
