@@ -23,12 +23,29 @@ export function getRotationItemForDate(
   items: RoutineItem[],
   date: Date,
 ): RoutineItem | null {
+  const targetDay =
+    dayNumber(date)
+
   const rotationItems = items
-    .filter(
-      (item) =>
-        item.enabled &&
-        item.mode === 'rotation',
-    )
+    .filter((item) => {
+      if (
+        !item.enabled ||
+        item.mode !== 'rotation'
+      ) {
+        return false
+      }
+
+      const createdAt =
+        new Date(item.createdAt)
+
+      return (
+        !Number.isNaN(
+          createdAt.getTime(),
+        ) &&
+        dayNumber(createdAt) <=
+          targetDay
+      )
+    })
     .sort(
       (a, b) =>
         a.rotationOrder -
@@ -86,10 +103,29 @@ export function getRoutineItemsForDate(
   items: RoutineItem[],
   date: Date,
 ): RoutineItem[] {
+  const targetDay =
+    dayNumber(date)
+
   const fixed = items.filter(
-    (item) =>
-      item.enabled &&
-      item.mode === 'fixed',
+    (item) => {
+      if (
+        !item.enabled ||
+        item.mode !== 'fixed'
+      ) {
+        return false
+      }
+
+      const createdAt =
+        new Date(item.createdAt)
+
+      return (
+        !Number.isNaN(
+          createdAt.getTime(),
+        ) &&
+        dayNumber(createdAt) <=
+          targetDay
+      )
+    },
   )
 
   const rotation =
