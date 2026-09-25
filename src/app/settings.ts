@@ -2,7 +2,7 @@ import type { ThemeMode } from './theme'
 import {
   normalizeThemeTokenPack,
   type ThemeTokenPack,
-} from './themeTokens'
+} from './themeTokens.ts'
 import type { Language } from '../translations'
 
 export interface AppSettings {
