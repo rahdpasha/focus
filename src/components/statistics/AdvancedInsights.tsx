@@ -13,6 +13,7 @@ import {
   getAdvancedAnalytics,
 } from '../../utils/advancedAnalytics'
 import { useI18n } from '../../useI18n'
+import { localizeUiText } from '../../utils/localizeUiText'
 
 interface AdvancedInsightsProps {
   sessions: StudySession[]
@@ -29,7 +30,7 @@ function signedPercent(
 export default function AdvancedInsights({
   sessions,
 }: AdvancedInsightsProps) {
-  const { tr } = useI18n()
+  const { language, tr } = useI18n()
   const analytics =
     getAdvancedAnalytics(
       sessions,
@@ -48,7 +49,7 @@ export default function AdvancedInsights({
 
           <h2>
             {
-              analytics.headline
+              localizeUiText(language, analytics.headline)
             }
           </h2>
 
@@ -68,7 +69,7 @@ export default function AdvancedInsights({
           </strong>
           <small>
             {
-              analytics.qualityLabel
+              localizeUiText(language, analytics.qualityLabel)
             }
           </small>
         </div>
@@ -192,8 +193,9 @@ export default function AdvancedInsights({
             {tr('Strongest weekday', 'بەهێزترین ڕۆژی هەفتە')}
           </span>
           <strong>
-            {analytics.strongestWeekday ??
-              tr('Still learning', 'هێشتا فێردەبێت')}
+            {analytics.strongestWeekday
+              ? localizeUiText(language, analytics.strongestWeekday)
+              : tr('Still learning', 'هێشتا فێردەبێت')}
           </strong>
         </div>
 
