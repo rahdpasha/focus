@@ -13,6 +13,12 @@ PR #1 stays **draft** until the real-browser sign-off is complete:
 
 The release branch currently passes GitHub Quality and has a READY Vercel preview. Re-verify both gates after any later code, CSS, migration, or runtime-affecting commit. The final release gate still requires a real authenticated browser session.
 
+## Automated preview verification
+
+- [x] Runtime-equivalent Vercel preview returns **HTTP 200** and serves the built application shell.
+- [x] Preview warning/error/fatal runtime-log query is empty for the latest verification window.
+- [ ] Authenticated browser smoke test remains required; automated preview reachability does not replace the two-account manual flow.
+
 ## 10-minute merge smoke test
 
 Use the latest preview with two test accounts (A and B). This is the minimum real-browser sign-off before marking PR #1 ready.
