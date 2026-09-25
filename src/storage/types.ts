@@ -22,8 +22,15 @@ export interface RoutineItem {
   targetMinutes: number
   mode: "fixed" | "rotation"
   rotationOrder: number
+  daysOfWeek: number[]
+  recoveryDays: number
   enabled: boolean
   createdAt: string
+}
+
+export interface RoutineSessionContext {
+  itemId: string
+  routineDate: string
 }
 
 export interface FocusDataSnapshot {
