@@ -8703,3 +8703,73 @@ textarea:focus {
     flex: 1 1 120px;
   }
 }
+
+
+/* V5 duration selector */
+.duration-v5 {
+  width: 100%;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
+.duration-v5-presets {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.duration-v5-presets button,
+.duration-v5-set {
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 9px;
+  background: var(--void-surface-hover);
+  color: var(--text-muted);
+  font-family: 'Manrope', sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.duration-v5-presets button:hover:not(:disabled),
+.duration-v5-set:hover:not(:disabled) {
+  border-color: var(--primary-border);
+  color: var(--text-primary);
+}
+
+.duration-v5-presets button.active {
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+  color: var(--text-primary);
+}
+
+.duration-v5-custom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.duration-v5-custom input {
+  width: 110px;
+  min-height: 36px;
+  padding: 7px 9px;
+  text-align: center;
+}
+
+.duration-v5-set {
+  color: var(--text-primary);
+}
+
+@media (max-width: 520px) {
+  .duration-v5-presets {
+    width: 100%;
+  }
+
+  .duration-v5-presets button {
+    flex: 1 1 76px;
+  }
+}
