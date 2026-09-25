@@ -56,19 +56,15 @@ export default class AppErrorBoundary extends Component<
           </div>
 
           <div className="eyebrow">
-            Recovery mode
+            App recovery
           </div>
 
           <h1>
-            FOCUS hit an unexpected
-            problem.
+            Something went wrong.
           </h1>
 
           <p>
-            Your saved study data is
-            not cleared. Reload the
-            app to recover the latest
-            local or synced state.
+            Your saved study data is still safe. Reload app to restore the latest local or synced state.
           </p>
 
           <button
