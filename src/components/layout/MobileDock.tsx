@@ -1,7 +1,7 @@
 import {
-  BrainCircuit,
   CalendarRange,
   Gauge,
+  Repeat2,
   Swords,
   TimerReset,
 } from 'lucide-react'
@@ -30,9 +30,9 @@ const items = [
     icon: CalendarRange,
   },
   {
-    page: 'advisor' as const,
-    labelKey: 'advisor' as const,
-    icon: BrainCircuit,
+    page: 'routine' as const,
+    labelKey: 'routine' as const,
+    icon: Repeat2,
   },
   {
     page: 'league' as const,
