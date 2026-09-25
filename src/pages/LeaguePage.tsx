@@ -231,15 +231,28 @@ export default function LeaguePage({
       return null
     }
 
+    if (
+      target.points ===
+      currentUser.points
+    ) {
+      return {
+        target,
+        label: `${Math.max(
+          1,
+          target.totalMinutes -
+            currentUser.totalMinutes +
+            1,
+        )}m to pass #${target.rank}`,
+      }
+    }
+
     return {
       target,
-      pointsNeeded:
-        Math.max(
-          3,
-          target.points -
-            currentUser.points +
-            3,
-        ),
+      label: `${Math.max(
+        3,
+        target.points -
+          currentUser.points,
+      )} pts to reach #${target.rank}`,
     }
   }, [currentUser, entries])
 
@@ -853,7 +866,7 @@ export default function LeaguePage({
                   <span>Next step</span>
                   <strong>
                     {nextRank
-                      ? `${nextRank.pointsNeeded} pts to pass #${nextRank.target.rank}`
+                      ? nextRank.label
                       : 'You are at the top'}
                   </strong>
                 </div>
