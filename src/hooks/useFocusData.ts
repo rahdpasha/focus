@@ -10,7 +10,7 @@ import {
   localStorageStore,
   saveAccountSnapshot,
 } from "../storage/localStorage"
-import type { AdvancedGoal, CloudSyncStatus, FocusDataSnapshot, FocusDataStore } from "../storage/types"
+import type { AdvancedGoal, CloudSyncStatus, FocusDataSnapshot, FocusDataStore, RoutineItem } from "../storage/types"
 import {
   addOfflineMutationId,
   clearOfflineMutationState,
@@ -28,6 +28,7 @@ import { supabase } from "../api/supabaseClient"
 import type { AuthSession } from "../auth/types"
 import {
   deleteSupabaseAdvancedGoal,
+  deleteSupabaseRoutineItem,
   deleteSupabaseSession,
   deleteSupabaseSubject,
   loadSupabaseSnapshot,
@@ -66,6 +67,7 @@ function createFreshSnapshot(): FocusDataSnapshot {
     weeklyGoal: 600,
     weeklyGoalsHistory: {},
     advancedGoals: [],
+    routineItems: [],
     activeSubjectId: defaultSubjects[0]?.id ?? null,
     settings: { ...defaultSettings },
     workspacePreferencesVersion: 1,
@@ -109,6 +111,7 @@ function hasMeaningfulCloudData(
       snapshot.weeklyGoalsHistory,
     ).length > 0 ||
     snapshot.advancedGoals.length > 0 ||
+    snapshot.routineItems.length > 0 ||
     snapshot.dailyGoal !== 120 ||
     snapshot.weeklyGoal !== 600 ||
     snapshot.workspacePreferencesVersion > 0 ||
@@ -131,6 +134,7 @@ function getCloudFingerprint(
     weeklyGoal: snapshot.weeklyGoal,
     weeklyGoalsHistory: snapshot.weeklyGoalsHistory,
     advancedGoals: snapshot.advancedGoals,
+    routineItems: snapshot.routineItems,
     settings: snapshot.settings,
     workspacePreferencesVersion:
       snapshot.workspacePreferencesVersion,
@@ -157,6 +161,7 @@ export function useFocusData(
   const [weeklyGoal, setWeeklyGoalState] = useState(initial.weeklyGoal)
   const [weeklyGoalsHistory, setWeeklyGoalsHistory] = useState<WeeklyGoalMap>(initial.weeklyGoalsHistory)
   const [advancedGoals, setAdvancedGoals] = useState<AdvancedGoal[]>(initial.advancedGoals)
+  const [routineItems, setRoutineItems] = useState<RoutineItem[]>(initial.routineItems)
   const [settings, setSettings] = useState<AppSettings>(initial.settings)
   const [
     workspacePreferencesVersion,
@@ -213,6 +218,7 @@ export function useFocusData(
       weeklyGoal,
       weeklyGoalsHistory,
       advancedGoals,
+      routineItems,
       activeSubjectId,
       settings,
       workspacePreferencesVersion,
@@ -224,6 +230,7 @@ export function useFocusData(
     weeklyGoal,
     weeklyGoalsHistory,
     advancedGoals,
+    routineItems,
     activeSubjectId,
     settings,
     workspacePreferencesVersion,
@@ -523,6 +530,7 @@ export function useFocusData(
       weeklyGoal,
       weeklyGoalsHistory,
       advancedGoals,
+      routineItems,
       activeSubjectId,
       settings,
       workspacePreferencesVersion,
@@ -544,6 +552,7 @@ export function useFocusData(
           weeklyGoal,
           weeklyGoalsHistory,
           advancedGoals,
+          routineItems,
           activeSubjectId,
           settings,
           workspacePreferencesVersion,
@@ -558,6 +567,7 @@ export function useFocusData(
     weeklyGoal,
     weeklyGoalsHistory,
     advancedGoals,
+    routineItems,
     activeSubjectId,
     settings,
     workspacePreferencesVersion,
@@ -639,6 +649,13 @@ export function useFocusData(
               ...offlineChanges.deletedAdvancedGoalIds.map(
                 (id) =>
                   deleteSupabaseAdvancedGoal(
+                    authSession.user.id,
+                    id,
+                  ),
+              ),
+              ...offlineChanges.deletedRoutineItemIds.map(
+                (id) =>
+                  deleteSupabaseRoutineItem(
                     authSession.user.id,
                     id,
                   ),
@@ -764,6 +781,7 @@ export function useFocusData(
           cloudSnapshot.weeklyGoalsHistory,
         )
         setAdvancedGoals(cloudSnapshot.advancedGoals)
+        setRoutineItems(cloudSnapshot.routineItems)
         const cloudNeedsPreferenceUpgrade =
           cloudSnapshot.workspacePreferencesVersion < 1
 
@@ -859,6 +877,7 @@ export function useFocusData(
       weeklyGoal,
       weeklyGoalsHistory,
       advancedGoals,
+      routineItems,
       activeSubjectId,
       settings,
       workspacePreferencesVersion,
@@ -904,6 +923,7 @@ export function useFocusData(
     weeklyGoal,
     weeklyGoalsHistory,
     advancedGoals,
+    routineItems,
     activeSubjectId,
     settings,
     workspacePreferencesVersion,
@@ -1107,6 +1127,13 @@ export function useFocusData(
         ),
       )
 
+      setRoutineItems((previous) =>
+        previous.filter(
+          (item) =>
+            item.subjectId !== id,
+        ),
+      )
+
       setActiveSubjectId(
         (current) =>
           current === id ? null : current,
@@ -1188,6 +1215,221 @@ export function useFocusData(
         }
       },
     )
+  }
+
+  const addRoutineItem = (
+    title: string,
+    subjectId: string,
+    targetMinutes: number,
+    mode: RoutineItem["mode"],
+  ) => {
+    const cleanTitle = title.trim()
+    const safeTarget = Math.min(
+      720,
+      Math.max(
+        1,
+        Math.round(targetMinutes),
+      ),
+    )
+
+    if (
+      !cleanTitle ||
+      !subjects.some(
+        (subject) =>
+          subject.id === subjectId,
+      )
+    ) {
+      return
+    }
+
+    const nextRotationOrder =
+      mode === "rotation"
+        ? routineItems
+            .filter(
+              (item) =>
+                item.mode === "rotation",
+            )
+            .reduce(
+              (max, item) =>
+                Math.max(
+                  max,
+                  item.rotationOrder,
+                ),
+              -1,
+            ) + 1
+        : 0
+
+    const item: RoutineItem = {
+      id: `routine-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      title: cleanTitle,
+      subjectId,
+      targetMinutes: safeTarget,
+      mode,
+      rotationOrder:
+        nextRotationOrder,
+      enabled: true,
+      createdAt:
+        new Date().toISOString(),
+    }
+
+    setRoutineItems(
+      (previous) => [
+        ...previous,
+        item,
+      ],
+    )
+
+    recordPendingMutation(
+      (mutations) => {
+        addOfflineMutationId(
+          mutations.routineItemIds,
+          item.id,
+        )
+      },
+    )
+  }
+
+  const updateRoutineItem = (
+    id: string,
+    patch: Partial<
+      Omit<
+        RoutineItem,
+        "id" | "createdAt"
+      >
+    >,
+  ) => {
+    setRoutineItems((previous) =>
+      previous.map((item) => {
+        if (item.id !== id) {
+          return item
+        }
+
+        const title =
+          typeof patch.title ===
+            "string"
+            ? patch.title.trim()
+            : item.title
+        const subjectId =
+          typeof patch.subjectId ===
+            "string" &&
+          subjects.some(
+            (subject) =>
+              subject.id ===
+              patch.subjectId,
+          )
+            ? patch.subjectId
+            : item.subjectId
+        const targetMinutes =
+          typeof patch.targetMinutes ===
+            "number" &&
+          Number.isFinite(
+            patch.targetMinutes,
+          )
+            ? Math.min(
+                720,
+                Math.max(
+                  1,
+                  Math.round(
+                    patch.targetMinutes,
+                  ),
+                ),
+              )
+            : item.targetMinutes
+
+        return {
+          ...item,
+          ...patch,
+          title:
+            title || item.title,
+          subjectId,
+          targetMinutes,
+          rotationOrder:
+            typeof patch.rotationOrder ===
+              "number" &&
+            Number.isFinite(
+              patch.rotationOrder,
+            )
+              ? Math.max(
+                  0,
+                  Math.round(
+                    patch.rotationOrder,
+                  ),
+                )
+              : item.rotationOrder,
+        }
+      }),
+    )
+
+    recordPendingMutation(
+      (mutations) => {
+        addOfflineMutationId(
+          mutations.routineItemIds,
+          id,
+        )
+      },
+    )
+  }
+
+  const deleteRoutineItem = (
+    id: string,
+  ) => {
+    const removeLocal = () => {
+      setRoutineItems((previous) =>
+        previous.filter(
+          (item) => item.id !== id,
+        ),
+      )
+    }
+
+    if (
+      authSession &&
+      typeof navigator !== "undefined" &&
+      !navigator.onLine
+    ) {
+      removeLocal()
+      recordPendingMutation(
+        (mutations) => {
+          removeOfflineMutationId(
+            mutations.routineItemIds,
+            id,
+          )
+          addOfflineMutationId(
+            mutations.deletedRoutineItemIds,
+            id,
+          )
+        },
+      )
+      setCloudStatus("offline")
+      return
+    }
+
+    if (authSession) {
+      void (async () => {
+        const ready =
+          await flushBeforeDestructiveMutation()
+
+        if (!ready) {
+          return
+        }
+
+        await deleteSupabaseRoutineItem(
+          authSession.user.id,
+          id,
+        )
+
+        removeLocal()
+      })().catch((error) => {
+        console.error(
+          "FOCUS routine delete failed:",
+          error,
+        )
+        setCloudStatus("error")
+      })
+
+      return
+    }
+
+    removeLocal()
   }
 
   const addAdvancedGoal = (
@@ -1314,7 +1556,7 @@ export function useFocusData(
 
   const exportData = () => {
     const backup = {
-      version: 5,
+      version: 6,
       exportedAt: new Date().toISOString(),
       sessions,
       subjects,
@@ -1322,6 +1564,7 @@ export function useFocusData(
       weeklyGoal,
       weeklyGoalsHistory,
       advancedGoals,
+      routineItems,
       settings,
       activeSubjectId,
       workspacePreferencesVersion,
@@ -1696,6 +1939,128 @@ export function useFocusData(
         } else {
           setAdvancedGoals([])
         }
+
+        if (Array.isArray(data.routineItems)) {
+          const seenRoutineIds =
+            new Set<string>()
+
+          const importedRoutineItems =
+            data.routineItems.flatMap(
+              (
+                candidate,
+              ): RoutineItem[] => {
+                if (
+                  !candidate ||
+                  typeof candidate !==
+                    "object" ||
+                  Array.isArray(
+                    candidate,
+                  )
+                ) {
+                  return []
+                }
+
+                const value =
+                  candidate as Record<
+                    string,
+                    unknown
+                  >
+                const id =
+                  typeof value.id ===
+                    "string"
+                    ? value.id.trim()
+                    : ""
+                const title =
+                  typeof value.title ===
+                    "string"
+                    ? value.title.trim()
+                    : ""
+                const subjectId =
+                  typeof value.subjectId ===
+                    "string"
+                    ? value.subjectId.trim()
+                    : ""
+                const targetMinutes =
+                  typeof value.targetMinutes ===
+                    "number" &&
+                  Number.isFinite(
+                    value.targetMinutes,
+                  )
+                    ? Math.min(
+                        720,
+                        Math.max(
+                          1,
+                          Math.round(
+                            value.targetMinutes,
+                          ),
+                        ),
+                      )
+                    : 25
+                const rotationOrder =
+                  typeof value.rotationOrder ===
+                    "number" &&
+                  Number.isFinite(
+                    value.rotationOrder,
+                  )
+                    ? Math.max(
+                        0,
+                        Math.round(
+                          value.rotationOrder,
+                        ),
+                      )
+                    : 0
+                const createdAt =
+                  typeof value.createdAt ===
+                    "string"
+                    ? new Date(
+                        value.createdAt,
+                      )
+                    : new Date(Number.NaN)
+
+                if (
+                  !id ||
+                  !title ||
+                  !subjectId ||
+                  !importedSubjectIds.has(
+                    subjectId,
+                  ) ||
+                  seenRoutineIds.has(id) ||
+                  Number.isNaN(
+                    createdAt.getTime(),
+                  )
+                ) {
+                  return []
+                }
+
+                seenRoutineIds.add(id)
+
+                return [{
+                  id,
+                  title,
+                  subjectId,
+                  targetMinutes,
+                  mode:
+                    value.mode ===
+                    "rotation"
+                      ? "rotation"
+                      : "fixed",
+                  rotationOrder,
+                  enabled:
+                    value.enabled !==
+                    false,
+                  createdAt:
+                    createdAt.toISOString(),
+                }]
+              },
+            )
+
+          setRoutineItems(
+            importedRoutineItems,
+          )
+        } else {
+          setRoutineItems([])
+        }
+
         if (typeof data.dailyGoal === "number" && data.dailyGoal > 0) setDailyGoal(data.dailyGoal)
         if (typeof data.weeklyGoal === "number" && data.weeklyGoal > 0) setWeeklyGoal(data.weeklyGoal)
         if (data.weeklyGoalsHistory && typeof data.weeklyGoalsHistory === "object" && !Array.isArray(data.weeklyGoalsHistory)) {
@@ -1811,6 +2176,7 @@ export function useFocusData(
               cloudSnapshot.weeklyGoalsHistory,
             )
             setAdvancedGoals(cloudSnapshot.advancedGoals)
+            setRoutineItems(cloudSnapshot.routineItems)
             setSettings(cloudSnapshot.settings)
             setWorkspacePreferencesVersion(
               cloudSnapshot.workspacePreferencesVersion,
@@ -1902,6 +2268,16 @@ export function useFocusData(
         {
           event: "*",
           schema: "public",
+          table: "routine_items",
+          filter: `user_id=eq.${userId}`,
+        },
+        refreshFromCloud,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
           table: "user_settings",
           filter: `user_id=eq.${userId}`,
         },
@@ -1934,5 +2310,5 @@ export function useFocusData(
     }
   }, [userId, cloudReady])
 
-  return { subjects, activeSubjectId, sessions, dailyGoal, weeklyGoal, weeklyGoalsHistory, advancedGoals, settings, cloudStatus, setDailyGoal: setDailyGoalValue, setWeeklyGoal, setSettings, updateSettings, addSession, deleteSession, addSubject, deleteSubject, selectSubject, addAdvancedGoal, updateAdvancedGoal, deleteAdvancedGoal, exportData, importData, flushCloudChanges }
+  return { subjects, activeSubjectId, sessions, dailyGoal, weeklyGoal, weeklyGoalsHistory, advancedGoals, routineItems, settings, cloudStatus, setDailyGoal: setDailyGoalValue, setWeeklyGoal, setSettings, updateSettings, addSession, deleteSession, addSubject, deleteSubject, selectSubject, addRoutineItem, updateRoutineItem, deleteRoutineItem, addAdvancedGoal, updateAdvancedGoal, deleteAdvancedGoal, exportData, importData, flushCloudChanges }
 }
