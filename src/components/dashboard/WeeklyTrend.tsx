@@ -332,7 +332,7 @@ function HourTooltip({
         {point.label} → {String(nextHour).padStart(2, '0')}:00
       </span>
       <strong className="mono">
-        {formatDuration(point.seconds)}
+        {formatDuration(point.seconds, language)}
       </strong>
     </div>
   )
