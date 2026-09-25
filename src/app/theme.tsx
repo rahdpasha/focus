@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react'
 
-export type ThemeMode = 'dark' | 'light' | 'system'
+export type ThemeMode = 'dark' | 'light' | 'system' | 'black' | 'white'
 
 type ThemeContextValue = {
   theme: ThemeMode
@@ -20,7 +20,7 @@ export const ThemeContext = createContext<ThemeContextValue | null>(null)
 function loadTheme(): ThemeMode {
   try {
     const value = localStorage.getItem(THEME_KEY)
-    return value === 'light' || value === 'dark' || value === 'system'
+    return value === 'light' || value === 'dark' || value === 'system' || value === 'black' || value === 'white'
       ? value
       : 'system'
   } catch {
@@ -28,9 +28,16 @@ function loadTheme(): ThemeMode {
   }
 }
 
-function resolveTheme(theme: ThemeMode): 'dark' | 'light' {
+function resolveTheme(theme: ThemeMode): ThemeMode {
   if (theme !== 'system') return theme
   return window.matchMedia('(prefers-color-scheme: light)').matches
+    ? 'light'
+    : 'dark'
+}
+
+function resolveColorScheme(theme: ThemeMode): 'dark' | 'light' {
+  const resolved = resolveTheme(theme)
+  return resolved === 'light' || resolved === 'white'
     ? 'light'
     : 'dark'
 }
@@ -43,7 +50,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     const apply = () => {
       document.documentElement.setAttribute('data-theme', resolveTheme(theme))
-      document.documentElement.style.colorScheme = resolveTheme(theme)
+      document.documentElement.style.colorScheme = resolveColorScheme(theme)
     }
 
     apply()
