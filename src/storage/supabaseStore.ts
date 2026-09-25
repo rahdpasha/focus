@@ -93,7 +93,8 @@ type RoutineItemRow = {
 
 type UserSettingsRow = {
   user_id: string
-  theme: 'dark' | 'light' | 'system' | 'black' | 'white'
+  theme: 'dark' | 'light' | 'system' | 'black' | 'white' | 'custom'
+  custom_theme_pack: unknown | null
   language: 'en' | 'ku'
   focus_minutes: number
   short_break_minutes: number
@@ -337,6 +338,8 @@ export async function loadSupabaseSnapshot(
         ? {
             theme:
               settingsRow.theme,
+            customThemePack:
+              settingsRow.custom_theme_pack,
             language:
               settingsRow.language,
             shortBreak:
@@ -784,6 +787,8 @@ export async function saveSupabaseSnapshot(
           user_id: userId,
           theme:
             snapshot.settings.theme,
+          custom_theme_pack:
+            snapshot.settings.customThemePack,
           language:
             snapshot.settings.language,
           short_break_minutes:
@@ -1269,6 +1274,8 @@ export async function saveSupabaseMutations(
           user_id: userId,
           theme:
             snapshot.settings.theme,
+          custom_theme_pack:
+            snapshot.settings.customThemePack,
           language:
             snapshot.settings.language,
           short_break_minutes:
@@ -1316,6 +1323,10 @@ export async function saveSupabaseMutations(
           case 'theme':
             settingsPatch.theme =
               snapshot.settings.theme
+            break
+          case 'customThemePack':
+            settingsPatch.custom_theme_pack =
+              snapshot.settings.customThemePack
             break
           case 'language':
             settingsPatch.language =
