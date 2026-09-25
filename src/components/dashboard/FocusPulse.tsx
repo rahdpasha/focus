@@ -82,7 +82,7 @@ export default function FocusPulse({
                 key={localizeUiText(language, item)}
                 className="focus-pulse-chip"
               >
-                {item}
+                {localizeUiText(language, item)}
               </span>
             ),
           )}
