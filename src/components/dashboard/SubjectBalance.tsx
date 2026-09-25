@@ -176,38 +176,10 @@ function SubjectTooltip({
   }
 
   return (
-    <div
-      style={{
-        background:
-          'rgba(10,10,30,0.96)',
-        border:
-          `1px solid ${data.color}55`,
-        borderRadius: '10px',
-        padding: '12px 16px',
-      }}
-    >
-      <div
-        style={{
-          fontSize: '10px',
-          fontFamily:
-            'Orbitron, sans-serif',
-          color:
-            'var(--text-muted)',
-          marginBottom: '8px',
-        }}
-      >
-        {data.name}
-      </div>
+    <div className="focus-chart-tooltip">
+      <span>{data.name}</span>
 
-      <div
-        className="mono"
-        style={{
-          fontSize: '12px',
-          color:
-            'var(--text-primary)',
-          marginBottom: '4px',
-        }}
-      >
+      <strong className="mono">
         This week:{' '}
         {payload.find(
           (item) =>
@@ -215,16 +187,9 @@ function SubjectTooltip({
             'thisWeek'
         )?.value ?? 0}
         m
-      </div>
+      </strong>
 
-      <div
-        className="mono"
-        style={{
-          fontSize: '12px',
-          color:
-            'var(--text-muted)',
-        }}
-      >
+      <small className="mono">
         Last week:{' '}
         {payload.find(
           (item) =>
@@ -232,7 +197,7 @@ function SubjectTooltip({
             'lastWeek'
         )?.value ?? 0}
         m
-      </div>
+      </small>
     </div>
   )
 }
