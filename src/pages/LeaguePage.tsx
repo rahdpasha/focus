@@ -176,7 +176,7 @@ export default function LeaguePage({
 
         if (cancelled) return
         await loadStandings(period)
-      } catch (error) {
+      } catch {
         if (!cancelled) {
           setMessage(
             tr(
