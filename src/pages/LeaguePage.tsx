@@ -1,9 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
+  Clock,
   Crown,
+  Flame,
+  Lock,
+  Medal,
   ShieldCheck,
   Sparkles,
+  Target,
   Trophy,
+  Zap,
 } from 'lucide-react'
 import PageContainer from './PageContainer'
 import PageHeader from '../components/layout/PageHeader'
@@ -50,39 +56,25 @@ function formatFocusedTime(totalSeconds: number): string {
   return `${hours}h ${remainingMinutes}m`
 }
 
-function championLabel(
-  entries: LeagueEntry[],
-): string | null {
-  const winners =
-    entries.filter(
-      (entry) =>
-        entry.rank === 1 &&
-        entry.points > 0,
-    )
+function championLabel(entries: LeagueEntry[]): string | null {
+  const winners = entries.filter(
+    (entry) => entry.rank === 1 && entry.points > 0,
+  )
 
-  if (winners.length === 0) {
-    return null
-  }
-
-  if (winners.length === 1) {
-    return winners[0].publicName
-  }
+  if (winners.length === 0) return null
+  if (winners.length === 1) return winners[0].publicName
 
   return `${winners[0].publicName} + ${winners.length - 1} tied`
 }
 
-function defaultProfile(
-  displayName?: string,
-): LeagueProfile {
-  const name =
-    displayName?.trim() || 'Focused learner'
+function defaultProfile(displayName?: string): LeagueProfile {
+  const name = displayName?.trim() || 'Focused learner'
 
   return {
     publicName: name,
     optIn: false,
     timezone:
-      Intl.DateTimeFormat().resolvedOptions().timeZone ||
-      'UTC',
+      Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
     avatarSeed: name,
   }
 }
@@ -91,95 +83,59 @@ export default function LeaguePage({
   userId,
   displayName,
 }: LeaguePageProps) {
-  const [period, setPeriod] =
-    useState<LeaguePeriod>('week')
-  const [profile, setProfile] =
-    useState<LeagueProfile>(
-      () => defaultProfile(displayName),
-    )
-  const [entries, setEntries] =
-    useState<LeagueEntry[]>([])
-  const [
-    lastWeekChampion,
-    setLastWeekChampion,
-  ] = useState<string | null>(null)
-  const [
-    lastMonthChampion,
-    setLastMonthChampion,
-  ] = useState<string | null>(null)
-  const [loading, setLoading] =
-    useState(() => Boolean(userId))
-  const [saving, setSaving] =
-    useState(false)
-  const [message, setMessage] =
-    useState('')
+  const [period, setPeriod] = useState<LeaguePeriod>('week')
+  const [profile, setProfile] = useState<LeagueProfile>(
+    () => defaultProfile(displayName),
+  )
+  const [entries, setEntries] = useState<LeagueEntry[]>([])
+  const [lastWeekChampion, setLastWeekChampion] =
+    useState<string | null>(null)
+  const [lastMonthChampion, setLastMonthChampion] =
+    useState<string | null>(null)
+  const [loading, setLoading] = useState(() => Boolean(userId))
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState('')
 
   const loadStandings = useCallback(
     async (nextPeriod: LeaguePeriod) => {
-      const [
-        current,
-        lastWeek,
-        lastMonth,
-      ] = await Promise.all([
+      const [current, lastWeek, lastMonth] = await Promise.all([
         getLeaderboard(nextPeriod),
-        getLeaderboard(
-          'week',
-          previousWeekDate(),
-        ),
-        getLeaderboard(
-          'month',
-          previousMonthDate(),
-        ),
+        getLeaderboard('week', previousWeekDate()),
+        getLeaderboard('month', previousMonthDate()),
       ])
 
       setEntries(current)
-      setLastWeekChampion(
-        championLabel(lastWeek),
-      )
-      setLastMonthChampion(
-        championLabel(lastMonth),
-      )
+      setLastWeekChampion(championLabel(lastWeek))
+      setLastMonthChampion(championLabel(lastMonth))
     },
     [],
   )
 
   useEffect(() => {
-    if (!userId) {
-      return
-    }
+    if (!userId) return
 
     let cancelled = false
 
     void (async () => {
       try {
-        let loadedProfile =
-          await loadLeagueProfile(
-            userId,
-            displayName,
-          )
+        let loadedProfile = await loadLeagueProfile(
+          userId,
+          displayName,
+        )
 
         if (cancelled) return
 
         const browserTimezone =
-          Intl.DateTimeFormat()
-            .resolvedOptions()
-            .timeZone ||
+          Intl.DateTimeFormat().resolvedOptions().timeZone ||
           'UTC'
 
-        if (
-          loadedProfile.timezone !==
-          browserTimezone
-        ) {
+        if (loadedProfile.timezone !== browserTimezone) {
           loadedProfile = {
             ...loadedProfile,
-            timezone:
-              browserTimezone,
+            timezone: browserTimezone,
           }
 
-          await saveLeagueProfile(
-            userId,
-            loadedProfile,
-          )
+          await saveLeagueProfile(userId, loadedProfile)
         }
 
         if (cancelled) return
@@ -191,7 +147,6 @@ export default function LeaguePage({
         }
 
         if (cancelled) return
-
         await loadStandings(period)
       } catch (error) {
         if (!cancelled) {
@@ -202,64 +157,41 @@ export default function LeaguePage({
           )
         }
       } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
+        if (!cancelled) setLoading(false)
       }
     })()
 
     return () => {
       cancelled = true
     }
-  }, [
-    displayName,
-    loadStandings,
-    period,
-    userId,
-  ])
+  }, [displayName, loadStandings, period, userId])
 
   const currentUser = useMemo(
-    () =>
-      entries.find(
-        (entry) =>
-          entry.isCurrentUser,
-      ) ?? null,
+    () => entries.find((entry) => entry.isCurrentUser) ?? null,
     [entries],
   )
 
   const nextRank = useMemo(() => {
-    if (
-      !currentUser ||
-      currentUser.rank <= 1
-    ) {
-      return null
-    }
+    if (!currentUser || currentUser.rank <= 1) return null
 
-    const target =
-      entries.find(
-        (entry) =>
-          entry.rank ===
-          currentUser.rank - 1,
+    const target = entries.find(
+      (entry) => entry.rank === currentUser.rank - 1,
+    )
+
+    if (!target) return null
+
+    if (target.points === currentUser.points) {
+      const secondsGap = Math.max(
+        1,
+        target.totalSeconds - currentUser.totalSeconds + 1,
       )
 
-    if (!target) {
-      return null
-    }
-
-    if (
-      target.points ===
-      currentUser.points
-    ) {
       return {
         target,
-        label: `${Math.max(
-          1,
-          Math.floor(
-          (target.totalSeconds -
-            currentUser.totalSeconds) /
-            60,
-        ) + 1,
-      )}m to pass #${target.rank}`,
+        label:
+          secondsGap < 60
+            ? `${secondsGap}s to pass #${target.rank}`
+            : `${Math.ceil(secondsGap / 60)}m to pass #${target.rank}`,
       }
     }
 
@@ -267,16 +199,13 @@ export default function LeaguePage({
       target,
       label: `${Math.max(
         1,
-        target.points -
-          currentUser.points,
+        target.points - currentUser.points,
       )} pts to reach #${target.rank}`,
     }
   }, [currentUser, entries])
 
   useEffect(() => {
-    if (!supabase || !userId || !profile.optIn) {
-      return
-    }
+    if (!supabase || !userId || !profile.optIn) return
 
     const channel = supabase
       .channel(`league-score-${userId}`)
@@ -297,16 +226,9 @@ export default function LeaguePage({
     return () => {
       void supabase?.removeChannel(channel)
     }
-  }, [
-    loadStandings,
-    period,
-    profile.optIn,
-    userId,
-  ])
+  }, [loadStandings, period, profile.optIn, userId])
 
-  const switchPeriod = async (
-    nextPeriod: LeaguePeriod,
-  ) => {
+  const switchPeriod = async (nextPeriod: LeaguePeriod) => {
     setPeriod(nextPeriod)
     setLoading(true)
     setMessage('')
@@ -331,10 +253,7 @@ export default function LeaguePage({
     setMessage('')
 
     try {
-      await saveLeagueProfile(
-        userId,
-        profile,
-      )
+      await saveLeagueProfile(userId, profile)
 
       if (profile.optIn) {
         await refreshLeagueHistory(90)
@@ -344,8 +263,8 @@ export default function LeaguePage({
 
       setMessage(
         profile.optIn
-          ? 'You are in the League. Your saved progress is active, and completed timers update your score immediately after cloud sync.'
-          : 'You are hidden from public standings. Your League score and progress are still saved and will return if you rejoin.',
+          ? 'League profile active. Your saved progress is live and completed timers update your score after cloud sync.'
+          : 'You are hidden from public standings. Your score and League history stay saved for when you rejoin.',
       )
     } catch (error) {
       setMessage(
@@ -363,14 +282,17 @@ export default function LeaguePage({
       <PageContainer>
         <PageHeader
           title="FOCUS League"
-          description="Weekly and monthly consistency competition."
+          description="Turn focused time into visible progress."
         />
-        <div
-          className="glass-panel"
-          style={{ padding: '24px' }}
-        >
-          Sign in with cloud sync enabled
-          to use the League.
+        <div className="glass-panel league-v4-signed-out">
+          <Trophy size={24} />
+          <div>
+            <strong>Enter the League</strong>
+            <span>
+              Sign in with cloud sync enabled to compete in weekly and
+              monthly standings.
+            </span>
+          </div>
         </div>
       </PageContainer>
     )
@@ -381,679 +303,380 @@ export default function LeaguePage({
     entry: entries[index] ?? null,
   }))
 
+  const rankText = currentUser
+    ? `#${currentUser.rank}`
+    : profile.optIn
+      ? '—'
+      : 'OFF'
+
+  const scoreText = currentUser
+    ? `${currentUser.points} pts`
+    : '0 pts'
+
+  const totalTimeText = currentUser
+    ? formatFocusedTime(currentUser.totalSeconds)
+    : '0m'
+
+  const scoredDaysText = currentUser
+    ? String(currentUser.scoredDays)
+    : '0'
+
   return (
     <PageContainer>
       <PageHeader
         title="FOCUS League"
-        description="Daily League scoring: any completed focus time earns 1 point, and more than 90 minutes earns 3 points. No-study days become 0 only after the day closes."
+        description="A competitive layer for consistency. Build points, climb the board, and protect your momentum."
       />
 
-      <div className="league-layout">
-        <div
-          style={{
-            display: 'grid',
-            gap: '16px',
-          }}
-        >
-          <div
-            className="glass-panel"
-            style={{ padding: '22px' }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent:
-                  'space-between',
-                gap: '16px',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-              }}
-            >
-              <div
-                style={{
-                  flex: '1 1 320px',
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems:
-                      'center',
-                    gap: '8px',
-                    fontSize: '12px',
-                    color:
-                      'var(--primary-glow)',
-                    fontWeight: 700,
-                    letterSpacing:
-                      '0.08em',
-                    textTransform:
-                      'uppercase',
-                  }}
-                >
-                  <Sparkles
-                    size={16}
-                  />
-                  Season score
-                </div>
+      <section className="league-v4-hero">
+        <div className="league-v4-orbit league-v4-orbit-a" />
+        <div className="league-v4-orbit league-v4-orbit-b" />
 
-                <div
-                  style={{
-                    marginTop: '7px',
-                    color:
-                      'var(--text-secondary)',
-                    fontSize: '13px',
-                    lineHeight: 1.6,
-                  }}
-                >
-                  Your score updates as soon
-                  as a completed timer reaches
-                  the cloud: 1 second through
-                  90 minutes earns 1 point;
-                  more than 90 minutes earns
-                  3 points. If you study
-                  nothing, the day becomes
-                  0 points only after it
-                  closes. Ties are broken by
-                  total focused time. Weekly
-                  standings reset every Monday
-                  and monthly standings reset
-                  on the first day.
-                </div>
-              </div>
-
-              <div className="league-period-switch">
-                {(
-                  [
-                    'week',
-                    'month',
-                  ] as LeaguePeriod[]
-                ).map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() =>
-                      void switchPeriod(
-                        item,
-                      )
-                    }
-                    style={{
-                      padding:
-                        '9px 14px',
-                      borderRadius:
-                        '9px',
-                      background:
-                        period === item
-                          ? 'var(--primary-soft)'
-                          : 'transparent',
-                      color:
-                        period === item
-                          ? 'var(--primary-glow)'
-                          : 'var(--text-muted)',
-                      cursor:
-                        'pointer',
-                      textTransform:
-                        'capitalize',
-                      fontWeight: 700,
-                    }}
-                  >
-                    {item}
-                  </button>
-                ))}
-              </div>
-            </div>
+        <div className="league-v4-hero-copy">
+          <div className="league-v4-kicker">
+            <Sparkles size={15} />
+            LIVE SEASON
+            <span>{period.toUpperCase()}</span>
           </div>
 
-          <div className="league-podium">
-              {podium.map(
-                ({ entry, place }, index) => (
-                  <div
-                    key={
-                      entry
-                        ? entry.publicName +
-                          '-' +
-                          entry.rank
-                        : `open-${place}`
-                    }
-                    className="glass-panel"
-                    style={{
-                      padding:
-                        '20px',
-                      textAlign:
-                        'center',
-                      transform:
-                        index === 0
-                          ? 'translateY(-4px)'
-                          : undefined,
-                    }}
-                  >
-                    <div
-                      className="mono"
-                      style={{
-                        marginBottom: '8px',
-                        color: 'var(--text-muted)',
-                        fontSize: '10px',
-                        fontWeight: 800,
-                        letterSpacing: '0.08em',
-                      }}
-                    >
-                      TOP {place}
-                    </div>
+          <h2>
+            Earn your place.
+            <br />
+            <span>Then defend it.</span>
+          </h2>
 
-                    <Crown
-                      size={
-                        index === 0
-                          ? 26
-                          : 20
-                      }
-                      style={{
-                        marginBottom:
-                          '10px',
-                        color:
-                          index === 0
-                            ? 'var(--energy-glow)'
-                            : 'var(--text-muted)',
-                      }}
-                    />
+          <p>
+            Your League score rewards showing up and going deeper.
+            Every completed focus session moves your public standing.
+          </p>
 
-                    <div
-                      style={{
-                        width: '42px',
-                        height: '42px',
-                        borderRadius:
-                          '14px',
-                        display:
-                          'grid',
-                        placeItems:
-                          'center',
-                        margin:
-                          '0 auto 10px',
-                        background:
-                          'var(--primary-soft)',
-                        color:
-                          'var(--primary-glow)',
-                        fontWeight: 800,
-                      }}
-                    >
-                      {entry
-                        ? entry.publicName
-                            .slice(0, 1)
-                            .toUpperCase()
-                        : place}
-                    </div>
-
-                    <div
-                      style={{
-                        color:
-                          'var(--text-primary)',
-                        fontWeight: 700,
-                        fontSize:
-                          '14px',
-                      }}
-                    >
-                      {entry
-                        ? entry.publicName
-                        : `Top ${place} · Open`}
-                    </div>
-
-                    <div
-                      className="mono"
-                      style={{
-                        marginTop:
-                          '6px',
-                        color:
-                          'var(--primary-glow)',
-                        fontSize:
-                          '17px',
-                      }}
-                    >
-                      {entry?.points ?? 0} pts
-                    </div>
-
-                    <div
-                      style={{
-                        marginTop:
-                          '4px',
-                        color:
-                          'var(--text-muted)',
-                        fontSize:
-                          '10px',
-                      }}
-                    >
-                      {entry
-                        ? `${entry.scoredDays} scored days · ${formatFocusedTime(entry.totalSeconds)} focused`
-                        : 'No learner yet'}
-                    </div>
-                  </div>
-                ),
-              )}
+          <div className="league-v4-rule-row">
+            <div className="league-v4-rule neutral">
+              <span className="league-v4-rule-points">0</span>
+              <div>
+                <strong>NO STUDY</strong>
+                <small>day closes at 0 seconds</small>
+              </div>
             </div>
 
-          <div
-            className="glass-panel"
-            style={{ padding: '20px' }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom:
-                  '14px',
-                color:
-                  'var(--text-primary)',
-                fontWeight: 700,
-              }}
-            >
-              <Trophy size={18} />
-              {period === 'week'
-                ? 'Weekly'
-                : 'Monthly'}{' '}
-              standings
+            <div className="league-v4-rule active">
+              <span className="league-v4-rule-points">1</span>
+              <div>
+                <strong>SHOW UP</strong>
+                <small>1 second → 90 minutes</small>
+              </div>
             </div>
 
-            {loading ? (
-              <div
-                style={{
-                  color:
-                    'var(--text-muted)',
-                  padding:
-                    '18px 0',
-                }}
-              >
-                Updating
-                standings...
+            <div className="league-v4-rule elite">
+              <span className="league-v4-rule-points">3</span>
+              <div>
+                <strong>DEEP DAY</strong>
+                <small>more than 90 minutes</small>
               </div>
-            ) : entries.length === 0 ? (
-              <div
-                style={{
-                  color:
-                    'var(--text-muted)',
-                  padding:
-                    '18px 0',
-                }}
-              >
-                No public competitors
-                yet. The first
-                consistent learner can
-                take the top spot.
-              </div>
-            ) : (
-              <div
-                style={{
-                  display: 'grid',
-                  gap: '8px',
-                }}
-              >
-                {entries.map(
-                  (entry) => (
-                    <div
-                      key={
-                        entry.publicName +
-                        '-' +
-                        entry.rank
-                      }
-                      style={{
-                        display:
-                          'grid',
-                        gridTemplateColumns:
-                          '48px minmax(0, 1fr) auto',
-                        alignItems:
-                          'center',
-                        gap: '10px',
-                        padding:
-                          '12px',
-                        borderRadius:
-                          '12px',
-                        border:
-                          entry.isCurrentUser
-                            ? '1px solid var(--primary-border)'
-                            : '1px solid var(--void-border)',
-                        background:
-                          entry.isCurrentUser
-                            ? 'var(--primary-soft)'
-                            : 'var(--void-surface-hover)',
-                      }}
-                    >
-                      <div
-                        className="mono"
-                        style={{
-                          color:
-                            entry.rank <=
-                            3
-                              ? 'var(--energy-glow)'
-                              : 'var(--text-muted)',
-                          fontWeight:
-                            700,
-                        }}
-                      >
-                        #{entry.rank}
-                      </div>
-
-                      <div>
-                        <div
-                          style={{
-                            color:
-                              'var(--text-primary)',
-                            fontWeight:
-                              650,
-                            fontSize:
-                              '13px',
-                          }}
-                        >
-                          {
-                            entry.publicName
-                          }
-                          {entry.isCurrentUser
-                            ? ' · You'
-                            : ''}
-                        </div>
-
-                        <div
-                          style={{
-                            marginTop:
-                              '3px',
-                            color:
-                              'var(--text-muted)',
-                            fontSize:
-                              '10px',
-                          }}
-                        >
-                          {entry.scoredDays}{' '}
-                          scored days ·{' '}
-                          {formatFocusedTime(
-                            entry.totalSeconds,
-                          )}{' '}
-                          focused
-                        </div>
-                      </div>
-
-                      <div
-                        className="mono"
-                        style={{
-                          color:
-                            'var(--primary-glow)',
-                          fontWeight:
-                            700,
-                        }}
-                      >
-                        {entry.points}
-                      </div>
-                    </div>
-                  ),
-                )}
-              </div>
-            )}
+            </div>
           </div>
         </div>
 
-        <div
-          style={{
-            display: 'grid',
-            gap: '16px',
-          }}
-        >
-          <div
-            className="glass-panel"
-            style={{ padding: '20px' }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                gap: '8px',
-                alignItems:
-                  'center',
-                marginBottom:
-                  '16px',
-                fontWeight: 700,
-              }}
+        <div className="league-v4-rank-core">
+          <div className="league-v4-rank-glow" />
+          <div className="league-v4-rank-ring">
+            <span>YOUR RANK</span>
+            <strong>{rankText}</strong>
+            <small>{scoreText}</small>
+          </div>
+
+          <div className="league-v4-rank-target">
+            <Target size={15} />
+            <span>
+              {currentUser?.rank === 1
+                ? 'Hold the lead'
+                : nextRank?.label ?? 'Join to enter the race'}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <div className="league-v4-period-bar">
+        <div>
+          <span>STANDINGS WINDOW</span>
+          <strong>
+            {period === 'week' ? 'This week' : 'This month'}
+          </strong>
+        </div>
+
+        <div className="league-v4-period-switch">
+          {(['week', 'month'] as LeaguePeriod[]).map((item) => (
+            <button
+              key={item}
+              type="button"
+              className={period === item ? 'active' : ''}
+              onClick={() => void switchPeriod(item)}
             >
-              <ShieldCheck
-                size={18}
-              />
-              Your public League
-              profile
+              {item}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <section className="league-v4-podium-shell">
+        <div className="league-v4-section-head">
+          <div>
+            <span>ELITE BOARD</span>
+            <h3>Top three</h3>
+          </div>
+
+          <div className="league-v4-live">
+            <i />
+            Live ranking
+          </div>
+        </div>
+
+        <div className="league-v4-podium">
+          {podium.map(({ entry, place }) => (
+            <article
+              key={
+                entry
+                  ? `${entry.publicName}-${entry.rank}`
+                  : `open-${place}`
+              }
+              className={`league-v4-podium-card place-${place} ${
+                entry?.isCurrentUser ? 'is-you' : ''
+              }`}
+            >
+              <div className="league-v4-podium-top">
+                <span>TOP {place}</span>
+                {place === 1 ? (
+                  <Crown size={22} />
+                ) : (
+                  <Medal size={20} />
+                )}
+              </div>
+
+              <div className="league-v4-avatar">
+                {entry
+                  ? entry.publicName.slice(0, 1).toUpperCase()
+                  : place}
+              </div>
+
+              <div className="league-v4-podium-name">
+                <strong>
+                  {entry ? entry.publicName : 'Open position'}
+                </strong>
+                {entry?.isCurrentUser && <span>YOU</span>}
+              </div>
+
+              <div className="league-v4-podium-score">
+                {entry?.points ?? 0}
+                <small>PTS</small>
+              </div>
+
+              <div className="league-v4-podium-meta">
+                <span>
+                  <Flame size={13} />
+                  {entry?.scoredDays ?? 0} scored days
+                </span>
+                <span>
+                  <Clock size={13} />
+                  {entry
+                    ? formatFocusedTime(entry.totalSeconds)
+                    : '0m'}
+                </span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <div className="league-v4-grid">
+        <section className="league-v4-board">
+          <div className="league-v4-section-head">
+            <div>
+              <span>GLOBAL LADDER</span>
+              <h3>
+                {period === 'week' ? 'Weekly' : 'Monthly'} standings
+              </h3>
+            </div>
+            <Trophy size={20} />
+          </div>
+
+          {loading ? (
+            <div className="league-v4-empty">Updating standings…</div>
+          ) : entries.length === 0 ? (
+            <div className="league-v4-empty">
+              No public competitors yet. The first learner can claim
+              the board.
+            </div>
+          ) : (
+            <div className="league-v4-rows">
+              {entries.map((entry) => (
+                <div
+                  key={`${entry.publicName}-${entry.rank}`}
+                  className={`league-v4-row ${
+                    entry.isCurrentUser ? 'is-you' : ''
+                  }`}
+                >
+                  <div className="league-v4-row-rank">
+                    #{entry.rank}
+                  </div>
+
+                  <div className="league-v4-row-avatar">
+                    {entry.publicName.slice(0, 1).toUpperCase()}
+                  </div>
+
+                  <div className="league-v4-row-person">
+                    <strong>
+                      {entry.publicName}
+                      {entry.isCurrentUser ? ' · You' : ''}
+                    </strong>
+                    <span>
+                      {entry.scoredDays} scored days ·{' '}
+                      {formatFocusedTime(entry.totalSeconds)} focused
+                    </span>
+                  </div>
+
+                  <div className="league-v4-row-points">
+                    <strong>{entry.points}</strong>
+                    <span>PTS</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <aside className="league-v4-side">
+          <section className="league-v4-command">
+            <div className="league-v4-command-head">
+              <div>
+                <span>YOUR COMMAND CENTER</span>
+                <h3>{profile.publicName || 'Focused learner'}</h3>
+              </div>
+              <ShieldCheck size={21} />
             </div>
 
-            <label
-              style={{
-                display: 'grid',
-                gap: '7px',
-                color:
-                  'var(--text-secondary)',
-                fontSize: '12px',
-              }}
-            >
-              Public name
+            <div className="league-v4-personal-stats">
+              <div>
+                <span>Rank</span>
+                <strong>{rankText}</strong>
+              </div>
+              <div>
+                <span>Score</span>
+                <strong>{scoreText}</strong>
+              </div>
+              <div>
+                <span>Focus</span>
+                <strong>{totalTimeText}</strong>
+              </div>
+              <div>
+                <span>Scored days</span>
+                <strong>{scoredDaysText}</strong>
+              </div>
+            </div>
+
+            <div className="league-v4-next-move">
+              <div>
+                <Zap size={16} />
+                NEXT MOVE
+              </div>
+              <strong>
+                {currentUser?.rank === 1
+                  ? 'Protect #1. Another deep day keeps pressure on everyone below.'
+                  : nextRank?.label ??
+                    'Join public standings to start climbing.'}
+              </strong>
+            </div>
+
+            <label className="league-v4-field">
+              <span>Public name</span>
               <input
-                value={
-                  profile.publicName
-                }
+                value={profile.publicName}
                 maxLength={40}
-                onChange={(
-                  event,
-                ) =>
-                  setProfile(
-                    (current) => ({
-                      ...current,
-                      publicName:
-                        event.target
-                          .value,
-                    }),
-                  )
+                onChange={(event) =>
+                  setProfile((current) => ({
+                    ...current,
+                    publicName: event.target.value,
+                  }))
                 }
-                style={{
-                  padding:
-                    '10px 12px',
-                }}
               />
             </label>
 
-            <label
-              style={{
-                display: 'flex',
-                gap: '10px',
-                alignItems:
-                  'flex-start',
-                marginTop:
-                  '16px',
-                color:
-                  'var(--text-secondary)',
-                fontSize: '12px',
-                lineHeight: 1.5,
-                cursor: 'pointer',
-              }}
-            >
+            <label className="league-v4-join">
               <input
                 type="checkbox"
-                checked={
-                  profile.optIn
-                }
+                checked={profile.optIn}
                 onChange={(event) => {
-                  const nextOptIn =
-                    event.target.checked
+                  const nextOptIn = event.target.checked
 
-                  if (
-                    profile.optIn &&
-                    !nextOptIn
-                  ) {
-                    const confirmed =
-                      window.confirm(
-                        'Leave the League? You will be hidden from public standings, but your score and League progress will stay saved and return if you rejoin.',
-                      )
+                  if (profile.optIn && !nextOptIn) {
+                    const confirmed = window.confirm(
+                      'Leave the League? You will be hidden from public standings, but your score and League progress will stay saved and return if you rejoin.',
+                    )
 
-                    if (!confirmed) {
-                      return
-                    }
+                    if (!confirmed) return
                   }
 
-                  setProfile(
-                    (current) => ({
-                      ...current,
-                      optIn: nextOptIn,
-                    }),
-                  )
+                  setProfile((current) => ({
+                    ...current,
+                    optIn: nextOptIn,
+                  }))
                 }}
               />
-
+              <span className="league-v4-join-control" />
               <span>
-                Join public
-                standings. Only your
-                public name, score,
-                scored-day count and
-                aggregate focused time
-                are shown. Your email,
-                subjects, session
-                notes and study
-                history stay private.
-                Leaving the League only
-                hides you from standings;
-                your saved League progress
-                is kept for when you
-                rejoin.
+                <strong>
+                  {profile.optIn ? 'Public standings ON' : 'Join League'}
+                </strong>
+                <small>
+                  Leaving only hides your profile. Your League progress
+                  stays saved.
+                </small>
               </span>
             </label>
 
             <button
               type="button"
-              className="cyber-btn"
+              className="cyber-btn league-v4-save"
               disabled={saving}
-              onClick={() =>
-                void saveProfile()
-              }
-              style={{
-                marginTop: '16px',
-              }}
+              onClick={() => void saveProfile()}
             >
-              {saving
-                ? 'SAVING...'
-                : 'SAVE LEAGUE SETTINGS'}
+              {saving ? 'SYNCING…' : 'SAVE LEAGUE SETTINGS'}
             </button>
 
-            {currentUser && (
-              <div className="league-user-progress">
-                <div>
-                  <span>Current rank</span>
-                  <strong>
-                    #{currentUser.rank}
-                  </strong>
-                </div>
+            <div className="league-v4-privacy">
+              <Lock size={14} />
+              <span>
+                Only your public name, score, scored-day count and
+                aggregate focused time are visible. Email, subjects,
+                notes and study history stay private.
+              </span>
+            </div>
+          </section>
 
-                <div>
-                  <span>Score</span>
-                  <strong>
-                    {currentUser.points} pts
-                  </strong>
-                </div>
-
-                <div>
-                  <span>Next step</span>
-                  <strong>
-                    {nextRank
-                      ? nextRank.label
-                      : 'You are at the top'}
-                  </strong>
-                </div>
+          <section className="league-v4-champions">
+            <div className="league-v4-section-head compact">
+              <div>
+                <span>HALL OF FOCUS</span>
+                <h3>Previous champions</h3>
               </div>
-            )}
-          </div>
-
-          <div
-            className="glass-panel"
-            style={{ padding: '20px' }}
-          >
-            <div
-              style={{
-                color:
-                  'var(--text-muted)',
-                fontSize: '10px',
-                textTransform:
-                  'uppercase',
-                letterSpacing:
-                  '0.08em',
-                marginBottom:
-                  '12px',
-              }}
-            >
-              Previous champions
+              <Crown size={18} />
             </div>
 
-            <div
-              style={{
-                display: 'grid',
-                gap: '10px',
-              }}
-            >
+            <div className="league-v4-champion-grid">
               <div>
-                <div
-                  style={{
-                    color:
-                      'var(--text-secondary)',
-                    fontSize:
-                      '11px',
-                  }}
-                >
-                  Last week
-                </div>
-
-                <div
-                  style={{
-                    color:
-                      'var(--text-primary)',
-                    marginTop:
-                      '4px',
-                    fontWeight:
-                      700,
-                  }}
-                >
-                  {lastWeekChampion ??
-                    'No winner yet'}
-                </div>
+                <span>Last week</span>
+                <strong>{lastWeekChampion ?? 'No winner yet'}</strong>
               </div>
-
               <div>
-                <div
-                  style={{
-                    color:
-                      'var(--text-secondary)',
-                    fontSize:
-                      '11px',
-                  }}
-                >
-                  Last month
-                </div>
-
-                <div
-                  style={{
-                    color:
-                      'var(--text-primary)',
-                    marginTop:
-                      '4px',
-                    fontWeight:
-                      700,
-                  }}
-                >
-                  {lastMonthChampion ??
-                    'No winner yet'}
-                </div>
+                <span>Last month</span>
+                <strong>{lastMonthChampion ?? 'No winner yet'}</strong>
               </div>
             </div>
-          </div>
+          </section>
 
           {message && (
-            <div
-              className="glass-panel"
-              style={{
-                padding: '16px',
-                color:
-                  'var(--text-secondary)',
-                fontSize: '12px',
-                lineHeight: 1.5,
-              }}
-            >
-              {message}
-            </div>
+            <div className="league-v4-message">{message}</div>
           )}
-        </div>
+        </aside>
       </div>
     </PageContainer>
   )
