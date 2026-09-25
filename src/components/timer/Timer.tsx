@@ -799,7 +799,7 @@ export default function Timer({
 
         <div>
           <span className="eyebrow">
-            Session complete
+            {tr('Session complete', 'سێشن تەواو بوو')}
           </span>
           <h2>
             {tr(`${subjectName} is done.`, `${subjectName} تەواو بوو.`)}
