@@ -197,6 +197,44 @@ export function loadRoutineItems(): RoutineItem[] {
           targetMinutes,
           mode,
           rotationOrder,
+          daysOfWeek:
+            Array.isArray(
+              value.daysOfWeek,
+            )
+              ? (() => {
+                  const days =
+                    Array.from(
+                      new Set(
+                        value.daysOfWeek.filter(
+                          (day): day is number =>
+                            typeof day === "number" &&
+                            Number.isInteger(day) &&
+                            day >= 0 &&
+                            day <= 6,
+                        ),
+                      ),
+                    )
+
+                  return days.length > 0
+                    ? days
+                    : [0, 1, 2, 3, 4, 5, 6]
+                })()
+              : [0, 1, 2, 3, 4, 5, 6],
+          recoveryDays:
+            typeof value.recoveryDays === "number" &&
+            Number.isFinite(
+              value.recoveryDays,
+            )
+              ? Math.max(
+                  0,
+                  Math.min(
+                    3,
+                    Math.round(
+                      value.recoveryDays,
+                    ),
+                  ),
+                )
+              : 1,
           enabled:
             value.enabled !== false,
           createdAt,
@@ -538,6 +576,44 @@ function normalizeSnapshotRecord(
                   ? "rotation"
                   : "fixed",
               rotationOrder,
+              daysOfWeek:
+                Array.isArray(
+                  item.daysOfWeek,
+                )
+                  ? (() => {
+                      const days =
+                        Array.from(
+                          new Set(
+                            item.daysOfWeek.filter(
+                              (day): day is number =>
+                                typeof day === "number" &&
+                                Number.isInteger(day) &&
+                                day >= 0 &&
+                                day <= 6,
+                            ),
+                          ),
+                        )
+
+                      return days.length > 0
+                        ? days
+                        : [0, 1, 2, 3, 4, 5, 6]
+                    })()
+                  : [0, 1, 2, 3, 4, 5, 6],
+              recoveryDays:
+                typeof item.recoveryDays === "number" &&
+                Number.isFinite(
+                  item.recoveryDays,
+                )
+                  ? Math.max(
+                      0,
+                      Math.min(
+                        3,
+                        Math.round(
+                          item.recoveryDays,
+                        ),
+                      ),
+                    )
+                  : 1,
               enabled:
                 item.enabled !==
                 false,
