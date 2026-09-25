@@ -13,6 +13,7 @@ import type {
 import {
   getFocusPulse,
 } from '../../utils/focusPulse'
+import { useI18n } from '../../useI18n'
 
 interface FocusPulseProps {
   sessions: StudySession[]
@@ -61,7 +62,7 @@ export default function FocusPulse({
       <div className="focus-pulse-main">
         <div className="focus-pulse-kicker">
           <BrainCircuit size={16} />
-          FOCUS Pulse
+          {tr('FOCUS Pulse', 'پەڵسی FOCUS')}
         </div>
 
         <h2 className="focus-pulse-headline">
@@ -107,7 +108,7 @@ export default function FocusPulse({
       <div className="focus-pulse-side">
         <div className="focus-pulse-meter">
           <div className="focus-pulse-meter-row">
-            <span>Today</span>
+            <span>{tr('Today', 'ئەمڕۆ')}</span>
             <strong>
               {pulse.todayMinutes}/
               {pulse.dailyGoal}m
@@ -126,7 +127,7 @@ export default function FocusPulse({
 
         <div className="focus-pulse-meter">
           <div className="focus-pulse-meter-row">
-            <span>This week</span>
+            <span>{tr('This week', 'ئەم هەفتەیە')}</span>
             <strong>
               {pulse.weeklyMinutes}/
               {pulse.weeklyGoal}m
@@ -149,21 +150,28 @@ export default function FocusPulse({
               {trendIcon(
                 pulse.consistencyTrend,
               )}
-              Rhythm
+              {tr('Rhythm', 'ڕێتم')}
             </div>
             <strong>
-              {pulse.consistencyTrend}
+              {tr(
+                pulse.consistencyTrend,
+                pulse.consistencyTrend === 'improving'
+                  ? 'باشتر دەبێت'
+                  : pulse.consistencyTrend === 'declining'
+                    ? 'خراپتر دەبێت'
+                    : 'جێگیرە',
+              )}
             </strong>
           </div>
 
           <div className="focus-pulse-mini">
             <div>
               <Clock3 size={15} />
-              Best window
+              {tr('Best window', 'باشترین کات')}
             </div>
             <strong>
               {pulse.bestTime ??
-                'Learning'}
+                tr('Learning', 'هێشتا فێر دەبێت')}
             </strong>
           </div>
         </div>
