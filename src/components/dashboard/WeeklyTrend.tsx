@@ -251,6 +251,7 @@ function DayTooltip({
   active,
   payload,
 }: TooltipProps) {
+  const { tr } = useI18n()
   if (
     !active ||
     !payload ||
@@ -317,7 +318,7 @@ function HourTooltip({
 export default function WeeklyTrend({
   sessions,
 }: WeeklyTrendProps) {
-  const { t, tr, language } = useI18n()
+  const { t, tr } = useI18n()
 
   const data = useMemo(() => {
     const dayNames = [
