@@ -178,9 +178,16 @@ export default function StudyPlanPage({
               <div>
                 <span>{tr('Today', 'ئەمڕۆ')}</span>
                 <strong className="mono">
-                  {plan.todayCompletedMinutes}m
+                  {plan.todayCompletedMinutes}
+                  {language === 'ku'
+                    ? ' خولەک'
+                    : 'm'}
                   <small>
-                    / {dailyGoal}m
+                    {' / '}
+                    {dailyGoal}
+                    {language === 'ku'
+                      ? ' خولەک'
+                      : 'm'}
                   </small>
                 </strong>
               </div>
@@ -314,12 +321,19 @@ export default function StudyPlanPage({
                     <div className="study-plan-action">
                       <div className="study-plan-duration">
                         <strong className="mono">
-                          {item.minutes}m
+                          {item.minutes}
+                          {language === 'ku'
+                            ? ' خولەک'
+                            : 'm'}
                         </strong>
                         {item.todayCompletedMinutes >
                           0 && (
                           <span>
-                            {item.todayCompletedMinutes}m {tr('done today', 'ئەمڕۆ تەواو کرا')}
+                            {item.todayCompletedMinutes}
+                            {language === 'ku'
+                              ? ' خولەک '
+                              : 'm '}
+                            {tr('done today', 'ئەمڕۆ تەواو کرا')}
                           </span>
                         )}
                       </div>
@@ -397,9 +411,15 @@ export default function StudyPlanPage({
                     {
                       allocation.completedMinutesThisWeek
                     }
-                    m
+                    {language === 'ku'
+                      ? ' خولەک'
+                      : 'm'}
                     <small>
-                      / {allocation.targetMinutes}m
+                      {' / '}
+                      {allocation.targetMinutes}
+                      {language === 'ku'
+                        ? ' خولەک'
+                        : 'm'}
                     </small>
                   </div>
 
@@ -685,8 +705,14 @@ export default function StudyPlanPage({
 
                       <div className="advanced-goal-progress-row">
                         <span className="mono">
-                          {progress.minutes}m /{' '}
-                          {progress.targetMinutes}m
+                          {progress.minutes}
+                          {language === 'ku'
+                            ? ' خولەک'
+                            : 'm'}{' / '}
+                          {progress.targetMinutes}
+                          {language === 'ku'
+                            ? ' خولەک'
+                            : 'm'}
                         </span>
                         <span>
                           {progress.completed
