@@ -11,7 +11,7 @@ PR #1 stays **draft** until the real-browser sign-off is complete:
 - [x] **Auth security review:** Supabase Security Advisor was re-run. Leaked-password protection is unavailable on the current Supabase plan and is recorded as an accepted limitation; the remaining two authenticated League SECURITY DEFINER warnings are intentional.
 - [ ] **Real-browser sign-off:** Complete the 10-minute merge smoke test below.
 
-The latest branch HEAD passes GitHub Quality. A fresh Vercel preview is currently blocked by the account build-rate limit, so do not treat the earlier READY preview as verification of the current HEAD. The final release gate still requires a real authenticated browser session.
+The release branch currently passes GitHub Quality and has a READY Vercel preview. Re-verify both gates after any later code, CSS, migration, or runtime-affecting commit. The final release gate still requires a real authenticated browser session.
 
 ## 10-minute merge smoke test
 
@@ -31,8 +31,8 @@ Use the latest preview with two test accounts (A and B). This is the minimum rea
 ## Automated gates
 
 - [x] GitHub **Quality** passes: install, lint, V3 regression tests, client-secret guard, migration-version guard and build.
-- [ ] **Current-HEAD Vercel preview:** blocked by the account build-rate limit. Re-run/verify a fresh preview for the final HEAD before merge.
-- [ ] **Current-HEAD runtime check:** re-check error/fatal logs after a fresh preview is available. Earlier redesign previews were clean, but they do not verify the final HEAD.
+- [x] **Vercel preview:** the release branch has a READY preview. Re-check after any later runtime-affecting commit.
+- [ ] **Final runtime check:** after the manual authenticated smoke test, re-check the final preview for error/fatal runtime logs before merge.
 - [x] Supabase migrations through `league_legacy_day_count_compat` are applied.
 - [x] Repository migration versions match live Supabase migration history exactly; baseline migrations are recorded remotely and the fresh-schema chain includes client IDs and realtime publication setup.
 - [x] Supabase `study-advisor` Edge Function is ACTIVE with JWT verification enabled.
