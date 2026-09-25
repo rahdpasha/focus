@@ -1200,6 +1200,29 @@ export async function saveSupabaseMutations(
               item.rotationOrder,
             ),
           ),
+        days_of_week:
+          item.daysOfWeek.length > 0
+            ? Array.from(
+                new Set(
+                  item.daysOfWeek.filter(
+                    (day) =>
+                      Number.isInteger(day) &&
+                      day >= 0 &&
+                      day <= 6,
+                  ),
+                ),
+              )
+            : [0, 1, 2, 3, 4, 5, 6],
+        recovery_days:
+          Math.max(
+            0,
+            Math.min(
+              3,
+              Math.round(
+                item.recoveryDays,
+              ),
+            ),
+          ),
         enabled:
           item.enabled,
         created_at:
