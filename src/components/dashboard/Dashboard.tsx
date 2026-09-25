@@ -9,6 +9,9 @@ import type {
   Subject,
   StudySession,
 } from '../../types'
+import type {
+  RoutineItem,
+} from '../../storage/types'
 import FocusPulse from './FocusPulse'
 import RecentSessions from './RecentSessions'
 import StatCard from './StatCard'
@@ -18,12 +21,18 @@ import {
 import {
   getStudyPlan,
 } from '../../utils/studyPlan'
+import {
+  getRotationItemForDate,
+  getRoutineItemsForDate,
+  getRoutineMinutesForDate,
+} from '../../utils/routine'
 
 interface DashboardProps {
   subjects: Subject[]
   sessions: StudySession[]
   dailyGoal: number
   weeklyGoal: number
+  routineItems: RoutineItem[]
   onDeleteSession: (
     id: string,
   ) => void
@@ -83,6 +92,7 @@ export default function Dashboard({
   sessions,
   dailyGoal,
   weeklyGoal,
+  routineItems,
   onDeleteSession,
   onStartRecommendedSession,
 }: DashboardProps) {
@@ -152,6 +162,28 @@ export default function Dashboard({
       weeklyGoal,
       dailyGoal,
     )
+
+  const todaysRoutine =
+    getRoutineItemsForDate(
+      routineItems,
+      now,
+    )
+
+  const todaysRotation =
+    getRotationItemForDate(
+      routineItems,
+      now,
+    )
+
+  const routineCompleted =
+    todaysRoutine.filter(
+      (item) =>
+        getRoutineMinutesForDate(
+          item,
+          sessions,
+          now,
+        ) >= item.targetMinutes,
+    ).length
 
   return (
     <main className="dashboard dashboard-v3">
@@ -230,6 +262,172 @@ export default function Dashboard({
           )}
           accentColor="var(--teal)"
         />
+      </section>
+
+      <section
+        className="glass-panel"
+        style={{
+          padding: '18px',
+          marginBottom: '18px',
+        }}
+      >
+        <div
+          className="dashboard-section-head"
+          style={{
+            marginBottom: '12px',
+          }}
+        >
+          <div>
+            <div className="eyebrow">
+              Today's routine
+            </div>
+            <h2>
+              {routineCompleted}/{
+                todaysRoutine.length
+              } complete
+            </h2>
+          </div>
+
+          {todaysRotation && (
+            <span className="mono">
+              Rotation · {
+                todaysRotation.title
+              }
+            </span>
+          )}
+        </div>
+
+        {todaysRoutine.length === 0 ? (
+          <div className="dashboard-empty">
+            Add fixed or rotating
+            study items in Routine.
+          </div>
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns:
+                'repeat(auto-fit, minmax(180px, 1fr))',
+              gap: '10px',
+            }}
+          >
+            {todaysRoutine.map(
+              (item) => {
+                const subject =
+                  subjects.find(
+                    (candidate) =>
+                      candidate.id ===
+                      item.subjectId,
+                  )
+
+                const minutes =
+                  getRoutineMinutesForDate(
+                    item,
+                    sessions,
+                    now,
+                  )
+
+                const done =
+                  minutes >=
+                  item.targetMinutes
+
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    disabled={!subject}
+                    onClick={() =>
+                      onStartRecommendedSession(
+                        item.subjectId,
+                        item.targetMinutes,
+                      )
+                    }
+                    style={{
+                      minHeight: '76px',
+                      padding:
+                        '12px 14px',
+                      border:
+                        '1px solid var(--void-border)',
+                      borderRadius:
+                        '12px',
+                      background:
+                        'var(--void-surface-hover)',
+                      display: 'grid',
+                      gridTemplateColumns:
+                        '42px minmax(0, 1fr)',
+                      gap: '10px',
+                      alignItems: 'center',
+                      textAlign: 'left',
+                      cursor: subject
+                        ? 'pointer'
+                        : 'default',
+                    }}
+                  >
+                    <span
+                      aria-label={
+                        done
+                          ? 'Completed'
+                          : 'Pending'
+                      }
+                      style={{
+                        width: '38px',
+                        height: '38px',
+                        display: 'grid',
+                        placeItems:
+                          'center',
+                        borderRadius:
+                          '10px',
+                        background: done
+                          ? 'var(--primary-soft)'
+                          : 'var(--void-surface)',
+                        border: done
+                          ? '1px solid var(--primary-border)'
+                          : '1px solid var(--void-border)',
+                        fontSize: '19px',
+                      }}
+                    >
+                      {done
+                        ? '✅'
+                        : '⬜'}
+                    </span>
+
+                    <span
+                      style={{
+                        minWidth: 0,
+                      }}
+                    >
+                      <strong
+                        style={{
+                          display:
+                            'block',
+                          color:
+                            'var(--text-primary)',
+                        }}
+                      >
+                        {item.title}
+                      </strong>
+                      <small
+                        style={{
+                          color:
+                            'var(--text-muted)',
+                        }}
+                      >
+                        {minutes}/{
+                          item.targetMinutes
+                        }m · {
+                          item.mode ===
+                          'rotation'
+                            ? 'rotation'
+                            : 'daily'
+                        }
+                      </small>
+                    </span>
+                  </button>
+                )
+              },
+            )}
+          </div>
+        )}
       </section>
 
       <section className="dashboard-v3-grid">
