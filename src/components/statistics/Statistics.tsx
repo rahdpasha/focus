@@ -141,7 +141,7 @@ function buildDayPulse(
       key: start.toISOString(),
       label:
         offset === 0
-          ? 'Today'
+          ? tr('Today', 'ئەمڕۆ')
           : start.toLocaleDateString(locale, { weekday: 'long' }),
       shortLabel: start.toLocaleDateString(locale, {
         weekday: 'short',
@@ -188,7 +188,7 @@ export default function Statistics({
   weeklyGoal,
   weeklyGoalsHistory,
 }: StatisticsProps) {
-  const { language, t } = useI18n()
+  const { language, t, tr } = useI18n()
   const locale = language === 'ku' ? 'ku-IQ' : 'en-US'
 
   const overview = getStatisticsOverview(sessions)
@@ -205,7 +205,10 @@ export default function Statistics({
     weeklyGoalsHistory,
     weeklyGoal,
   )
-  const dayPulse = buildDayPulse(sessions, locale)
+  const dayPulse = buildDayPulse(sessions, locale).map((day) => ({
+    ...day,
+    label: day.label === 'Today' ? tr('Today', 'ئەمڕۆ') : day.label,
+  }))
   const subjectPulse = buildSubjectPulse(sessions)
 
   const maxDaySeconds = Math.max(
@@ -227,12 +230,12 @@ export default function Statistics({
 
   const headline =
     overview.weekFocusSeconds <= 0
-      ? 'Your signal is waiting.'
+      ? tr('Your signal is waiting.', 'هێشتا داتای سەرنجت چاوەڕوانە.')
       : weeklyProgress >= 100
-        ? 'You cleared the weekly target.'
+        ? tr('You cleared the weekly target.', 'ئامانجی هەفتانەت تەواو کرد.')
         : activeDays >= 5
-          ? 'Your consistency is building.'
-          : 'Your focus rhythm is taking shape.'
+          ? tr('Your consistency is building.', 'بەردەوامییەکەت بەهێزتر دەبێت.')
+          : tr('Your focus rhythm is taking shape.', 'ڕێتمی سەرنجت خەریکە شێوە دەگرێت.')
 
   return (
     <div className="stats-v4">
@@ -242,37 +245,36 @@ export default function Statistics({
         <div className="stats-v4-hero-copy">
           <div className="stats-v4-kicker">
             <BrainCircuit size={15} />
-            Focus intelligence
+            {tr('Focus intelligence', 'زیرەکی سەرنج')}
           </div>
 
           <h1>{headline}</h1>
 
           <p>
-            A live read of your time, rhythm, consistency and strongest
-            performance patterns — without noisy dashboard charts.
+            {tr('A live read of your time, rhythm, consistency and strongest performance patterns — without noisy dashboard charts.', 'خوێندنەوەیەکی ڕاستەوخۆ بۆ کات، ڕێتم، بەردەوامی و بەهێزترین شێوازی کارکردنت ـ بەبێ گرافی ئاڵۆز.')}
           </p>
 
           <div className="stats-v4-hero-chips">
             <span>
               <Flame size={13} />
-              {streakStats.currentDailyStreak}d streak
+              {streakStats.currentDailyStreak} {tr('day streak', 'ڕۆژ زنجیرە')}
             </span>
             <span>
               <CalendarDays size={13} />
-              {activeDays}/7 active days
+              {activeDays}/7 {tr('active days', 'ڕۆژی چالاک')}
             </span>
             <span>
               <Target size={13} />
-              {weeklyProgress}% weekly goal
+              {weeklyProgress}% {tr('weekly goal', 'ئامانجی هەفتانە')}
             </span>
           </div>
         </div>
 
         <div className="stats-v4-orb">
           <div className="stats-v4-orb-ring">
-            <span>This week</span>
+            <span>{tr('This week', 'ئەم هەفتەیە')}</span>
             <strong>{formatDuration(overview.weekFocusSeconds)}</strong>
-            <small>{weeklyProgress}% of target</small>
+            <small>{weeklyProgress}% {tr('of target', 'لە ئامانج')}</small>
           </div>
         </div>
       </section>
@@ -284,7 +286,7 @@ export default function Statistics({
           </div>
           <span>{t('today')}</span>
           <strong>{formatDuration(overview.todayFocusSeconds)}</strong>
-          <small>focused today</small>
+          <small>{tr('focused today', 'سەرنجی ئەمڕۆ')}</small>
         </article>
 
         <article>
@@ -293,7 +295,7 @@ export default function Statistics({
           </div>
           <span>{t('last7Days')}</span>
           <strong>{formatDuration(overview.weekFocusSeconds)}</strong>
-          <small>{activeDays} active days</small>
+          <small>{activeDays} {tr('active days', 'ڕۆژی چالاک')}</small>
         </article>
 
         <article>
@@ -302,7 +304,7 @@ export default function Statistics({
           </div>
           <span>{t('totalFocus')}</span>
           <strong>{formatDuration(overview.totalFocusSeconds)}</strong>
-          <small>all recorded focus</small>
+          <small>{tr('all recorded focus', 'هەموو سەرنجی تۆمارکراو')}</small>
         </article>
 
         <article>
@@ -311,7 +313,7 @@ export default function Statistics({
           </div>
           <span>{t('sessions')}</span>
           <strong>{completed.length}</strong>
-          <small>completed sessions</small>
+          <small>{tr('completed sessions', 'سێشنە تەواوکراوەکان')}</small>
         </article>
 
         <article>
@@ -320,7 +322,7 @@ export default function Statistics({
           </div>
           <span>{t('avgSession')}</span>
           <strong>{formatDuration(overview.averageSessionSeconds)}</strong>
-          <small>average depth</small>
+          <small>{tr('average depth', 'ناوەندی قووڵی')}</small>
         </article>
 
         <article>
@@ -329,25 +331,25 @@ export default function Statistics({
           </div>
           <span>{t('longest')}</span>
           <strong>{formatDuration(overview.longestSessionSeconds)}</strong>
-          <small>longest session</small>
+          <small>{tr('longest session', 'درێژترین سێشن')}</small>
         </article>
       </section>
 
       <section className="stats-v4-rhythm">
         <div className="stats-v4-section-head">
           <div>
-            <span>7-day pattern</span>
-            <h2>Focus rhythm</h2>
+            <span>{tr('7-day pattern', 'شێوازی ٧ ڕۆژ')}</span>
+            <h2>{tr('Focus rhythm', 'ڕێتمی سەرنج')}</h2>
           </div>
 
           <div className="stats-v4-head-stat">
-            <span>Strongest day</span>
+            <span>{tr('Strongest day', 'بەهێزترین ڕۆژ')}</span>
             <strong>
               {strongestDay && strongestDay.seconds > 0
                 ? `${strongestDay.label} · ${formatDuration(
                     strongestDay.seconds,
                   )}`
-                : 'Still learning'}
+                : tr('Still learning', 'هێشتا فێردەبێت')}
             </strong>
           </div>
         </div>
@@ -388,13 +390,13 @@ export default function Statistics({
         <section className="stats-v4-weekly">
           <div className="stats-v4-section-head">
             <div>
-              <span>Weekly goal</span>
-              <h2>Weekly execution</h2>
+              <span>{tr('Weekly goal', 'ئامانجی هەفتانە')}</span>
+              <h2>{tr('Weekly execution', 'جێبەجێکردنی هەفتانە')}</h2>
             </div>
 
             <div className="stats-v4-head-stat">
-              <span>Target</span>
-              <strong>{weeklyGoal}m / week</strong>
+              <span>{tr('Target', 'ئامانج')}</span>
+              <strong>{weeklyGoal}m / {tr('week', 'هەفتە')}</strong>
             </div>
           </div>
 
@@ -420,7 +422,7 @@ export default function Statistics({
 
                   <div className="stats-v4-week-score">
                     <strong>{item.progressPercent}%</strong>
-                    <span>{item.completed ? 'Complete' : 'In progress'}</span>
+                    <span>{item.completed ? tr('Complete', 'تەواو') : tr('In progress', 'لە بەردەوامیدایە')}</span>
                   </div>
                 </div>
 
@@ -440,15 +442,15 @@ export default function Statistics({
         <section className="stats-v4-subjects">
           <div className="stats-v4-section-head">
             <div>
-              <span>Focus by subject</span>
-              <h2>Subject gravity</h2>
+              <span>{tr('Focus by subject', 'سەرنج بەپێی بابەت')}</span>
+              <h2>{tr('Subject gravity', 'کێشی بابەتەکان')}</h2>
             </div>
             <Layers3 size={20} />
           </div>
 
           {subjectPulse.length === 0 ? (
             <div className="stats-v4-empty">
-              Complete sessions to reveal your subject balance.
+              {tr('Complete sessions to reveal your subject balance.', 'سێشن تەواو بکە بۆ بینینی هاوسەنگی بابەتەکانت.')}
             </div>
           ) : (
             <div className="stats-v4-subject-stack">
@@ -462,7 +464,7 @@ export default function Statistics({
                     <div>
                       <strong>{subject.name}</strong>
                       <span>
-                        {subject.sessions} sessions ·{' '}
+                        {subject.sessions} {tr('sessions', 'سێشن')} ·{' '}
                         {formatDuration(subject.seconds)}
                       </span>
                     </div>
@@ -493,8 +495,8 @@ export default function Statistics({
       <section className="stats-v4-records">
         <div className="stats-v4-section-head">
           <div>
-            <span>Personal bests</span>
-            <h2>Your performance vault</h2>
+            <span>{tr('Personal bests', 'باشترینەکانی تۆ')}</span>
+            <h2>{tr('Your performance vault', 'تۆماری باشترین کارکردنت')}</h2>
           </div>
           <Trophy size={21} />
         </div>
@@ -502,34 +504,34 @@ export default function Statistics({
         <div className="stats-v4-record-grid">
           <article className="hero-record">
             <Medal size={20} />
-            <span>Longest session</span>
+            <span>{tr('Longest session', 'درێژترین سێشن')}</span>
             <strong>
               {formatDuration(personalRecords.longestSessionSeconds)}
             </strong>
-            <small>deepest single focus block</small>
+            <small>{tr('deepest single focus block', 'قووڵترین بڵۆکی تاکە سەرنج')}</small>
           </article>
 
           <article>
             <Sparkles size={18} />
-            <span>Best day</span>
+            <span>{tr('Best day', 'باشترین ڕۆژ')}</span>
             <strong>
               {formatMinutesHuman(personalRecords.bestDayMinutes)}
             </strong>
-            <small>highest daily output</small>
+            <small>{tr('highest daily output', 'زۆرترین ئەنجامی ڕۆژانە')}</small>
           </article>
 
           <article>
             <Flame size={18} />
-            <span>Best week</span>
+            <span>{tr('Best week', 'باشترین هەفتە')}</span>
             <strong>
               {formatMinutesHuman(personalRecords.bestWeekMinutes)}
             </strong>
-            <small>strongest seven-day run</small>
+            <small>{tr('strongest seven-day run', 'بەهێزترین ٧ ڕۆژ')}</small>
           </article>
 
           <article>
             <Layers3 size={18} />
-            <span>Best subject</span>
+            <span>{tr('Best subject', 'باشترین بابەت')}</span>
             <strong title={personalRecords.bestSubjectName ?? undefined}>
               {personalRecords.bestSubjectName ?? '—'}
             </strong>
