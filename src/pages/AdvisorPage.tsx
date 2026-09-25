@@ -17,6 +17,7 @@ import type {
 } from '../storage/types'
 import PageContainer from './PageContainer'
 import PageHeader from '../components/layout/PageHeader'
+import { useI18n } from '../useI18n'
 import {
   buildAdvisorContext,
 } from '../ai/advisorContext'
@@ -37,13 +38,6 @@ interface AdvisorPageProps {
   ) => void
 }
 
-const quickPrompts = [
-  'What should I study now?',
-  'What is hurting my consistency?',
-  'How should I use 45 minutes?',
-  'What am I neglecting this week?',
-]
-
 export default function AdvisorPage({
   sessions,
   subjects,
@@ -52,9 +46,17 @@ export default function AdvisorPage({
   advancedGoals,
   onStartSession,
 }: AdvisorPageProps) {
+  const { tr } = useI18n()
+  const quickPrompts = [
+    tr('What should I study now?', 'ئێستا چی بخوێنم؟'),
+    tr('What is hurting my consistency?', 'چی بەردەوامییەکەم لاواز دەکات؟'),
+    tr('How should I use 45 minutes?', 'چۆن ٤٥ خولەک بەکاربهێنم؟'),
+    tr('What am I neglecting this week?', 'ئەم هەفتەیە چی پشتگوێ دەخەم؟'),
+  ]
+
   const [question, setQuestion] =
     useState(
-      'What should I study now?',
+      tr('What should I study now?', 'ئێستا چی بخوێنم؟'),
     )
   const [response, setResponse] =
     useState<AiAdvisorResponse | null>(
@@ -101,7 +103,7 @@ export default function AdvisorPage({
       setError(
         caught instanceof Error
           ? caught.message
-          : 'The advisor could not answer right now.',
+          : tr('The advisor could not answer right now.', 'ڕاوێژکارەکە ئێستا ناتوانێت وەڵام بدات.'),
       )
     } finally {
       setLoading(false)
@@ -135,8 +137,8 @@ export default function AdvisorPage({
   return (
     <PageContainer>
       <PageHeader
-        title="FOCUS Advisor"
-        description="Ask about your study pattern and get one clear next action grounded in your own data."
+        title={tr('FOCUS Advisor', 'ڕاوێژکاری FOCUS')}
+        description={tr('Ask about your study pattern and get one clear next action grounded in your own data.', 'دەربارەی شێوازی خوێندنت بپرسە و یەک هەنگاوی داهاتووی ڕوون لەسەر بنەمای داتای خۆت وەربگرە.')}
       />
 
       <div className="advisor-shell">
@@ -149,15 +151,15 @@ export default function AdvisorPage({
               <BrainCircuit
                 size={16}
               />
-              Study intelligence
+              {tr('Study intelligence', 'زیرەکی خوێندن')}
             </div>
 
             <h2>
-              Turn your study pattern into a next move.
+              {tr('Turn your study pattern into a next move.', 'شێوازی خوێندنت بگۆڕە بە هەنگاوی داهاتوو.')}
             </h2>
 
             <p className="advisor-v5-intro">
-              FOCUS starts with your real study data, then turns the pattern into one practical recommendation.
+              {tr('FOCUS starts with your real study data, then turns the pattern into one practical recommendation.', 'FOCUS لە داتای ڕاستەقینەی خوێندنتەوە دەست پێ دەکات و دواتر بە یەک پێشنیاری کرداری دەیگۆڕێت.')}
             </p>
 
             <div className="advisor-form">
@@ -180,7 +182,7 @@ export default function AdvisorPage({
               </div>
 
               <textarea
-                aria-label="Ask the FOCUS Advisor"
+                aria-label={tr('Ask the FOCUS Advisor', 'لە ڕاوێژکاری FOCUS بپرسە')}
                 value={question}
                 maxLength={500}
                 onChange={(
@@ -191,7 +193,7 @@ export default function AdvisorPage({
                       .value,
                   )
                 }
-                placeholder="Ask FOCUS about your next session, consistency, balance, or week."
+                placeholder={tr('Ask FOCUS about your next session, consistency, balance, or week.', 'لە FOCUS دەربارەی سێشنی داهاتوو، بەردەوامی، هاوسەنگی یان هەفتەکەت بپرسە.')}
               />
 
               <button
@@ -206,8 +208,8 @@ export default function AdvisorPage({
                 }
               >
                 {loading
-                  ? 'Analyzing…'
-                  : 'Ask FOCUS'}
+                  ? tr('Analyzing…', 'شیکردنەوە دەکرێت…')
+                  : tr('Ask FOCUS', 'لە FOCUS بپرسە')}
               </button>
             </div>
 
@@ -238,8 +240,8 @@ export default function AdvisorPage({
                   />
                   {response.source ===
                   'ai'
-                    ? 'AI analysis'
-                    : 'Smart local fallback'}
+                    ? tr('AI analysis', 'شیکردنەوەی AI')
+                    : tr('Smart local fallback', 'جێگرەوەی زیرەکی ناوخۆیی')}
                 </div>
 
                 <h3>
@@ -277,7 +279,7 @@ export default function AdvisorPage({
                     startAction
                   }
                 >
-                  Start{' '}
+                  {tr('Start', 'دەست پێ بکە')}{' '}
                   {
                     response.action
                       .minutes
@@ -302,12 +304,12 @@ export default function AdvisorPage({
               <LockKeyhole
                 size={17}
               />
-              Facts sent for analysis
+              {tr('Facts sent for analysis', 'زانیارییە نێردراوەکان بۆ شیکردنەوە')}
             </div>
 
             <div className="advisor-facts">
               <div className="advisor-fact">
-                <span>Today</span>
+                <span>{tr('Today', 'ئەمڕۆ')}</span>
                 <strong>
                   {
                     context.today
@@ -324,7 +326,7 @@ export default function AdvisorPage({
 
               <div className="advisor-fact">
                 <span>
-                  This week
+                  {tr('This week', 'ئەم هەفتەیە')}
                 </span>
                 <strong>
                   {
@@ -347,7 +349,7 @@ export default function AdvisorPage({
 
               <div className="advisor-fact">
                 <span>
-                  Last 30 days
+                  {tr('Last 30 days', '٣٠ ڕۆژی ڕابردوو')}
                 </span>
                 <strong>
                   {
@@ -365,7 +367,7 @@ export default function AdvisorPage({
 
               <div className="advisor-fact">
                 <span>
-                  Consistency
+                  {tr('Consistency', 'بەردەوامی')}
                 </span>
                 <strong>
                   {
@@ -378,7 +380,7 @@ export default function AdvisorPage({
 
               <div className="advisor-fact">
                 <span>
-                  Active goals
+                  {tr('Active goals', 'ئامانجە چالاکەکان')}
                 </span>
                 <strong>
                   {
@@ -392,23 +394,17 @@ export default function AdvisorPage({
 
               <div className="advisor-fact">
                 <span>
-                  Best window
+                  {tr('Best window', 'باشترین کات')}
                 </span>
                 <strong>
                   {context.bestStudyTime ??
-                    'Still learning'}
+                    tr('Still learning', 'هێشتا فێردەبێت')}
                 </strong>
               </div>
             </div>
 
             <p className="advisor-v5-privacy">
-              Raw session notes are
-              not sent. The advisor
-              receives summarized
-              study facts and recent
-              session metrics only,
-              and only when you press
-              Ask FOCUS.
+              {tr('Raw session notes are not sent. The advisor receives summarized study facts and recent session metrics only, and only when you press Ask FOCUS.', 'تێبینی خامی سێشنەکان نانێردرێن. ڕاوێژکارەکە تەنها پوختەی زانیارییەکانی خوێندن و پێوانەکانی سێشنە نوێیەکان وەردەگرێت، تەنها کاتێک کرتە لە FOCUS بکەیت.')}
             </p>
           </div>
         </aside>
