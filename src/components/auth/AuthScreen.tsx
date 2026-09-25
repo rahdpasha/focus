@@ -6,82 +6,48 @@ import {
   ShieldCheck,
   UserRound,
 } from 'lucide-react'
-import {
-  useState,
-} from 'react'
-import {
-  useAuth,
-} from '../../auth/useAuth'
+import { useState } from 'react'
+import { useAuth } from '../../auth/useAuth'
 import { useI18n } from '../../useI18n'
 
 export default function AuthScreen() {
   const { tr } = useI18n()
-  const {
-    signIn,
-    signUp,
-  } = useAuth()
+  const { signIn, signUp } = useAuth()
 
-  const [
-    mode,
-    setMode,
-  ] = useState<
-    'signin' | 'signup'
-  >('signin')
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [displayName, setDisplayName] = useState('')
+  const [message, setMessage] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
-  const [email, set{tr('Email', 'ئیمەیڵ')}] =
-    useState('')
-  const [
-    password,
-    set{tr('Password', 'وشەی نهێنی')},
-  ] = useState('')
-  const [
-    displayName,
-    setDisplayName,
-  ] = useState('')
-  const [
-    message,
-    setMessage,
-  ] = useState('')
-  const [
-    loading,
-    setLoading,
-  ] = useState(false)
-  const [
-    showPassword,
-    setShowPassword,
-  ] = useState(false)
+  const signingUp = mode === 'signup'
+  const passwordReady = !signingUp || password.length >= 10
 
-  const signingUp =
-    mode === 'signup'
-
-  const passwordReady =
-    !signingUp ||
-    password.length >= 10
-
-  const submit = async (
-    event: React.FormEvent,
-  ) => {
+  const submit = async (event: React.FormEvent) => {
     event.preventDefault()
     setMessage('')
 
-    const cleanEmail =
-      email.trim()
-    const cleanName =
-      displayName.trim()
+    const cleanEmail = email.trim()
+    const cleanName = displayName.trim()
 
-    if (
-      signingUp &&
-      !cleanName
-    ) {
+    if (signingUp && !cleanName) {
       setMessage(
-        tr(tr('Add a display name before creating your account.', 'پێش دروستکردنی هەژمار ناوێکی پیشاندان زیاد بکە.'), 'پێش دروستکردنی هەژمار ناوی پیشاندانت زیاد بکە.'),
+        tr(
+          'Add a display name before creating your account.',
+          'پێش دروستکردنی هەژمار ناوی پیشاندانت زیاد بکە.',
+        ),
       )
       return
     }
 
     if (!passwordReady) {
       setMessage(
-        tr(tr('Use at least 10 characters for a new password.', 'بۆ وشەی نهێنی نوێ لانیکەم ١٠ پیت بەکاربهێنە.'), 'بۆ وشەی نهێنی نوێ لانیکەم ١٠ پیت بەکاربهێنە.'),
+        tr(
+          'Use at least 10 characters for a new password.',
+          'بۆ وشەی نهێنی نوێ لانیکەم ١٠ پیت بەکاربهێنە.',
+        ),
       )
       return
     }
@@ -90,29 +56,34 @@ export default function AuthScreen() {
 
     try {
       if (mode === 'signin') {
-        await signIn(
+        await signIn(cleanEmail, password)
+      } else {
+        const session = await signUp(
           cleanEmail,
           password,
+          cleanName,
         )
-      } else {
-        const session =
-          await signUp(
-            cleanEmail,
-            password,
-            cleanName,
-          )
 
         setMessage(
           session
-            ? tr(tr('Account created successfully.', 'هەژمارەکەت بە سەرکەوتوویی دروست کرا.'), 'هەژمارەکەت بە سەرکەوتوویی دروست کرا.')
-            : tr(tr('Account created. Check your email to confirm your account.', 'هەژمار دروست کرا. ئیمەیڵەکەت بپشکنە بۆ پشتڕاستکردنەوە.'), 'هەژمارەکەت دروست کرا. ئیمەیڵەکەت بپشکنە بۆ پشتڕاستکردنەوە.'),
+            ? tr(
+                'Account created successfully.',
+                'هەژمارەکەت بە سەرکەوتوویی دروست کرا.',
+              )
+            : tr(
+                'Account created. Check your email to confirm your account.',
+                'هەژمارەکەت دروست کرا. ئیمەیڵەکەت بپشکنە بۆ پشتڕاستکردنەوە.',
+              ),
         )
       }
     } catch (error) {
       setMessage(
         error instanceof Error
           ? error.message
-          : tr(tr('Authentication failed.', 'چوونەژوورەوە سەرکەوتوو نەبوو.'), 'چوونەژوورەوە سەرکەوتوو نەبوو.'),
+          : tr(
+              'Authentication failed.',
+              'چوونەژوورەوە سەرکەوتوو نەبوو.',
+            ),
       )
     } finally {
       setLoading(false)
@@ -120,11 +91,7 @@ export default function AuthScreen() {
   }
 
   const changeMode = () => {
-    setMode(
-      mode === 'signin'
-        ? 'signup'
-        : 'signin',
-    )
+    setMode(mode === 'signin' ? 'signup' : 'signin')
     setMessage('')
     setPassword('')
     setShowPassword(false)
@@ -134,30 +101,35 @@ export default function AuthScreen() {
     <main className="auth-screen">
       <section className="auth-shell">
         <aside className="auth-intro">
-          <div className="auth-mark">
-            F
-          </div>
+          <div className="auth-mark">F</div>
 
           <div>
             <div className="eyebrow">
-              {tr('{tr('Your focus workspace', 'شوێنی سەرنجی تۆ')}', 'شوێنی کاری سەرنجت')}
+              {tr('Your focus workspace', 'شوێنی کاری سەرنجت')}
             </div>
 
             <h1>
-              {tr('Build a system you can actually return to.', 'سیستەمێک دروست بکە کە بتوانیت هەمیشە بگەڕێیتەوە بۆی.')}
+              {tr(
+                'Build a system you can actually return to.',
+                'سیستەمێک دروست بکە کە بتوانیت بەردەوام بگەڕێیتەوە بۆی.',
+              )}
             </h1>
 
             <p>
-              {tr('{tr('Focus sessions, plans, routines, progress and guidance stay connected in one calm workspace.', 'سێشنەکانی سەرنج، پلان، ڕوتین، پێشکەوتن و ڕێنمایی هەموویان لە یەک شوێنی ئارامدا پێکەوە دەمێننەوە.')}', 'سێشنەکانی سەرنج، پلان، ڕوتین، پێشکەوتن و ڕێنمایی هەموویان لە یەک شوێنی ئارامدا پێکەوە دەبن.')}
+              {tr(
+                'Focus sessions, plans, routines, progress and guidance stay connected in one calm workspace.',
+                'سێشنەکانی سەرنج، پلان، ڕوتین، پێشکەوتن و ڕێنمایی هەموویان لە یەک شوێنی ئارامدا پێکەوە دەمێننەوە.',
+              )}
             </p>
           </div>
 
           <div className="auth-trust">
-            <ShieldCheck
-              size={17}
-            />
+            <ShieldCheck size={17} />
             <span>
-              {tr('{tr('Your private study data stays tied to your account and is never shown on public League profiles.', 'داتای تایبەتی خوێندنت تەنها بە هەژمارەکەتەوە گرێدراوە و لە پڕۆفایلی گشتی پێشبڕکێدا نیشان نادرێت.')}', 'داتای تایبەتی خوێندنت تەنها بە هەژمارەکەتەوە پەیوەستە و لە پڕۆفایلی گشتی پێشبڕکێدا پیشان نادرێت.')}
+              {tr(
+                'Your private study data stays tied to your account and is never shown on public League profiles.',
+                'داتای تایبەتی خوێندنت تەنها بە هەژمارەکەتەوە پەیوەستە و لە پڕۆفایلی گشتی پێشبڕکێدا پیشان نادرێت.',
+              )}
             </span>
           </div>
         </aside>
@@ -167,44 +139,37 @@ export default function AuthScreen() {
           className="glass-panel auth-card"
         >
           <div className="auth-card-head">
-            <span>
-              FOCUS
-            </span>
+            <span>FOCUS</span>
 
             <h2>
               {signingUp
-                ? tr(tr('Create your account', 'هەژمارەکەت دروست بکە'), 'هەژمارەکەت دروست بکە')
-                : tr(tr('Welcome back', 'بەخێربێیتەوە'), 'بەخێربێیتەوە')}
+                ? tr('Create your account', 'هەژمارەکەت دروست بکە')
+                : tr('Welcome back', 'بەخێربێیتەوە')}
             </h2>
 
             <p>
               {signingUp
-                ? tr(tr('Create your account and keep your study system synced across devices.', 'هەژمارەکەت دروست بکە و سیستەمی خوێندنت لە نێوان ئامێرەکان هاوکات بپارێزە.'), 'هەژمارەکەت دروست بکە و سیستەمی خوێندنت لە نێوان ئامێرەکان هاوکات بێت.')
-                : tr(tr('Pick up exactly where you left off.', 'لە هەمان شوێنەوە بەردەوام بە کە وازت لێ هێنا.'), 'لە هەمان شوێنەوە بەردەوام بە کە وەستابوویت.')}}
+                ? tr(
+                    'Create your account and keep your study system synced across devices.',
+                    'هەژمارەکەت دروست بکە و سیستەمی خوێندنت لە نێوان ئامێرەکان هاوکات بپارێزە.',
+                  )
+                : tr(
+                    'Pick up exactly where you left off.',
+                    'لە هەمان شوێنەوە بەردەوام بە کە وەستابوویت.',
+                  )}
             </p>
           </div>
 
           {signingUp && (
             <label className="auth-field">
-              <span>
-                {tr('Display name', 'ناوی پیشاندان')}
-              </span>
+              <span>{tr('Display name', 'ناوی پیشاندان')}</span>
 
               <div className="auth-input-wrap">
-                <UserRound
-                  size={16}
-                />
+                <UserRound size={16} />
                 <input
-                  value={
-                    displayName
-                  }
-                  onChange={(
-                    event,
-                  ) =>
-                    setDisplayName(
-                      event.target
-                        .value,
-                    )
+                  value={displayName}
+                  onChange={(event) =>
+                    setDisplayName(event.target.value)
                   }
                   placeholder={tr('Your name', 'ناوت')}
                   autoComplete="name"
@@ -216,22 +181,15 @@ export default function AuthScreen() {
           )}
 
           <label className="auth-field">
-            <span>
-              Email
-            </span>
+            <span>{tr('Email', 'ئیمەیڵ')}</span>
 
             <div className="auth-input-wrap">
               <Mail size={16} />
               <input
                 type="email"
                 value={email}
-                onChange={(
-                  event,
-                ) =>
-                  setEmail(
-                    event.target
-                      .value,
-                  )
+                onChange={(event) =>
+                  setEmail(event.target.value)
                 }
                 placeholder="you@example.com"
                 autoComplete="email"
@@ -241,44 +199,27 @@ export default function AuthScreen() {
           </label>
 
           <label className="auth-field">
-            <span>
-              Password
-            </span>
+            <span>{tr('Password', 'وشەی نهێنی')}</span>
 
             <div className="auth-input-wrap">
-              <LockKeyhole
-                size={16}
-              />
+              <LockKeyhole size={16} />
               <input
-                type={
-                  showPassword
-                    ? 'text'
-                    : 'password'
-                }
+                type={showPassword ? 'text' : 'password'}
                 value={password}
-                onChange={(
-                  event,
-                ) =>
-                  setPassword(
-                    event.target
-                      .value,
-                  )
+                onChange={(event) =>
+                  setPassword(event.target.value)
                 }
                 placeholder={
                   signingUp
-                    ? tr(tr('At least 10 characters', 'لانیکەم ١٠ پیت'), 'لانیکەم ١٠ پیت')
-                    : tr(tr('Your password', 'وشەی نهێنی تۆ'), 'وشەی نهێنیت')
+                    ? tr('At least 10 characters', 'لانیکەم ١٠ پیت')
+                    : tr('Your password', 'وشەی نهێنیت')
                 }
                 autoComplete={
                   mode === 'signin'
                     ? 'current-password'
                     : 'new-password'
                 }
-                minLength={
-                  signingUp
-                    ? 10
-                    : undefined
-                }
+                minLength={signingUp ? 10 : undefined}
                 required
               />
 
@@ -286,25 +227,18 @@ export default function AuthScreen() {
                 type="button"
                 className="auth-password-toggle"
                 onClick={() =>
-                  setShowPassword(
-                    (value) =>
-                      !value,
-                  )
+                  setShowPassword((value) => !value)
                 }
                 aria-label={
                   showPassword
-                    ? tr(tr('Hide password', 'شاردنەوەی وشەی نهێنی'), 'وشەی نهێنی بشارەوە')
-                    : tr(tr('Show password', 'پیشاندانی وشەی نهێنی'), 'وشەی نهێنی پیشان بدە')
+                    ? tr('Hide password', 'وشەی نهێنی بشارەوە')
+                    : tr('Show password', 'وشەی نهێنی پیشان بدە')
                 }
               >
                 {showPassword ? (
-                  <EyeOff
-                    size={16}
-                  />
+                  <EyeOff size={16} />
                 ) : (
-                  <Eye
-                    size={16}
-                  />
+                  <Eye size={16} />
                 )}
               </button>
             </div>
@@ -312,15 +246,17 @@ export default function AuthScreen() {
             {signingUp && (
               <small
                 className={
-                  password.length ===
-                  0
+                  password.length === 0
                     ? ''
                     : passwordReady
                       ? 'ready'
                       : 'warning'
                 }
               >
-                {tr('Use 10+ characters. A longer unique password is better.', '١٠ پیت یان زیاتر بەکاربهێنە. وشەی نهێنی درێژ و تایبەت باشترە.')}
+                {tr(
+                  'Use 10+ characters. A longer unique password is better.',
+                  '١٠ پیت یان زیاتر بەکاربهێنە. وشەی نهێنی درێژ و تایبەت باشترە.',
+                )}
               </small>
             )}
           </label>
@@ -328,16 +264,13 @@ export default function AuthScreen() {
           <button
             type="submit"
             className="cyber-btn auth-submit"
-            disabled={
-              loading ||
-              !passwordReady
-            }
+            disabled={loading || !passwordReady}
           >
             {loading
-              ? tr(tr('Please wait…', 'تکایە چاوەڕێ بکە…'), 'تکایە چاوەڕێ بکە…')
+              ? tr('Please wait…', 'تکایە چاوەڕێ بکە…')
               : mode === 'signin'
-                ? tr(tr('Sign in', 'چوونەژوورەوە'), 'چوونەژوورەوە')
-                : tr(tr('Create account', 'دروستکردنی هەژمار'), 'دروستکردنی هەژمار')}
+                ? tr('Sign in', 'چوونەژوورەوە')
+                : tr('Create account', 'دروستکردنی هەژمار')}
           </button>
 
           {message && (
@@ -356,8 +289,11 @@ export default function AuthScreen() {
             onClick={changeMode}
           >
             {mode === 'signin'
-              ? tr(tr('Create a new account', 'هەژمارێکی نوێ دروست بکە'), 'هەژمارێکی نوێ دروست بکە')
-              : tr(tr('Already have an account? Sign in', 'هەژمارت هەیە؟ بچۆ ژوورەوە'), 'هەژمارت هەیە؟ بچۆ ژوورەوە')}
+              ? tr('Create a new account', 'هەژمارێکی نوێ دروست بکە')
+              : tr(
+                  'Already have an account? Sign in',
+                  'هەژمارت هەیە؟ بچۆ ژوورەوە',
+                )}
           </button>
         </form>
       </section>
