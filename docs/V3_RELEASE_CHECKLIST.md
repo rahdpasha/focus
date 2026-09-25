@@ -28,6 +28,23 @@ Do not merge based only on GitHub Quality. The automated gates are green, but th
 - [x] League helper/trigger SECURITY DEFINER functions are not client-executable; only the two intentional authenticated League RPCs remain callable.
 - [x] SECURITY DEFINER search paths are pinned to `pg_catalog, public`, including the legacy auth profile trigger helper.
 
+## 10-minute final smoke test
+
+Use two real test accounts and one desktop browser plus one narrow/mobile viewport. This is the minimum manual sign-off path before merging.
+
+1. **Auth isolation:** sign into account A, confirm its workspace loads, sign out, sign into account B in the same browser, and confirm no account-A study data appears.
+2. **Core focus flow:** in account B, create/select a subject, start a 1-minute test session from Dashboard or Subjects, add a note + checklist item, complete it, refresh, and confirm it remains in History/Statistics.
+3. **Archive safety:** remove that subject and confirm the completed session still exists after refresh.
+4. **Scoped goal:** create a subject-scoped advanced goal; record time in another subject and confirm no progress, then record time in the linked subject and confirm progress.
+5. **Routine:** create one fixed routine item and one rotation item; verify today's expected item appears and launching it starts the correct subject/target timer.
+6. **Cloud/settings:** change theme + language in browser/device A, open the same account in browser/device B, and confirm the settings sync.
+7. **Offline recovery:** go offline, make one safe change (for example a setting or new routine item), reconnect, wait for sync, refresh, and confirm the final cloud state matches.
+8. **League:** opt in both test accounts, complete enough qualifying time (or use existing real test data) and confirm both appear correctly in weekly/monthly standings; opt one account out and confirm it disappears publicly.
+9. **Mobile/accessibility:** on a narrow viewport, use the bottom dock, open the full sidebar, reach a secondary page, tab through the main flow, and confirm controls remain usable.
+10. **Final refresh:** hard-refresh the latest Vercel preview and confirm there is no blank screen, error overlay, missing data, or obvious console/runtime failure.
+
+If any step fails, keep PR #1 draft and record the exact step + account/browser used before changing code.
+
 ## Core product smoke test
 
 - [ ] Sign in and sign out.
