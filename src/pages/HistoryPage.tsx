@@ -101,7 +101,7 @@ function checklistProgress(
 export default function HistoryPage({
   sessions,
 }: HistoryPageProps) {
-  const { language } =
+  const { language, tr } =
     useI18n()
 
   const locale =
@@ -403,7 +403,7 @@ export default function HistoryPage({
   return (
     <PageContainer>
       <PageHeader
-        title="Study History"
+        title={tr('Study History', 'مێژووی خوێندن')}
         description="See how your study rhythm changes over time, then open any day to understand what happened."
       />
 
@@ -413,7 +413,7 @@ export default function HistoryPage({
             size={18}
           />
           <span>
-            Month focus
+            {tr('Month focus', 'سەرنجی مانگ')}
           </span>
           <strong>
             {durationLabel(
@@ -427,7 +427,7 @@ export default function HistoryPage({
             size={18}
           />
           <span>
-            Active days
+            {tr('Active days', 'ڕۆژە چالاکەکان')}
           </span>
           <strong>
             {monthActiveDays}
@@ -439,7 +439,7 @@ export default function HistoryPage({
             size={18}
           />
           <span>
-            Sessions
+            {tr('Sessions', 'سێشنەکان')}
           </span>
           <strong>
             {
@@ -599,7 +599,7 @@ export default function HistoryPage({
 
                       {isToday && (
                         <small>
-                          Today
+                          {tr('Today', 'ئەمڕۆ')}
                         </small>
                       )}
                     </div>
@@ -628,7 +628,7 @@ export default function HistoryPage({
                           {daySessions.length ===
                           1
                             ? ''
-                            : 's'}
+                            : ''}
                         </span>
                       </div>
                     )}
@@ -640,7 +640,7 @@ export default function HistoryPage({
 
           <div className="history-legend">
             <span>
-              Less focus
+              {tr('Less focus', 'سەرنجی کەمتر')}
             </span>
             {[0.15, 0.35, 0.6, 0.9].map(
               (opacity) => (
@@ -655,7 +655,7 @@ export default function HistoryPage({
               ),
             )}
             <span>
-              More focus
+              {tr('More focus', 'سەرنجی زیاتر')}
             </span>
           </div>
         </section>
@@ -664,7 +664,7 @@ export default function HistoryPage({
           <div className="history-day-head">
             <div>
               <div className="eyebrow">
-                Selected day
+                {tr('Selected day', 'ڕۆژی هەڵبژێردراو')}
               </div>
               <h2>
                 {selectedDate.toLocaleDateString(
@@ -745,11 +745,11 @@ export default function HistoryPage({
                           {
                             session.interruptions
                           }{' '}
-                          interruption
+                          {tr('interruption', 'وەستاندن')}
                           {session.interruptions ===
                           1
                             ? ''
-                            : 's'}
+                            : ''}
                         </span>
 
                         {checklist && (
@@ -758,7 +758,7 @@ export default function HistoryPage({
                               size={12}
                             />
                             {checklist}{' '}
-                            steps
+                            {tr('steps', 'هەنگاو')}
                           </span>
                         )}
                       </div>
