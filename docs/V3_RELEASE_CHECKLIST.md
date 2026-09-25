@@ -21,7 +21,7 @@ The release branch currently passes GitHub Quality and has a READY Vercel previe
 
 ## 10-minute merge smoke test
 
-Use the latest preview with two test accounts (A and B). This is the minimum real-browser sign-off before marking PR #1 ready.
+Use the latest preview with two test accounts (A and B). This is the minimum real-browser sign-off before marking PR #1 ready. For exact execution steps and pass criteria, use `docs/V3_SMOKE_TEST_RUNBOOK.md`.
 
 - [ ] **1. Auth + isolation:** Sign in as A, sign out, sign in as B in the same browser, and confirm A's study data never appears. Return to A and confirm cloud data hydrates correctly.
 - [ ] **2. Core session path:** From Dashboard start a routine/focus session, add a note + checklist item, complete it, refresh, and confirm History/Statistics + routine progress persist.
