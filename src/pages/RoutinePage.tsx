@@ -8,6 +8,7 @@ import {
   X,
 } from 'lucide-react'
 import {
+  useEffect,
   useMemo,
   useState,
 } from 'react'
@@ -93,10 +94,36 @@ export default function RoutinePage({
   const [pendingDelete, setPendingDelete] =
     useState<string | null>(null)
 
-  const today = useMemo(
-    () => new Date(),
-    [],
-  )
+  const [today, setToday] =
+    useState(() => new Date())
+
+  useEffect(() => {
+    const timer = window.setInterval(
+      () => {
+        setToday(new Date())
+      },
+      60_000,
+    )
+
+    return () =>
+      window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    if (
+      subjectId &&
+      subjects.some(
+        (subject) =>
+          subject.id === subjectId,
+      )
+    ) {
+      return
+    }
+
+    setSubjectId(
+      subjects[0]?.id ?? '',
+    )
+  }, [subjectId, subjects])
 
   const recentDates = useMemo(
     () =>
