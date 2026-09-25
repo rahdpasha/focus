@@ -404,7 +404,7 @@ export default function HistoryPage({
     <PageContainer>
       <PageHeader
         title="Study History"
-        description="Move through your study history by day, then open the sessions behind the pattern."
+        description="See how your study rhythm changes over time, then open any day to understand what happened."
       />
 
       <section className="history-overview">
