@@ -12,6 +12,7 @@ import type {
 import {
   useI18n,
 } from '../useI18n'
+import { localizeUiText } from '../utils/localizeUiText'
 import {
   getPersonalRecords,
 } from '../utils/personalRecords'
@@ -229,9 +230,7 @@ export default function RecordsPage({
                     </div>
 
                     <span>
-                      {
-                        item.label
-                      }
+                      {localizeUiText(language, item.label)}
                     </span>
 
                     <strong>
