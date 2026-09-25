@@ -90,7 +90,9 @@ function AuthenticatedApp({
   } = useI18n()
   const {
     theme,
+    customThemePack,
     setTheme,
+    setCustomThemePack,
   } = useTheme()
 
   useEffect(() => {
@@ -105,6 +107,23 @@ function AuthenticatedApp({
     data.settings.theme,
     setTheme,
     theme,
+  ])
+
+  useEffect(() => {
+    if (
+      JSON.stringify(customThemePack) !==
+      JSON.stringify(
+        data.settings.customThemePack,
+      )
+    ) {
+      setCustomThemePack(
+        data.settings.customThemePack,
+      )
+    }
+  }, [
+    customThemePack,
+    data.settings.customThemePack,
+    setCustomThemePack,
   ])
 
   useEffect(() => {
