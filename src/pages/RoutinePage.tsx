@@ -303,14 +303,9 @@ export default function RoutinePage({
         )}
       />
 
-      <div
-        style={{
-          display: 'grid',
-          gap: '16px',
-        }}
-      >
+      <div className="routine-v5">
         <section
-          className="glass-panel"
+          className="glass-panel routine-panel"
           style={{
             padding: '20px',
           }}
@@ -547,7 +542,7 @@ export default function RoutinePage({
           {todaysItems.length ===
           0 ? (
             <div
-              className="glass-panel"
+              className="glass-panel routine-panel"
               style={{
                 padding: '24px',
                 color:
@@ -581,7 +576,7 @@ export default function RoutinePage({
                 return (
                   <article
                     key={item.id}
-                    className="glass-panel"
+                    className="glass-panel routine-panel"
                     style={{
                       padding:
                         '18px',
@@ -686,7 +681,7 @@ export default function RoutinePage({
 
                       <button
                         type="button"
-                        className="cyber-btn"
+                        className="cyber-btn routine-primary-action"
                         disabled={
                           !subject
                         }
@@ -713,8 +708,8 @@ export default function RoutinePage({
                           size={14}
                         />
                         {done
-                          ? 'FOCUS AGAIN'
-                          : `START ${item.targetMinutes}M`}
+                          ? 'Focus again'
+                          : `Start ${item.targetMinutes}m`}
                       </button>
                     </div>
 
@@ -866,7 +861,7 @@ export default function RoutinePage({
 
         {recoveryQueue.length > 0 && (
           <section
-            className="glass-panel"
+            className="glass-panel routine-panel"
             style={{
               padding: '20px',
             }}
@@ -960,7 +955,7 @@ export default function RoutinePage({
 
                     <button
                       type="button"
-                      className="cyber-btn"
+                      className="cyber-btn routine-primary-action"
                       onClick={() =>
                         onStartSession(
                           entry.item
@@ -976,7 +971,7 @@ export default function RoutinePage({
                         )
                       }
                     >
-                      RECOVER
+                      Recover
                     </button>
                   </div>
                 ),
@@ -986,7 +981,7 @@ export default function RoutinePage({
         )}
 
         <section
-          className="glass-panel"
+          className="glass-panel routine-panel"
           style={{
             padding: '20px',
           }}
@@ -1115,12 +1110,12 @@ export default function RoutinePage({
 
             <button
               type="button"
-              className="cyber-btn"
+              className="cyber-btn routine-primary-action"
               disabled={!subjectId}
               onClick={addItem}
             >
               <Plus size={15} />
-              ADD
+              Add routine
             </button>
           </div>
 
@@ -1214,7 +1209,7 @@ export default function RoutinePage({
                 marginRight: '4px',
               }}
             >
-              Custom days
+              Days
             </span>
 
             {WEEKDAYS.map(
@@ -1376,8 +1371,8 @@ export default function RoutinePage({
                         />
                       )}
                       {item.enabled
-                        ? 'ON'
-                        : 'OFF'}
+                        ? 'On'
+                        : 'Off'}
                     </button>
 
                     <button
