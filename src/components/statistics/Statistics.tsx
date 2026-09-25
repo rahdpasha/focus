@@ -380,6 +380,7 @@ export default function Statistics({
               {strongestDay && strongestDay.seconds > 0
                 ? `${strongestDay.label} · ${formatDuration(
                     strongestDay.seconds,
+                    language,
                   )}`
                 : tr('Still learning', 'هێشتا فێردەبێت')}
             </strong>
