@@ -107,28 +107,28 @@ export default function Dashboard({
   const weekStart =
     startOfWeek(now)
 
-  const {tr('complete', 'تەواو')}d =
+  const completed =
     sessions.filter(
       (session) =>
-        session.{tr('complete', 'تەواو')}d &&
+        session.completed &&
         session.actualDuration > 0,
     )
 
   const todaySessions =
-    {tr('complete', 'تەواو')}d.filter(
+    completed.filter(
       (session) =>
         startOfDay(
           new Date(
-            session.{tr('complete', 'تەواو')}dAt,
+            session.completedAt,
           ),
         ) === todayStart,
     )
 
   const weekSessions =
-    {tr('complete', 'تەواو')}d.filter(
+    completed.filter(
       (session) =>
         new Date(
-          session.{tr('complete', 'تەواو')}dAt,
+          session.completedAt,
         ).getTime() >=
         weekStart,
     )
@@ -242,7 +242,7 @@ export default function Dashboard({
       <section className="dashboard-stat-grid">
         <StatCard
           icon={Clock3}
-          label="{tr('Today', 'ئەمڕۆ')}"
+          label={tr('Today', 'ئەمڕۆ')}
           value={minutesLabel(
             todayMinutes,
           )}
@@ -251,7 +251,7 @@ export default function Dashboard({
 
         <StatCard
           icon={Layers3}
-          label="{tr('Today', 'ئەمڕۆ')}'s sessions"
+          label={tr("Today's sessions", 'سێشنەکانی ئەمڕۆ')}
           value={String(
             todaySessions.length,
           )}
@@ -279,7 +279,7 @@ export default function Dashboard({
         <div className="dashboard-section-head dashboard-routine-head">
           <div>
             <div className="eyebrow">
-              {tr('Today', 'ئەمڕۆ')}'s routine
+              {tr("Today's routine", 'ڕوتینی ئەمڕۆ')}
             </div>
             <h2>
               {routineCompleted}/{
@@ -366,7 +366,7 @@ export default function Dashboard({
                           item.targetMinutes
                         }m · {
                           item.mode ===
-                          tr('rotation', 'گۆڕاو')
+                          'rotation'
                             ? tr('rotation', 'گۆڕاو')
                             : tr('daily', 'ڕۆژانە')
                         }
@@ -391,7 +391,7 @@ export default function Dashboard({
           <div className="dashboard-section-head">
             <div>
               <div className="eyebrow">
-                {tr('Today', 'ئەمڕۆ')}'s route
+                {tr("Today's route", 'ڕێڕەوی ئەمڕۆ')}
               </div>
               <h2>
                 {tr('Your next study blocks', 'بڵۆکەکانی خوێندنی داهاتووت')}
@@ -400,7 +400,7 @@ export default function Dashboard({
 
             <span className="mono">
               {
-                plan.totalPlanned{tr('Today', 'ئەمڕۆ')}Minutes
+                plan.totalPlannedTodayMinutes
               }
               m {tr('planned', 'پلانکراو')}
             </span>
