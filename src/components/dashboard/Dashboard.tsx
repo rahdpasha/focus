@@ -11,6 +11,7 @@ import type {
 } from '../../types'
 import type {
   RoutineItem,
+  RoutineSessionContext,
 } from '../../storage/types'
 import FocusPulse from './FocusPulse'
 import RecentSessions from './RecentSessions'
@@ -25,6 +26,7 @@ import {
   getRotationItemForDate,
   getRoutineItemsForDate,
   getRoutineMinutesForDate,
+  toRoutineDateKey,
 } from '../../utils/routine'
 
 interface DashboardProps {
@@ -39,6 +41,7 @@ interface DashboardProps {
   onStartRecommendedSession: (
     subjectId?: string,
     minutes?: number,
+    routineContext?: RoutineSessionContext,
   ) => void
 }
 
@@ -340,6 +343,14 @@ export default function Dashboard({
                       onStartRecommendedSession(
                         item.subjectId,
                         item.targetMinutes,
+                        {
+                          itemId:
+                            item.id,
+                          routineDate:
+                            toRoutineDateKey(
+                              now,
+                            ),
+                        },
                       )
                     }
                     style={{
