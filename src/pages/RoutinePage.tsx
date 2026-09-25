@@ -364,17 +364,8 @@ export default function RoutinePage({
 
           {todaysItems.length ===
           0 ? (
-            <div
-              className="glass-panel routine-panel"
-              style={{
-                padding: '24px',
-                color:
-                  'var(--text-muted)',
-              }}
-            >
-              Add fixed daily items
-              or a rotation pool
-              below.
+            <div className="glass-panel routine-panel routine-empty">
+              Add fixed daily items or a rotation pool below.
             </div>
           ) : (
             todaysItems.map(
@@ -399,105 +390,29 @@ export default function RoutinePage({
                 return (
                   <article
                     key={item.id}
-                    className="glass-panel routine-panel"
-                    style={{
-                      padding:
-                        '18px',
-                      display:
-                        'grid',
-                      gap: '14px',
-                    }}
+                    className="glass-panel routine-panel routine-item-card"
                   >
-                    <div
-                      style={{
-                        display:
-                          'flex',
-                        justifyContent:
-                          'space-between',
-                        alignItems:
-                          'center',
-                        gap: '12px',
-                        flexWrap:
-                          'wrap',
-                      }}
-                    >
-                      <div
-                        style={{
-                          display:
-                            'flex',
-                          alignItems:
-                            'center',
-                          gap:
-                            '12px',
-                        }}
-                      >
+                    <div className="routine-item-head">
+                      <div className="routine-item-identity">
                         <div
-                          aria-label={
+                          aria-label={done ? 'Completed' : 'Pending'}
+                          className={
                             done
-                              ? 'Completed'
-                              : 'Pending'
+                              ? 'routine-item-state complete'
+                              : 'routine-item-state'
                           }
-                          style={{
-                            width:
-                              '40px',
-                            height:
-                              '40px',
-                            borderRadius:
-                              '11px',
-                            display:
-                              'grid',
-                            placeItems:
-                              'center',
-                            border:
-                              done
-                                ? '1px solid var(--primary-border)'
-                                : '1px solid var(--void-border)',
-                            background:
-                              done
-                                ? 'var(--primary-soft)'
-                                : 'var(--void-surface-hover)',
-                            fontSize:
-                              '20px',
-                          }}
                         >
-                          {done
-                            ? '✅'
-                            : '·'}
+                          {done ? <Check size={18} /> : <Circle size={13} />}
                         </div>
 
                         <div>
-                          <div
-                            style={{
-                              fontWeight:
-                                750,
-                              color:
-                                'var(--text-primary)',
-                            }}
-                          >
-                            {
-                              item.title
-                            }
+                          <div className="routine-item-title">
+                            {item.title}
                           </div>
 
-                          <div
-                            style={{
-                              color:
-                                'var(--text-muted)',
-                              fontSize:
-                                '11px',
-                              marginTop:
-                                '4px',
-                            }}
-                          >
-                            {subject
-                              ?.name ??
-                              'Subject removed'}{' '}
-                            · {
-                              item.mode ===
-                              'fixed'
-                                ? 'Every day'
-                                : 'Rotation'
-                            }
+                          <div className="routine-item-subtitle">
+                            {subject?.name ?? 'Subject removed'} ·{' '}
+                            {item.mode === 'fixed' ? 'Every day' : 'Rotation'}
                           </div>
                         </div>
                       </div>
@@ -537,20 +452,7 @@ export default function RoutinePage({
                     </div>
 
                     <div>
-                      <div
-                        style={{
-                          display:
-                            'flex',
-                          justifyContent:
-                            'space-between',
-                          color:
-                            'var(--text-muted)',
-                          fontSize:
-                            '11px',
-                          marginBottom:
-                            '7px',
-                        }}
-                      >
+                      <div className="routine-progress-meta">
                         <span>
                           {minutes}m
                           focused
@@ -562,46 +464,21 @@ export default function RoutinePage({
                         </span>
                       </div>
 
-                      <div
-                        style={{
-                          height:
-                            '7px',
-                          borderRadius:
-                            '999px',
-                          overflow:
-                            'hidden',
-                          background:
-                            'var(--void-border)',
-                        }}
-                      >
+                      <div className="routine-progress-track">
                         <div
                           style={{
                             width: `${Math.min(
                               100,
                               Math.round(
-                                (minutes /
-                                  item.targetMinutes) *
-                                  100,
+                                (minutes / item.targetMinutes) * 100,
                               ),
                             )}%`,
-                            height:
-                              '100%',
-                            background:
-                              'var(--primary-glow)',
                           }}
                         />
                       </div>
                     </div>
 
-                    <div
-                      style={{
-                        display:
-                          'grid',
-                        gridTemplateColumns:
-                          'repeat(7, minmax(34px, 1fr))',
-                        gap: '6px',
-                      }}
-                    >
+                    <div className="routine-week-grid">
                       {recentDates.map(
                         (date) => {
                           const status =
@@ -615,61 +492,26 @@ export default function RoutinePage({
 
                           return (
                             <div
-                              key={
-                                date.toISOString()
-                              }
-                              title={
-                                status
-                              }
-                              style={{
-                                minHeight:
-                                  '42px',
-                                borderRadius:
-                                  '9px',
-                                border:
-                                  '1px solid var(--void-border)',
-                                background:
-                                  'var(--void-surface-hover)',
-                                display:
-                                  'grid',
-                                placeItems:
-                                  'center',
-                                fontSize:
-                                  '12px',
-                              }}
+                              key={date.toISOString()}
+                              title={status}
+                              className={`routine-day-status ${status}`}
                             >
                               <span>
-                                {status ===
-                                'done'
-                                  ? '✅'
-                                  : status ===
-                                      'recovered'
-                                    ? '↩️'
-                                    : status ===
-                                        'recoverable'
-                                      ? '⏳'
-                                      : status ===
-                                          'missed'
-                                        ? '❌'
-                                        : status ===
-                                            'pending'
-                                          ? '·'
-                                          : '—'}
+                                {status === 'done' ? (
+                                  <Check size={13} />
+                                ) : status === 'recovered' ? (
+                                  <RotateCw size={13} />
+                                ) : status === 'recoverable' ? (
+                                  <Circle size={12} />
+                                ) : status === 'missed' ? (
+                                  <X size={13} />
+                                ) : status === 'pending' ? (
+                                  <Circle size={8} />
+                                ) : (
+                                  '—'
+                                )}
                               </span>
-                              <small
-                                style={{
-                                  color:
-                                    'var(--text-muted)',
-                                  fontSize:
-                                    '8px',
-                                }}
-                              >
-                                {
-                                  shortDay(
-                                    date,
-                                  )
-                                }
-                              </small>
+                              <small>{shortDay(date)}</small>
                             </div>
                           )
                         },
@@ -683,64 +525,21 @@ export default function RoutinePage({
         </section>
 
         {recoveryQueue.length > 0 && (
-          <section
-            className="glass-panel routine-panel"
-            style={{
-              padding: '20px',
-            }}
-          >
+          <section className="glass-panel routine-panel routine-recovery">
             <div className="eyebrow">
               Missed-day recovery
             </div>
-            <h2
-              style={{
-                margin:
-                  '6px 0 4px',
-              }}
-            >
-              Recover without mixing days
-            </h2>
-            <p
-              style={{
-                color:
-                  'var(--text-muted)',
-                fontSize: '12px',
-                marginBottom:
-                  '14px',
-              }}
-            >
+            <h2>Recover without mixing days</h2>
+            <p>
               Recovery focus is credited to the missed routine day, while today keeps its own progress.
             </p>
 
-            <div
-              style={{
-                display: 'grid',
-                gap: '10px',
-              }}
-            >
+            <div className="routine-recovery-list">
               {recoveryQueue.map(
                 (entry) => (
                   <div
-                    key={
-                      entry.item.id +
-                      entry.dateKey
-                    }
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns:
-                        'minmax(0,1fr) auto',
-                      gap: '12px',
-                      alignItems:
-                        'center',
-                      padding:
-                        '13px 14px',
-                      border:
-                        '1px solid var(--void-border)',
-                      borderRadius:
-                        '11px',
-                      background:
-                        'var(--void-surface-hover)',
-                    }}
+                    key={entry.item.id + entry.dateKey}
+                    className="routine-recovery-card"
                   >
                     <div>
                       <strong>
@@ -749,16 +548,7 @@ export default function RoutinePage({
                             .title
                         }
                       </strong>
-                      <div
-                        style={{
-                          color:
-                            'var(--text-muted)',
-                          fontSize:
-                            '11px',
-                          marginTop:
-                            '4px',
-                        }}
-                      >
+                      <div className="routine-recovery-meta">
                         {entry.date.toLocaleDateString(
                           undefined,
                           {
