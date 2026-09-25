@@ -20,6 +20,7 @@ import HistoryPage from './pages/HistoryPage'
 import LeaguePage from './pages/LeaguePage'
 import AdvisorPage from './pages/AdvisorPage'
 import { useFocusData } from './hooks/useFocusData'
+import type { RoutineSessionContext } from './storage/types'
 import PageContainer from './pages/PageContainer'
 
 const Statistics = lazy(() => import('./components/statistics/Statistics'))
@@ -70,6 +71,12 @@ function AuthenticatedApp({
   const [page, setPage] = useState<Page>('dashboard')
   const [recommendedMinutes, setRecommendedMinutes] =
     useState<number | undefined>()
+  const [
+    routineSessionContext,
+    setRoutineSessionContext,
+  ] = useState<
+    RoutineSessionContext | undefined
+  >()
 
   const data = useFocusData(
     t,
@@ -121,12 +128,16 @@ function AuthenticatedApp({
   const startRecommendedSession = (
     subjectId?: string,
     minutes?: number,
+    routineContext?: RoutineSessionContext,
   ) => {
     if (subjectId) {
       data.selectSubject(subjectId)
     }
 
     setRecommendedMinutes(minutes)
+    setRoutineSessionContext(
+      routineContext,
+    )
     setPage('focus')
   }
 
@@ -148,7 +159,18 @@ function AuthenticatedApp({
   return (
     <AppShell
       page={page}
-      onPageChange={setPage}
+      onPageChange={(nextPage) => {
+        if (nextPage !== 'focus') {
+          setRecommendedMinutes(
+            undefined,
+          )
+          setRoutineSessionContext(
+            undefined,
+          )
+        }
+
+        setPage(nextPage)
+      }}
       subjects={data.subjects}
       activeSubjectId={data.activeSubjectId}
       onSelectSubject={handleSelectSubject}
@@ -187,8 +209,16 @@ function AuthenticatedApp({
             data.settings.notificationsEnabled
           }
           initialFocusMinutes={recommendedMinutes}
+          routineContext={routineSessionContext}
           onAddSession={data.addSession}
-          onSelectSubject={data.selectSubject}
+          onSelectSubject={(subjectId) => {
+            setRoutineSessionContext(
+              undefined,
+            )
+            data.selectSubject(
+              subjectId,
+            )
+          }}
         />
       )}
 
