@@ -1,9 +1,11 @@
 import {
   Check,
   Circle,
+  Flame,
   Play,
   Plus,
   RotateCw,
+  ShieldCheck,
   Trash2,
   X,
 } from 'lucide-react'
@@ -18,13 +20,17 @@ import type {
 } from '../types'
 import type {
   RoutineItem,
+  RoutineSessionContext,
 } from '../storage/types'
 import {
   getRecentRoutineDates,
+  getRecoverableRoutineOccurrences,
   getRotationItemForDate,
   getRoutineItemsForDate,
   getRoutineMinutesForDate,
   getRoutineStatus,
+  getRoutineStreakStats,
+  toRoutineDateKey,
 } from '../utils/routine'
 import PageContainer from './PageContainer'
 import PageHeader from '../components/layout/PageHeader'
@@ -39,6 +45,8 @@ interface RoutinePageProps {
     subjectId: string,
     targetMinutes: number,
     mode: RoutineItem['mode'],
+    daysOfWeek?: number[],
+    recoveryDays?: number,
   ) => void
   onUpdateRoutineItem: (
     id: string,
@@ -55,6 +63,7 @@ interface RoutinePageProps {
   onStartSession: (
     subjectId?: string,
     minutes?: number,
+    routineContext?: RoutineSessionContext,
   ) => void
 }
 
@@ -91,6 +100,10 @@ export default function RoutinePage({
     useState<RoutineItem['mode']>(
       'fixed',
     )
+  const [daysOfWeek, setDaysOfWeek] =
+    useState<number[]>([0, 1, 2, 3, 4, 5, 6])
+  const [recoveryDays, setRecoveryDays] =
+    useState(1)
   const [pendingDelete, setPendingDelete] =
     useState<string | null>(null)
 
@@ -133,6 +146,20 @@ export default function RoutinePage({
       ),
     [today],
   )
+
+  const recoveryQueue =
+    getRecoverableRoutineOccurrences(
+      routineItems,
+      sessions,
+      today,
+    )
+
+  const streak =
+    getRoutineStreakStats(
+      routineItems,
+      sessions,
+      today,
+    )
 
   const todaysItems =
     getRoutineItemsForDate(
@@ -184,6 +211,8 @@ export default function RoutinePage({
       subject.id,
       targetMinutes,
       mode,
+      daysOfWeek,
+      recoveryDays,
     )
 
     setTitle('')
