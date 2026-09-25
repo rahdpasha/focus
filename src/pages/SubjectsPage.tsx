@@ -73,9 +73,12 @@ function getStartOfWeek(): Date {
 
 function minutesLabel(
   minutes: number,
+  language: 'en' | 'ku',
 ): string {
   if (minutes < 60) {
-    return `${minutes}m`
+    return language === 'ku'
+      ? `${minutes} خولەک`
+      : `${minutes}m`
   }
 
   const hours =
@@ -83,8 +86,14 @@ function minutesLabel(
   const remainder =
     minutes % 60
 
-  return remainder > 0
-    ? `${hours}h ${remainder}m`
+  if (remainder > 0) {
+    return language === 'ku'
+      ? `${hours} کاتژمێر ${remainder} خولەک`
+      : `${hours}h ${remainder}m`
+  }
+
+  return language === 'ku'
+    ? `${hours} کاتژمێر`
     : `${hours}h`
 }
 
@@ -97,7 +106,7 @@ export default function SubjectsPage({
   onDeleteSubject,
   onStartSession,
 }: SubjectsPageProps) {
-  const { t, tr } = useI18n()
+  const { language, t, tr } = useI18n()
   const [
     showCreate,
     setShowCreate,
@@ -422,7 +431,9 @@ export default function SubjectsPage({
                     />
                     {lastStudied
                       ? `${tr('Last studied', 'دوایین خوێندن')} ${lastStudied.toLocaleDateString(
-                          undefined,
+                          language === 'ku'
+                            ? 'ku-IQ'
+                            : 'en-US',
                           {
                             month:
                               'short',
