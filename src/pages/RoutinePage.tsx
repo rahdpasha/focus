@@ -1045,10 +1045,35 @@ export default function RoutinePage({
               }
             >
               <option value="fixed">
-                Fixed every day
+                Fixed
               </option>
               <option value="rotation">
                 Rotation pool
+              </option>
+            </select>
+
+            <select
+              value={recoveryDays}
+              onChange={(event) =>
+                setRecoveryDays(
+                  Number(
+                    event.target.value,
+                  ),
+                )
+              }
+              aria-label="Recovery window"
+            >
+              <option value={0}>
+                No recovery
+              </option>
+              <option value={1}>
+                +1 day recovery
+              </option>
+              <option value={2}>
+                +2 days recovery
+              </option>
+              <option value={3}>
+                +3 days recovery
               </option>
             </select>
 
@@ -1061,6 +1086,69 @@ export default function RoutinePage({
               <Plus size={15} />
               ADD
             </button>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '6px',
+              marginTop: '12px',
+              alignItems: 'center',
+            }}
+          >
+            <span
+              style={{
+                color:
+                  'var(--text-muted)',
+                fontSize: '11px',
+                marginRight: '4px',
+              }}
+            >
+              Days
+            </span>
+
+            {WEEKDAYS.map(
+              (day) => {
+                const active =
+                  daysOfWeek.includes(
+                    day.value,
+                  )
+
+                return (
+                  <button
+                    key={day.value}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() =>
+                      toggleBuilderDay(
+                        day.value,
+                      )
+                    }
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius:
+                        '9px',
+                      border:
+                        active
+                          ? '1px solid var(--primary-border)'
+                          : '1px solid var(--void-border)',
+                      background:
+                        active
+                          ? 'var(--primary-soft)'
+                          : 'var(--void-surface-hover)',
+                      color:
+                        active
+                          ? 'var(--primary-glow)'
+                          : 'var(--text-muted)',
+                    }}
+                  >
+                    {day.label}
+                  </button>
+                )
+              },
+            )}
           </div>
 
           <div
@@ -1131,7 +1219,13 @@ export default function RoutinePage({
                           item.targetMinutes
                         }m · {
                           item.mode
-                        }
+                        } · {
+                          dayRuleLabel(
+                            item.daysOfWeek,
+                          )
+                        } · recovery {
+                          item.recoveryDays
+                        }d
                       </div>
                     </div>
 
@@ -1213,6 +1307,132 @@ export default function RoutinePage({
                         />
                       )}
                     </button>
+
+                    <div
+                      style={{
+                        gridColumn:
+                          '1 / -1',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '5px',
+                        alignItems:
+                          'center',
+                      }}
+                    >
+                      {WEEKDAYS.map(
+                        (day) => {
+                          const active =
+                            item.daysOfWeek.includes(
+                              day.value,
+                            )
+
+                          return (
+                            <button
+                              key={day.value}
+                              type="button"
+                              aria-pressed={
+                                active
+                              }
+                              onClick={() => {
+                                const next =
+                                  active
+                                    ? item.daysOfWeek.filter(
+                                        (
+                                          value,
+                                        ) =>
+                                          value !==
+                                          day.value,
+                                      )
+                                    : [
+                                        ...item.daysOfWeek,
+                                        day.value,
+                                      ].sort()
+
+                                if (
+                                  next.length ===
+                                  0
+                                ) {
+                                  return
+                                }
+
+                                onUpdateRoutineItem(
+                                  item.id,
+                                  {
+                                    daysOfWeek:
+                                      next,
+                                  },
+                                )
+                              }}
+                              style={{
+                                width:
+                                  '30px',
+                                height:
+                                  '30px',
+                                borderRadius:
+                                  '8px',
+                                border:
+                                  active
+                                    ? '1px solid var(--primary-border)'
+                                    : '1px solid var(--void-border)',
+                                background:
+                                  active
+                                    ? 'var(--primary-soft)'
+                                    : 'transparent',
+                                color:
+                                  active
+                                    ? 'var(--primary-glow)'
+                                    : 'var(--text-muted)',
+                              }}
+                            >
+                              {
+                                day.label
+                              }
+                            </button>
+                          )
+                        },
+                      )}
+
+                      <select
+                        aria-label={
+                          'Recovery window for ' +
+                          item.title
+                        }
+                        value={
+                          item.recoveryDays
+                        }
+                        onChange={(
+                          event,
+                        ) =>
+                          onUpdateRoutineItem(
+                            item.id,
+                            {
+                              recoveryDays:
+                                Number(
+                                  event.target
+                                    .value,
+                                ),
+                            },
+                          )
+                        }
+                        style={{
+                          marginLeft:
+                            'auto',
+                        }}
+                      >
+                        <option value={0}>
+                          No recovery
+                        </option>
+                        <option value={1}>
+                          +1 day
+                        </option>
+                        <option value={2}>
+                          +2 days
+                        </option>
+                        <option value={3}>
+                          +3 days
+                        </option>
+                      </select>
+                    </div>
                   </div>
                 )
               },
