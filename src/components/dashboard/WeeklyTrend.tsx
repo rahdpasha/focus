@@ -465,143 +465,33 @@ export default function WeeklyTrend({
     totalSeconds > 0
 
   return (
-    <div
-      className="glass-panel"
-      style={{
-        padding: '24px',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent:
-            'space-between',
-          gap: '18px',
-          marginBottom: '20px',
-          flexWrap: 'wrap',
-        }}
-      >
+    <section className="glass-panel dashboard-insight-card weekly-trend-v5">
+      <div className="dashboard-insight-head weekly-trend-v5-head">
         <div>
-          <div
-            style={{
-              fontSize: '11px',
-              fontFamily:
-                'Space Grotesk, sans-serif',
-              fontWeight: 600,
-              color:
-                'var(--text-muted)',
-              textTransform:
-                'uppercase',
-              letterSpacing:
-                '0.12em',
-            }}
-          >
-            DAILY FOCUS
-          </div>
-
-          <div
-            style={{
-              marginTop: '5px',
-              fontSize: '12px',
-              color:
-                'var(--text-secondary)',
-            }}
-          >
-            Your exact focus rhythm
-            across the last seven days.
-          </div>
+          <span className="dashboard-insight-kicker">Daily focus</span>
+          <p>Your focus rhythm across the last seven days.</p>
         </div>
 
-        <div
-          style={{
-            display: 'flex',
-            gap: '8px',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div
-            style={{
-              padding:
-                '7px 10px',
-              borderRadius: '9px',
-              background:
-                'rgba(139,92,246,0.07)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '9px',
-                color:
-                  'var(--text-muted)',
-              }}
-            >
-              TOTAL
-            </div>
-
-            <div
-              className="mono"
-              style={{
-                marginTop: '2px',
-                fontSize: '12px',
-                color:
-                  'var(--primary-glow)',
-              }}
-            >
-              {formatDuration(
-                totalSeconds
-              )}
-            </div>
+        <div className="dashboard-insight-summary">
+          <div>
+            <span>Total</span>
+            <strong className="mono">{formatDuration(totalSeconds)}</strong>
           </div>
 
-          <div
-            style={{
-              padding:
-                '7px 10px',
-              borderRadius: '9px',
-              background:
-                'rgba(56,189,248,0.06)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '9px',
-                color:
-                  'var(--text-muted)',
-              }}
-            >
-              PEAK DAY
-            </div>
-
-            <div
-              className="mono"
-              style={{
-                marginTop: '2px',
-                fontSize: '12px',
-                color:
-                  'var(--cyber-glow)',
-              }}
-            >
+          <div>
+            <span>Peak day</span>
+            <strong className="mono">
               {peakDay
                 ? `${peakDay.day} · ${formatDuration(peakDay.seconds)}`
                 : '—'}
-            </div>
+            </strong>
           </div>
         </div>
       </div>
 
       {!hasData ? (
-        <div
-          style={{
-            padding:
-              '80px 20px',
-            textAlign: 'center',
-            color:
-              'var(--text-muted)',
-            fontSize: '11px',
-          }}
-        >
-          No completed focus sessions yet.
+        <div className="dashboard-insight-empty">
+          Complete a focus session to reveal your weekly rhythm.
         </div>
       ) : (
         <>
@@ -628,17 +518,17 @@ export default function WeeklyTrend({
                 >
                   <stop
                     offset="0%"
-                    stopColor="#8b5cf6"
+                    stopColor="var(--primary)"
                     stopOpacity={0.28}
                   />
                   <stop
                     offset="65%"
-                    stopColor="#8b5cf6"
+                    stopColor="var(--primary)"
                     stopOpacity={0.07}
                   />
                   <stop
                     offset="100%"
-                    stopColor="#8b5cf6"
+                    stopColor="var(--primary)"
                     stopOpacity={0}
                   />
                 </linearGradient>
@@ -669,7 +559,7 @@ export default function WeeklyTrend({
 
               <CartesianGrid
                 vertical={false}
-                stroke="rgba(255,255,255,0.045)"
+                stroke="var(--focus-hairline)"
                 strokeDasharray="3 7"
               />
 
@@ -707,7 +597,7 @@ export default function WeeklyTrend({
                 y={
                   averageSeconds
                 }
-                stroke="rgba(167,139,250,0.36)"
+                stroke="var(--primary-border)"
                 strokeDasharray="4 7"
               />
 
@@ -717,7 +607,7 @@ export default function WeeklyTrend({
                 }
                 cursor={{
                   stroke:
-                    'rgba(139,92,246,0.30)',
+                    'var(--primary-border)',
                   strokeWidth: 1,
                 }}
               />
@@ -725,7 +615,7 @@ export default function WeeklyTrend({
               <Area
                 type="natural"
                 dataKey="seconds"
-                stroke="#b59cff"
+                stroke="var(--primary-glow)"
                 strokeWidth={2}
                 strokeDasharray="8 6"
                 fill="url(#focusFill)"
@@ -735,9 +625,9 @@ export default function WeeklyTrend({
                 activeDot={{
                   r: 5,
                   fill:
-                    '#b59cff',
+                    'var(--primary-glow)',
                   stroke:
-                    '#0b0c12',
+                    'var(--void-bg)',
                   strokeWidth: 2,
                   filter:
                     'url(#focusGlow)',
@@ -747,69 +637,18 @@ export default function WeeklyTrend({
             </AreaChart>
           </ResponsiveContainer>
 
-          <div
-            style={{
-              marginTop: '20px',
-              paddingTop: '20px',
-              borderTop:
-                '1px solid var(--void-border)',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent:
-                  'space-between',
-                gap: '12px',
-                marginBottom: '12px',
-                flexWrap: 'wrap',
-              }}
-            >
+          <div className="weekly-trend-v5-hourly">
+            <div className="dashboard-insight-subhead">
               <div>
-                <div
-                  style={{
-                    fontSize: '10px',
-                    fontFamily:
-                      'Space Grotesk, sans-serif',
-                    fontWeight: 600,
-                    color:
-                      'var(--text-muted)',
-                    textTransform:
-                      'uppercase',
-                    letterSpacing:
-                      '0.1em',
-                  }}
-                >
-                  24-HOUR RHYTHM
-                </div>
-
-                <div
-                  style={{
-                    marginTop: '4px',
-                    fontSize: '10px',
-                    color:
-                      'var(--text-muted)',
-                  }}
-                >
-                  Recorded sessions by
-                  completion hour.
-                </div>
+                <span>24-hour rhythm</span>
+                <p>Recorded sessions by completion hour.</p>
               </div>
 
-              <div
-                className="mono"
-                style={{
-                  fontSize: '10px',
-                  color:
-                    'var(--text-muted)',
-                }}
-              >
-                {peakHour &&
-                peakHour.seconds > 0
+              <strong className="mono">
+                {peakHour && peakHour.seconds > 0
                   ? `Peak · ${peakHour.label}`
                   : 'No peak yet'}
-              </div>
+              </strong>
             </div>
 
             <ResponsiveContainer
@@ -835,12 +674,12 @@ export default function WeeklyTrend({
                   >
                     <stop
                       offset="0%"
-                      stopColor="#38bdf8"
+                      stopColor="var(--energy)"
                       stopOpacity={0.25}
                     />
                     <stop
                       offset="100%"
-                      stopColor="#8b5cf6"
+                      stopColor="var(--primary)"
                       stopOpacity={0.9}
                     />
                   </linearGradient>
@@ -848,7 +687,7 @@ export default function WeeklyTrend({
 
                 <CartesianGrid
                   vertical={false}
-                  stroke="rgba(255,255,255,0.035)"
+                  stroke="var(--focus-hairline)"
                   strokeDasharray="2 8"
                 />
 
@@ -882,7 +721,7 @@ export default function WeeklyTrend({
                   }
                   cursor={{
                     fill:
-                      'rgba(139,92,246,0.06)',
+                      'var(--primary-soft)',
                   }}
                 />
 
@@ -903,62 +742,17 @@ export default function WeeklyTrend({
             </ResponsiveContainer>
           </div>
 
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent:
-                'space-between',
-              gap: '16px',
-              marginTop: '16px',
-              paddingTop: '14px',
-              borderTop:
-                '1px solid var(--void-border)',
-              flexWrap: 'wrap',
-            }}
-          >
+          <div className="weekly-trend-v5-footer">
             <div>
-              <div
-                style={{
-                  fontSize: '9px',
-                  color:
-                    'var(--text-muted)',
-                  textTransform:
-                    'uppercase',
-                }}
-              >
-                DAILY AVERAGE
-              </div>
-
-              <div
-                className="mono"
-                style={{
-                  marginTop: '4px',
-                  fontSize: '12px',
-                  color:
-                    'var(--text-secondary)',
-                }}
-              >
-                {formatDuration(
-                  averageSeconds
-                )}
-              </div>
+              <span>Daily average</span>
+              <strong className="mono">{formatDuration(averageSeconds)}</strong>
             </div>
 
-            <div
-              style={{
-                fontSize: '10px',
-                color:
-                  'var(--text-muted)',
-                textAlign: 'right',
-              }}
-            >
-              Hover any day or hour for
-              exact recorded time.
-            </div>
+            <p>Hover any day or hour for exact recorded time.</p>
+          </div>
           </div>
         </>
       )}
-    </div>
+    </section>
   )
 }
