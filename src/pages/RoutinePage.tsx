@@ -1175,20 +1175,11 @@ export default function RoutinePage({
                       preset.days,
                     )
                   }
-                  style={{
-                    minHeight: '34px',
-                    padding: '0 10px',
-                    borderRadius: '9px',
-                    border: active
-                      ? '1px solid var(--primary-border)'
-                      : '1px solid var(--void-border)',
-                    background: active
-                      ? 'var(--primary-soft)'
-                      : 'var(--void-surface-hover)',
-                    color: active
-                      ? 'var(--primary-glow)'
-                      : 'var(--text-muted)',
-                  }}
+                  className={
+                    active
+                      ? 'routine-schedule-preset active'
+                      : 'routine-schedule-preset'
+                  }
                 >
                   {preset.label}
                 </button>
@@ -1481,26 +1472,11 @@ export default function RoutinePage({
                                   },
                                 )
                               }}
-                              style={{
-                                width:
-                                  '30px',
-                                height:
-                                  '30px',
-                                borderRadius:
-                                  '8px',
-                                border:
-                                  active
-                                    ? '1px solid var(--primary-border)'
-                                    : '1px solid var(--void-border)',
-                                background:
-                                  active
-                                    ? 'var(--primary-soft)'
-                                    : 'transparent',
-                                color:
-                                  active
-                                    ? 'var(--primary-glow)'
-                                    : 'var(--text-muted)',
-                              }}
+                              className={
+                                active
+                                  ? 'routine-day-toggle active'
+                                  : 'routine-day-toggle'
+                              }
                             >
                               {
                                 day.label
@@ -1532,10 +1508,7 @@ export default function RoutinePage({
                             },
                           )
                         }
-                        style={{
-                          marginLeft:
-                            'auto',
-                        }}
+                        className="routine-recovery-select"
                       >
                         <option value={0}>
                           No recovery
