@@ -20,6 +20,7 @@ import type {
 import {
   useI18n,
 } from '../useI18n'
+import { localizeUiText } from '../utils/localizeUiText'
 import PageContainer from './PageContainer'
 import PageHeader from '../components/layout/PageHeader'
 import {
