@@ -14,6 +14,7 @@ import {
   getFocusPulse,
 } from '../../utils/focusPulse'
 import { useI18n } from '../../useI18n'
+import { localizeUiText } from '../../utils/localizeUiText'
 
 interface FocusPulseProps {
   sessions: StudySession[]
@@ -50,7 +51,7 @@ export default function FocusPulse({
   weeklyGoal,
   onStart,
 }: FocusPulseProps) {
-  const { tr } = useI18n()
+  const { language, tr } = useI18n()
   const pulse = getFocusPulse(
     sessions,
     subjects,
@@ -67,18 +68,18 @@ export default function FocusPulse({
         </div>
 
         <h2 className="focus-pulse-headline">
-          {pulse.headline}
+          {localizeUiText(language, pulse.headline)}
         </h2>
 
         <p className="focus-pulse-summary">
-          {pulse.summary}
+          {localizeUiText(language, pulse.summary)}
         </p>
 
         <div className="focus-pulse-evidence">
           {pulse.evidence.map(
             (item) => (
               <span
-                key={item}
+                key={localizeUiText(language, item)}
                 className="focus-pulse-chip"
               >
                 {item}
@@ -99,7 +100,7 @@ export default function FocusPulse({
             )
           }
         >
-          {pulse.action.label}
+          {localizeUiText(language, pulse.action.label)}
           <ArrowRight
             size={16}
           />
