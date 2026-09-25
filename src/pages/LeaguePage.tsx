@@ -14,6 +14,7 @@ import {
 import PageContainer from './PageContainer'
 import PageHeader from '../components/layout/PageHeader'
 import { supabase } from '../api/supabaseClient'
+import { useI18n } from '../useI18n'
 import {
   getLeaderboard,
   loadLeagueProfile,
@@ -83,6 +84,7 @@ export default function LeaguePage({
   userId,
   displayName,
 }: LeaguePageProps) {
+  const { tr } = useI18n()
   const [period, setPeriod] = useState<LeaguePeriod>('week')
   const [profile, setProfile] = useState<LeagueProfile>(
     () => defaultProfile(displayName),
@@ -153,7 +155,7 @@ export default function LeaguePage({
           setMessage(
             error instanceof Error
               ? error.message
-              : 'League data could not be loaded.',
+              : tr('League data could not be loaded.', 'نەتوانرا داتای پێشبڕکێ بار بکرێت.'),
           )
         }
       } finally {
@@ -197,12 +199,12 @@ export default function LeaguePage({
 
     return {
       target,
-      label: `${Math.max(
-        1,
-        target.points - currentUser.points,
-      )} pts to reach #${target.rank}`,
+      label: tr(
+        `${Math.max(1, target.points - currentUser.points)} pts to reach #${target.rank}`,
+        `${Math.max(1, target.points - currentUser.points)} خاڵ بۆ گەیشتن بە #${target.rank}`,
+      ),
     }
-  }, [currentUser, entries])
+  }, [currentUser, entries, tr])
 
   useEffect(() => {
     if (!supabase || !userId || !profile.optIn) return
@@ -239,7 +241,7 @@ export default function LeaguePage({
       setMessage(
         error instanceof Error
           ? error.message
-          : 'Standings could not be loaded.',
+          : tr('Standings could not be loaded.', 'نەتوانرا ڕیزبەندی بار بکرێت.'),
       )
     } finally {
       setLoading(false)
@@ -263,14 +265,14 @@ export default function LeaguePage({
 
       setMessage(
         profile.optIn
-          ? 'League profile active. Your saved progress is live and completed timers update your score after cloud sync.'
-          : 'You are hidden from public standings. Your score and League history stay saved for when you rejoin.',
+          ? tr('League profile active. Your saved progress is live and completed timers update your score after cloud sync.', 'پڕۆفایلی پێشبڕکێ چالاکە. پێشکەوتنی پاشەکەوتکراوت چالاکە و سێشنە تەواوکراوەکان دوای هاوکاتکردنی کڵاود خاڵەکەت نوێ دەکەنەوە.')
+          : tr('You are hidden from public standings. Your score and League history stay saved for when you rejoin.', 'لە ڕیزبەندی گشتی شاراوەیت. خاڵ و مێژووی پێشبڕکێت پاشەکەوت دەمێنێتەوە تا دووبارە بەشدار بیت.'),
       )
     } catch (error) {
       setMessage(
         error instanceof Error
           ? error.message
-          : 'League settings could not be saved.',
+          : tr('League settings could not be saved.', 'نەتوانرا ڕێکخستنەکانی پێشبڕکێ پاشەکەوت بکرێن.'),
       )
     } finally {
       setSaving(false)
@@ -281,16 +283,15 @@ export default function LeaguePage({
     return (
       <PageContainer>
         <PageHeader
-          title="FOCUS League"
-          description="Turn focused time into visible progress."
+          title={tr('FOCUS League', 'پێشبڕکێی FOCUS')}
+          description={tr('Turn focused time into visible progress.', 'کاتی سەرنج بگۆڕە بە پێشکەوتنێکی دیار.')}
         />
         <div className="glass-panel league-v4-signed-out">
           <Trophy size={24} />
           <div>
-            <strong>Enter the League</strong>
+            <strong>{tr('Enter the League', 'بچۆ ناو پێشبڕکێ')}</strong>
             <span>
-              Sign in with cloud sync enabled to compete in weekly and
-              monthly standings.
+              {tr('Sign in with cloud sync enabled to compete in weekly and monthly standings.', 'بچۆ ژوورەوە و هاوکاتکردنی کڵاود چالاک بکە بۆ بەشداری لە ڕیزبەندی هەفتانە و مانگانە.')}
             </span>
           </div>
         </div>
@@ -323,35 +324,35 @@ export default function LeaguePage({
 
   const leagueStatus =
     !profile.optIn
-      ? 'Not public'
+      ? tr('Not public', 'گشتی نییە')
       : !currentUser
-        ? 'Joining'
+        ? tr('Joining', 'بەشداربوون')
         : currentUser.rank === 1
-          ? 'Leader'
+          ? tr('Leader', 'سەرپێش')
           : currentUser.rank <= 3
-            ? 'Podium'
+            ? tr('Podium', 'سەکۆ')
             : currentUser.rank <= 10
-              ? 'Top 10'
-              : 'Climbing'
+              ? tr('Top 10', '١٠ یەکەم')
+              : tr('Climbing', 'بەرزبوونەوە')
 
   const leagueStatusCopy =
     !profile.optIn
-      ? 'Your progress is saved. Rejoin whenever you want.'
+      ? tr('Your progress is saved. Rejoin whenever you want.', 'پێشکەوتنت پاشەکەوت کراوە. هەر کاتێک بتەوێت دووبارە بەشدار بە.')
       : !currentUser
-        ? 'Your public profile is syncing into the standings.'
+        ? tr('Your public profile is syncing into the standings.', 'پڕۆفایلی گشتیت لەگەڵ ڕیزبەندی هاوکات دەکرێت.')
         : currentUser.rank === 1
-          ? 'Everyone is chasing you. Keep stacking deep days.'
+          ? tr('Everyone is chasing you. Keep stacking deep days.', 'هەمووان بەدوای تۆدان. بەردەوام بە لە ڕۆژە قووڵەکان.')
           : currentUser.rank <= 3
-            ? 'You are on the podium. One strong day can change the order.'
+            ? tr('You are on the podium. One strong day can change the order.', 'لە سەکۆدای. یەک ڕۆژی بەهێز دەتوانێت ڕیزبەندی بگۆڕێت.')
             : currentUser.rank <= 10
-              ? 'You are inside the top ten. The podium is the next target.'
-              : 'Every scored day closes the distance to the leaders.'
+              ? tr('You are inside the top ten. The podium is the next target.', 'لە ناو ١٠ یەکەمدای. سەکۆ ئامانجی داهاتووە.')
+              : tr('Every scored day closes the distance to the leaders.', 'هەر ڕۆژێکی خاڵدار دووری نێوان تۆ و سەرپێشەکان کەم دەکاتەوە.')
 
   return (
     <PageContainer>
       <PageHeader
         title="FOCUS League"
-        description="A competitive layer for consistency. Build points, climb the board, and protect your momentum."
+        description={tr('A competitive layer for consistency. Build points, climb the board, and protect your momentum.', 'پێشبڕکێیەک بۆ بەردەوامی. خاڵ کۆبکەرەوە، لە ڕیزبەندی بەرزببەوە و ڕێتمەکەت بپارێزە.')}
       />
 
       <section className="league-v4-hero">
@@ -361,43 +362,42 @@ export default function LeaguePage({
         <div className="league-v4-hero-copy">
           <div className="league-v4-kicker">
             <Sparkles size={15} />
-            Current standings
+            {tr('Current standings', 'ڕیزبەندی ئێستا')}
             <span>{period.toUpperCase()}</span>
           </div>
 
           <h2>
-            Earn your place.
+            {tr('Earn your place.', 'شوێنەکەت بەدەستبهێنە.')}
             <br />
-            <span>Then defend it.</span>
+            <span>{tr('Then defend it.', 'پاشان بپارێزە.')}</span>
           </h2>
 
           <p>
-            Your League score rewards showing up and going deeper.
-            Every completed focus session moves your public standing.
+            {tr('Your League score rewards showing up and going deeper. Every completed focus session moves your public standing.', 'خاڵی پێشبڕکێ بۆ بەردەوامی و سەرنجی قووڵ پاداشتت دەدات. هەر سێشنێکی تەواوکراو ڕیزبەندی گشتیت دەگۆڕێت.')}
           </p>
 
           <div className="league-v4-rule-row">
             <div className="league-v4-rule neutral">
               <span className="league-v4-rule-points">0</span>
               <div>
-                <strong>No study</strong>
-                <small>day closes at 0 seconds</small>
+                <strong>{tr('No study', 'هیچ خوێندنێک')}</strong>
+                <small>{tr('day closes at 0 seconds', 'ڕۆژ بە ٠ چرکە دادەخرێت')}</small>
               </div>
             </div>
 
             <div className="league-v4-rule active">
               <span className="league-v4-rule-points">1</span>
               <div>
-                <strong>Show up</strong>
-                <small>1 second → 90 minutes</small>
+                <strong>{tr('Show up', 'دەست پێ بکە')}</strong>
+                <small>{tr('1 second → 90 minutes', '١ چرکە → ٩٠ خولەک')}</small>
               </div>
             </div>
 
             <div className="league-v4-rule elite">
               <span className="league-v4-rule-points">3</span>
               <div>
-                <strong>Deep day</strong>
-                <small>more than 90 minutes</small>
+                <strong>{tr('Deep day', 'ڕۆژی قووڵ')}</strong>
+                <small>{tr('more than 90 minutes', 'زیاتر لە ٩٠ خولەک')}</small>
               </div>
             </div>
           </div>
@@ -406,7 +406,7 @@ export default function LeaguePage({
         <div className="league-v4-rank-core">
           <div className="league-v4-rank-glow" />
           <div className="league-v4-rank-ring">
-            <span>Your rank</span>
+            <span>{tr('Your rank', 'پلەی تۆ')}</span>
             <strong>{rankText}</strong>
             <small>{scoreText}</small>
           </div>
@@ -415,8 +415,8 @@ export default function LeaguePage({
             <Target size={15} />
             <span>
               {currentUser?.rank === 1
-                ? 'Hold the lead'
-                : nextRank?.label ?? 'Join to enter the race'}
+                ? tr('Hold the lead', 'سەرپێشیت بپارێزە')
+                : nextRank?.label ?? tr('Join to enter the race', 'بەشدار بە بۆ چوونە ناو پێشبڕکێ')}
             </span>
           </div>
         </div>
@@ -424,9 +424,9 @@ export default function LeaguePage({
 
       <div className="league-v4-period-bar">
         <div>
-          <span>Time range</span>
+          <span>{tr('Time range', 'ماوەی کات')}</span>
           <strong>
-            {period === 'week' ? 'This week' : 'This month'}
+            {period === 'week' ? tr('This week', 'ئەم هەفتەیە') : tr('This month', 'ئەم مانگە')}
           </strong>
         </div>
 
@@ -438,7 +438,7 @@ export default function LeaguePage({
               className={period === item ? 'active' : ''}
               onClick={() => void switchPeriod(item)}
             >
-              {item}
+              {item === 'week' ? tr('Week', 'هەفتە') : tr('Month', 'مانگ')}
             </button>
           ))}
         </div>
@@ -447,13 +447,13 @@ export default function LeaguePage({
       <section className="league-v4-podium-shell">
         <div className="league-v4-section-head">
           <div>
-            <span>Podium</span>
-            <h3>Top three</h3>
+            <span>{tr('Podium', 'سەکۆ')}</span>
+            <h3>{tr('Top three', 'سێ یەکەم')}</h3>
           </div>
 
           <div className="league-v4-live">
             <i />
-            Live ranking
+            {tr('Live ranking', 'ڕیزبەندی ڕاستەوخۆ')}
           </div>
         </div>
 
@@ -470,7 +470,7 @@ export default function LeaguePage({
               }`}
             >
               <div className="league-v4-podium-top">
-                <span>Place {place}</span>
+                <span>{tr('Place', 'پلە')} {place}</span>
                 {place === 1 ? (
                   <Crown size={22} />
                 ) : (
@@ -486,20 +486,20 @@ export default function LeaguePage({
 
               <div className="league-v4-podium-name">
                 <strong>
-                  {entry ? entry.publicName : 'Open position'}
+                  {entry ? entry.publicName : tr('Open position', 'شوێنی بەتاڵ')}
                 </strong>
-                {entry?.isCurrentUser && <span>You</span>}
+                {entry?.isCurrentUser && <span>{tr('You', 'تۆ')}</span>}
               </div>
 
               <div className="league-v4-podium-score">
                 {entry?.points ?? 0}
-                <small>pts</small>
+                <small>{tr('pts', 'خاڵ')}</small>
               </div>
 
               <div className="league-v4-podium-meta">
                 <span>
                   <Flame size={13} />
-                  {entry?.scoredDays ?? 0} scored days
+                  {entry?.scoredDays ?? 0} {tr('scored days', 'ڕۆژی خاڵدار')}
                 </span>
                 <span>
                   <Clock size={13} />
@@ -517,20 +517,19 @@ export default function LeaguePage({
         <section className="league-v4-board">
           <div className="league-v4-section-head">
             <div>
-              <span>Standings</span>
+              <span>{tr('Standings', 'ڕیزبەندی')}</span>
               <h3>
-                {period === 'week' ? 'Weekly' : 'Monthly'} standings
+                {period === 'week' ? tr('Weekly standings', 'ڕیزبەندی هەفتانە') : tr('Monthly standings', 'ڕیزبەندی مانگانە')}
               </h3>
             </div>
             <Trophy size={20} />
           </div>
 
           {loading ? (
-            <div className="league-v4-empty">Updating standings…</div>
+            <div className="league-v4-empty">{tr('Updating standings…', 'ڕیزبەندی نوێ دەکرێتەوە…')}</div>
           ) : entries.length === 0 ? (
             <div className="league-v4-empty">
-              No public competitors yet. The first learner can claim
-              the board.
+              {tr('No public competitors yet. The first learner can claim the board.', 'هێشتا هیچ بەشداربوویەکی گشتی نییە. یەکەم خوێنەر دەتوانێت سەرەوەی ڕیزبەندی بگرێت.')}
             </div>
           ) : (
             <div className="league-v4-rows">
@@ -552,17 +551,17 @@ export default function LeaguePage({
                   <div className="league-v4-row-person">
                     <strong>
                       {entry.publicName}
-                      {entry.isCurrentUser ? ' · You' : ''}
+                      {entry.isCurrentUser ? ` · ${tr('You', 'تۆ')}` : ''}
                     </strong>
                     <span>
-                      {entry.scoredDays} scored days ·{' '}
-                      {formatFocusedTime(entry.totalSeconds)} focused
+                      {entry.scoredDays} {tr('scored days', 'ڕۆژی خاڵدار')} ·{' '}
+                      {formatFocusedTime(entry.totalSeconds)} {tr('focused', 'سەرنج')}
                     </span>
                   </div>
 
                   <div className="league-v4-row-points">
                     <strong>{entry.points}</strong>
-                    <span>pts</span>
+                    <span>{tr('pts', 'خاڵ')}</span>
                   </div>
                 </div>
               ))}
@@ -574,7 +573,7 @@ export default function LeaguePage({
           <section className="league-v4-command">
             <div className="league-v4-command-head">
               <div>
-                <span>Your League profile</span>
+                <span>{tr('Your League profile', 'پڕۆفایلی پێشبڕکێی تۆ')}</span>
                 <h3>{profile.publicName || 'Focused learner'}</h3>
               </div>
               <ShieldCheck size={21} />
@@ -582,19 +581,19 @@ export default function LeaguePage({
 
             <div className="league-v4-personal-stats">
               <div>
-                <span>Rank</span>
+                <span>{tr('Rank', 'پلە')}</span>
                 <strong>{rankText}</strong>
               </div>
               <div>
-                <span>Score</span>
+                <span>{tr('Score', 'خاڵ')}</span>
                 <strong>{scoreText}</strong>
               </div>
               <div>
-                <span>Focus</span>
+                <span>{tr('Focus', 'سەرنج')}</span>
                 <strong>{totalTimeText}</strong>
               </div>
               <div>
-                <span>Scored days</span>
+                <span>{tr('Scored days', 'ڕۆژە خاڵدارەکان')}</span>
                 <strong>{scoredDaysText}</strong>
               </div>
             </div>
@@ -602,19 +601,19 @@ export default function LeaguePage({
             <div className="league-v4-next-move">
               <div>
                 <Zap size={16} />
-                Next step
+                {tr('Next step', 'هەنگاوی داهاتوو')}
               </div>
               <strong>
                 {currentUser?.rank === 1
-                  ? 'Protect #1. Another deep day keeps pressure on everyone below.'
+                  ? tr('Protect #1. Another deep day keeps pressure on everyone below.', 'پلەی #1 بپارێزە. ڕۆژێکی قووڵی تر فشار لەسەر هەمووانی خوارەوە دەهێڵێت.')
                   : nextRank?.label ??
-                    'Join public standings to start climbing.'}
+                    tr('Join public standings to start climbing.', 'بە ڕیزبەندی گشتی پەیوەست بە بۆ دەستپێکردنی بەرزبوونەوە.')}
               </strong>
             </div>
 
             <div className="league-v4-status">
               <div>
-                <span>Competition status</span>
+                <span>{tr('Competition status', 'دۆخی پێشبڕکێ')}</span>
                 <strong>{leagueStatus}</strong>
               </div>
               <p>{leagueStatusCopy}</p>
@@ -623,7 +622,7 @@ export default function LeaguePage({
             <div className="league-v4-milestones">
               <div className={profile.optIn ? 'complete' : ''}>
                 <i />
-                <span>Joined</span>
+                <span>{tr('Joined', 'بەشدار')}</span>
               </div>
               <div
                 className={
@@ -631,7 +630,7 @@ export default function LeaguePage({
                 }
               >
                 <i />
-                <span>Scored</span>
+                <span>{tr('Scored', 'خاڵدار')}</span>
               </div>
               <div
                 className={
@@ -644,7 +643,7 @@ export default function LeaguePage({
             </div>
 
             <label className="league-v4-field">
-              <span>Public name</span>
+              <span>{tr('Public name', 'ناوی گشتی')}</span>
               <input
                 value={profile.publicName}
                 maxLength={40}
@@ -666,7 +665,7 @@ export default function LeaguePage({
 
                   if (profile.optIn && !nextOptIn) {
                     const confirmed = window.confirm(
-                      'Leave the League? You will be hidden from public standings, but your score and League progress will stay saved and return if you rejoin.',
+                      tr('Leave the League? You will be hidden from public standings, but your score and League progress will stay saved and return if you rejoin.', 'لە پێشبڕکێ دەردەچیت؟ لە ڕیزبەندی گشتی دەشاردرێیتەوە، بەڵام خاڵ و پێشکەوتنت پاشەکەوت دەمێننەوە و کاتێک دووبارە بەشدار بیت دەگەڕێنەوە.'),
                     )
 
                     if (!confirmed) return
@@ -681,11 +680,10 @@ export default function LeaguePage({
               <span className="league-v4-join-control" />
               <span>
                 <strong>
-                  {profile.optIn ? 'Visible in standings' : 'Join League'}
+                  {profile.optIn ? tr('Visible in standings', 'لە ڕیزبەندی دیارە') : tr('Join League', 'بەشداری پێشبڕکێ بکە')}
                 </strong>
                 <small>
-                  Leaving only hides your profile. Your League progress
-                  stays saved.
+                  {tr('Leaving only hides your profile. Your League progress stays saved.', 'دەرچوون تەنها پڕۆفایلەکەت دەشارێتەوە. پێشکەوتنی پێشبڕکێت پاشەکەوت دەمێنێتەوە.')}
                 </small>
               </span>
             </label>
@@ -696,15 +694,13 @@ export default function LeaguePage({
               disabled={saving}
               onClick={() => void saveProfile()}
             >
-              {saving ? 'Saving…' : 'Save League settings'}
+              {saving ? tr('Saving…', 'پاشەکەوت دەکرێت…') : tr('Save League settings', 'ڕێکخستنەکانی پێشبڕکێ پاشەکەوت بکە')}
             </button>
 
             <div className="league-v4-privacy">
               <Lock size={14} />
               <span>
-                Only your public name, score, scored-day count and
-                aggregate focused time are visible. Email, subjects,
-                notes and study history stay private.
+                {tr('Only your public name, score, scored-day count and aggregate focused time are visible. Email, subjects, notes and study history stay private.', 'تەنها ناوی گشتی، خاڵ، ژمارەی ڕۆژە خاڵدارەکان و کۆی کاتی سەرنجت دیارە. ئیمەیڵ، بابەتەکان، تێبینی و مێژووی خوێندن تایبەت دەمێننەوە.')}
               </span>
             </div>
           </section>
@@ -712,20 +708,20 @@ export default function LeaguePage({
           <section className="league-v4-champions">
             <div className="league-v4-section-head compact">
               <div>
-                <span>Previous results</span>
-                <h3>Previous champions</h3>
+                <span>{tr('Previous results', 'ئەنجامەکانی پێشوو')}</span>
+                <h3>{tr('Previous champions', 'پاڵەوانەکانی پێشوو')}</h3>
               </div>
               <Crown size={18} />
             </div>
 
             <div className="league-v4-champion-grid">
               <div>
-                <span>Last week</span>
-                <strong>{lastWeekChampion ?? 'No winner yet'}</strong>
+                <span>{tr('Last week', 'هەفتەی ڕابردوو')}</span>
+                <strong>{lastWeekChampion ?? tr('No winner yet', 'هێشتا براوە نییە')}</strong>
               </div>
               <div>
-                <span>Last month</span>
-                <strong>{lastMonthChampion ?? 'No winner yet'}</strong>
+                <span>{tr('Last month', 'مانگی ڕابردوو')}</span>
+                <strong>{lastMonthChampion ?? tr('No winner yet', 'هێشتا براوە نییە')}</strong>
               </div>
             </div>
           </section>
