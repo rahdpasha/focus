@@ -503,7 +503,19 @@ export default function RoutinePage({
                           return (
                             <div
                               key={date.toISOString()}
-                              title={status}
+                              title={
+                                 status === 'done'
+                                   ? tr('Completed', 'تەواوکراو')
+                                   : status === 'recovered'
+                                     ? tr('Recovered', 'گەڕێندرایەوە')
+                                     : status === 'recoverable'
+                                       ? tr('Can recover', 'دەتوانرێت بگەڕێندرێتەوە')
+                                       : status === 'missed'
+                                         ? tr('Missed', 'لەدەستچوو')
+                                         : status === 'pending'
+                                           ? tr('Pending', 'چاوەڕوان')
+                                           : tr('Off', 'ناچالاک')
+                               }
                               className={`routine-day-status ${status}`}
                             >
                               <span>
