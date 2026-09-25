@@ -15,6 +15,17 @@ export interface AdvancedGoal {
   createdAt: string
 }
 
+export interface RoutineItem {
+  id: string
+  title: string
+  subjectId: string
+  targetMinutes: number
+  mode: "fixed" | "rotation"
+  rotationOrder: number
+  enabled: boolean
+  createdAt: string
+}
+
 export interface FocusDataSnapshot {
   sessions: StudySession[]
   subjects: Subject[]
@@ -22,6 +33,7 @@ export interface FocusDataSnapshot {
   weeklyGoal: number
   weeklyGoalsHistory: WeeklyGoalMap
   advancedGoals: AdvancedGoal[]
+  routineItems: RoutineItem[]
   activeSubjectId: string | null
   settings: AppSettings
   workspacePreferencesVersion: number
