@@ -74,14 +74,14 @@ export default function AuthScreen() {
       !cleanName
     ) {
       setMessage(
-        tr('Add a display name before creating your account.', 'پێش دروستکردنی هەژمار ناوی پیشاندانت زیاد بکە.'),
+        tr(tr('Add a display name before creating your account.', 'پێش دروستکردنی هەژمار ناوێکی پیشاندان زیاد بکە.'), 'پێش دروستکردنی هەژمار ناوی پیشاندانت زیاد بکە.'),
       )
       return
     }
 
     if (!passwordReady) {
       setMessage(
-        tr('Use at least 10 characters for a new password.', 'بۆ وشەی نهێنی نوێ لانیکەم ١٠ پیت بەکاربهێنە.'),
+        tr(tr('Use at least 10 characters for a new password.', 'بۆ وشەی نهێنی نوێ لانیکەم ١٠ پیت بەکاربهێنە.'), 'بۆ وشەی نهێنی نوێ لانیکەم ١٠ پیت بەکاربهێنە.'),
       )
       return
     }
@@ -104,15 +104,15 @@ export default function AuthScreen() {
 
         setMessage(
           session
-            ? tr('Account created successfully.', 'هەژمارەکەت بە سەرکەوتوویی دروست کرا.')
-            : tr('Account created. Check your email to confirm your account.', 'هەژمارەکەت دروست کرا. ئیمەیڵەکەت بپشکنە بۆ پشتڕاستکردنەوە.'),
+            ? tr(tr('Account created successfully.', 'هەژمارەکەت بە سەرکەوتوویی دروست کرا.'), 'هەژمارەکەت بە سەرکەوتوویی دروست کرا.')
+            : tr(tr('Account created. Check your email to confirm your account.', 'هەژمار دروست کرا. ئیمەیڵەکەت بپشکنە بۆ پشتڕاستکردنەوە.'), 'هەژمارەکەت دروست کرا. ئیمەیڵەکەت بپشکنە بۆ پشتڕاستکردنەوە.'),
         )
       }
     } catch (error) {
       setMessage(
         error instanceof Error
           ? error.message
-          : tr('Authentication failed.', 'چوونەژوورەوە سەرکەوتوو نەبوو.'),
+          : tr(tr('Authentication failed.', 'چوونەژوورەوە سەرکەوتوو نەبوو.'), 'چوونەژوورەوە سەرکەوتوو نەبوو.'),
       )
     } finally {
       setLoading(false)
@@ -140,7 +140,7 @@ export default function AuthScreen() {
 
           <div>
             <div className="eyebrow">
-              {tr('Your focus workspace', 'شوێنی کاری سەرنجت')}
+              {tr('{tr('Your focus workspace', 'شوێنی سەرنجی تۆ')}', 'شوێنی کاری سەرنجت')}
             </div>
 
             <h1>
@@ -148,7 +148,7 @@ export default function AuthScreen() {
             </h1>
 
             <p>
-              {tr('Focus sessions, plans, routines, progress and guidance stay connected in one calm workspace.', 'سێشنەکانی سەرنج، پلان، ڕوتین، پێشکەوتن و ڕێنمایی هەموویان لە یەک شوێنی ئارامدا پێکەوە دەبن.')}
+              {tr('{tr('Focus sessions, plans, routines, progress and guidance stay connected in one calm workspace.', 'سێشنەکانی سەرنج، پلان، ڕوتین، پێشکەوتن و ڕێنمایی هەموویان لە یەک شوێنی ئارامدا پێکەوە دەمێننەوە.')}', 'سێشنەکانی سەرنج، پلان، ڕوتین، پێشکەوتن و ڕێنمایی هەموویان لە یەک شوێنی ئارامدا پێکەوە دەبن.')}
             </p>
           </div>
 
@@ -157,7 +157,7 @@ export default function AuthScreen() {
               size={17}
             />
             <span>
-              {tr('Your private study data stays tied to your account and is never shown on public League profiles.', 'داتای تایبەتی خوێندنت تەنها بە هەژمارەکەتەوە پەیوەستە و لە پڕۆفایلی گشتی پێشبڕکێدا پیشان نادرێت.')}
+              {tr('{tr('Your private study data stays tied to your account and is never shown on public League profiles.', 'داتای تایبەتی خوێندنت تەنها بە هەژمارەکەتەوە گرێدراوە و لە پڕۆفایلی گشتی پێشبڕکێدا نیشان نادرێت.')}', 'داتای تایبەتی خوێندنت تەنها بە هەژمارەکەتەوە پەیوەستە و لە پڕۆفایلی گشتی پێشبڕکێدا پیشان نادرێت.')}
             </span>
           </div>
         </aside>
@@ -173,14 +173,14 @@ export default function AuthScreen() {
 
             <h2>
               {signingUp
-                ? tr('Create your account', 'هەژمارەکەت دروست بکە')
-                : tr('Welcome back', 'بەخێربێیتەوە')}
+                ? tr(tr('Create your account', 'هەژمارەکەت دروست بکە'), 'هەژمارەکەت دروست بکە')
+                : tr(tr('Welcome back', 'بەخێربێیتەوە'), 'بەخێربێیتەوە')}
             </h2>
 
             <p>
               {signingUp
-                ? tr('Create your account and keep your study system synced across devices.', 'هەژمارەکەت دروست بکە و سیستەمی خوێندنت لە نێوان ئامێرەکان هاوکات بێت.')
-                : tr('Pick up exactly where you left off.', 'لە هەمان شوێنەوە بەردەوام بە کە وەستابوویت.')}}
+                ? tr(tr('Create your account and keep your study system synced across devices.', 'هەژمارەکەت دروست بکە و سیستەمی خوێندنت لە نێوان ئامێرەکان هاوکات بپارێزە.'), 'هەژمارەکەت دروست بکە و سیستەمی خوێندنت لە نێوان ئامێرەکان هاوکات بێت.')
+                : tr(tr('Pick up exactly where you left off.', 'لە هەمان شوێنەوە بەردەوام بە کە وازت لێ هێنا.'), 'لە هەمان شوێنەوە بەردەوام بە کە وەستابوویت.')}}
             </p>
           </div>
 
@@ -266,8 +266,8 @@ export default function AuthScreen() {
                 }
                 placeholder={
                   signingUp
-                    ? tr('At least 10 characters', 'لانیکەم ١٠ پیت')
-                    : tr('Your password', 'وشەی نهێنیت')
+                    ? tr(tr('At least 10 characters', 'لانیکەم ١٠ پیت'), 'لانیکەم ١٠ پیت')
+                    : tr(tr('Your password', 'وشەی نهێنی تۆ'), 'وشەی نهێنیت')
                 }
                 autoComplete={
                   mode === 'signin'
@@ -293,8 +293,8 @@ export default function AuthScreen() {
                 }
                 aria-label={
                   showPassword
-                    ? tr('Hide password', 'وشەی نهێنی بشارەوە')
-                    : tr('Show password', 'وشەی نهێنی پیشان بدە')
+                    ? tr(tr('Hide password', 'شاردنەوەی وشەی نهێنی'), 'وشەی نهێنی بشارەوە')
+                    : tr(tr('Show password', 'پیشاندانی وشەی نهێنی'), 'وشەی نهێنی پیشان بدە')
                 }
               >
                 {showPassword ? (
@@ -334,10 +334,10 @@ export default function AuthScreen() {
             }
           >
             {loading
-              ? tr('Please wait…', 'تکایە چاوەڕێ بکە…')
+              ? tr(tr('Please wait…', 'تکایە چاوەڕێ بکە…'), 'تکایە چاوەڕێ بکە…')
               : mode === 'signin'
-                ? tr('Sign in', 'چوونەژوورەوە')
-                : tr('Create account', 'دروستکردنی هەژمار')}
+                ? tr(tr('Sign in', 'چوونەژوورەوە'), 'چوونەژوورەوە')
+                : tr(tr('Create account', 'دروستکردنی هەژمار'), 'دروستکردنی هەژمار')}
           </button>
 
           {message && (
@@ -356,8 +356,8 @@ export default function AuthScreen() {
             onClick={changeMode}
           >
             {mode === 'signin'
-              ? tr('Create a new account', 'هەژمارێکی نوێ دروست بکە')
-              : tr('Already have an account? Sign in', 'هەژمارت هەیە؟ بچۆ ژوورەوە')}
+              ? tr(tr('Create a new account', 'هەژمارێکی نوێ دروست بکە'), 'هەژمارێکی نوێ دروست بکە')
+              : tr(tr('Already have an account? Sign in', 'هەژمارت هەیە؟ بچۆ ژوورەوە'), 'هەژمارت هەیە؟ بچۆ ژوورەوە')}
           </button>
         </form>
       </section>
