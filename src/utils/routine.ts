@@ -11,8 +11,11 @@ function startOfLocalDay(
 
 function dayNumber(date: Date): number {
   return Math.floor(
-    startOfLocalDay(date).getTime() /
-      86400000,
+    Date.UTC(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+    ) / 86400000,
   )
 }
 
