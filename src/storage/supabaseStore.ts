@@ -93,7 +93,7 @@ type RoutineItemRow = {
 
 type UserSettingsRow = {
   user_id: string
-  theme: 'dark' | 'light' | 'system'
+  theme: 'dark' | 'light' | 'system' | 'black' | 'white'
   language: 'en' | 'ku'
   focus_minutes: number
   short_break_minutes: number
