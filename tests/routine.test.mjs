@@ -193,3 +193,22 @@ test('unfinished past routine becomes missed instead of pending', () => {
     'pending',
   )
 })
+
+test('routine history does not mark days before an item was created', () => {
+  const beforeCreation =
+    new Date(2026, 8, 24, 12)
+  const afterCreation =
+    new Date(2026, 8, 25, 12)
+
+  assert.equal(
+    getRoutineStatus(
+      fixed,
+      [fixed],
+      [],
+      beforeCreation,
+      afterCreation,
+    ),
+    'off',
+  )
+})
+
