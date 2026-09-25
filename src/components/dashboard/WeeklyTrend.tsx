@@ -274,7 +274,7 @@ function DayTooltip({
       </strong>
       <small>
         {point.sessions}{' '}
-        {point.sessions === 1 ? 'session' : 'sessions'}
+        {tr(point.sessions === 1 ? 'session' : 'sessions', 'سێشن')}
       </small>
     </div>
   )
@@ -317,7 +317,7 @@ function HourTooltip({
 export default function WeeklyTrend({
   sessions,
 }: WeeklyTrendProps) {
-  const { t } = useI18n()
+  const { t, tr, language } = useI18n()
 
   const data = useMemo(() => {
     const dayNames = [
@@ -389,18 +389,18 @@ export default function WeeklyTrend({
     <section className="glass-panel dashboard-insight-card weekly-trend-v5">
       <div className="dashboard-insight-head weekly-trend-v5-head">
         <div>
-          <span className="dashboard-insight-kicker">Daily focus</span>
-          <p>Your focus rhythm across the last seven days.</p>
+          <span className="dashboard-insight-kicker">{tr('Daily focus', 'سەرنجی ڕۆژانە')}</span>
+          <p>{tr('Your focus rhythm across the last seven days.', 'ڕێتمی سەرنجت لە حەوت ڕۆژی ڕابردوو.')}</p>
         </div>
 
         <div className="dashboard-insight-summary">
           <div>
-            <span>Total</span>
+            <span>{tr('Total', 'کۆی گشتی')}</span>
             <strong className="mono">{formatDuration(totalSeconds)}</strong>
           </div>
 
           <div>
-            <span>Peak day</span>
+            <span>{tr('Peak day', 'بەهێزترین ڕۆژ')}</span>
             <strong className="mono">
               {peakDay
                 ? `${peakDay.day} · ${formatDuration(peakDay.seconds)}`
@@ -561,8 +561,8 @@ export default function WeeklyTrend({
           <div className="weekly-trend-v5-hourly">
             <div className="dashboard-insight-subhead">
               <div>
-                <span>24-hour rhythm</span>
-                <p>Recorded sessions by completion hour.</p>
+                <span>{tr('24-hour rhythm', 'ڕێتمی ٢٤ کاتژمێر')}</span>
+                <p>{tr('Recorded sessions by completion hour.', 'سێشنە تۆمارکراوەکان بەپێی کاتی تەواوبوون.')}</p>
               </div>
 
               <strong className="mono">
@@ -665,11 +665,11 @@ export default function WeeklyTrend({
 
           <div className="weekly-trend-v5-footer">
             <div>
-              <span>Daily average</span>
+              <span>{tr('Daily average', 'ناوەندی ڕۆژانە')}</span>
               <strong className="mono">{formatDuration(averageSeconds)}</strong>
             </div>
 
-            <p>Hover any day or hour for exact recorded time.</p>
+            <p>{tr('Hover any day or hour for exact recorded time.', 'لەسەر هەر ڕۆژ یان کاتژمێرێک بوەستە بۆ بینینی کاتی ورد.')}</p>
           </div>
         </>
       )}
