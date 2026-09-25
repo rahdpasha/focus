@@ -6,19 +6,33 @@ Checked items below were actually verified during V3 hardening. Re-run the autom
 
 ## Blocking merge gates
 
-PR #1 stays **draft** until all three are complete:
+PR #1 stays **draft** until both are complete:
 
-- [ ] **Latest preview:** Vercel successfully deploys the current branch HEAD after the free-plan daily deployment limit clears, then the latest-preview runtime check is clean.
 - [ ] **Auth security:** Supabase Auth leaked-password protection is enabled and Security Advisor is re-run.
-- [ ] **Real-browser sign-off:** Complete the remaining authenticated desktop/mobile smoke tests below, including account switching, cloud sync/offline recovery, League with two accounts, subject-scoped goals, settings/theme sync, and mobile/accessibility checks.
+- [ ] **Real-browser sign-off:** Complete the 10-minute merge smoke test below.
 
-Do not merge based only on GitHub Quality. The automated gates are green, but these three release gates require the deployed app and/or Supabase Dashboard.
+The latest branch HEAD is already deployed and green on Vercel and GitHub Quality. Do not merge based only on automated checks; the final two gates require the Supabase Dashboard and a real authenticated browser session.
+
+## 10-minute merge smoke test
+
+Use the latest preview with two test accounts (A and B). This is the minimum real-browser sign-off before marking PR #1 ready.
+
+- [ ] **1. Auth + isolation:** Sign in as A, sign out, sign in as B in the same browser, and confirm A's study data never appears. Return to A and confirm cloud data hydrates correctly.
+- [ ] **2. Core session path:** From Dashboard start a routine/focus session, add a note + checklist item, complete it, refresh, and confirm History/Statistics + routine progress persist.
+- [ ] **3. Subject safety:** Remove a subject that has history; refresh and confirm historical sessions remain readable. Confirm a linked advanced goal becomes unscoped rather than deleted.
+- [ ] **4. Goal isolation:** Create a subject-scoped goal; study a different subject and confirm no progress, then study the linked subject and confirm progress.
+- [ ] **5. Offline recovery:** Go offline, make one safe edit plus one delete/archive, return online, refresh, and confirm final cloud state matches the intended local state with no ghost row.
+- [ ] **6. Two-account League:** Opt in A and B, confirm both appear in weekly/monthly standings, private session details are not exposed, and opt-out removes the account publicly.
+- [ ] **7. Settings sync:** Change theme/language on one signed-in browser/device and confirm the second receives it. Import/export one valid custom theme pack and reject one invalid pack.
+- [ ] **8. Mobile + accessibility:** On a narrow viewport, test bottom dock + full sidebar, then keyboard through a major flow and confirm the skip link works.
+- [ ] **9. Final visual sweep:** Check System/Dark/Light/Black/White themes for unreadable text, overflow, broken cards, or clipped controls on Dashboard, Focus, Routine, League, and Settings.
+- [ ] **10. Final refresh:** Hard refresh the preview, confirm no blank screen/error overlay, then re-check Vercel runtime errors.
 
 ## Automated gates
 
 - [x] GitHub **Quality** passes: install, lint, V3 regression tests, client-secret guard, migration-version guard and build.
-- [ ] Latest Vercel preview deployment is **READY**. Current blocker: Vercel free-plan daily deployment limit (`api-deployments-free-per-day`), not an application build failure. The most recent successful preview (`642d7d3`) is READY and its Vercel build log has no build errors.
-- [ ] Re-run the Vercel runtime error check on the latest preview after the deployment limit clears. Project-level Vercel runtime errors currently show none in the last 24 hours.
+- [x] Latest Vercel preview deployment (`ff455aac`) is **READY** and its build log has no build errors.
+- [x] Latest-preview error/fatal runtime log check is empty.
 - [x] Supabase migrations through `custom_theme_pack_persistence` are applied.
 - [x] Repository migration versions match live Supabase migration history exactly; baseline migrations are recorded remotely and the fresh-schema chain includes client IDs and realtime publication setup.
 - [x] Supabase `study-advisor` Edge Function is ACTIVE with JWT verification enabled.
