@@ -381,6 +381,125 @@ export default function RoutinePage({
               </div>
             )}
           </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns:
+                'repeat(auto-fit, minmax(150px, 1fr))',
+              gap: '10px',
+              marginTop: '14px',
+            }}
+          >
+            <div
+              style={{
+                padding: '12px',
+                border:
+                  '1px solid var(--void-border)',
+                borderRadius:
+                  '11px',
+                background:
+                  'var(--void-surface-hover)',
+              }}
+            >
+              <div
+                className="eyebrow"
+                style={{
+                  display: 'flex',
+                  alignItems:
+                    'center',
+                  gap: '6px',
+                }}
+              >
+                <Flame size={13} />
+                Current streak
+              </div>
+              <strong
+                className="mono"
+                style={{
+                  display: 'block',
+                  marginTop: '6px',
+                  fontSize: '18px',
+                }}
+              >
+                {streak.current}d
+              </strong>
+            </div>
+
+            <div
+              style={{
+                padding: '12px',
+                border:
+                  '1px solid var(--void-border)',
+                borderRadius:
+                  '11px',
+                background:
+                  'var(--void-surface-hover)',
+              }}
+            >
+              <div className="eyebrow">
+                Best streak
+              </div>
+              <strong
+                className="mono"
+                style={{
+                  display: 'block',
+                  marginTop: '6px',
+                  fontSize: '18px',
+                }}
+              >
+                {streak.best}d
+              </strong>
+            </div>
+
+            <div
+              style={{
+                padding: '12px',
+                border:
+                  '1px solid var(--void-border)',
+                borderRadius:
+                  '11px',
+                background:
+                  'var(--void-surface-hover)',
+              }}
+            >
+              <div
+                className="eyebrow"
+                style={{
+                  display: 'flex',
+                  alignItems:
+                    'center',
+                  gap: '6px',
+                }}
+              >
+                <ShieldCheck
+                  size={13}
+                />
+                Recovery
+              </div>
+              <strong
+                className="mono"
+                style={{
+                  display: 'block',
+                  marginTop: '6px',
+                  fontSize: '18px',
+                }}
+              >
+                {recoveryQueue.length} open
+              </strong>
+              {streak.atRisk && (
+                <span
+                  style={{
+                    color:
+                      'var(--energy)',
+                    fontSize: '10px',
+                  }}
+                >
+                  streak protected while recovery is open
+                </span>
+              )}
+            </div>
+          </div>
         </section>
 
         <section
@@ -708,6 +827,127 @@ export default function RoutinePage({
             )
           )}
         </section>
+
+        {recoveryQueue.length > 0 && (
+          <section
+            className="glass-panel"
+            style={{
+              padding: '20px',
+            }}
+          >
+            <div className="eyebrow">
+              Missed-day recovery
+            </div>
+            <h2
+              style={{
+                margin:
+                  '6px 0 4px',
+              }}
+            >
+              Recover without mixing days
+            </h2>
+            <p
+              style={{
+                color:
+                  'var(--text-muted)',
+                fontSize: '12px',
+                marginBottom:
+                  '14px',
+              }}
+            >
+              Recovery focus is credited to the missed routine day, while today keeps its own progress.
+            </p>
+
+            <div
+              style={{
+                display: 'grid',
+                gap: '10px',
+              }}
+            >
+              {recoveryQueue.map(
+                (entry) => (
+                  <div
+                    key={
+                      entry.item.id +
+                      entry.dateKey
+                    }
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns:
+                        'minmax(0,1fr) auto',
+                      gap: '12px',
+                      alignItems:
+                        'center',
+                      padding:
+                        '13px 14px',
+                      border:
+                        '1px solid var(--void-border)',
+                      borderRadius:
+                        '11px',
+                      background:
+                        'var(--void-surface-hover)',
+                    }}
+                  >
+                    <div>
+                      <strong>
+                        {
+                          entry.item
+                            .title
+                        }
+                      </strong>
+                      <div
+                        style={{
+                          color:
+                            'var(--text-muted)',
+                          fontSize:
+                            '11px',
+                          marginTop:
+                            '4px',
+                        }}
+                      >
+                        {entry.date.toLocaleDateString(
+                          undefined,
+                          {
+                            weekday:
+                              'short',
+                            month:
+                              'short',
+                            day:
+                              'numeric',
+                          },
+                        )}{' '}
+                        · {
+                          entry.remainingMinutes
+                        }m remaining
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="cyber-btn"
+                      onClick={() =>
+                        onStartSession(
+                          entry.item
+                            .subjectId,
+                          entry.remainingMinutes,
+                          {
+                            itemId:
+                              entry.item
+                                .id,
+                            routineDate:
+                              entry.dateKey,
+                          },
+                        )
+                      }
+                    >
+                      RECOVER
+                    </button>
+                  </div>
+                ),
+              )}
+            </div>
+          </section>
+        )}
 
         <section
           className="glass-panel"
