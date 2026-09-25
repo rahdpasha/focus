@@ -23,9 +23,17 @@ type FilterMode =
   | 'completed'
   | 'interrupted'
 
-function formatTime(seconds: number): string {
+function formatTime(
+  seconds: number,
+  language: 'en' | 'ku',
+): string {
+  const secondUnit =
+    language === 'ku' ? ' چرکە' : 's'
+  const minuteUnit =
+    language === 'ku' ? ' خولەک' : 'm'
+
   if (seconds < 60) {
-    return `${seconds}s`
+    return `${seconds}${secondUnit}`
   }
 
   const minutes =
@@ -34,8 +42,8 @@ function formatTime(seconds: number): string {
     seconds % 60
 
   return remainingSeconds === 0
-    ? `${minutes}m`
-    : `${minutes}m ${remainingSeconds}s`
+    ? `${minutes}${minuteUnit}`
+    : `${minutes}${minuteUnit} ${remainingSeconds}${secondUnit}`
 }
 
 function formatTimeOfDay(
@@ -267,9 +275,7 @@ export default function RecentSessions({
 
                   <div className="recent-session-meta">
                     <strong className="mono">
-                      {formatTime(
-                        session.actualDuration,
-                      )}
+                      {formatTime(session.actualDuration, language)}
                     </strong>
 
                     {session.interruptions >
