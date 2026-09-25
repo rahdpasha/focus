@@ -344,8 +344,8 @@ export default function LeaguePage({
 
       setMessage(
         profile.optIn
-          ? 'You are in the League. Completed timers update your score immediately after cloud sync.'
-          : 'League participation is off. Your private study data stays private.',
+          ? 'You are in the League. Your saved progress is active, and completed timers update your score immediately after cloud sync.'
+          : 'You are hidden from public standings. Your League score and progress are still saved and will return if you rejoin.',
       )
     } catch (error) {
       setMessage(
@@ -868,15 +868,28 @@ export default function LeaguePage({
                 checked={
                   profile.optIn
                 }
-                onChange={(
-                  event,
-                ) =>
+                onChange={(event) => {
+                  const nextOptIn =
+                    event.target.checked
+
+                  if (
+                    profile.optIn &&
+                    !nextOptIn
+                  ) {
+                    const confirmed =
+                      window.confirm(
+                        'Leave the League? You will be hidden from public standings, but your score and League progress will stay saved and return if you rejoin.',
+                      )
+
+                    if (!confirmed) {
+                      return
+                    }
+                  }
+
                   setProfile(
                     (current) => ({
                       ...current,
-                      optIn:
-                        event.target
-                          .checked,
+                      optIn: nextOptIn,
                     }),
                   )
                 }
@@ -892,6 +905,11 @@ export default function LeaguePage({
                 subjects, session
                 notes and study
                 history stay private.
+                Leaving the League only
+                hides you from standings;
+                your saved League progress
+                is kept for when you
+                rejoin.
               </span>
             </label>
 
