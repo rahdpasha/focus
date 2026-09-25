@@ -2,7 +2,7 @@ import { subjects as defaultSubjects } from "../data/subjects"
 import type { Subject, StudySession } from "../types"
 import { type WeeklyGoalMap } from "../utils/goalHistory"
 import { defaultSettings, normalizeSettings, type AppSettings } from "../app/settings"
-import type { AdvancedGoal, FocusDataSnapshot, FocusDataStore } from "./types"
+import type { AdvancedGoal, FocusDataSnapshot, FocusDataStore, RoutineItem } from "./types"
 
 export const STORAGE_KEY = "focus-sessions"
 export const SUBJECTS_KEY = "focus-subjects"
@@ -10,6 +10,7 @@ export const GOAL_KEY = "focus-daily-goal"
 export const WEEKLY_GOAL_KEY = "focus-weekly-goal"
 export const WEEKLY_GOALS_HISTORY_KEY = "focus-weekly-goals-history"
 export const ADVANCED_GOALS_KEY = "focus-advanced-goals"
+export const ROUTINE_ITEMS_KEY = "focus-routine-items"
 export const ACTIVE_SUBJECT_KEY = "focus-active-subject"
 export const SETTINGS_KEY = "focus-settings"
 const ACCOUNT_SNAPSHOT_PREFIX =
@@ -100,6 +101,113 @@ export function loadAdvancedGoals(): AdvancedGoal[] {
   }
 }
 
+export function loadRoutineItems(): RoutineItem[] {
+  try {
+    const raw = localStorage.getItem(
+      ROUTINE_ITEMS_KEY,
+    )
+    if (!raw) return []
+
+    const parsed: unknown =
+      JSON.parse(raw)
+    if (!Array.isArray(parsed)) {
+      return []
+    }
+
+    return parsed.flatMap(
+      (candidate): RoutineItem[] => {
+        if (
+          !candidate ||
+          typeof candidate !== "object" ||
+          Array.isArray(candidate)
+        ) {
+          return []
+        }
+
+        const value =
+          candidate as Record<
+            string,
+            unknown
+          >
+
+        const id =
+          typeof value.id === "string"
+            ? value.id.trim()
+            : ""
+        const title =
+          typeof value.title === "string"
+            ? value.title.trim()
+            : ""
+        const subjectId =
+          typeof value.subjectId === "string"
+            ? value.subjectId.trim()
+            : ""
+        const targetMinutes =
+          typeof value.targetMinutes === "number" &&
+          Number.isFinite(
+            value.targetMinutes,
+          )
+            ? Math.max(
+                1,
+                Math.round(
+                  value.targetMinutes,
+                ),
+              )
+            : 25
+        const mode =
+          value.mode === "rotation"
+            ? "rotation"
+            : "fixed"
+        const rotationOrder =
+          typeof value.rotationOrder === "number" &&
+          Number.isFinite(
+            value.rotationOrder,
+          )
+            ? Math.max(
+                0,
+                Math.round(
+                  value.rotationOrder,
+                ),
+              )
+            : 0
+        const createdAt =
+          typeof value.createdAt === "string" &&
+          !Number.isNaN(
+            new Date(
+              value.createdAt,
+            ).getTime(),
+          )
+            ? new Date(
+                value.createdAt,
+              ).toISOString()
+            : new Date(0).toISOString()
+
+        if (
+          !id ||
+          !title ||
+          !subjectId
+        ) {
+          return []
+        }
+
+        return [{
+          id,
+          title,
+          subjectId,
+          targetMinutes,
+          mode,
+          rotationOrder,
+          enabled:
+            value.enabled !== false,
+          createdAt,
+        }]
+      },
+    )
+  } catch {
+    return []
+  }
+}
+
 export function loadActiveSubject(): string | null {
   try { return localStorage.getItem(ACTIVE_SUBJECT_KEY) } catch { return null }
 }
@@ -153,6 +261,7 @@ export function saveDailyGoal(goal: number) { try { localStorage.setItem(GOAL_KE
 export function saveWeeklyGoal(goal: number) { try { localStorage.setItem(WEEKLY_GOAL_KEY, String(goal)) } catch { /* Ignore storage errors. */ } }
 export function saveWeeklyGoalsHistory(goals: WeeklyGoalMap) { try { localStorage.setItem(WEEKLY_GOALS_HISTORY_KEY, JSON.stringify(goals)) } catch { /* Ignore storage errors. */ } }
 export function saveAdvancedGoals(goals: AdvancedGoal[]) { try { localStorage.setItem(ADVANCED_GOALS_KEY, JSON.stringify(goals)) } catch { /* Ignore storage errors. */ } }
+export function saveRoutineItems(items: RoutineItem[]) { try { localStorage.setItem(ROUTINE_ITEMS_KEY, JSON.stringify(items)) } catch { /* Ignore storage errors. */ } }
 export function saveActiveSubject(id: string | null) {
   try { if (id) localStorage.setItem(ACTIVE_SUBJECT_KEY, id); else localStorage.removeItem(ACTIVE_SUBJECT_KEY) } catch { /* Ignore storage errors. */ }
 }
@@ -334,6 +443,110 @@ function normalizeSnapshotRecord(
         )
       : []
 
+  const routineItems =
+    Array.isArray(
+      data.routineItems,
+    )
+      ? data.routineItems.flatMap(
+          (
+            candidate,
+          ): RoutineItem[] => {
+            if (
+              !candidate ||
+              typeof candidate !==
+                "object" ||
+              Array.isArray(candidate)
+            ) {
+              return []
+            }
+
+            const item =
+              candidate as Record<
+                string,
+                unknown
+              >
+            const id =
+              typeof item.id ===
+              "string"
+                ? item.id.trim()
+                : ""
+            const title =
+              typeof item.title ===
+              "string"
+                ? item.title.trim()
+                : ""
+            const subjectId =
+              typeof item.subjectId ===
+              "string"
+                ? item.subjectId.trim()
+                : ""
+            const targetMinutes =
+              typeof item.targetMinutes ===
+                "number" &&
+              Number.isFinite(
+                item.targetMinutes,
+              )
+                ? Math.max(
+                    1,
+                    Math.round(
+                      item.targetMinutes,
+                    ),
+                  )
+                : 25
+            const rotationOrder =
+              typeof item.rotationOrder ===
+                "number" &&
+              Number.isFinite(
+                item.rotationOrder,
+              )
+                ? Math.max(
+                    0,
+                    Math.round(
+                      item.rotationOrder,
+                    ),
+                  )
+                : 0
+            const createdAt =
+              typeof item.createdAt ===
+                "string" &&
+              !Number.isNaN(
+                new Date(
+                  item.createdAt,
+                ).getTime(),
+              )
+                ? new Date(
+                    item.createdAt,
+                  ).toISOString()
+                : new Date(0).toISOString()
+
+            if (
+              !id ||
+              !title ||
+              !subjectId
+            ) {
+              return []
+            }
+
+            return [{
+              id,
+              title,
+              subjectId,
+              targetMinutes,
+              mode:
+                item.mode ===
+                "rotation"
+                  ? "rotation"
+                  : "fixed",
+              rotationOrder,
+              enabled:
+                item.enabled !==
+                false,
+              createdAt,
+            }]
+          },
+        )
+      : []
+
   const positiveNumber = (
     input: unknown,
     fallback: number,
@@ -359,6 +572,7 @@ function normalizeSnapshotRecord(
       ),
     weeklyGoalsHistory,
     advancedGoals,
+    routineItems,
     activeSubjectId:
       typeof data.activeSubjectId ===
         "string" &&
@@ -439,6 +653,7 @@ export const localStorageStore: FocusDataStore = {
       weeklyGoal: loadWeeklyGoal(),
       weeklyGoalsHistory: loadWeeklyGoalsHistory(),
       advancedGoals: loadAdvancedGoals(),
+      routineItems: loadRoutineItems(),
       activeSubjectId: loadActiveSubject(),
       settings: loadSettings(),
       workspacePreferencesVersion: 1,
@@ -451,6 +666,7 @@ export const localStorageStore: FocusDataStore = {
     saveWeeklyGoal(snapshot.weeklyGoal)
     saveWeeklyGoalsHistory(snapshot.weeklyGoalsHistory)
     saveAdvancedGoals(snapshot.advancedGoals)
+    saveRoutineItems(snapshot.routineItems)
     saveActiveSubject(snapshot.activeSubjectId)
     saveSettings(snapshot.settings)
   },
