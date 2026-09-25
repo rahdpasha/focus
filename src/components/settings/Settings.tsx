@@ -68,36 +68,43 @@ interface SettingsProps {
 const themeOptions: Array<{
   value: ThemeMode
   label: string
+  labelKu: string
   icon: typeof Monitor
 }> = [
   {
     value: 'system',
     label: 'System',
+    labelKu: 'سیستەم',
     icon: Monitor,
   },
   {
     value: 'dark',
     label: 'Midnight',
+    labelKu: 'نیوەشەو',
     icon: Moon,
   },
   {
     value: 'light',
     label: 'Soft Light',
+    labelKu: 'ڕووناکی نەرم',
     icon: Sun,
   },
   {
     value: 'black',
     label: 'Pure Black',
+    labelKu: 'ڕەشی پاک',
     icon: Moon,
   },
   {
     value: 'white',
     label: 'Pure White',
+    labelKu: 'سپی پاک',
     icon: Sun,
   },
   {
     value: 'custom',
     label: 'Custom theme',
+    labelKu: 'ڕووکارێکی تایبەت',
     icon: SlidersHorizontal,
   },
 ]
@@ -135,6 +142,7 @@ export default function Settings({
   const {
     language,
     t,
+    tr,
   } = useI18n()
 
   const {
@@ -172,7 +180,7 @@ export default function Settings({
 
     if (file.size > 64 * 1024) {
       setThemePackError(
-        'Theme pack is too large.',
+        tr('Theme pack is too large.', 'پاکێجی ڕووکار زۆر گەورەیە.'),
       )
       return
     }
@@ -187,7 +195,7 @@ export default function Settings({
 
       if (!pack) {
         setThemePackError(
-          'Invalid theme pack. Only approved color tokens are allowed.',
+          tr('Invalid theme pack. Only approved color tokens are allowed.', 'پاکێجی ڕووکار دروست نییە. تەنها ڕەنگە ڕێگەپێدراوەکان قبوڵ دەکرێن.'),
         )
         return
       }
@@ -202,7 +210,7 @@ export default function Settings({
       )
     } catch {
       setThemePackError(
-        'Could not read this theme pack.',
+        tr('Could not read this theme pack.', 'نەتوانرا ئەم پاکێجی ڕووکارە بخوێندرێتەوە.'),
       )
     }
   }
@@ -222,7 +230,7 @@ export default function Settings({
               Appearance
             </h2>
             <p>
-              FOCUS follows your system by default. Switch to a curated light, dark, or monochrome mode whenever you want a different atmosphere.
+              {tr('FOCUS follows your system by default. Switch to a curated light, dark, or monochrome mode whenever you want a different atmosphere.', 'FOCUS بە بنەڕەت ڕووکارەکەی سیستەمەکەت بەکاردهێنێت. هەر کاتێک بتەوێت دەتوانیت بگۆڕیت بۆ ڕووناک، تاریک یان ڕەنگ‌تاک.')}
             </p>
           </div>
         </div>
@@ -281,7 +289,7 @@ export default function Settings({
                         option.value === 'custom' &&
                         settings.customThemePack
                           ? settings.customThemePack.name
-                          : option.label
+                          : tr(option.label, option.labelKu)
                       }
                     </button>
                   )
@@ -781,7 +789,7 @@ export default function Settings({
             </span>
             <strong>
               {accountEmail ??
-                'Local mode'}
+                tr('Local mode', 'دۆخی ناوخۆیی')}
             </strong>
 
             <div
@@ -803,16 +811,16 @@ export default function Settings({
               )}
               <span>
                 {cloudStatus === 'local'
-                  ? 'Saved on this device'
+                  ? tr('Saved on this device', 'لەسەر ئەم ئامێرە پاشەکەوت کراوە')
                   : cloudStatus === 'loading'
-                    ? 'Connecting to cloud…'
+                    ? tr('Connecting to cloud…', 'پەیوەندی بە کڵاودەوە دەکرێت…')
                     : cloudStatus === 'saving'
-                      ? 'Saving changes…'
+                      ? tr('Saving changes…', 'گۆڕانکارییەکان پاشەکەوت دەکرێن…')
                       : cloudStatus === 'synced'
-                        ? 'Cloud synced'
+                        ? tr('Cloud synced', 'کڵاود هاوکات کراوە')
                         : cloudStatus === 'offline'
-                          ? 'Offline · changes stay on this device'
-                          : 'Cloud sync needs attention'}
+                          ? tr('Offline · changes stay on this device', 'ئۆفلاین · گۆڕانکارییەکان لەم ئامێرە دەمێننەوە')
+                          : tr('Cloud sync needs attention', 'هاوکاتکردنی کڵاود پێویستی بە سەرنج هەیە')}
               </span>
             </div>
           </div>
