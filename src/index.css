@@ -11147,3 +11147,222 @@ small {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* V5 Routine cards + recovery */
+.routine-empty {
+  padding: 24px !important;
+  border: 1px dashed var(--focus-hairline);
+  background: color-mix(in srgb, var(--void-surface-hover) 52%, transparent);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.routine-item-card {
+  display: grid;
+  gap: 14px;
+}
+
+.routine-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.routine-item-identity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.routine-item-state {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 11px;
+  background: var(--void-surface-hover);
+  color: var(--text-muted);
+}
+
+.routine-item-state.complete {
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+  color: var(--primary-glow);
+}
+
+.routine-item-title {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.routine-item-subtitle,
+.routine-progress-meta,
+.routine-recovery-meta {
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.routine-item-subtitle {
+  margin-top: 4px;
+}
+
+.routine-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+}
+
+.routine-progress-track {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--focus-hairline);
+}
+
+.routine-progress-track > div {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), var(--primary-glow));
+}
+
+.routine-week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(34px, 1fr));
+  gap: 6px;
+}
+
+.routine-day-status {
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  padding: 5px 3px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 9px;
+  background: var(--void-surface-hover);
+  color: var(--text-muted);
+}
+
+.routine-day-status > span {
+  min-height: 14px;
+  display: grid;
+  place-items: center;
+}
+
+.routine-day-status small {
+  color: var(--text-muted);
+  font-size: 7px;
+}
+
+.routine-day-status.done,
+.routine-day-status.recovered {
+  border-color: var(--primary-border);
+  color: var(--primary-glow);
+}
+
+.routine-day-status.done {
+  background: var(--primary-soft);
+}
+
+.routine-day-status.recovered {
+  background: color-mix(in srgb, var(--primary-soft) 58%, var(--void-surface-hover));
+}
+
+.routine-day-status.recoverable {
+  color: var(--energy);
+}
+
+.routine-day-status.missed {
+  color: var(--danger);
+  opacity: 0.78;
+}
+
+.routine-recovery h2 {
+  margin: 6px 0 4px;
+}
+
+.routine-recovery > p {
+  max-width: 720px;
+  margin: 0 0 14px;
+  font-size: 10px;
+}
+
+.routine-recovery-list {
+  display: grid;
+  gap: 8px;
+}
+
+.routine-recovery-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 11px;
+  background: var(--void-surface-hover);
+}
+
+.routine-recovery-card > div {
+  min-width: 0;
+}
+
+.routine-recovery-card strong {
+  color: var(--text-primary);
+  font-size: 11px;
+}
+
+.routine-recovery-meta {
+  margin-top: 4px;
+}
+
+[data-theme='black'] .routine-item-state.complete,
+[data-theme='white'] .routine-item-state.complete,
+[data-theme='black'] .routine-day-status.done,
+[data-theme='white'] .routine-day-status.done {
+  background: var(--void-surface-hover);
+}
+
+@media (max-width: 700px) {
+  .routine-item-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .routine-item-head .routine-primary-action {
+    width: 100%;
+  }
+
+  .routine-week-grid {
+    gap: 5px;
+  }
+
+  .routine-recovery-card {
+    grid-template-columns: 1fr;
+  }
+
+  .routine-recovery-card .routine-primary-action {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .routine-week-grid {
+    grid-template-columns: repeat(7, minmax(30px, 1fr));
+  }
+
+  .routine-day-status {
+    min-height: 42px;
+  }
+}
