@@ -6,6 +6,11 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import {
+  applyThemeTokenPack,
+  clearThemeTokens,
+  MONOCHROME_THEME_PACKS,
+} from './themeTokens'
 
 export type ThemeMode = 'dark' | 'light' | 'system' | 'black' | 'white'
 
@@ -49,8 +54,31 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const media = window.matchMedia('(prefers-color-scheme: light)')
 
     const apply = () => {
-      document.documentElement.setAttribute('data-theme', resolveTheme(theme))
-      document.documentElement.style.colorScheme = resolveColorScheme(theme)
+      const resolved =
+        resolveTheme(theme)
+      const root =
+        document.documentElement
+
+      root.setAttribute(
+        'data-theme',
+        resolved,
+      )
+      root.style.colorScheme =
+        resolveColorScheme(theme)
+
+      if (
+        resolved === 'black' ||
+        resolved === 'white'
+      ) {
+        applyThemeTokenPack(
+          root,
+          MONOCHROME_THEME_PACKS[
+            resolved
+          ],
+        )
+      } else {
+        clearThemeTokens(root)
+      }
     }
 
     apply()
