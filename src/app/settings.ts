@@ -38,7 +38,9 @@ export function normalizeSettings(input: Partial<AppSettings> | null | undefined
     theme:
       source.theme === 'dark' ||
       source.theme === 'light' ||
-      source.theme === 'system'
+      source.theme === 'system' ||
+      source.theme === 'black' ||
+      source.theme === 'white'
         ? source.theme
         : defaultSettings.theme,
     language:
