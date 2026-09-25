@@ -1222,6 +1222,8 @@ export function useFocusData(
     subjectId: string,
     targetMinutes: number,
     mode: RoutineItem["mode"],
+    daysOfWeek: number[] = [0, 1, 2, 3, 4, 5, 6],
+    recoveryDays = 1,
   ) => {
     const cleanTitle = title.trim()
     const safeTarget = Math.min(
@@ -1231,6 +1233,26 @@ export function useFocusData(
         Math.round(targetMinutes),
       ),
     )
+    const safeDays = Array.from(
+      new Set(
+        daysOfWeek.filter(
+          (day) =>
+            Number.isInteger(day) &&
+            day >= 0 &&
+            day <= 6,
+        ),
+      ),
+    )
+    const safeRecoveryDays =
+      Math.max(
+        0,
+        Math.min(
+          3,
+          Math.round(
+            recoveryDays,
+          ),
+        ),
+      )
 
     if (
       !cleanTitle ||
@@ -1267,6 +1289,12 @@ export function useFocusData(
       mode,
       rotationOrder:
         nextRotationOrder,
+      daysOfWeek:
+        safeDays.length > 0
+          ? safeDays
+          : [0, 1, 2, 3, 4, 5, 6],
+      recoveryDays:
+        safeRecoveryDays,
       enabled: true,
       createdAt:
         new Date().toISOString(),
@@ -1356,6 +1384,44 @@ export function useFocusData(
                   ),
                 )
               : item.rotationOrder,
+          daysOfWeek:
+            Array.isArray(
+              patch.daysOfWeek,
+            )
+              ? (() => {
+                  const days =
+                    Array.from(
+                      new Set(
+                        patch.daysOfWeek.filter(
+                          (day) =>
+                            Number.isInteger(day) &&
+                            day >= 0 &&
+                            day <= 6,
+                        ),
+                      ),
+                    )
+
+                  return days.length > 0
+                    ? days
+                    : item.daysOfWeek
+                })()
+              : item.daysOfWeek,
+          recoveryDays:
+            typeof patch.recoveryDays ===
+              "number" &&
+            Number.isFinite(
+              patch.recoveryDays,
+            )
+              ? Math.max(
+                  0,
+                  Math.min(
+                    3,
+                    Math.round(
+                      patch.recoveryDays,
+                    ),
+                  ),
+                )
+              : item.recoveryDays,
         }
       }),
     )
@@ -1556,7 +1622,7 @@ export function useFocusData(
 
   const exportData = () => {
     const backup = {
-      version: 6,
+      version: 7,
       exportedAt: new Date().toISOString(),
       sessions,
       subjects,
@@ -2045,6 +2111,49 @@ export function useFocusData(
                       ? "rotation"
                       : "fixed",
                   rotationOrder,
+                  daysOfWeek:
+                    Array.isArray(
+                      value.daysOfWeek,
+                    )
+                      ? Array.from(
+                          new Set(
+                            value.daysOfWeek.filter(
+                              (day): day is number =>
+                                typeof day === "number" &&
+                                Number.isInteger(day) &&
+                                day >= 0 &&
+                                day <= 6,
+                            ),
+                          ),
+                        ).length > 0
+                        ? Array.from(
+                            new Set(
+                              value.daysOfWeek.filter(
+                                (day): day is number =>
+                                  typeof day === "number" &&
+                                  Number.isInteger(day) &&
+                                  day >= 0 &&
+                                  day <= 6,
+                              ),
+                            ),
+                          )
+                        : [0, 1, 2, 3, 4, 5, 6]
+                      : [0, 1, 2, 3, 4, 5, 6],
+                  recoveryDays:
+                    typeof value.recoveryDays === "number" &&
+                    Number.isFinite(
+                      value.recoveryDays,
+                    )
+                      ? Math.max(
+                          0,
+                          Math.min(
+                            3,
+                            Math.round(
+                              value.recoveryDays,
+                            ),
+                          ),
+                        )
+                      : 1,
                   enabled:
                     value.enabled !==
                     false,
