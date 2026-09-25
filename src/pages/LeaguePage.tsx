@@ -323,16 +323,16 @@ export default function LeaguePage({
 
   const leagueStatus =
     !profile.optIn
-      ? 'OFF GRID'
+      ? 'Not public'
       : !currentUser
-        ? 'ENTERING'
+        ? 'Joining'
         : currentUser.rank === 1
-          ? 'LEADER'
+          ? 'Leader'
           : currentUser.rank <= 3
-            ? 'PODIUM'
+            ? 'Podium'
             : currentUser.rank <= 10
-              ? 'TOP 10'
-              : 'CHASING'
+              ? 'Top 10'
+              : 'Climbing'
 
   const leagueStatusCopy =
     !profile.optIn
@@ -361,7 +361,7 @@ export default function LeaguePage({
         <div className="league-v4-hero-copy">
           <div className="league-v4-kicker">
             <Sparkles size={15} />
-            LIVE SEASON
+            Current standings
             <span>{period.toUpperCase()}</span>
           </div>
 
@@ -380,7 +380,7 @@ export default function LeaguePage({
             <div className="league-v4-rule neutral">
               <span className="league-v4-rule-points">0</span>
               <div>
-                <strong>NO STUDY</strong>
+                <strong>No study</strong>
                 <small>day closes at 0 seconds</small>
               </div>
             </div>
@@ -388,7 +388,7 @@ export default function LeaguePage({
             <div className="league-v4-rule active">
               <span className="league-v4-rule-points">1</span>
               <div>
-                <strong>SHOW UP</strong>
+                <strong>Show up</strong>
                 <small>1 second → 90 minutes</small>
               </div>
             </div>
@@ -396,7 +396,7 @@ export default function LeaguePage({
             <div className="league-v4-rule elite">
               <span className="league-v4-rule-points">3</span>
               <div>
-                <strong>DEEP DAY</strong>
+                <strong>Deep day</strong>
                 <small>more than 90 minutes</small>
               </div>
             </div>
@@ -406,7 +406,7 @@ export default function LeaguePage({
         <div className="league-v4-rank-core">
           <div className="league-v4-rank-glow" />
           <div className="league-v4-rank-ring">
-            <span>YOUR RANK</span>
+            <span>Your rank</span>
             <strong>{rankText}</strong>
             <small>{scoreText}</small>
           </div>
@@ -424,7 +424,7 @@ export default function LeaguePage({
 
       <div className="league-v4-period-bar">
         <div>
-          <span>STANDINGS WINDOW</span>
+          <span>Time range</span>
           <strong>
             {period === 'week' ? 'This week' : 'This month'}
           </strong>
@@ -447,7 +447,7 @@ export default function LeaguePage({
       <section className="league-v4-podium-shell">
         <div className="league-v4-section-head">
           <div>
-            <span>ELITE BOARD</span>
+            <span>Podium</span>
             <h3>Top three</h3>
           </div>
 
@@ -470,7 +470,7 @@ export default function LeaguePage({
               }`}
             >
               <div className="league-v4-podium-top">
-                <span>TOP {place}</span>
+                <span>Place {place}</span>
                 {place === 1 ? (
                   <Crown size={22} />
                 ) : (
@@ -488,12 +488,12 @@ export default function LeaguePage({
                 <strong>
                   {entry ? entry.publicName : 'Open position'}
                 </strong>
-                {entry?.isCurrentUser && <span>YOU</span>}
+                {entry?.isCurrentUser && <span>You</span>}
               </div>
 
               <div className="league-v4-podium-score">
                 {entry?.points ?? 0}
-                <small>PTS</small>
+                <small>pts</small>
               </div>
 
               <div className="league-v4-podium-meta">
@@ -517,7 +517,7 @@ export default function LeaguePage({
         <section className="league-v4-board">
           <div className="league-v4-section-head">
             <div>
-              <span>GLOBAL LADDER</span>
+              <span>Standings</span>
               <h3>
                 {period === 'week' ? 'Weekly' : 'Monthly'} standings
               </h3>
@@ -562,7 +562,7 @@ export default function LeaguePage({
 
                   <div className="league-v4-row-points">
                     <strong>{entry.points}</strong>
-                    <span>PTS</span>
+                    <span>pts</span>
                   </div>
                 </div>
               ))}
@@ -574,7 +574,7 @@ export default function LeaguePage({
           <section className="league-v4-command">
             <div className="league-v4-command-head">
               <div>
-                <span>YOUR COMMAND CENTER</span>
+                <span>Your League profile</span>
                 <h3>{profile.publicName || 'Focused learner'}</h3>
               </div>
               <ShieldCheck size={21} />
@@ -602,7 +602,7 @@ export default function LeaguePage({
             <div className="league-v4-next-move">
               <div>
                 <Zap size={16} />
-                NEXT MOVE
+                Next step
               </div>
               <strong>
                 {currentUser?.rank === 1
@@ -614,7 +614,7 @@ export default function LeaguePage({
 
             <div className="league-v4-status">
               <div>
-                <span>COMPETITION STATUS</span>
+                <span>Competition status</span>
                 <strong>{leagueStatus}</strong>
               </div>
               <p>{leagueStatusCopy}</p>
@@ -623,7 +623,7 @@ export default function LeaguePage({
             <div className="league-v4-milestones">
               <div className={profile.optIn ? 'complete' : ''}>
                 <i />
-                <span>JOINED</span>
+                <span>Joined</span>
               </div>
               <div
                 className={
@@ -631,7 +631,7 @@ export default function LeaguePage({
                 }
               >
                 <i />
-                <span>SCORED</span>
+                <span>Scored</span>
               </div>
               <div
                 className={
@@ -639,7 +639,7 @@ export default function LeaguePage({
                 }
               >
                 <i />
-                <span>PODIUM</span>
+                <span>Podium</span>
               </div>
             </div>
 
@@ -681,7 +681,7 @@ export default function LeaguePage({
               <span className="league-v4-join-control" />
               <span>
                 <strong>
-                  {profile.optIn ? 'Public standings ON' : 'Join League'}
+                  {profile.optIn ? 'Visible in standings' : 'Join League'}
                 </strong>
                 <small>
                   Leaving only hides your profile. Your League progress
@@ -696,7 +696,7 @@ export default function LeaguePage({
               disabled={saving}
               onClick={() => void saveProfile()}
             >
-              {saving ? 'SYNCING…' : 'SAVE LEAGUE SETTINGS'}
+              {saving ? 'Saving…' : 'Save League settings'}
             </button>
 
             <div className="league-v4-privacy">
@@ -712,7 +712,7 @@ export default function LeaguePage({
           <section className="league-v4-champions">
             <div className="league-v4-section-head compact">
               <div>
-                <span>HALL OF FOCUS</span>
+                <span>Previous results</span>
                 <h3>Previous champions</h3>
               </div>
               <Crown size={18} />
