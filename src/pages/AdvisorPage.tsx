@@ -343,7 +343,7 @@ export default function AdvisorPage({
                     context.week
                       .studyDays
                   }{' '}
-                  days
+                  {tr('days', 'ڕۆژ')}
                 </strong>
               </div>
 
@@ -361,7 +361,7 @@ export default function AdvisorPage({
                     context.periods
                       .last30.activeDays
                   }{' '}
-                  active days
+                  {tr('active days', 'ڕۆژی چالاک')}
                 </strong>
               </div>
 
