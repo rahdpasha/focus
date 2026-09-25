@@ -8283,3 +8283,160 @@ textarea:focus {
     grid-row: 1 / span 2;
   }
 }
+
+
+/* V5 Routine */
+.routine-v5 {
+  display: grid;
+  gap: 18px;
+}
+
+.routine-v5 .routine-panel {
+  padding: 22px !important;
+  border-radius: var(--focus-radius-lg);
+}
+
+.routine-v5 > .routine-panel:first-child {
+  background:
+    linear-gradient(145deg, var(--primary-soft), transparent 48%),
+    var(--focus-surface-soft);
+}
+
+.routine-v5 > .routine-panel:first-child h2 {
+  margin-top: 7px !important;
+  font-size: clamp(23px, 3vw, 31px);
+  letter-spacing: -0.04em;
+}
+
+.routine-v5 > .routine-panel:first-child > div:first-child {
+  align-items: flex-start !important;
+}
+
+.routine-v5 > .routine-panel:first-child > div:first-child > div:last-child {
+  border-color: var(--primary-border) !important;
+  border-radius: 11px !important;
+  background: color-mix(in srgb, var(--primary-soft) 80%, var(--void-surface-hover)) !important;
+  color: var(--text-secondary) !important;
+  font-size: 9px !important;
+}
+
+.routine-v5 > .routine-panel:first-child > div:nth-child(2) {
+  gap: 8px !important;
+  margin-top: 18px !important;
+}
+
+.routine-v5 > .routine-panel:first-child > div:nth-child(2) > div {
+  min-height: 92px;
+  padding: 13px !important;
+  border-color: var(--focus-hairline) !important;
+  border-radius: 11px !important;
+  background: var(--void-surface-hover) !important;
+}
+
+.routine-v5 > .routine-panel:first-child > div:nth-child(2) strong {
+  margin-top: 8px !important;
+  color: var(--text-primary);
+  font-size: 20px !important;
+  font-weight: 550;
+}
+
+.routine-v5 .routine-panel .eyebrow {
+  font-size: 7px;
+}
+
+.routine-v5 .routine-panel h2 {
+  letter-spacing: -0.035em;
+}
+
+.routine-v5 .routine-panel p {
+  color: var(--text-secondary) !important;
+  line-height: 1.65;
+}
+
+.routine-v5 .routine-panel article,
+.routine-v5 .routine-panel > div[style*="border: '1px solid var(--void-border)'"] {
+  border-color: var(--focus-hairline) !important;
+}
+
+.routine-v5 .routine-primary-action {
+  min-height: 38px;
+  white-space: nowrap;
+}
+
+.routine-v5 section:not(.routine-panel) {
+  gap: 9px !important;
+}
+
+.routine-v5 section:not(.routine-panel) > .routine-panel {
+  padding: 18px !important;
+  border-radius: 14px;
+}
+
+.routine-v5 section:not(.routine-panel) > .routine-panel > div:first-child {
+  gap: 14px !important;
+}
+
+.routine-v5 section:not(.routine-panel) > .routine-panel > div:first-child > div:first-child > div:first-child {
+  width: 38px !important;
+  height: 38px !important;
+  border-color: var(--focus-hairline) !important;
+  border-radius: 10px !important;
+  background: var(--void-surface-hover) !important;
+}
+
+.routine-v5 section:not(.routine-panel) > .routine-panel > div:nth-child(2) > div:last-child {
+  height: 6px !important;
+  background: var(--focus-hairline) !important;
+}
+
+.routine-v5 section:not(.routine-panel) > .routine-panel > div:nth-child(2) > div:last-child > div {
+  background: linear-gradient(90deg, var(--primary), var(--primary-glow)) !important;
+  border-radius: inherit;
+}
+
+.routine-v5 .routine-schedule-preset,
+.routine-v5 .routine-day-toggle {
+  min-height: 34px;
+  border-color: var(--focus-hairline);
+  background: var(--void-surface-hover);
+}
+
+.routine-v5 .routine-schedule-preset.active,
+.routine-v5 .routine-day-toggle.active {
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+  color: var(--text-primary);
+}
+
+.routine-v5 select,
+.routine-v5 input {
+  min-height: 42px;
+  padding: 9px 11px;
+}
+
+.routine-v5 button:not(.cyber-btn):not(.routine-schedule-preset):not(.routine-day-toggle) {
+  border-radius: 9px;
+  font-family: 'Manrope', sans-serif;
+}
+
+.routine-v5 .routine-recovery-select {
+  min-height: 34px;
+  padding: 6px 8px;
+  background: var(--void-surface-hover);
+}
+
+@media (max-width: 700px) {
+  .routine-v5 .routine-panel {
+    padding: 17px !important;
+    border-radius: 15px;
+  }
+
+  .routine-v5 > .routine-panel:first-child > div:first-child {
+    align-items: stretch !important;
+    flex-direction: column;
+  }
+
+  .routine-v5 .routine-primary-action {
+    width: 100%;
+  }
+}
