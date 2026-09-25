@@ -10469,3 +10469,169 @@ textarea:focus-visible {
     font-size: 24px;
   }
 }
+
+
+/* V5 finishing details */
+html {
+  color-scheme: dark;
+  scrollbar-gutter: stable;
+}
+
+html[data-theme='light'],
+html[data-theme='white'] {
+  color-scheme: light;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 28%, transparent);
+  color: var(--text-primary);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color:
+    color-mix(in srgb, var(--text-muted) 35%, transparent)
+    transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background:
+    color-mix(in srgb, var(--text-muted) 32%, transparent);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background:
+    color-mix(in srgb, var(--text-muted) 48%, transparent);
+  background-clip: padding-box;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a {
+  touch-action: manipulation;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+a,
+button {
+  transition:
+    color 0.16s ease,
+    background 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.16s ease,
+    opacity 0.16s ease;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--focus-hairline);
+}
+
+small {
+  color: var(--text-muted);
+}
+
+/* Keep interactive surfaces subtle and deliberate. */
+.subject-card,
+.records-hero,
+.records-metric-card,
+.records-context-card,
+.history-summary-card,
+.history-session-card,
+.advanced-goal-card,
+.subject-allocation-card,
+.stats-v4-metrics article,
+.league-v4-podium-card {
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    background 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .subject-card:hover,
+  .records-hero:hover,
+  .records-metric-card:hover,
+  .records-context-card:hover,
+  .history-summary-card:hover,
+  .history-session-card:hover,
+  .advanced-goal-card:hover,
+  .subject-allocation-card:hover,
+  .stats-v4-metrics article:hover {
+    transform: translateY(-2px);
+    border-color:
+      color-mix(
+        in srgb,
+        var(--primary-glow) 18%,
+        var(--focus-hairline)
+      );
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+[data-theme='black'] .subject-card:hover,
+[data-theme='black'] .records-hero:hover,
+[data-theme='black'] .records-metric-card:hover,
+[data-theme='black'] .records-context-card:hover,
+[data-theme='black'] .history-summary-card:hover,
+[data-theme='black'] .history-session-card:hover,
+[data-theme='black'] .advanced-goal-card:hover,
+[data-theme='black'] .subject-allocation-card:hover,
+[data-theme='white'] .subject-card:hover,
+[data-theme='white'] .records-hero:hover,
+[data-theme='white'] .records-metric-card:hover,
+[data-theme='white'] .records-context-card:hover,
+[data-theme='white'] .history-summary-card:hover,
+[data-theme='white'] .history-session-card:hover,
+[data-theme='white'] .advanced-goal-card:hover,
+[data-theme='white'] .subject-allocation-card:hover {
+  box-shadow: none;
+}
+
+/* Better touch density without making desktop oversized. */
+@media (max-width: 760px) {
+  button,
+  select,
+  input[type='button'],
+  input[type='submit'] {
+    min-height: 42px;
+  }
+
+  .sidebar-nav-item,
+  .mobile-dock-item {
+    min-height: 48px;
+  }
+
+  .page-header-action {
+    width: 100%;
+  }
+
+  .page-header-action .cyber-btn {
+    width: 100%;
+  }
+}
