@@ -132,7 +132,7 @@ export default function RoutinePage({
   onDeleteRoutineItem,
   onStartSession,
 }: RoutinePageProps) {
-  const { t } = useI18n()
+  const { t, tr } = useI18n()
   const [title, setTitle] =
     useState('')
   const [subjectId, setSubjectId] =
@@ -330,7 +330,7 @@ export default function RoutinePage({
             <div className="routine-summary-stat">
               <span className="eyebrow routine-summary-label">
                 <Flame size={13} />
-                Current streak
+                {tr('Current streak', 'زنجیرەی ئێستا')}
               </span>
               <strong className="mono">{streak.current}d</strong>
             </div>
@@ -350,7 +350,7 @@ export default function RoutinePage({
             <div className="routine-summary-stat">
               <span className="eyebrow routine-summary-label">
                 <ShieldCheck size={13} />
-                Recovery
+                {tr('Recovery', 'گەڕاندنەوە')}
               </span>
               <strong className="mono">{recoveryQueue.length} open</strong>
               {streak.atRisk && (
@@ -395,7 +395,7 @@ export default function RoutinePage({
                     <div className="routine-item-head">
                       <div className="routine-item-identity">
                         <div
-                          aria-label={done ? 'Completed' : 'Pending'}
+                          aria-label={done ? tr('Completed', 'تەواوکراو') : tr('Pending', 'چاوەڕوان')}
                           className={
                             done
                               ? 'routine-item-state complete'
@@ -411,7 +411,7 @@ export default function RoutinePage({
                           </div>
 
                           <div className="routine-item-subtitle">
-                            {subject?.name ?? 'Subject removed'} ·{' '}
+                            {subject?.name ?? tr('Subject removed', 'بابەت لابراوە')} ·{' '}
                             {item.mode === 'fixed' ? 'Every day' : 'Rotation'}
                           </div>
                         </div>
@@ -446,8 +446,8 @@ export default function RoutinePage({
                           size={14}
                         />
                         {done
-                          ? 'Focus again'
-                          : `Start ${item.targetMinutes}m`}
+                          ? tr('Focus again', 'دووبارە سەرنج بدە')
+                          : tr(`Start ${item.targetMinutes}m`, `دەست پێ بکە ${item.targetMinutes} خولەک`)}
                       </button>
                     </div>
 
@@ -460,7 +460,7 @@ export default function RoutinePage({
                         <span>
                           {
                             item.targetMinutes
-                          }m target
+                          }m {tr('target', 'ئامانج')}
                         </span>
                       </div>
 
@@ -527,11 +527,11 @@ export default function RoutinePage({
         {recoveryQueue.length > 0 && (
           <section className="glass-panel routine-panel routine-recovery">
             <div className="eyebrow">
-              Missed-day recovery
+              {tr('Missed-day recovery', 'گەڕاندنەوەی ڕۆژی لەدەستچوو')}
             </div>
             <h2>Recover without mixing days</h2>
             <p>
-              Recovery focus is credited to the missed routine day, while today keeps its own progress.
+              {tr('Recovery focus is credited to the missed routine day, while today keeps its own progress.', 'سەرنجی گەڕاندنەوە بۆ ڕۆژی ڕوتینی لەدەستچوو تۆمار دەکرێت و پێشکەوتنی ئەمڕۆ جیا دەمێنێتەوە.')}
             </p>
 
             <div className="routine-recovery-list">
@@ -562,7 +562,7 @@ export default function RoutinePage({
                         )}{' '}
                         · {
                           entry.remainingMinutes
-                        }m remaining
+                        }m {tr('remaining', 'ماوە')}
                       </div>
                     </div>
 
@@ -584,7 +584,7 @@ export default function RoutinePage({
                         )
                       }
                     >
-                      Recover
+                      {tr('Recover', 'گەڕاندنەوە')}
                     </button>
                   </div>
                 ),
@@ -595,7 +595,7 @@ export default function RoutinePage({
 
         <section className="glass-panel routine-panel routine-builder">
           <div className="eyebrow">
-            Build your routine
+            {tr('Build your routine', 'ڕوتینەکەت دروست بکە')}
           </div>
           <h2>Fixed + rotating study</h2>
 
@@ -603,7 +603,7 @@ export default function RoutinePage({
             <input
               value={title}
               maxLength={80}
-              placeholder="Name (optional)"
+              placeholder={tr('Name (optional)', 'ناو (ئارەزوومەندانە)')}
               onChange={(event) =>
                 setTitle(
                   event.target
@@ -622,7 +622,7 @@ export default function RoutinePage({
               }
             >
               <option value="">
-                Select subject
+                {tr('Select subject', 'بابەت هەڵبژێرە')}
               </option>
               {subjects.map(
                 (subject) => (
@@ -670,10 +670,10 @@ export default function RoutinePage({
               }
             >
               <option value="fixed">
-                Fixed
+                {tr('Fixed', 'جێگیر')}
               </option>
               <option value="rotation">
-                Rotation pool
+                {tr('Rotation pool', 'کۆمەڵەی گۆڕاو')}
               </option>
             </select>
 
@@ -689,16 +689,16 @@ export default function RoutinePage({
               aria-label="Recovery window"
             >
               <option value={0}>
-                No recovery
+                {tr('No recovery', 'بێ گەڕاندنەوە')}
               </option>
               <option value={1}>
-                +1 day recovery
+                {tr('+1 day recovery', '+١ ڕۆژ گەڕاندنەوە')}
               </option>
               <option value={2}>
-                +2 days recovery
+                {tr('+2 days recovery', '+٢ ڕۆژ گەڕاندنەوە')}
               </option>
               <option value={3}>
-                +3 days recovery
+                {tr('+3 days recovery', '+٣ ڕۆژ گەڕاندنەوە')}
               </option>
             </select>
 
@@ -709,7 +709,7 @@ export default function RoutinePage({
               onClick={addItem}
             >
               <Plus size={15} />
-              Add routine
+              {tr('Add routine', 'زیادکردنی ڕوتین')}
             </button>
           </div>
 
@@ -718,15 +718,15 @@ export default function RoutinePage({
 
             {[
               {
-                label: 'Every day',
+                label: tr('Every day', 'هەموو ڕۆژێک'),
                 days: [0, 1, 2, 3, 4, 5, 6],
               },
               {
-                label: 'Weekdays',
+                label: tr('Weekdays', 'ڕۆژانی هەفتە'),
                 days: [1, 2, 3, 4, 5],
               },
               {
-                label: 'Weekends',
+                label: tr('Weekends', 'کۆتایی هەفتە'),
                 days: [0, 6],
               },
             ].map((preset) => {
@@ -811,7 +811,7 @@ export default function RoutinePage({
                       <div className="routine-config-meta">
                         {subject
                           ?.name ??
-                          'Subject removed'}{' '}
+                          tr('Subject removed', 'بابەت لابراوە')}{' '}
                         · {
                           item.targetMinutes
                         }m · {
@@ -854,8 +854,8 @@ export default function RoutinePage({
                         />
                       )}
                       {item.enabled
-                        ? 'On'
-                        : 'Off'}
+                        ? tr('On', 'چالاک')
+                        : tr('Off', 'ناچالاک')}
                     </button>
 
                     <button
@@ -984,7 +984,7 @@ export default function RoutinePage({
                         className="routine-recovery-select"
                       >
                         <option value={0}>
-                          No recovery
+                          {tr('No recovery', 'بێ گەڕاندنەوە')}
                         </option>
                         <option value={1}>
                           +1 day
