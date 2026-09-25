@@ -8773,3 +8773,257 @@ textarea:focus {
     flex: 1 1 76px;
   }
 }
+
+
+/* V5 Timer centerpiece */
+.timer-v5,
+.timer-v5-complete,
+.timer-v5-completion-countdown {
+  width: 100%;
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+
+.timer-v5 {
+  gap: 22px;
+}
+
+.timer-v5-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 30px;
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb, var(--timer-color) 28%, var(--focus-hairline));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--timer-color) 7%, transparent);
+}
+
+.timer-v5-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--timer-color);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--timer-color) 35%, transparent);
+}
+
+.timer-v5-status strong {
+  color: var(--text-secondary);
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.timer-v5-duration {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.timer-v5-ring {
+  position: relative;
+  width: min(360px, 88vw);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+
+.timer-v5-ring::before {
+  content: '';
+  position: absolute;
+  inset: 13%;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--timer-color) 9%, transparent),
+      transparent 66%
+    );
+  filter: blur(14px);
+}
+
+.timer-v5-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.timer-v5-ring-track,
+.timer-v5-ring-progress {
+  fill: none;
+  stroke-width: 3;
+}
+
+.timer-v5-ring-track {
+  stroke: var(--focus-hairline);
+}
+
+.timer-v5-ring-progress {
+  stroke: var(--timer-color);
+  stroke-linecap: round;
+  transition:
+    stroke-dashoffset 0.8s linear,
+    stroke 0.3s ease;
+  filter: drop-shadow(
+    0 0 10px
+    color-mix(in srgb, var(--timer-color) 24%, transparent)
+  );
+}
+
+.timer-v5-center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  pointer-events: none;
+}
+
+.timer-v5-time {
+  color: var(--text-primary);
+  font-size: clamp(54px, 8vw, 76px);
+  font-weight: 520;
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+.timer-v5-mode {
+  margin-top: 10px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.timer-v5-paused,
+.timer-v5-focused {
+  margin-top: 7px;
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.timer-v5-paused {
+  color: var(--energy);
+}
+
+.timer-v5-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.timer-v5-primary,
+.timer-v5-secondary {
+  min-height: 42px;
+  padding: 10px 15px;
+  border-radius: 11px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.timer-v5-primary {
+  min-width: 126px;
+}
+
+.timer-v5-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--focus-hairline);
+  background: var(--void-surface-hover);
+  color: var(--text-secondary);
+}
+
+.timer-v5-secondary:hover {
+  border-color: var(--primary-border);
+  color: var(--text-primary);
+}
+
+.timer-v5-secondary.pause {
+  border-color: color-mix(in srgb, var(--energy) 28%, var(--focus-hairline));
+  color: var(--energy);
+}
+
+.timer-v5-completion-countdown {
+  gap: 12px;
+}
+
+.timer-v5-completion-countdown span {
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.timer-v5-completion-countdown strong {
+  color: var(--primary-glow);
+  font-size: clamp(68px, 12vw, 104px);
+  font-weight: 520;
+  line-height: 1;
+}
+
+.timer-v5-complete {
+  max-width: 520px;
+  gap: 14px;
+}
+
+.timer-v5-complete-mark {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--success) 32%, var(--focus-hairline));
+  border-radius: 17px;
+  background: color-mix(in srgb, var(--success) 9%, transparent);
+  color: var(--success);
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.timer-v5-complete h2 {
+  margin: 6px 0 0;
+  font-size: 25px;
+  letter-spacing: -0.04em;
+}
+
+.timer-v5-complete-time {
+  margin-top: 4px;
+  color: var(--text-primary);
+  font-size: 36px;
+  font-weight: 520;
+}
+
+.timer-v5-complete p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+@media (max-width: 520px) {
+  .timer-v5 {
+    gap: 18px;
+  }
+
+  .timer-v5-ring {
+    width: min(310px, 86vw);
+  }
+
+  .timer-v5-time {
+    font-size: 54px;
+  }
+
+  .timer-v5-actions {
+    width: 100%;
+  }
+
+  .timer-v5-actions > * {
+    flex: 1 1 130px;
+  }
+}
