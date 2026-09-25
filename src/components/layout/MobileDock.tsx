@@ -45,12 +45,12 @@ export default function MobileDock({
   page,
   onPageChange,
 }: MobileDockProps) {
-  const { t } = useI18n()
+  const { t, tr } = useI18n()
 
   return (
     <nav
       className="mobile-dock"
-      aria-label="Primary mobile navigation"
+      aria-label={tr('Primary mobile navigation', 'ڕێنیشاندەری سەرەکی مۆبایل')}
     >
       {items.map((item) => {
         const Icon = item.icon
