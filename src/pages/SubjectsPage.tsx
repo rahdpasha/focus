@@ -97,7 +97,7 @@ export default function SubjectsPage({
   onDeleteSubject,
   onStartSession,
 }: SubjectsPageProps) {
-  const { t } = useI18n()
+  const { t, tr } = useI18n()
   const [
     showCreate,
     setShowCreate,
@@ -255,11 +255,10 @@ export default function SubjectsPage({
             <Plus size={22} />
           </div>
           <h2>
-            Create your first
-            subject
+            {tr('Create your first subject', 'یەکەم بابەتت دروست بکە')}
           </h2>
           <p>
-            Add the subjects you actually study. FOCUS will use them across sessions, plans, progress and guidance.
+            {tr('Add the subjects you actually study. FOCUS will use them across sessions, plans, progress and guidance.', 'ئەو بابەتانە زیاد بکە کە بەڕاستی دەیانخوێنیت. FOCUS لە سێشن، پلان، پێشکەوتن و ڕێنماییدا بەکاریان دەهێنێت.')}
           </p>
           <button
             type="button"
@@ -270,7 +269,7 @@ export default function SubjectsPage({
               )
             }
           >
-            Add subject
+            {t('addSubject')}
           </button>
         </section>
       ) : (
@@ -324,8 +323,8 @@ export default function SubjectsPage({
                         </h2>
                         <span>
                           {active
-                            ? 'Current subject'
-                            : 'Study subject'}
+                            ? tr('Current subject', 'بابەتی ئێستا')
+                            : tr('Study subject', 'بابەتی خوێندن')}
                         </span>
                       </div>
                     </div>
@@ -359,14 +358,14 @@ export default function SubjectsPage({
                       aria-label={
                         pendingRemoval ===
                         subject.id
-                          ? `Confirm removal of ${subject.name}`
-                          : `${t('deleteSubject')} ${subject.name}. Study history is preserved.`
+                          ? `${tr('Confirm removal of', 'پشتڕاستکردنەوەی لابردنی')} ${subject.name}`
+                          : `${t('deleteSubject')} ${subject.name}. ${tr('Study history is preserved.', 'مێژووی خوێندن دەپارێزرێت.')}`
                       }
                       title={
                         pendingRemoval ===
                         subject.id
-                          ? 'Click again to confirm'
-                          : 'Remove subject; study history is preserved'
+                          ? tr('Click again to confirm', 'دووبارە کرتە بکە بۆ پشتڕاستکردنەوە')
+                          : tr('Remove subject; study history is preserved', 'بابەت لاببە؛ مێژووی خوێندن دەپارێزرێت')
                       }
                     >
                       {pendingRemoval ===
@@ -385,7 +384,7 @@ export default function SubjectsPage({
                   <div className="subject-card-metrics">
                     <div>
                       <span>
-                        This week
+                        {tr('This week', 'ئەم هەفتەیە')}
                       </span>
                       <strong>
                         {minutesLabel(
@@ -396,7 +395,7 @@ export default function SubjectsPage({
 
                     <div>
                       <span>
-                        Sessions
+                        {tr('Sessions', 'سێشنەکان')}
                       </span>
                       <strong>
                         {
@@ -407,7 +406,7 @@ export default function SubjectsPage({
 
                     <div>
                       <span>
-                        All time
+                        {tr('All time', 'هەموو کات')}
                       </span>
                       <strong>
                         {minutesLabel(
@@ -422,7 +421,7 @@ export default function SubjectsPage({
                       size={13}
                     />
                     {lastStudied
-                      ? `Last studied ${lastStudied.toLocaleDateString(
+                      ? `${tr('Last studied', 'دوایین خوێندن')} ${lastStudied.toLocaleDateString(
                           undefined,
                           {
                             month:
@@ -431,7 +430,7 @@ export default function SubjectsPage({
                               'numeric',
                           },
                         )}`
-                      : 'No completed sessions yet'}
+                      : tr('No completed sessions yet', 'هێشتا هیچ سێشنێکی تەواوکراو نییە')}
                   </div>
 
                   <div className="subject-card-actions">
@@ -451,8 +450,8 @@ export default function SubjectsPage({
                       }
                     >
                       {active
-                        ? 'Selected'
-                        : 'Select'}
+                        ? tr('Selected', 'هەڵبژێردراوە')
+                        : tr('Select', 'هەڵبژێرە')}
                     </button>
 
                     <button
@@ -465,7 +464,7 @@ export default function SubjectsPage({
                         )
                       }
                     >
-                      Start 25m
+                      {tr('Start 25m', 'دەستپێکردنی ٢٥ خولەک')}
                       <ArrowRight
                         size={14}
                       />
@@ -501,7 +500,7 @@ export default function SubjectsPage({
             <div className="subject-dialog-head">
               <div>
                 <div className="eyebrow">
-                  Study area
+                  {tr('Study area', 'بەشی خوێندن')}
                 </div>
                 <h2 id="subjects-page-create-title">
                   {t(
@@ -515,7 +514,7 @@ export default function SubjectsPage({
                 onClick={
                   closeCreate
                 }
-                aria-label="Close"
+                aria-label={tr('Close', 'داخستن')}
               >
                 <X size={17} />
               </button>
@@ -570,7 +569,7 @@ export default function SubjectsPage({
                       color === item
                     }
                     aria-label={
-                      `Choose ${item}`
+                      `${tr('Choose', 'هەڵبژێرە')} ${item}`
                     }
                     onClick={() =>
                       setColor(item)
