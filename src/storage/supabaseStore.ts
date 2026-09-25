@@ -32,6 +32,8 @@ type StudySessionRow = {
   total_paused_seconds: number
   notes: string | null
   subtasks: unknown
+  routine_item_client_id: string | null
+  routine_date: string | null
   created_at: string
   updated_at: string
   deleted_at: string | null
@@ -81,6 +83,8 @@ type RoutineItemRow = {
   target_minutes: number
   mode: 'fixed' | 'rotation'
   rotation_order: number
+  days_of_week: number[]
+  recovery_days: number
   enabled: boolean
   created_at: string
   updated_at: string
@@ -149,6 +153,10 @@ function toStudySession(
     subtasks: Array.isArray(row.subtasks)
       ? (row.subtasks as StudySession['subtasks'])
       : undefined,
+    routineItemId:
+      row.routine_item_client_id ?? undefined,
+    routineDate:
+      row.routine_date ?? undefined,
   }
 }
 
@@ -305,6 +313,19 @@ export async function loadSupabaseSnapshot(
       mode: row.mode,
       rotationOrder:
         row.rotation_order,
+      daysOfWeek:
+        Array.isArray(row.days_of_week) &&
+        row.days_of_week.length > 0
+          ? row.days_of_week
+          : [0, 1, 2, 3, 4, 5, 6],
+      recoveryDays:
+        Math.max(
+          0,
+          Math.min(
+            3,
+            row.recovery_days ?? 1,
+          ),
+        ),
       enabled: row.enabled,
       createdAt:
         row.created_at,
@@ -576,6 +597,10 @@ export async function saveSupabaseSnapshot(
                 ),
               notes: session.notes ?? null,
               subtasks: session.subtasks ?? [],
+              routine_item_client_id:
+                session.routineItemId ?? null,
+              routine_date:
+                session.routineDate ?? null,
               updated_at: now,
             },
           ]
@@ -707,6 +732,30 @@ export async function saveSupabaseSnapshot(
             0,
             Math.round(
               item.rotationOrder,
+            ),
+          ),
+        days_of_week:
+          item.daysOfWeek.length > 0
+            ? Array.from(
+                new Set(
+                  item.daysOfWeek
+                    .filter(
+                      (day) =>
+                        Number.isInteger(day) &&
+                        day >= 0 &&
+                        day <= 6,
+                    ),
+                ),
+              )
+            : [0, 1, 2, 3, 4, 5, 6],
+        recovery_days:
+          Math.max(
+            0,
+            Math.min(
+              3,
+              Math.round(
+                item.recoveryDays,
+              ),
             ),
           ),
         enabled: item.enabled,
