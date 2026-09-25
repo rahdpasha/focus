@@ -57,7 +57,7 @@ export default function RecentSessions({
   sessions,
   onDeleteSession,
 }: RecentSessionsProps) {
-  const { language, t } =
+  const { language, t, tr } =
     useI18n()
 
   const [filter, setFilter] =
@@ -154,10 +154,10 @@ export default function RecentSessions({
       <div className="recent-sessions-head">
         <div>
           <div className="eyebrow">
-            Activity
+            {tr('Activity', 'چالاکی')}
           </div>
           <h2>
-            Recent sessions
+            {tr('Recent sessions', 'سێشنە نوێیەکان')}
           </h2>
         </div>
 
@@ -201,7 +201,7 @@ export default function RecentSessions({
               event.target.value,
             )
           }
-          aria-label="Filter sessions by subject"
+          aria-label={tr('Filter sessions by subject', 'پاڵاوتنی سێشنەکان بەپێی بابەت')}
         >
           <option value="all">
             {t('allSubjects')}
@@ -278,11 +278,12 @@ export default function RecentSessions({
                         {
                           session.interruptions
                         }{' '}
-                        interruption
-                        {session.interruptions ===
-                        1
-                          ? ''
-                          : 's'}
+                        {tr(
+                          session.interruptions === 1
+                            ? 'interruption'
+                            : 'interruptions',
+                          'وەستاندن',
+                        )}
                       </span>
                     )}
 
@@ -293,7 +294,7 @@ export default function RecentSessions({
                         {formatTime(
                           session.totalPausedSeconds,
                         )}{' '}
-                        paused
+                        {tr('paused', 'وەستاو')}
                       </span>
                     )}
                   </div>
