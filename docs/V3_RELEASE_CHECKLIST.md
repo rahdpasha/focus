@@ -4,6 +4,16 @@ FOCUS V3 is developed on `feature/focus-league-v3`. Keep `main` unchanged until 
 
 Checked items below were actually verified during V3 hardening. Re-run the automated gates after any later code or migration commit.
 
+## Blocking merge gates
+
+PR #1 stays **draft** until all three are complete:
+
+- [ ] **Latest preview:** Vercel successfully deploys the current branch HEAD after the free-plan daily deployment limit clears, then the latest-preview runtime check is clean.
+- [ ] **Auth security:** Supabase Auth leaked-password protection is enabled and Security Advisor is re-run.
+- [ ] **Real-browser sign-off:** Complete the remaining authenticated desktop/mobile smoke tests below, including account switching, cloud sync/offline recovery, League with two accounts, subject-scoped goals, settings/theme sync, and mobile/accessibility checks.
+
+Do not merge based only on GitHub Quality. The automated gates are green, but these three release gates require the deployed app and/or Supabase Dashboard.
+
 ## Automated gates
 
 - [x] GitHub **Quality** passes: install, lint, V3 regression tests, client-secret guard, migration-version guard and build.
