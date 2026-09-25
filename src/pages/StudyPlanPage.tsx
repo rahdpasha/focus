@@ -199,7 +199,7 @@ export default function StudyPlanPage({
 
             <p>
               {plan.todayRemainingMinutes > 0
-                ? `${plan.todayRemainingMinutes}m left to close today.`
+                ? tr(`${plan.todayRemainingMinutes}m left to close today.`, `${plan.todayRemainingMinutes} خولەک ماوە بۆ تەواوکردنی ئەمڕۆ.`)
                 : tr('Daily target complete. Keep the rhythm, not the pressure.', 'ئامانجی ڕۆژانە تەواو بوو. ڕێتمەکەت بپارێزە، نە فشارەکە.')}
             </p>
           </article>
@@ -230,11 +230,15 @@ export default function StudyPlanPage({
 
             <p>
               {plan.weeklyRemainingMinutes > 0
-                ? `${Math.round(
+                ? tr(`${Math.round(
                     (plan.weeklyRemainingMinutes /
                       60) *
                       10,
-                  ) / 10}h left this week.`
+                  ) / 10}h left this week.`, `${Math.round(
+                    (plan.weeklyRemainingMinutes /
+                      60) *
+                      10,
+                  ) / 10} کاتژمێر لەم هەفتەیە ماوە.`)
                 : tr('Weekly target complete. Protect the consistency you built.', 'ئامانجی هەفتانە تەواو بوو. بەردەوامییەکەی دروستت کردووە بپارێزە.')}
             </p>
           </article>
@@ -244,10 +248,10 @@ export default function StudyPlanPage({
           <div className="study-plan-section-head">
             <div>
               <div className="eyebrow">
-                Today
+                {tr('Today', 'ئەمڕۆ')}
               </div>
               <h2>
-                The next useful work
+                {tr('The next useful work', 'کاری بەسوودی داهاتوو')}
               </h2>
             </div>
 
@@ -310,7 +314,7 @@ export default function StudyPlanPage({
                         {item.todayCompletedMinutes >
                           0 && (
                           <span>
-                            {item.todayCompletedMinutes}m done today
+                            {item.todayCompletedMinutes}m {tr('done today', 'ئەمڕۆ تەواو کرا')}
                           </span>
                         )}
                       </div>
@@ -339,10 +343,10 @@ export default function StudyPlanPage({
           <div className="study-plan-section-head">
             <div>
               <div className="eyebrow">
-                Balance
+                {tr('Balance', 'هاوسەنگی')}
               </div>
               <h2>
-                Weekly subject allocation
+                {tr('Weekly subject allocation', 'دابەشکردنی هەفتانەی بابەتەکان')}
               </h2>
             </div>
           </div>
@@ -406,7 +410,7 @@ export default function StudyPlanPage({
                     <span>
                       {allocation.remainingMinutes >
                       0
-                        ? `${allocation.remainingMinutes}m left this week`
+                        ? tr(`${allocation.remainingMinutes}m left this week`, `${allocation.remainingMinutes} خولەک لەم هەفتەیە ماوە`)
                         : tr('Target met', 'ئامانج پێکرا')}
                     </span>
 
@@ -419,7 +423,7 @@ export default function StudyPlanPage({
                         )
                       }
                     >
-                      25 min
+                      {tr('25 min', '٢٥ خولەک')}
                     </button>
                   </div>
                 </article>
@@ -432,10 +436,10 @@ export default function StudyPlanPage({
           <div className="advanced-goals-header">
             <div>
               <div className="eyebrow">
-                Longer horizon
+                {tr('Longer horizon', 'ئامانجی درێژخایەن')}
               </div>
               <h2>
-                Deadline goals
+                {tr('Deadline goals', 'ئامانجە کاتدارەکان')}
               </h2>
               <p>
                 {tr('Give important work a clear target without turning FOCUS into a crowded task manager.', 'بۆ کارە گرنگەکان ئامانجێکی ڕوون دابنێ بەبێ ئەوەی FOCUS ببێتە بەڕێوەبەری ئەرکی قەرەباڵغ.')}
@@ -449,19 +453,19 @@ export default function StudyPlanPage({
                     goal.status ===
                     'active',
                 ).length
-              } active ·{' '}
+              } {tr('active', 'چالاک')} ·{' '}
               {
                 advancedGoalCards.filter(
                   ({ progress }) =>
                     progress.overdue,
                 ).length
-              } overdue
+              } {tr('overdue', 'کاتی تێپەڕیوە')}
             </span>
           </div>
 
           <div className="advanced-goal-create">
             <input
-              aria-label="Goal title"
+              aria-label={tr('Goal title', 'ناوی ئامانج')}
               value={goalTitle}
               maxLength={80}
               onChange={(event) =>
@@ -473,7 +477,7 @@ export default function StudyPlanPage({
             />
 
             <select
-              aria-label="Goal subject"
+              aria-label={tr('Goal subject', 'بابەتی ئامانج')}
               value={goalSubjectId}
               onChange={(event) =>
                 setGoalSubjectId(
@@ -482,7 +486,7 @@ export default function StudyPlanPage({
               }
             >
               <option value="">
-                All focus sessions
+                {tr('All focus sessions', 'هەموو سێشنەکانی سەرنج')}
               </option>
               {subjects.map(
                 (subject) => (
@@ -509,7 +513,7 @@ export default function StudyPlanPage({
                   ),
                 )
               }
-              aria-label="Target minutes"
+              aria-label={tr('Target minutes', 'خولەکەکانی ئامانج')}
             />
 
             <input
@@ -520,11 +524,11 @@ export default function StudyPlanPage({
                   event.target.value,
                 )
               }
-              aria-label="Goal deadline"
+              aria-label={tr('Goal deadline', 'کۆتا مۆڵەتی ئامانج')}
             />
 
             <select
-              aria-label="Goal priority"
+              aria-label={tr('Goal priority', 'گرنگی ئامانج')}
               value={goalPriority}
               onChange={(event) =>
                 setGoalPriority(
@@ -534,13 +538,13 @@ export default function StudyPlanPage({
               }
             >
               <option value="low">
-                Low priority
+                {tr('Low priority', 'گرنگی کەم')}
               </option>
               <option value="medium">
-                Medium priority
+                {tr('Medium priority', 'گرنگی ناوەند')}
               </option>
               <option value="high">
-                High priority
+                {tr('High priority', 'گرنگی زۆر')}
               </option>
             </select>
 
@@ -555,7 +559,7 @@ export default function StudyPlanPage({
                 createAdvancedGoal
               }
             >
-              Add goal
+              {tr('Add goal', 'زیادکردنی ئامانج')}
             </button>
           </div>
 
@@ -593,7 +597,7 @@ export default function StudyPlanPage({
                           <span
                             className={`advanced-goal-priority ${goal.priority}`}
                           >
-                            {goal.priority}
+                            {goal.priority === 'high' ? tr('High', 'زۆر') : goal.priority === 'medium' ? tr('Medium', 'ناوەند') : tr('Low', 'کەم')}
                           </span>
 
                           <h3>
@@ -603,7 +607,7 @@ export default function StudyPlanPage({
                           <span className="advanced-goal-scope">
                             {linkedSubject
                               ? linkedSubject.name
-                              : 'All focus sessions'}
+                              : tr('All focus sessions', 'هەموو سێشنەکانی سەرنج')}
                           </span>
                         </div>
 
@@ -662,8 +666,8 @@ export default function StudyPlanPage({
                             aria-label={
                               pendingGoalDelete ===
                               goal.id
-                                ? `Confirm deletion of ${goal.title}`
-                                : `Delete ${goal.title}`
+                                ? `${tr('Confirm deletion of', 'پشتڕاستکردنەوەی سڕینەوەی')} ${goal.title}`
+                                : `${tr('Delete', 'سڕینەوەی')} ${goal.title}`
                             }
                           >
                             {pendingGoalDelete ===
@@ -684,7 +688,7 @@ export default function StudyPlanPage({
                             ? tr('Completed', 'تەواوکراو')
                              : progress.overdue
                               ? tr('Overdue', 'کاتی تێپەڕیوە')
-                              : `${progress.remainingMinutes}m remaining`}
+                              : tr(`${progress.remainingMinutes}m remaining`, `${progress.remainingMinutes} خولەک ماوە`)}
                         </span>
                       </div>
 
@@ -702,7 +706,7 @@ export default function StudyPlanPage({
                           {progress.percent}%
                         </span>
                         <span>
-                          Due{' '}
+                          {tr('Due', 'کۆتا مۆڵەت')}{' '}
                           {new Date(
                             goal.deadline,
                           ).toLocaleString()}
@@ -726,7 +730,7 @@ export default function StudyPlanPage({
                               )
                             }
                           >
-                            Start focus
+                            {tr('Start focus', 'دەستپێکردنی سەرنج')}
                           </button>
                         )}
                       </div>
@@ -742,10 +746,10 @@ export default function StudyPlanPage({
           <div className="study-plan-section-head">
             <div>
               <div className="eyebrow">
-                Targets
+                {tr('Targets', 'ئامانجەکان')}
               </div>
               <h2>
-                Planning baseline
+                {tr('Planning baseline', 'بنەمای پلان')}
               </h2>
               <p>
                 {tr('Set the amount of focused time FOCUS should plan around.', 'بڕی کاتی سەرنج دیاری بکە کە FOCUS پلانی لەسەر بنیات بنێت.')}
@@ -767,22 +771,22 @@ export default function StudyPlanPage({
                 }
               >
                 <option value={30}>
-                  30m / day
+                  {tr('30m / day', '٣٠ خولەک / ڕۆژ')}
                 </option>
                 <option value={60}>
-                  1h / day
+                  {tr('1h / day', '١ کاتژمێر / ڕۆژ')}
                 </option>
                 <option value={90}>
-                  1.5h / day
+                  {tr('1.5h / day', '١.٥ کاتژمێر / ڕۆژ')}
                 </option>
                 <option value={120}>
-                  2h / day
+                  {tr('2h / day', '٢ کاتژمێر / ڕۆژ')}
                 </option>
                 <option value={180}>
-                  3h / day
+                  {tr('3h / day', '٣ کاتژمێر / ڕۆژ')}
                 </option>
                 <option value={240}>
-                  4h / day
+                  {tr('4h / day', '٤ کاتژمێر / ڕۆژ')}
                 </option>
               </select>
             </label>
@@ -800,22 +804,22 @@ export default function StudyPlanPage({
                 }
               >
                 <option value={300}>
-                  5h / week
+                  {tr('5h / week', '٥ کاتژمێر / هەفتە')}
                 </option>
                 <option value={600}>
-                  10h / week
+                  {tr('10h / week', '١٠ کاتژمێر / هەفتە')}
                 </option>
                 <option value={900}>
-                  15h / week
+                  {tr('15h / week', '١٥ کاتژمێر / هەفتە')}
                 </option>
                 <option value={1200}>
-                  20h / week
+                  {tr('20h / week', '٢٠ کاتژمێر / هەفتە')}
                 </option>
                 <option value={1500}>
-                  25h / week
+                  {tr('25h / week', '٢٥ کاتژمێر / هەفتە')}
                 </option>
                 <option value={1800}>
-                  30h / week
+                  {tr('30h / week', '٣٠ کاتژمێر / هەفتە')}
                 </option>
               </select>
             </label>
