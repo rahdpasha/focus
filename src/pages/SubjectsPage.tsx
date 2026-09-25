@@ -396,9 +396,7 @@ export default function SubjectsPage({
                         {tr('This week', 'ئەم هەفتەیە')}
                       </span>
                       <strong>
-                        {minutesLabel(
-                          weekMinutes,
-                        )}
+                        {minutesLabel(weekMinutes, language)}
                       </strong>
                     </div>
 
@@ -418,9 +416,7 @@ export default function SubjectsPage({
                         {tr('All time', 'هەموو کات')}
                       </span>
                       <strong>
-                        {minutesLabel(
-                          totalMinutes,
-                        )}
+                        {minutesLabel(totalMinutes, language)}
                       </strong>
                     </div>
                   </div>
