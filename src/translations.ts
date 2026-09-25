@@ -25,25 +25,25 @@ export const translations = {
     league: 'League',
     advisor: 'Advisor',
 
-    focusPageQuestion: 'What am I studying right now?',
-    subjectsPageQuestion: 'What am I studying?',
-    studyPlanPageQuestion: 'What should I study today and this week?',
-    routinePageQuestion: 'What must I complete today?',
-    recordsPageQuestion: 'What have I achieved?',
+    focusPageQuestion: 'One subject. One timer. One clear outcome.',
+    subjectsPageQuestion: 'Keep every subject clear, active, and easy to return to.',
+    studyPlanPageQuestion: 'Turn your goals into a clear plan for today and the week ahead.',
+    routinePageQuestion: 'Keep the work that matters visible, repeatable, and easy to start.',
+    recordsPageQuestion: 'Your strongest study performances, preserved as your history grows.',
     weeklyFocusGoal: 'Weekly Focus Goal',
 
     // Subjects
     addSubject: 'Add Subject',
-    newSubject: 'NEW SUBJECT',
+    newSubject: 'New subject',
     subjectName: 'Subject name',
     color: 'COLOR',
-    createSubject: 'CREATE SUBJECT',
+    createSubject: 'Create subject',
     deleteSubject: 'Remove',
 
     // Duration selector
-    custom: 'CUSTOM',
+    custom: 'Custom',
     minutes: 'Minutes',
-    set: 'SET',
+    set: 'Set',
     tenSec: '10 SEC',
     minutes25: '25 MIN',
     minutes45: '45 MIN',
@@ -72,7 +72,7 @@ export const translations = {
       'DAILY OBJECTIVE COMPLETE',
     completePercent: '% COMPLETE',
     loadingAnalytics:
-      'LOADING ANALYTICS...',
+      'Preparing your focus insights…',
     selectSubject: 'Select Subject',
 
     // Statistics
@@ -155,12 +155,12 @@ export const translations = {
     breakComplete: 'BREAK COMPLETE',
     takeLongBreak: 'TAKE LONG BREAK',
     takeShortBreak: 'TAKE SHORT BREAK',
-    newSequence: 'NEW SEQUENCE',
-    initiateSequence: 'INITIATE SEQUENCE',
-    startBreak: 'START BREAK',
-    resume: 'RESUME',
-    pause: 'PAUSE',
-    reset: 'RESET',
+    newSequence: 'Start another session',
+    initiateSequence: 'Start focus',
+    startBreak: 'Start break',
+    resume: 'Resume',
+    pause: 'Pause',
+    reset: 'Reset',
     paused: 'PAUSED',
     focused: 'focused',
     interruptions: 'interruptions',
@@ -180,10 +180,10 @@ export const translations = {
     data: 'DATA',
     backupDescription:
       'Backup your subjects, sessions, goals, and timer settings.',
-    exportData: 'EXPORT DATA',
-    importData: 'IMPORT DATA',
+    exportData: 'Export data',
+    importData: 'Import data',
     confirmImportData:
-      'CLICK AGAIN TO REPLACE DATA',
+      'Click again to replace data',
 
     // App messages
     dataImported: 'FOCUS DATA IMPORTED',
