@@ -351,7 +351,7 @@ export default function Sidebar({
 
         {showLabels && (
           <div className="sidebar-section-label">
-            Subjects
+            {t('subjects')}
           </div>
         )}
 
@@ -436,8 +436,8 @@ export default function Sidebar({
                       aria-label={
                         pendingRemoval ===
                         subject.id
-                          ? `Confirm removal of ${subject.name}`
-                          : `${t('deleteSubject')} ${subject.name}. Study history is preserved.`
+                          ? `${tr('Confirm removal of', 'پشتڕاستکردنەوەی لابردنی')} ${subject.name}`
+                          : `${t('deleteSubject')} ${subject.name}. ${tr('Study history is preserved.', 'مێژووی خوێندن دەپارێزرێت.')}`
                       }
                       title={
                         pendingRemoval ===
@@ -509,7 +509,7 @@ export default function Sidebar({
                 size={17}
               />
               <span>
-                Collapse
+                {tr('Collapse', 'کەمکردنەوە')}
               </span>
             </>
           )}
@@ -540,7 +540,7 @@ export default function Sidebar({
             <div className="subject-dialog-head">
               <div>
                 <div className="eyebrow">
-                  Subjects
+                  {t('subjects')}
                 </div>
                 <h2 id="subject-dialog-title">
                   {t('newSubject')}
