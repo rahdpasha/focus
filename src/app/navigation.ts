@@ -3,6 +3,7 @@ export type Page =
   | 'focus'
   | 'subjects'
   | 'study-plan'
+  | 'routine'
   | 'statistics'
   | 'records'
   | 'history'
