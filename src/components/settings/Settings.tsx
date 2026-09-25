@@ -227,7 +227,7 @@ export default function Settings({
 
           <div>
             <h2>
-              Appearance
+              {t('appearance')}
             </h2>
             <p>
               {tr('FOCUS follows your system by default. Switch to a curated light, dark, or monochrome mode whenever you want a different atmosphere.', 'FOCUS بە بنەڕەت ڕووکارەکەی سیستەمەکەت بەکاردهێنێت. هەر کاتێک بتەوێت دەتوانیت بگۆڕیت بۆ ڕووناک، تاریک یان ڕەنگ‌تاک.')}
@@ -306,7 +306,7 @@ export default function Settings({
                 }
               >
                 <Upload size={14} />
-                Import theme
+                {tr('Import theme', 'هێنانی ڕووکار')}
               </button>
 
               <button
@@ -316,7 +316,7 @@ export default function Settings({
                 onClick={exportThemePack}
               >
                 <Download size={14} />
-                Export theme
+                {tr('Export theme', 'هەناردەکردنی ڕووکار')}
               </button>
             </div>
 
@@ -389,8 +389,8 @@ export default function Settings({
       </section>
 
       <div className="settings-group-label settings-section-wide">
-        <span>Focus</span>
-        <small>Goals and timer behavior</small>
+        <span>{tr('Focus', 'سەرنج')}</span>
+        <small>{tr('Goals and timer behavior', 'ئامانجەکان و هەڵسوکەوتی کاتژمێر')}</small>
       </div>
 
       <section className="glass-panel settings-section">
@@ -608,7 +608,7 @@ export default function Settings({
           title={t(
             'automaticallyStartNextBreak',
           )}
-          description="Start the next break immediately when a focus block finishes."
+          description={tr('Start the next break immediately when a focus block finishes.', 'کاتێک بڵۆکی سەرنج تەواو بوو، پشووی دواتر خۆکارانە دەست پێ بکات.')}
           checked={
             settings.autoStartBreak
           }
@@ -624,8 +624,8 @@ export default function Settings({
       </section>
 
       <div className="settings-group-label settings-section-wide">
-        <span>Notifications</span>
-        <small>Sound and alerts</small>
+        <span>{t('notifications')}</span>
+        <small>{tr('Sound and alerts', 'دەنگ و ئاگادارکردنەوەکان')}</small>
       </div>
 
       <section className="glass-panel settings-section">
@@ -657,7 +657,7 @@ export default function Settings({
           title={t(
             'soundEnabled',
           )}
-          description="Play timer sounds for focus and break transitions."
+          description={tr('Play timer sounds for focus and break transitions.', 'دەنگی کاتژمێر لە گۆڕینی نێوان سەرنج و پشوودان پخش بکە.')}
           checked={
             settings.soundEnabled
           }
@@ -742,7 +742,7 @@ export default function Settings({
           title={t(
             'notificationsEnabled',
           )}
-          description="Browser permission may still be required before notifications can appear."
+          description={tr('Browser permission may still be required before notifications can appear.', 'لەوانەیە پێش پیشاندانی ئاگادارکردنەوەکان مۆڵەتی وێبگە پێویست بێت.')}
           checked={
             settings.notificationsEnabled
           }
@@ -758,8 +758,8 @@ export default function Settings({
       </section>
 
       <div className="settings-group-label settings-section-wide">
-        <span>Data / Account</span>
-        <small>Sync, backups and account actions</small>
+        <span>{tr('Data / Account', 'داتا / هەژمار')}</span>
+        <small>{tr('Sync, backups and account actions', 'هاوکاتکردن، باکاپ و کردارەکانی هەژمار')}</small>
       </div>
 
       <section className="glass-panel settings-section settings-section-wide">
