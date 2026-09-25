@@ -84,7 +84,7 @@ function formatWeekLabel(
   currentWeek: boolean,
 ): string {
   if (currentWeek) {
-    return locale === 'ku-IQ' ? 'ئەم هەفتە' : 'THIS WEEK'
+    return locale === 'ku-IQ' ? 'ئەم هەفتە' : 'This week'
   }
 
   const end = new Date(date)
@@ -242,7 +242,7 @@ export default function Statistics({
         <div className="stats-v4-hero-copy">
           <div className="stats-v4-kicker">
             <BrainCircuit size={15} />
-            FOCUS INTELLIGENCE
+            Focus intelligence
           </div>
 
           <h1>{headline}</h1>
@@ -270,7 +270,7 @@ export default function Statistics({
 
         <div className="stats-v4-orb">
           <div className="stats-v4-orb-ring">
-            <span>THIS WEEK</span>
+            <span>This week</span>
             <strong>{formatDuration(overview.weekFocusSeconds)}</strong>
             <small>{weeklyProgress}% of target</small>
           </div>
@@ -336,7 +336,7 @@ export default function Statistics({
       <section className="stats-v4-rhythm">
         <div className="stats-v4-section-head">
           <div>
-            <span>7-DAY SIGNAL</span>
+            <span>7-day pattern</span>
             <h2>Focus rhythm</h2>
           </div>
 
@@ -388,7 +388,7 @@ export default function Statistics({
         <section className="stats-v4-weekly">
           <div className="stats-v4-section-head">
             <div>
-              <span>GOAL TRAJECTORY</span>
+              <span>Weekly goal</span>
               <h2>Weekly execution</h2>
             </div>
 
@@ -420,7 +420,7 @@ export default function Statistics({
 
                   <div className="stats-v4-week-score">
                     <strong>{item.progressPercent}%</strong>
-                    <span>{item.completed ? 'CLEARED' : 'IN PROGRESS'}</span>
+                    <span>{item.completed ? 'Complete' : 'In progress'}</span>
                   </div>
                 </div>
 
@@ -440,7 +440,7 @@ export default function Statistics({
         <section className="stats-v4-subjects">
           <div className="stats-v4-section-head">
             <div>
-              <span>FOCUS ALLOCATION</span>
+              <span>Focus by subject</span>
               <h2>Subject gravity</h2>
             </div>
             <Layers3 size={20} />
@@ -493,7 +493,7 @@ export default function Statistics({
       <section className="stats-v4-records">
         <div className="stats-v4-section-head">
           <div>
-            <span>PERSONAL BESTS</span>
+            <span>Personal bests</span>
             <h2>Your performance vault</h2>
           </div>
           <Trophy size={21} />
@@ -502,7 +502,7 @@ export default function Statistics({
         <div className="stats-v4-record-grid">
           <article className="hero-record">
             <Medal size={20} />
-            <span>LONGEST SESSION</span>
+            <span>Longest session</span>
             <strong>
               {formatDuration(personalRecords.longestSessionSeconds)}
             </strong>
@@ -511,7 +511,7 @@ export default function Statistics({
 
           <article>
             <Sparkles size={18} />
-            <span>BEST DAY</span>
+            <span>Best day</span>
             <strong>
               {formatMinutesHuman(personalRecords.bestDayMinutes)}
             </strong>
@@ -520,7 +520,7 @@ export default function Statistics({
 
           <article>
             <Flame size={18} />
-            <span>BEST WEEK</span>
+            <span>Best week</span>
             <strong>
               {formatMinutesHuman(personalRecords.bestWeekMinutes)}
             </strong>
@@ -529,7 +529,7 @@ export default function Statistics({
 
           <article>
             <Layers3 size={18} />
-            <span>BEST SUBJECT</span>
+            <span>Best subject</span>
             <strong title={personalRecords.bestSubjectName ?? undefined}>
               {personalRecords.bestSubjectName ?? '—'}
             </strong>
