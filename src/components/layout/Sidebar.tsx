@@ -4,6 +4,7 @@ import {
   BrainCircuit,
   Check,
   CalendarRange,
+  Repeat2,
   ChevronLeft,
   ChevronRight,
   Clock3,
@@ -75,6 +76,11 @@ const navItems = [
     page: 'study-plan' as const,
     labelKey: 'studyPlan' as const,
     icon: CalendarRange,
+  },
+  {
+    page: 'routine' as const,
+    labelKey: 'routine' as const,
+    icon: Repeat2,
   },
   {
     page: 'advisor' as const,
