@@ -425,9 +425,7 @@ export default function HistoryPage({
             {tr('Month focus', 'سەرنجی مانگ')}
           </span>
           <strong>
-            {durationLabel(
-              monthSeconds,
-            )}
+            {durationLabel(monthSeconds, language)}
           </strong>
         </article>
 
@@ -594,9 +592,7 @@ export default function HistoryPage({
                     aria-label={
                       `${date.toLocaleDateString(
                         locale,
-                      )}, ${durationLabel(
-                        seconds,
-                      )}, ${daySessions.length} ${tr('sessions', 'سێشن')}`
+                      )}, ${durationLabel(seconds, language)}, ${daySessions.length} ${tr('sessions', 'سێشن')}`
                     }
                   >
                     <div className="history-day-top">
@@ -625,9 +621,7 @@ export default function HistoryPage({
                       0 && (
                       <div className="history-day-data">
                         <strong>
-                          {durationLabel(
-                            seconds,
-                          )}
+                          {durationLabel(seconds, language)}
                         </strong>
                         <span>
                           {
@@ -694,9 +688,7 @@ export default function HistoryPage({
               <Clock3
                 size={15}
               />
-              {durationLabel(
-                selectedSeconds,
-              )}
+              {durationLabel(selectedSeconds, language)}
             </div>
           </div>
 
@@ -745,9 +737,7 @@ export default function HistoryPage({
 
                       <div className="history-session-metrics">
                         <span>
-                          {durationLabel(
-                            session.actualDuration,
-                          )}
+                          {durationLabel(session.actualDuration, language)}
                         </span>
 
                         <span>
