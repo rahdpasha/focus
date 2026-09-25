@@ -5996,3 +5996,158 @@ select option {
     gap: 3px;
   }
 }
+
+
+/* League V4 reward state */
+.league-v4-status {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  margin-top: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--void-border);
+  border-radius: 12px;
+  background: var(--void-surface-hover);
+}
+
+.league-v4-status > div span,
+.league-v4-status > div strong {
+  display: block;
+}
+
+.league-v4-status > div span {
+  color: var(--text-muted);
+  font-size: 6px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
+.league-v4-status > div strong {
+  margin-top: 4px;
+  color: var(--primary-glow);
+  font-family: Orbitron, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.league-v4-status p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.league-v4-milestones {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 10px;
+  padding: 10px 7px;
+  border: 1px solid var(--void-border);
+  border-radius: 12px;
+  background: var(--void-bg);
+}
+
+.league-v4-milestones::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: 18%;
+  right: 18%;
+  height: 1px;
+  background: var(--void-border);
+}
+
+.league-v4-milestones > div {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 6px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.league-v4-milestones i {
+  width: 11px;
+  height: 11px;
+  border: 2px solid var(--void-surface);
+  border-radius: 50%;
+  background: var(--text-muted);
+  box-shadow: 0 0 0 1px var(--void-border);
+}
+
+.league-v4-milestones > div.complete {
+  color: var(--primary-glow);
+}
+
+.league-v4-milestones > div.complete i {
+  background: var(--primary-glow);
+  box-shadow:
+    0 0 0 1px var(--primary-border),
+    0 0 12px var(--primary-soft);
+}
+
+.league-v4-podium-card.is-you::before {
+  content: 'YOU';
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 5px 8px;
+  border-bottom-left-radius: 9px;
+  background: var(--primary-glow);
+  color: var(--void-bg);
+  font-family: Orbitron, sans-serif;
+  font-size: 6px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 720px) {
+  .league-v4-rank-core {
+    order: -1;
+    width: min(230px, 68vw);
+  }
+
+  .league-v4-hero-copy {
+    text-align: center;
+  }
+
+  .league-v4-kicker,
+  .league-v4-hero-chips {
+    justify-content: center;
+  }
+
+  .league-v4-hero p {
+    margin-inline: auto;
+  }
+
+  .league-v4-rule-row {
+    text-align: left;
+  }
+
+  .league-v4-podium-card.place-1 {
+    order: -1;
+  }
+}
+
+@media (max-width: 520px) {
+  .league-v4-status {
+    grid-template-columns: 1fr;
+  }
+
+  .league-v4-milestones {
+    margin-top: 9px;
+  }
+
+  .league-v4-command,
+  .league-v4-board,
+  .league-v4-podium-shell,
+  .league-v4-champions {
+    border-radius: 15px;
+  }
+}
