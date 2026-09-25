@@ -76,6 +76,36 @@ function shortDay(date: Date) {
   )
 }
 
+const WEEKDAYS = [
+  { value: 0, label: 'S' },
+  { value: 1, label: 'M' },
+  { value: 2, label: 'T' },
+  { value: 3, label: 'W' },
+  { value: 4, label: 'T' },
+  { value: 5, label: 'F' },
+  { value: 6, label: 'S' },
+]
+
+function dayRuleLabel(
+  days: number[],
+): string {
+  const normalized =
+    Array.from(
+      new Set(days),
+    ).sort()
+
+  if (normalized.length === 7) {
+    return 'Every day'
+  }
+
+  return normalized
+    .map(
+      (day) =>
+        ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][day],
+    )
+    .join(', ')
+}
+
 export default function RoutinePage({
   subjects,
   sessions,
@@ -187,13 +217,20 @@ export default function RoutinePage({
 
   const completedToday =
     todaysItems.filter(
-      (item) =>
-        getRoutineStatus(
-          item,
-          routineItems,
-          sessions,
-          today,
-        ) === 'done',
+      (item) => {
+        const status =
+          getRoutineStatus(
+            item,
+            routineItems,
+            sessions,
+            today,
+          )
+
+        return (
+          status === 'done' ||
+          status === 'recovered'
+        )
+      },
     ).length
 
   const addItem = () => {
@@ -217,6 +254,34 @@ export default function RoutinePage({
 
     setTitle('')
     setTargetMinutes(25)
+  }
+
+  const toggleBuilderDay = (
+    day: number,
+  ) => {
+    setDaysOfWeek(
+      (current) => {
+        if (
+          current.includes(day)
+        ) {
+          if (
+            current.length === 1
+          ) {
+            return current
+          }
+
+          return current.filter(
+            (value) =>
+              value !== day,
+          )
+        }
+
+        return [
+          ...current,
+          day,
+        ].sort()
+      },
+    )
   }
 
   return (
@@ -473,7 +538,19 @@ export default function RoutinePage({
                         onClick={() =>
                           onStartSession(
                             item.subjectId,
-                            item.targetMinutes,
+                            Math.max(
+                              1,
+                              item.targetMinutes -
+                                minutes,
+                            ),
+                            {
+                              itemId:
+                                item.id,
+                              routineDate:
+                                toRoutineDateKey(
+                                  today,
+                                ),
+                            },
                           )
                         }
                       >
@@ -593,12 +670,18 @@ export default function RoutinePage({
                                 'done'
                                   ? '✅'
                                   : status ===
-                                      'missed'
-                                    ? '❌'
+                                      'recovered'
+                                    ? '↩️'
                                     : status ===
-                                        'pending'
-                                      ? '·'
-                                      : '—'}
+                                        'recoverable'
+                                      ? '⏳'
+                                      : status ===
+                                          'missed'
+                                        ? '❌'
+                                        : status ===
+                                            'pending'
+                                          ? '·'
+                                          : '—'}
                               </span>
                               <small
                                 style={{
