@@ -10,6 +10,7 @@ import {
 } from 'recharts'
 import type { StudySession } from '../../types'
 import { getStartOfWeek } from '../../utils/goalHistory'
+import { useI18n } from '../../useI18n'
 
 interface SubjectBalanceProps {
   sessions: StudySession[]
@@ -160,6 +161,7 @@ function SubjectTooltip({
   active,
   payload,
 }: SubjectTooltipProps) {
+  const { tr } = useI18n()
   if (
     !active ||
     !payload ||
@@ -180,7 +182,7 @@ function SubjectTooltip({
       <span>{data.name}</span>
 
       <strong className="mono">
-        This week:{' '}
+        {tr('This week', 'ئەم هەفتەیە')}:{' '}
         {payload.find(
           (item) =>
             item.dataKey ===
@@ -190,7 +192,7 @@ function SubjectTooltip({
       </strong>
 
       <small className="mono">
-        Last week:{' '}
+        {tr('Last week', 'هەفتەی ڕابردوو')}:{' '}
         {payload.find(
           (item) =>
             item.dataKey ===
@@ -205,6 +207,7 @@ function SubjectTooltip({
 export default function SubjectBalance({
   sessions,
 }: SubjectBalanceProps) {
+  const { tr } = useI18n()
   const cardRef =
     useRef<HTMLDivElement>(null)
 
@@ -300,18 +303,18 @@ export default function SubjectBalance({
     >
       <div className="dashboard-insight-head">
         <div>
-          <span className="dashboard-insight-kicker">Subject balance</span>
-          <p>Compare where your focus went this week against last week.</p>
+          <span className="dashboard-insight-kicker">{tr('Subject balance', 'هاوسەنگی بابەتەکان')}</span>
+          <p>{tr('Compare where your focus went this week against last week.', 'ببینە سەرنجت ئەم هەفتەیە بەراورد بە هەفتەی ڕابردوو لە کوێ بوو.')}</p>
         </div>
 
         <span className="dashboard-insight-meta mono">
-          This week / last week
+          {tr('This week / last week', 'ئەم هەفتەیە / هەفتەی ڕابردوو')}
         </span>
       </div>
 
       {!hasData ? (
         <div className="dashboard-insight-empty">
-          Complete a focus session to reveal your subject balance.
+          {tr('Complete a focus session to reveal your subject balance.', 'سێشنێکی سەرنج تەواو بکە بۆ بینینی هاوسەنگی بابەتەکانت.')}
         </div>
       ) : (
         <div className="dashboard-insight-chart">
