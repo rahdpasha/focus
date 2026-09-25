@@ -329,178 +329,94 @@ export default function SubjectBalance({
   }, [])
 
   return (
-    <div
+    <section
       ref={cardRef}
-      className="glass-panel"
-      style={{
-        padding: '24px',
-        minHeight: '340px',
-        flex: '1 1 340px',
-        transition:
-          'transform 0.3s ease',
-      }}
+      className="glass-panel dashboard-insight-card subject-balance-v5"
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent:
-            'space-between',
-          gap: '12px',
-          marginBottom: '8px',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
-          <div
-            style={{
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              background:
-                'var(--cyber-blue)',
-            }}
-          />
-
-          <span
-            style={{
-              fontSize: '11px',
-              fontFamily:
-                'Orbitron, sans-serif',
-              color:
-                'var(--text-muted)',
-              textTransform:
-                'uppercase',
-              letterSpacing:
-                '0.12em',
-            }}
-          >
-            Subject Balance
-          </span>
+      <div className="dashboard-insight-head">
+        <div>
+          <span className="dashboard-insight-kicker">Subject balance</span>
+          <p>Compare where your focus went this week against last week.</p>
         </div>
 
-        <span
-          className="mono"
-          style={{
-            fontSize: '10px',
-            color:
-              'var(--text-muted)',
-          }}
-        >
-          THIS WEEK / LAST WEEK
+        <span className="dashboard-insight-meta mono">
+          This week / last week
         </span>
       </div>
 
       {!hasData ? (
-        <div
-          style={{
-            display: 'flex',
-            alignItems:
-              'center',
-            justifyContent:
-              'center',
-            height: '240px',
-          }}
-        >
-          <span
-            style={{
-              color:
-                'var(--text-muted)',
-              fontFamily:
-                'Orbitron, sans-serif',
-              fontSize: '11px',
-            }}
-          >
-            NO DATA STREAM
-          </span>
+        <div className="dashboard-insight-empty">
+          Complete a focus session to reveal your subject balance.
         </div>
       ) : (
-        <ResponsiveContainer
-          width="100%"
-          height={270}
-        >
-          <BarChart
-            data={data}
-            layout="vertical"
-            margin={{
-              top: 8,
-              right: 12,
-              bottom: 8,
-              left: 24,
-            }}
-          >
-            <CartesianGrid
-              strokeDasharray="3 3"
-              horizontal={false}
-              stroke="rgba(106,106,136,0.18)"
-            />
-
-            <XAxis
-              type="number"
-              axisLine={false}
-              tickLine={false}
-              tick={{
-                fill: '#6a6a88',
-                fontSize: 10,
+        <div className="dashboard-insight-chart">
+          <ResponsiveContainer width="100%" height={270}>
+            <BarChart
+              data={data}
+              layout="vertical"
+              margin={{
+                top: 8,
+                right: 12,
+                bottom: 8,
+                left: 24,
               }}
-              unit="m"
-            />
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                horizontal={false}
+                stroke="var(--focus-hairline)"
+              />
 
-            <YAxis
-              type="category"
-              dataKey="name"
-              axisLine={false}
-              tickLine={false}
-              width={110}
-              tick={{
-                fill: '#b0b0cc',
-                fontSize: 10,
-              }}
-            />
+              <XAxis
+                type="number"
+                axisLine={false}
+                tickLine={false}
+                tick={{
+                  fill: 'var(--text-muted)',
+                  fontSize: 10,
+                }}
+                unit="m"
+              />
 
-            <Tooltip
-              content={
-                <SubjectTooltip />
-              }
-              cursor={{
-                fill:
-                  'rgba(139,92,246,0.05)',
-              }}
-            />
+              <YAxis
+                type="category"
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                width={110}
+                tick={{
+                  fill: 'var(--text-secondary)',
+                  fontSize: 10,
+                }}
+              />
 
-            <Bar
-              dataKey="lastWeek"
-              name="Last week"
-              fill="rgba(106,106,136,0.45)"
-              radius={[
-                0,
-                4,
-                4,
-                0,
-              ]}
-              barSize={9}
-            />
+              <Tooltip
+                content={<SubjectTooltip />}
+                cursor={{
+                  fill: 'var(--primary-soft)',
+                }}
+              />
 
-            <Bar
-              dataKey="thisWeek"
-              name="This week"
-              fill="#8b5cf6"
-              radius={[
-                0,
-                4,
-                4,
-                0,
-              ]}
-              barSize={9}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+              <Bar
+                dataKey="lastWeek"
+                name="Last week"
+                fill="var(--text-muted)"
+                fillOpacity={0.28}
+                radius={[0, 4, 4, 0]}
+                barSize={9}
+              />
+
+              <Bar
+                dataKey="thisWeek"
+                name="This week"
+                fill="var(--primary-glow)"
+                radius={[0, 4, 4, 0]}
+                barSize={9}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       )}
-    </div>
+    </section>
   )
 }
