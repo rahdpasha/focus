@@ -259,9 +259,7 @@ export default function SubjectsPage({
             subject
           </h2>
           <p>
-            Subjects give sessions,
-            plans, analytics and AI
-            advice a real context.
+            Add the subjects you actually study. FOCUS will use them across sessions, plans, progress and guidance.
           </p>
           <button
             type="button"
