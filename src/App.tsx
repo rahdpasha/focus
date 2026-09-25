@@ -28,7 +28,7 @@ const Statistics = lazy(() => import('./components/statistics/Statistics'))
 type Translate = (key: TranslationKey) => string
 
 function App() {
-  const { t } = useI18n()
+  const { t, tr } = useI18n()
   const auth = useAuth()
 
   if (supabase && auth.status === 'loading') {
@@ -43,7 +43,7 @@ function App() {
           fontFamily: 'Space Grotesk, sans-serif',
         }}
       >
-        Preparing FOCUS…
+        {tr('Preparing FOCUS…', 'FOCUS ئامادە دەکرێت…')}
       </div>
     )
   }
@@ -87,6 +87,7 @@ function AuthenticatedApp({
   const {
     language,
     setLanguage,
+    tr,
   } = useI18n()
   const {
     theme,
@@ -316,7 +317,10 @@ function AuthenticatedApp({
         <PageContainer>
           <PageHeader
             title={t('statistics')}
-            description="Understand your focus rhythm, consistency, and strongest patterns without the noise."
+            description={tr(
+              'Understand your focus rhythm, consistency, and strongest patterns without the noise.',
+              'ڕێتمی سەرنج، بەردەوامی و بەهێزترین شێوازەکانت بەبێ ئاڵۆزی تێبگە.',
+            )}
           />
 
           <Suspense
@@ -353,7 +357,10 @@ function AuthenticatedApp({
         <PageContainer>
           <PageHeader
             title={t('settings')}
-            description="Shape how FOCUS looks, feels, syncs, and supports your daily work."
+            description={tr(
+              'Shape how FOCUS looks, feels, syncs, and supports your daily work.',
+              'ڕووکار، هەست، هاوکاتبوون و شێوازی یارمەتیدانی FOCUS بۆ کاری ڕۆژانەت ڕێکبخە.',
+            )}
           />
 
           <Settings
