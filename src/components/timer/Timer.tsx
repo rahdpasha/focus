@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, type CSSProperties } from 'react'
 import {
   Play,
   Pause,
@@ -768,43 +768,16 @@ export default function Timer({
 
   if (completionCountdown > 0) {
     return (
-      <div
-        style={{
-          textAlign: 'center',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '16px',
-          animation: 'fadeIn 0.25s ease',
-        }}
-      >
-        <span
-          style={{
-            fontSize: '12px',
-            color: 'var(--text-muted)',
-            fontFamily:
-              'Orbitron, sans-serif',
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-          }}
-        >
+      <div className="timer-v5-completion-countdown">
+        <span>
           {isFocus
             ? t('sequenceComplete')
             : t('breakComplete')}
         </span>
 
-        <span
-          className="mono"
-          style={{
-            fontSize: '72px',
-            lineHeight: 1,
-            color: 'var(--primary-glow)',
-            textShadow:
-              '0 0 35px rgba(139,92,246,0.35)',
-          }}
-        >
+        <strong className="mono">
           {completionCountdown}
-        </span>
+        </strong>
       </div>
     )
   }
@@ -815,102 +788,59 @@ export default function Timer({
     !autoStartBreak
   ) {
     return (
-      <div
-        style={{
-          textAlign: 'center',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '24px',
-          animation:
-            'fadeIn 0.5s ease',
-        }}
-      >
-        <div
-          style={{
-            fontSize: '56px',
-          }}
-        >
-          ⬡
+      <div className="timer-v5-complete">
+        <div className="timer-v5-complete-mark">
+          ✓
         </div>
 
-        <h2
-          style={{
-            fontFamily:
-              'Orbitron, sans-serif',
-            fontSize: '18px',
-            color:
-              'var(--success)',
-            letterSpacing:
-              '0.1em',
-          }}
-        >
-          {t('sequenceComplete')}
-        </h2>
+        <div>
+          <span className="eyebrow">
+            Session complete
+          </span>
+          <h2>
+            {subjectName} is done.
+          </h2>
+        </div>
 
-        <span
-          className="mono"
-          style={{
-            fontSize: '40px',
-            color:
-              'var(--text-primary)',
-          }}
-        >
+        <strong className="mono timer-v5-complete-time">
           {durationMinutes}:
           {String(
-            duration % 60
+            duration % 60,
           ).padStart(2, '0')}
-        </span>
+        </strong>
 
-        <span
-          style={{
-            fontSize: '12px',
-            color:
-              'var(--text-muted)',
-          }}
-        >
-          {subjectName} ·{' '}
+        <p>
           {interruptionCount}{' '}
           {t('interruptions')} ·{' '}
           {pauseMinutes}m{' '}
           {pauseSecs}s{' '}
           {t('paused')}
-        </span>
+        </p>
 
-        <div
-          style={{
-            display: 'flex',
-            gap: '10px',
-            flexWrap: 'wrap',
-            justifyContent:
-              'center',
-          }}
-        >
+        <div className="timer-v5-actions">
           <button
+            type="button"
             className="cyber-btn"
             onClick={() =>
               startBreak(
                 canTakeLongBreak
                   ? 'longBreak'
-                  : 'shortBreak'
+                  : 'shortBreak',
               )
             }
           >
             <Coffee size={16} />
-
             {canTakeLongBreak
               ? t('takeLongBreak')
               : t('takeShortBreak')}
           </button>
 
           <button
-            className="cyber-btn"
+            type="button"
+            className="timer-v5-secondary"
             onClick={resetTimer}
           >
-            <RotateCcw
-              size={16}
-            />
-
+            <RotateCcw size={16} />
             {t('newSequence')}
           </button>
         </div>
@@ -920,47 +850,24 @@ export default function Timer({
 
   return (
     <div
-      style={{
-        display: 'flex',
-        flexDirection:
-          'column',
-        alignItems:
-          'center',
-        gap: '24px',
-        width: '100%',
-      }}
+      className="timer-v5"
+      style={
+        {
+          '--timer-color':
+            timerColor,
+        } as CSSProperties
+      }
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems:
-            'center',
-          gap: '8px',
-          padding: '6px 12px',
-          borderRadius:
-            '999px',
-          border:
-            `1px solid ${timerColor}40`,
-          background:
-            `${timerColor}10`,
-        }}
-      >
-        <span
-          className="mono"
-          style={{
-            fontSize: '10px',
-            color: timerColor,
-            letterSpacing:
-              '0.08em',
-          }}
-        >
+      <div className="timer-v5-status">
+        <span className="timer-v5-status-dot" />
+        <strong>
           {isFocus
-            ? `${t('focus')} ${completedFocusSessions}/${sessionsBeforeLongBreak}`
+            ? `${t('focus')} · ${completedFocusSessions}/${sessionsBeforeLongBreak}`
             : mode ===
                 'shortBreak'
               ? t('shortBreak')
               : t('longBreak')}
-        </span>
+        </strong>
       </div>
 
       {isFocus &&
@@ -968,225 +875,59 @@ export default function Timer({
         !isPaused &&
         timeRemaining ===
           duration && (
-          <DurationSelector
-            duration={
-              focusDuration
-            }
-            onSelect={
-              handleDurationChange
-            }
-            disabled={
-              isStudying ||
-              isPaused
-            }
-          />
+          <div className="timer-v5-duration">
+            <DurationSelector
+              duration={
+                focusDuration
+              }
+              onSelect={
+                handleDurationChange
+              }
+              disabled={
+                isStudying ||
+                isPaused
+              }
+            />
+          </div>
         )}
 
-      <div
-        style={{
-          position:
-            'relative',
-          width: '340px',
-          height: '340px',
-          maxWidth:
-            '100%',
-        }}
-      >
-        {isStudying && (
-          <svg
-            width="340"
-            height="340"
-            viewBox="0 0 340 340"
-            style={{
-              position:
-                'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              animation:
-                'spin-reverse 10s linear infinite',
-            }}
-          >
-            <circle
-              cx="170"
-              cy="40"
-              r="2"
-              fill={
-                timerColor
-              }
-              opacity="0.6"
-            />
-
-            <circle
-              cx="300"
-              cy="170"
-              r="1.5"
-              fill={
-                timerColor
-              }
-              opacity="0.4"
-            />
-
-            <circle
-              cx="170"
-              cy="300"
-              r="2"
-              fill={
-                timerColor
-              }
-              opacity="0.5"
-            />
-
-            <circle
-              cx="40"
-              cy="170"
-              r="1.5"
-              fill={
-                timerColor
-              }
-              opacity="0.4"
-            />
-          </svg>
-        )}
-
+      <div className="timer-v5-ring">
         <svg
-          width="340"
-          height="340"
           viewBox="0 0 340 340"
-          style={{
-            width: '100%',
-            height: '100%',
-            transform:
-              'rotate(-90deg)',
-          }}
+          aria-hidden="true"
         >
           <circle
             cx="170"
             cy="170"
             r="135"
-            fill="none"
-            stroke={
-              'var(--void-border)'
-            }
-            strokeWidth="3"
-            opacity={0.3}
+            className="timer-v5-ring-track"
           />
 
           <circle
             cx="170"
             cy="170"
             r="135"
-            fill="none"
-            stroke={
-              timerColor
-            }
-            strokeWidth="3"
-            strokeLinecap="round"
+            className="timer-v5-ring-progress"
             strokeDasharray={
               circumference
             }
             strokeDashoffset={
               dashOffset
             }
-            style={{
-              transition:
-                'stroke-dashoffset 1s linear, stroke 0.5s ease',
-              filter:
-                isStudying ||
-                isPaused
-                  ? `drop-shadow(0 0 15px ${timerColor}50) drop-shadow(0 0 30px ${timerColor}20)`
-                  : 'none',
-            }}
           />
         </svg>
 
-        <div
-          style={{
-            position:
-              'absolute',
-            top: '50%',
-            left: '50%',
-            transform:
-              'translate(-50%, -50%)',
-            textAlign: 'center',
-            width: '80%',
-          }}
-        >
-          {(isStudying ||
-            isPaused) && (
-            <div
-              style={{
-                position:
-                  'absolute',
-                width: '100px',
-                height: '100px',
-                borderRadius:
-                  '50%',
-                background:
-                  `radial-gradient(circle, ${timerColor}20, transparent 70%)`,
-                top: '50%',
-                left: '50%',
-                transform:
-                  'translate(-50%, -50%)',
-                animation:
-                  'pulse-glow 2s ease-in-out infinite',
-              }}
-            />
-          )}
-
-          <span
-            className="mono"
-            style={{
-              fontSize: '56px',
-              fontWeight: '500',
-              color:
-                'var(--text-primary)',
-              letterSpacing:
-                '0.05em',
-              textShadow:
-                isStudying
-                  ? `0 0 30px ${timerColor}40`
-                  : 'none',
-              position:
-                'relative',
-            }}
-          >
+        <div className="timer-v5-center">
+          <strong className="mono timer-v5-time">
             {displayTime}
-          </span>
+          </strong>
 
-          <span
-            style={{
-              display:
-                'block',
-              fontSize: '11px',
-              color:
-                'var(--text-secondary)',
-              textTransform:
-                'uppercase',
-              letterSpacing:
-                '0.1em',
-              fontFamily:
-                'Orbitron, sans-serif',
-              marginTop:
-                '8px',
-            }}
-          >
+          <span className="timer-v5-mode">
             {modeLabel}
           </span>
 
           {isPaused && (
-            <span
-              className="mono"
-              style={{
-                display:
-                  'block',
-                fontSize: '12px',
-                color:
-                  'var(--energy)',
-                marginTop:
-                  '6px',
-              }}
-            >
+            <span className="mono timer-v5-paused">
               {t('paused')} ·{' '}
               {pauseMinutes}m{' '}
               {pauseSecs}s
@@ -1200,21 +941,10 @@ export default function Timer({
               duration &&
             timeRemaining >
               0 && (
-              <span
-                className="mono"
-                style={{
-                  display:
-                    'block',
-                  fontSize: '12px',
-                  color:
-                    'var(--text-muted)',
-                  marginTop:
-                    '6px',
-                }}
-              >
+              <span className="mono timer-v5-focused">
                 {Math.floor(
                   focusedSeconds /
-                    60
+                    60,
                 )}
                 m{' '}
                 {focusedSeconds %
@@ -1225,39 +955,31 @@ export default function Timer({
         </div>
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          gap: '10px',
-          flexWrap:
-            'wrap',
-          justifyContent:
-            'center',
-        }}
-      >
+      <div className="timer-v5-actions">
         {!isStudying &&
         !isPaused &&
         timeRemaining ===
           duration ? (
           <button
-            className="cyber-btn"
+            type="button"
+            className="cyber-btn timer-v5-primary"
             onClick={
               startTimer
             }
           >
             <Play size={16} />
-
             {isFocus
               ? t(
-                  'initiateSequence'
+                  'initiateSequence',
                 )
               : t(
-                  'startBreak'
+                  'startBreak',
                 )}
           </button>
         ) : isPaused ? (
           <button
-            className="cyber-btn"
+            type="button"
+            className="cyber-btn timer-v5-primary"
             onClick={
               resumeTimer
             }
@@ -1269,7 +991,8 @@ export default function Timer({
           timeRemaining >
             0 ? (
           <button
-            className="cyber-btn"
+            type="button"
+            className="cyber-btn timer-v5-primary"
             onClick={
               startTimer
             }
@@ -1279,21 +1002,13 @@ export default function Timer({
           </button>
         ) : (
           <button
-            className="cyber-btn"
+            type="button"
+            className="timer-v5-secondary pause"
             onClick={
               pauseTimer
             }
-            style={{
-              borderColor:
-                'rgba(245,158,11,0.3)',
-              color:
-                'var(--energy)',
-            }}
           >
-            <Pause
-              size={16}
-            />
-
+            <Pause size={16} />
             {t('pause')}
           </button>
         )}
@@ -1304,55 +1019,17 @@ export default function Timer({
           timeRemaining >
             0 && (
           <button
-            className="cyber-btn"
+            type="button"
+            className="timer-v5-secondary"
             onClick={
               resetTimer
             }
           >
-            <RotateCcw
-              size={16}
-            />
-
+            <RotateCcw size={16} />
             {t('reset')}
           </button>
         )}
       </div>
-
-      <style>{`
-        @keyframes spin-reverse {
-          from {
-            transform: rotate(0deg);
-          }
-
-          to {
-            transform: rotate(-360deg);
-          }
-        }
-
-        @keyframes pulse-glow {
-          0%, 100% {
-            opacity: 0.5;
-            transform: translate(-50%, -50%) scale(1);
-          }
-
-          50% {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1.15);
-          }
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </div>
   )
 }
