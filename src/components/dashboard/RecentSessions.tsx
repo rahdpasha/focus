@@ -299,6 +299,7 @@ export default function RecentSessions({
                         +
                         {formatTime(
                           session.totalPausedSeconds,
+                          language,
                         )}{' '}
                         {tr('paused', 'وەستاو')}
                       </span>
