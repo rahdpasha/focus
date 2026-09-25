@@ -321,6 +321,32 @@ export default function LeaguePage({
     ? String(currentUser.scoredDays)
     : '0'
 
+  const leagueStatus =
+    !profile.optIn
+      ? 'OFF GRID'
+      : !currentUser
+        ? 'ENTERING'
+        : currentUser.rank === 1
+          ? 'LEADER'
+          : currentUser.rank <= 3
+            ? 'PODIUM'
+            : currentUser.rank <= 10
+              ? 'TOP 10'
+              : 'CHASING'
+
+  const leagueStatusCopy =
+    !profile.optIn
+      ? 'Your progress is saved. Rejoin whenever you want.'
+      : !currentUser
+        ? 'Your public profile is syncing into the standings.'
+        : currentUser.rank === 1
+          ? 'Everyone is chasing you. Keep stacking deep days.'
+          : currentUser.rank <= 3
+            ? 'You are on the podium. One strong day can change the order.'
+            : currentUser.rank <= 10
+              ? 'You are inside the top ten. The podium is the next target.'
+              : 'Every scored day closes the distance to the leaders.'
+
   return (
     <PageContainer>
       <PageHeader
@@ -584,6 +610,37 @@ export default function LeaguePage({
                   : nextRank?.label ??
                     'Join public standings to start climbing.'}
               </strong>
+            </div>
+
+            <div className="league-v4-status">
+              <div>
+                <span>COMPETITION STATUS</span>
+                <strong>{leagueStatus}</strong>
+              </div>
+              <p>{leagueStatusCopy}</p>
+            </div>
+
+            <div className="league-v4-milestones">
+              <div className={profile.optIn ? 'complete' : ''}>
+                <i />
+                <span>JOINED</span>
+              </div>
+              <div
+                className={
+                  currentUser && currentUser.points > 0 ? 'complete' : ''
+                }
+              >
+                <i />
+                <span>SCORED</span>
+              </div>
+              <div
+                className={
+                  currentUser && currentUser.rank <= 3 ? 'complete' : ''
+                }
+              >
+                <i />
+                <span>PODIUM</span>
+              </div>
             </div>
 
             <label className="league-v4-field">
