@@ -97,7 +97,7 @@ const themeOptions: Array<{
   },
   {
     value: 'custom',
-    label: 'Custom Pack',
+    label: 'Custom theme',
     icon: SlidersHorizontal,
   },
 ]
