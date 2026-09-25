@@ -50,6 +50,7 @@ export default function FocusPulse({
   weeklyGoal,
   onStart,
 }: FocusPulseProps) {
+  const { tr } = useI18n()
   const pulse = getFocusPulse(
     sessions,
     subjects,
