@@ -27,6 +27,10 @@ import {
   type ThemeMode,
 } from '../../app/theme'
 import {
+  MONOCHROME_THEME_PACKS,
+  normalizeThemeTokenPack,
+} from '../../app/themeTokens'
+import {
   useTheme,
 } from '../../app/useTheme'
 import type {
@@ -91,6 +95,11 @@ const themeOptions: Array<{
     label: 'White',
     icon: Sun,
   },
+  {
+    value: 'custom',
+    label: 'Custom',
+    icon: SlidersHorizontal,
+  },
 ]
 
 export default function Settings({
@@ -110,10 +119,18 @@ export default function Settings({
     useRef<HTMLInputElement>(
       null,
     )
+  const themeFileInputRef =
+    useRef<HTMLInputElement>(
+      null,
+    )
   const [
     pendingImport,
     setPendingImport,
   ] = useState(false)
+  const [
+    themePackError,
+    setThemePackError,
+  ] = useState<string | null>(null)
 
   const {
     language,
@@ -123,6 +140,72 @@ export default function Settings({
   const {
     theme,
   } = useTheme()
+
+  const selectedThemePack =
+    theme === 'black'
+      ? MONOCHROME_THEME_PACKS.black
+      : theme === 'white'
+        ? MONOCHROME_THEME_PACKS.white
+        : settings.customThemePack
+
+  const exportThemePack = () => {
+    if (!selectedThemePack) return
+
+    const blob = new Blob(
+      [JSON.stringify(selectedThemePack, null, 2)],
+      { type: 'application/json' },
+    )
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `focus-theme-${selectedThemePack.id}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  const importThemePack = async (
+    file: File,
+  ) => {
+    setThemePackError(null)
+
+    if (file.size > 64 * 1024) {
+      setThemePackError(
+        'Theme pack is too large.',
+      )
+      return
+    }
+
+    try {
+      const parsed: unknown =
+        JSON.parse(await file.text())
+      const pack =
+        normalizeThemeTokenPack(
+          parsed,
+        )
+
+      if (!pack) {
+        setThemePackError(
+          'Invalid theme pack. Only approved color tokens are allowed.',
+        )
+        return
+      }
+
+      onSettingChange(
+        'customThemePack',
+        pack,
+      )
+      onSettingChange(
+        'theme',
+        'custom',
+      )
+    } catch {
+      setThemePackError(
+        'Could not read this theme pack.',
+      )
+    }
+  }
 
   return (
     <div className="settings-v3">
@@ -164,6 +247,9 @@ export default function Settings({
                   const active =
                     theme ===
                     option.value
+                  const disabled =
+                    option.value === 'custom' &&
+                    !settings.customThemePack
 
                   return (
                     <button
@@ -179,6 +265,7 @@ export default function Settings({
                       aria-pressed={
                         active
                       }
+                      disabled={disabled}
                       onClick={() =>
                         onSettingChange(
                           'theme',
@@ -190,13 +277,62 @@ export default function Settings({
                         size={15}
                       />
                       {
-                        option.label
+                        option.value === 'custom' &&
+                        settings.customThemePack
+                          ? settings.customThemePack.name
+                          : option.label
                       }
                     </button>
                   )
                 },
               )}
             </div>
+
+            <div className="settings-theme-actions">
+              <button
+                type="button"
+                className="settings-secondary-action"
+                onClick={() =>
+                  themeFileInputRef.current?.click()
+                }
+              >
+                <Upload size={14} />
+                Import pack
+              </button>
+
+              <button
+                type="button"
+                className="settings-secondary-action"
+                disabled={!selectedThemePack}
+                onClick={exportThemePack}
+              >
+                <Download size={14} />
+                Export pack
+              </button>
+            </div>
+
+            {themePackError && (
+              <small className="settings-theme-error">
+                {themePackError}
+              </small>
+            )}
+
+            <input
+              ref={themeFileInputRef}
+              type="file"
+              accept="application/json,.json"
+              hidden
+              onChange={(event) => {
+                const file =
+                  event.target.files?.[0]
+
+                if (file) {
+                  void importThemePack(file)
+                }
+
+                event.target.value = ''
+              }}
+            />
           </div>
 
           <label className="settings-field">
