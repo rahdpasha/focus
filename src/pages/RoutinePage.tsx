@@ -67,9 +67,14 @@ interface RoutinePageProps {
   ) => void
 }
 
-function shortDay(date: Date) {
+function shortDay(
+  date: Date,
+  language: 'en' | 'ku',
+) {
   return date.toLocaleDateString(
-    undefined,
+    language === 'ku'
+      ? 'ku-IQ'
+      : 'en-US',
     {
       weekday: 'short',
     },
@@ -77,17 +82,18 @@ function shortDay(date: Date) {
 }
 
 const WEEKDAYS = [
-  { value: 0, label: 'S' },
-  { value: 1, label: 'M' },
-  { value: 2, label: 'T' },
-  { value: 3, label: 'W' },
-  { value: 4, label: 'T' },
-  { value: 5, label: 'F' },
-  { value: 6, label: 'S' },
+  { value: 0, label: 'S', labelKu: 'ی' },
+  { value: 1, label: 'M', labelKu: 'د' },
+  { value: 2, label: 'T', labelKu: 'س' },
+  { value: 3, label: 'W', labelKu: 'چ' },
+  { value: 4, label: 'T', labelKu: 'پ' },
+  { value: 5, label: 'F', labelKu: 'ه' },
+  { value: 6, label: 'S', labelKu: 'ش' },
 ]
 
 function dayRuleLabel(
   days: number[],
+  language: 'en' | 'ku',
 ): string {
   const normalized =
     Array.from(
@@ -95,7 +101,7 @@ function dayRuleLabel(
     ).sort()
 
   if (normalized.length === 7) {
-    return 'Every day'
+    return language === 'ku' ? 'هەموو ڕۆژێک' : 'Every day'
   }
 
   if (
@@ -104,7 +110,7 @@ function dayRuleLabel(
       (day) => normalized.includes(day),
     )
   ) {
-    return 'Weekdays'
+    return language === 'ku' ? 'ڕۆژانی هەفتە' : 'Weekdays'
   }
 
   if (
@@ -112,13 +118,17 @@ function dayRuleLabel(
     normalized.includes(0) &&
     normalized.includes(6)
   ) {
-    return 'Weekends'
+    return language === 'ku' ? 'کۆتایی هەفتە' : 'Weekends'
   }
 
   return normalized
     .map(
       (day) =>
-        ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][day],
+        (
+          language === 'ku'
+            ? ['یەکشەممە', 'دووشەممە', 'سێشەممە', 'چوارشەممە', 'پێنجشەممە', 'هەینی', 'شەممە']
+            : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+        )[day],
     )
     .join(', ')
 }
@@ -132,7 +142,7 @@ export default function RoutinePage({
   onDeleteRoutineItem,
   onStartSession,
 }: RoutinePageProps) {
-  const { t, tr } = useI18n()
+  const { t, tr, language } = useI18n()
   const [title, setTitle] =
     useState('')
   const [subjectId, setSubjectId] =
@@ -307,9 +317,9 @@ export default function RoutinePage({
         <section className="glass-panel routine-panel routine-summary">
           <div className="routine-summary-head">
             <div>
-              <div className="eyebrow">Today</div>
+              <div className="eyebrow">{tr('Today', 'ئەمڕۆ')}</div>
               <h2>
-                {completedToday}/{todaysItems.length} complete
+                {completedToday}/{todaysItems.length} {tr('complete', 'تەواو')}
               </h2>
             </div>
 
@@ -317,9 +327,9 @@ export default function RoutinePage({
               <div className="routine-rotation-note">
                 <RotateCw size={14} />
                 <span>
-                  Rotation: <strong>{rotationToday.title}</strong>
+                  {tr('Rotation', 'گۆڕانکاری')}: <strong>{rotationToday.title}</strong>
                   {rotationTomorrow && (
-                    <small> · Tomorrow: {rotationTomorrow.title}</small>
+                    <small> · {tr('Tomorrow', 'سبەی')}: {rotationTomorrow.title}</small>
                   )}
                 </span>
               </div>
@@ -336,12 +346,12 @@ export default function RoutinePage({
             </div>
 
             <div className="routine-summary-stat">
-              <span className="eyebrow">Best streak</span>
+              <span className="eyebrow">{tr('Best streak', 'باشترین زنجیرە')}</span>
               <strong className="mono">{streak.best}d</strong>
             </div>
 
             <div className="routine-summary-stat">
-              <span className="eyebrow">Today completed</span>
+              <span className="eyebrow">{tr('Today completed', 'تەواوکراوی ئەمڕۆ')}</span>
               <strong className="mono">
                 {completedToday}/{todaysItems.length}
               </strong>
@@ -352,9 +362,9 @@ export default function RoutinePage({
                 <ShieldCheck size={13} />
                 {tr('Recovery', 'گەڕاندنەوە')}
               </span>
-              <strong className="mono">{recoveryQueue.length} open</strong>
+              <strong className="mono">{recoveryQueue.length} {tr('open', 'کراوە')}</strong>
               {streak.atRisk && (
-                <small>Streak protected while recovery is open.</small>
+                <small>{tr('Streak protected while recovery is open.', 'تا گەڕاندنەوە کراوە بێت، زنجیرەکەت پارێزراوە.')}</small>
               )}
             </div>
           </div>
@@ -365,7 +375,7 @@ export default function RoutinePage({
           {todaysItems.length ===
           0 ? (
             <div className="glass-panel routine-panel routine-empty">
-              Add fixed daily items or a rotation pool below.
+              {tr('Add fixed daily items or a rotation pool below.', 'لە خوارەوە کاری جێگیری ڕۆژانە یان کۆمەڵەی گۆڕاو زیاد بکە.')}
             </div>
           ) : (
             todaysItems.map(
@@ -412,7 +422,7 @@ export default function RoutinePage({
 
                           <div className="routine-item-subtitle">
                             {subject?.name ?? tr('Subject removed', 'بابەت لابراوە')} ·{' '}
-                            {item.mode === 'fixed' ? 'Every day' : 'Rotation'}
+                            {item.mode === 'fixed' ? tr('Every day', 'هەموو ڕۆژێک') : tr('Rotation', 'گۆڕاو')}
                           </div>
                         </div>
                       </div>
@@ -511,7 +521,7 @@ export default function RoutinePage({
                                   '—'
                                 )}
                               </span>
-                              <small>{shortDay(date)}</small>
+                              <small>{shortDay(date, language)}</small>
                             </div>
                           )
                         },
@@ -529,7 +539,7 @@ export default function RoutinePage({
             <div className="eyebrow">
               {tr('Missed-day recovery', 'گەڕاندنەوەی ڕۆژی لەدەستچوو')}
             </div>
-            <h2>Recover without mixing days</h2>
+            <h2>{tr('Recover without mixing days', 'گەڕاندنەوە بەبێ تێکەڵکردنی ڕۆژەکان')}</h2>
             <p>
               {tr('Recovery focus is credited to the missed routine day, while today keeps its own progress.', 'سەرنجی گەڕاندنەوە بۆ ڕۆژی ڕوتینی لەدەستچوو تۆمار دەکرێت و پێشکەوتنی ئەمڕۆ جیا دەمێنێتەوە.')}
             </p>
@@ -597,7 +607,7 @@ export default function RoutinePage({
           <div className="eyebrow">
             {tr('Build your routine', 'ڕوتینەکەت دروست بکە')}
           </div>
-          <h2>Fixed + rotating study</h2>
+          <h2>{tr('Fixed + rotating study', 'خوێندنی جێگیر + گۆڕاو')}</h2>
 
           <div className="routine-builder-grid">
             <input
@@ -657,7 +667,7 @@ export default function RoutinePage({
                   ),
                 )
               }
-              aria-label="Routine target minutes"
+              aria-label={tr('Routine target minutes', 'خولەکی ئامانجی ڕوتین')}
             />
 
             <select
@@ -686,7 +696,7 @@ export default function RoutinePage({
                   ),
                 )
               }
-              aria-label="Recovery window"
+              aria-label={tr('Recovery window', 'ماوەی گەڕاندنەوە')}
             >
               <option value={0}>
                 {tr('No recovery', 'بێ گەڕاندنەوە')}
@@ -714,7 +724,7 @@ export default function RoutinePage({
           </div>
 
           <div className="routine-builder-row">
-            <span className="routine-builder-label">Schedule</span>
+            <span className="routine-builder-label">{tr('Schedule', 'خشتە')}</span>
 
             {[
               {
@@ -759,12 +769,12 @@ export default function RoutinePage({
             })}
 
             <span className="routine-builder-value">
-              {dayRuleLabel(daysOfWeek)}
+              {dayRuleLabel(daysOfWeek, language)}
             </span>
           </div>
 
           <div className="routine-builder-row compact">
-            <span className="routine-builder-label">Days</span>
+            <span className="routine-builder-label">{tr('Days', 'ڕۆژەکان')}</span>
 
             {WEEKDAYS.map(
               (day) => {
@@ -785,7 +795,7 @@ export default function RoutinePage({
                         : 'routine-day-toggle builder-day'
                     }
                   >
-                    {day.label}
+                    {language === 'ku' ? day.labelKu : day.label}
                   </button>
                 )
               },
@@ -819,6 +829,7 @@ export default function RoutinePage({
                         } · {
                           dayRuleLabel(
                             item.daysOfWeek,
+                            language,
                           )
                         } · recovery {
                           item.recoveryDays
@@ -835,8 +846,8 @@ export default function RoutinePage({
                       }
                       aria-label={
                         item.enabled
-                          ? 'Disable routine item'
-                          : 'Enable routine item'
+                          ? tr('Disable routine item', 'ڕوتینەکە ناچالاک بکە')
+                          : tr('Enable routine item', 'ڕوتینەکە چالاک بکە')
                       }
                       className={
                         item.enabled
@@ -868,8 +879,8 @@ export default function RoutinePage({
                       aria-label={
                         pendingDelete ===
                         item.id
-                          ? 'Confirm delete routine item'
-                          : 'Delete routine item'
+                          ? tr('Confirm delete routine item', 'سڕینەوەی ڕوتین پشتڕاست بکەوە')
+                          : tr('Delete routine item', 'ڕوتین بسڕەوە')
                       }
                       onClick={() => {
                         if (
@@ -961,8 +972,8 @@ export default function RoutinePage({
 
                       <select
                         aria-label={
-                          'Recovery window for ' +
-                          item.title
+                          tr('Recovery window for', 'ماوەی گەڕاندنەوە بۆ') +
+                          ' ' + item.title
                         }
                         value={
                           item.recoveryDays
@@ -987,13 +998,13 @@ export default function RoutinePage({
                           {tr('No recovery', 'بێ گەڕاندنەوە')}
                         </option>
                         <option value={1}>
-                          +1 day
+                          {tr('+1 day', '+١ ڕۆژ')}
                         </option>
                         <option value={2}>
-                          +2 days
+                          {tr('+2 days', '+٢ ڕۆژ')}
                         </option>
                         <option value={3}>
-                          +3 days
+                          {tr('+3 days', '+٣ ڕۆژ')}
                         </option>
                       </select>
                     </div>
