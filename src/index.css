@@ -3722,6 +3722,56 @@ select option {
 }
 
 
+/* Routine schedule controls */
+.routine-schedule-preset {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--void-border);
+  border-radius: 9px;
+  background: var(--void-surface-hover);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.routine-schedule-preset.active {
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+  color: var(--primary-glow);
+}
+
+.routine-day-toggle {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--void-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.routine-day-toggle.active {
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+  color: var(--primary-glow);
+}
+
+.routine-schedule-preset:focus-visible,
+.routine-day-toggle:focus-visible {
+  outline: 2px solid var(--primary-glow);
+  outline-offset: 2px;
+}
+
+.routine-recovery-select {
+  margin-left: auto;
+}
+
+@media (max-width: 600px) {
+  .routine-recovery-select {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
 /* V3 study plan actions */
 .study-plan-action {
   display: flex;
