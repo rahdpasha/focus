@@ -962,6 +962,10 @@ export async function saveSupabaseMutations(
               session.notes ?? null,
             subtasks:
               session.subtasks ?? [],
+            routine_item_client_id:
+              session.routineItemId ?? null,
+            routine_date:
+              session.routineDate ?? null,
             updated_at: now,
           }
         })
