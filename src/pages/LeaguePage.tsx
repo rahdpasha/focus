@@ -63,7 +63,10 @@ function formatFocusedTime(
   return `${hours}${hourUnit} ${remainingMinutes}${minuteUnit}`
 }
 
-function championLabel(entries: LeagueEntry[]): string | null {
+function championLabel(
+  entries: LeagueEntry[],
+  language: 'en' | 'ku',
+): string | null {
   const winners = entries.filter(
     (entry) => entry.rank === 1 && entry.points > 0,
   )
@@ -71,7 +74,9 @@ function championLabel(entries: LeagueEntry[]): string | null {
   if (winners.length === 0) return null
   if (winners.length === 1) return winners[0].publicName
 
-  return `${winners[0].publicName} + ${winners.length - 1} tied`
+  return language === 'ku'
+    ? `${winners[0].publicName} + ${winners.length - 1} هاوپلە`
+    : `${winners[0].publicName} + ${winners.length - 1} tied`
 }
 
 function defaultProfile(displayName?: string): LeagueProfile {
@@ -117,10 +122,20 @@ export default function LeaguePage({
       ])
 
       setEntries(current)
-      setLastWeekChampion(championLabel(lastWeek))
-      setLastMonthChampion(championLabel(lastMonth))
+      setLastWeekChampion(
+        championLabel(
+          lastWeek,
+          language,
+        ),
+      )
+      setLastMonthChampion(
+        championLabel(
+          lastMonth,
+          language,
+        ),
+      )
     },
-    [],
+    [language],
   )
 
   useEffect(() => {
@@ -164,9 +179,10 @@ export default function LeaguePage({
       } catch (error) {
         if (!cancelled) {
           setMessage(
-            error instanceof Error
-              ? error.message
-              : tr('League data could not be loaded.', 'نەتوانرا داتای پێشبڕکێ بار بکرێت.'),
+            tr(
+              'League data could not be loaded.',
+              'نەتوانرا داتای پێشبڕکێ بار بکرێت.',
+            ),
           )
         }
       } finally {
@@ -380,7 +396,11 @@ export default function LeaguePage({
           <div className="league-v4-kicker">
             <Sparkles size={15} />
             {tr('Current standings', 'ڕیزبەندی ئێستا')}
-            <span>{period.toUpperCase()}</span>
+            <span>
+              {period === 'week'
+                ? tr('Week', 'هەفتە')
+                : tr('Month', 'مانگ')}
+            </span>
           </div>
 
           <h2>
