@@ -10309,3 +10309,163 @@ textarea:focus {
     min-height: 138px;
   }
 }
+
+
+/* V5 empty states + final button hierarchy */
+.subjects-empty,
+.records-empty,
+.history-empty-state,
+.advanced-goal-empty,
+.study-plan-empty,
+.recent-sessions-empty,
+.stats-v4-empty,
+.league-v4-empty {
+  border-color: var(--focus-hairline);
+  color: var(--text-muted);
+}
+
+.subjects-empty,
+.records-empty {
+  min-height: 320px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  padding: 34px;
+  text-align: center;
+  border-radius: var(--focus-radius-lg);
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      color-mix(in srgb, var(--primary) 7%, transparent),
+      transparent 42%
+    ),
+    var(--focus-surface-soft);
+}
+
+.subjects-empty-icon,
+.records-empty > svg {
+  width: 48px;
+  height: 48px;
+  padding: 12px;
+  border: 1px solid var(--primary-border);
+  border-radius: 15px;
+  background: var(--primary-soft);
+  color: var(--primary-glow);
+}
+
+.subjects-empty h2,
+.records-empty h2 {
+  max-width: 520px;
+  margin: 4px 0 0;
+  font-size: clamp(22px, 3vw, 30px);
+  letter-spacing: -0.04em;
+}
+
+.subjects-empty p,
+.records-empty p {
+  max-width: 520px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+.subjects-empty .cyber-btn {
+  margin-top: 8px;
+}
+
+.history-empty-state,
+.advanced-goal-empty,
+.study-plan-empty,
+.recent-sessions-empty,
+.stats-v4-empty,
+.league-v4-empty {
+  padding: 24px;
+  border: 1px dashed var(--focus-hairline);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--void-surface-hover) 52%, transparent);
+  font-size: 9px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* Primary buttons should be obvious; secondary controls should stay quiet. */
+.page-header-action .cyber-btn,
+.focus-pulse-action,
+.study-plan-start,
+.advanced-goal-start,
+.league-v4-save,
+.timer-v5-primary {
+  border-color: var(--primary-border);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--primary) 18%, var(--void-surface-hover)),
+      color-mix(in srgb, var(--primary) 8%, var(--void-surface))
+    );
+  color: var(--text-primary);
+}
+
+.page-header-action .cyber-btn:hover,
+.focus-pulse-action:hover,
+.study-plan-start:hover,
+.advanced-goal-start:hover,
+.league-v4-save:hover,
+.timer-v5-primary:hover {
+  border-color: color-mix(in srgb, var(--primary-glow) 50%, transparent);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.subject-card-delete,
+.recent-session-delete,
+.advanced-goal-actions button,
+.history-month-controls button {
+  transition:
+    background 0.16s ease,
+    color 0.16s ease,
+    border-color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.subject-card-delete:hover,
+.recent-session-delete:hover,
+.advanced-goal-actions button:hover,
+.history-month-controls button:hover {
+  transform: translateY(-1px);
+}
+
+/* Better focus visibility throughout the product. */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--primary-glow);
+  outline-offset: 2px;
+}
+
+/* Less visual noise on tiny labels. */
+.eyebrow,
+.page-header-kicker,
+.sidebar-nav-group-label,
+.sidebar-section-label,
+.league-v4-kicker,
+.stats-v4-kicker,
+.focus-pulse-kicker {
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--text-muted) 88%, var(--primary-glow));
+}
+
+@media (max-width: 520px) {
+  .subjects-empty,
+  .records-empty {
+    min-height: 260px;
+    padding: 26px 18px;
+  }
+
+  .subjects-empty h2,
+  .records-empty h2 {
+    font-size: 24px;
+  }
+}
