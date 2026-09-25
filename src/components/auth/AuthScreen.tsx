@@ -138,19 +138,16 @@ export default function AuthScreen() {
 
           <div>
             <div className="eyebrow">
-              Personal study system
+              Your focus workspace
             </div>
 
             <h1>
-              Turn focused time
-              into visible progress.
+              Build a system you can
+              actually return to.
             </h1>
 
             <p>
-              Sessions, plans,
-              goals, analytics and
-              your study advisor stay
-              connected in one place.
+              Focus sessions, plans, routines, progress and guidance stay connected in one calm workspace.
             </p>
           </div>
 
@@ -159,9 +156,7 @@ export default function AuthScreen() {
               size={17}
             />
             <span>
-              Your private study data
-              stays tied to your
-              account.
+              Your private study data stays tied to your account and is never shown on public League profiles.
             </span>
           </div>
         </aside>
@@ -183,8 +178,8 @@ export default function AuthScreen() {
 
             <p>
               {signingUp
-                ? 'Build a study system that follows you across devices.'
-                : 'Sign in and continue from your latest synced state.'}
+                ? 'Create your account and keep your study system synced across devices.'
+                : 'Pick up exactly where you left off.'}
             </p>
           </div>
 
@@ -340,10 +335,10 @@ export default function AuthScreen() {
             }
           >
             {loading
-              ? 'PLEASE WAIT...'
+              ? 'Please wait…'
               : mode === 'signin'
-                ? 'SIGN IN'
-                : 'CREATE ACCOUNT'}
+                ? 'Sign in'
+                : 'Create account'}
           </button>
 
           {message && (
