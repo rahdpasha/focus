@@ -593,32 +593,13 @@ export default function RoutinePage({
           </section>
         )}
 
-        <section
-          className="glass-panel routine-panel"
-          style={{
-            padding: '20px',
-          }}
-        >
+        <section className="glass-panel routine-panel routine-builder">
           <div className="eyebrow">
             Build your routine
           </div>
-          <h2
-            style={{
-              margin:
-                '6px 0 14px',
-            }}
-          >
-            Fixed + rotating study
-          </h2>
+          <h2>Fixed + rotating study</h2>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns:
-                'repeat(auto-fit, minmax(160px, 1fr))',
-              gap: '10px',
-            }}
-          >
+          <div className="routine-builder-grid">
             <input
               value={title}
               maxLength={80}
@@ -732,25 +713,8 @@ export default function RoutinePage({
             </button>
           </div>
 
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '6px',
-              marginTop: '12px',
-              alignItems: 'center',
-            }}
-          >
-            <span
-              style={{
-                color:
-                  'var(--text-muted)',
-                fontSize: '11px',
-                marginRight: '4px',
-              }}
-            >
-              Schedule
-            </span>
+          <div className="routine-builder-row">
+            <span className="routine-builder-label">Schedule</span>
 
             {[
               {
@@ -794,36 +758,13 @@ export default function RoutinePage({
               )
             })}
 
-            <span
-              style={{
-                color:
-                  'var(--text-muted)',
-                fontSize: '11px',
-              }}
-            >
+            <span className="routine-builder-value">
               {dayRuleLabel(daysOfWeek)}
             </span>
           </div>
 
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '6px',
-              marginTop: '8px',
-              alignItems: 'center',
-            }}
-          >
-            <span
-              style={{
-                color:
-                  'var(--text-muted)',
-                fontSize: '11px',
-                marginRight: '4px',
-              }}
-            >
-              Days
-            </span>
+          <div className="routine-builder-row compact">
+            <span className="routine-builder-label">Days</span>
 
             {WEEKDAYS.map(
               (day) => {
@@ -837,29 +778,12 @@ export default function RoutinePage({
                     key={day.value}
                     type="button"
                     aria-pressed={active}
-                    onClick={() =>
-                      toggleBuilderDay(
-                        day.value,
-                      )
+                    onClick={() => toggleBuilderDay(day.value)}
+                    className={
+                      active
+                        ? 'routine-day-toggle builder-day active'
+                        : 'routine-day-toggle builder-day'
                     }
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius:
-                        '9px',
-                      border:
-                        active
-                          ? '1px solid var(--primary-border)'
-                          : '1px solid var(--void-border)',
-                      background:
-                        active
-                          ? 'var(--primary-soft)'
-                          : 'var(--void-surface-hover)',
-                      color:
-                        active
-                          ? 'var(--primary-glow)'
-                          : 'var(--text-muted)',
-                    }}
                   >
                     {day.label}
                   </button>
@@ -868,14 +792,7 @@ export default function RoutinePage({
             )}
           </div>
 
-          <div
-            style={{
-              marginTop:
-                '16px',
-              display: 'grid',
-              gap: '8px',
-            }}
-          >
+          <div className="routine-config-list">
             {routineItems.map(
               (item) => {
                 const subject =
@@ -886,49 +803,12 @@ export default function RoutinePage({
                   )
 
                 return (
-                  <div
-                    key={item.id}
-                    style={{
-                      display:
-                        'grid',
-                      gridTemplateColumns:
-                        'minmax(0,1fr) auto auto',
-                      gap: '10px',
-                      alignItems:
-                        'center',
-                      padding:
-                        '11px 12px',
-                      border:
-                        '1px solid var(--void-border)',
-                      borderRadius:
-                        '10px',
-                    }}
-                  >
+                  <div key={item.id} className="routine-config-card">
                     <div>
-                      <div
-                        style={{
-                          color:
-                            'var(--text-primary)',
-                          fontWeight:
-                            650,
-                          fontSize:
-                            '13px',
-                        }}
-                      >
-                        {
-                          item.title
-                        }
+                      <div className="routine-config-title">
+                        {item.title}
                       </div>
-                      <div
-                        style={{
-                          color:
-                            'var(--text-muted)',
-                          fontSize:
-                            '10px',
-                          marginTop:
-                            '3px',
-                        }}
-                      >
+                      <div className="routine-config-meta">
                         {subject
                           ?.name ??
                           'Subject removed'}{' '}
@@ -949,30 +829,20 @@ export default function RoutinePage({
                     <button
                       type="button"
                       onClick={() =>
-                        onUpdateRoutineItem(
-                          item.id,
-                          {
-                            enabled:
-                              !item.enabled,
-                          },
-                        )
+                        onUpdateRoutineItem(item.id, {
+                          enabled: !item.enabled,
+                        })
                       }
                       aria-label={
                         item.enabled
                           ? 'Disable routine item'
                           : 'Enable routine item'
                       }
-                      style={{
-                        display:
-                          'flex',
-                        alignItems:
-                          'center',
-                        gap: '5px',
-                        color:
-                          item.enabled
-                            ? 'var(--primary-glow)'
-                            : 'var(--text-muted)',
-                      }}
+                      className={
+                        item.enabled
+                          ? 'routine-config-toggle active'
+                          : 'routine-config-toggle'
+                      }
                     >
                       {item.enabled ? (
                         <Check
@@ -990,6 +860,11 @@ export default function RoutinePage({
 
                     <button
                       type="button"
+                      className={
+                        pendingDelete === item.id
+                          ? 'routine-config-delete confirm'
+                          : 'routine-config-delete'
+                      }
                       aria-label={
                         pendingDelete ===
                         item.id
@@ -1025,17 +900,7 @@ export default function RoutinePage({
                       )}
                     </button>
 
-                    <div
-                      style={{
-                        gridColumn:
-                          '1 / -1',
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '5px',
-                        alignItems:
-                          'center',
-                      }}
-                    >
+                    <div className="routine-config-controls">
                       {WEEKDAYS.map(
                         (day) => {
                           const active =
