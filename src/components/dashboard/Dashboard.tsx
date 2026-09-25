@@ -77,6 +77,7 @@ function startOfWeek(
 
 function minutesLabel(
   minutes: number,
+  language: 'en' | 'ku',
 ): string {
   const hours =
     Math.floor(minutes / 60)
@@ -84,11 +85,19 @@ function minutesLabel(
     minutes % 60
 
   if (hours === 0) {
-    return `${remainder}m`
+    return language === 'ku'
+      ? `${remainder} خولەک`
+      : `${remainder}m`
   }
 
-  return remainder > 0
-    ? `${hours}h ${remainder}m`
+  if (remainder > 0) {
+    return language === 'ku'
+      ? `${hours} کاتژمێر ${remainder} خولەک`
+      : `${hours}h ${remainder}m`
+  }
+
+  return language === 'ku'
+    ? `${hours} کاتژمێر`
     : `${hours}h`
 }
 
@@ -244,9 +253,7 @@ export default function Dashboard({
         <StatCard
           icon={Clock3}
           label={tr('Today', 'ئەمڕۆ')}
-          value={minutesLabel(
-            todayMinutes,
-          )}
+          value={minutesLabel(todayMinutes, language)}
           accentColor="var(--primary)"
         />
 
@@ -262,16 +269,18 @@ export default function Dashboard({
         <StatCard
           icon={Flame}
           label={tr('Current streak', 'زنجیرەی ئێستا')}
-          value={`${streak}d`}
+          value={
+            language === 'ku'
+              ? `${streak} ڕۆژ`
+              : `${streak}d`
+          }
           accentColor="var(--energy)"
         />
 
         <StatCard
           icon={Clock3}
           label={tr('This week', 'ئەم هەفتەیە')}
-          value={minutesLabel(
-            weekMinutes,
-          )}
+          value={minutesLabel(weekMinutes, language)}
           accentColor="var(--teal)"
         />
       </section>
@@ -403,7 +412,10 @@ export default function Dashboard({
               {
                 plan.totalPlannedTodayMinutes
               }
-              m {tr('planned', 'پلانکراو')}
+              {language === 'ku'
+                ? ' خولەک '
+                : 'm '}
+              {tr('planned', 'پلانکراو')}
             </span>
           </div>
 
@@ -481,7 +493,9 @@ export default function Dashboard({
               {
                 plan.todayRemainingMinutes
               }
-              m
+              {language === 'ku'
+                ? ' خولەک'
+                : 'm'}
             </strong>
 
             <span>
