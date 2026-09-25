@@ -750,7 +750,6 @@ export default function WeeklyTrend({
 
             <p>Hover any day or hour for exact recorded time.</p>
           </div>
-          </div>
         </>
       )}
     </section>
