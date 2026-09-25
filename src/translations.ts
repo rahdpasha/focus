@@ -19,6 +19,7 @@ export const translations = {
     settings: 'Settings',
     subjects: 'Subjects',
     studyPlan: 'Study Plan',
+    routine: 'Routine',
     records: 'Records',
     history: 'History',
     league: 'League',
@@ -27,6 +28,7 @@ export const translations = {
     focusPageQuestion: 'What am I studying right now?',
     subjectsPageQuestion: 'What am I studying?',
     studyPlanPageQuestion: 'What should I study today and this week?',
+    routinePageQuestion: 'What must I complete today?',
     recordsPageQuestion: 'What have I achieved?',
     weeklyFocusGoal: 'Weekly Focus Goal',
 
@@ -208,6 +210,7 @@ export const translations = {
     settings: 'ڕێکخستنەکان',
     subjects: 'بابەتەکان',
     studyPlan: 'پلانێ خوێندن',
+    routine: 'ڕوتین',
     records: 'تۆمارەکان',
     history: 'مێژوو',
     league: 'پێشبڕکێ',
@@ -216,6 +219,7 @@ export const translations = {
     focusPageQuestion: 'لە ئێستادا چی دەخوێنم؟',
     subjectsPageQuestion: 'چی دەخوێنم؟',
     studyPlanPageQuestion: 'ئەمڕۆ و ئەم هەفتەیە چی بخوێنم؟',
+    routinePageQuestion: 'ئەمڕۆ چی دەبێت تەواو بکەم؟',
     recordsPageQuestion: 'چی بەدەستهێناوم؟',
     weeklyFocusGoal: 'ئامانجی سەرنجی هەفتانە',
 
