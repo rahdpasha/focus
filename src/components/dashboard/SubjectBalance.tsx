@@ -161,7 +161,7 @@ function SubjectTooltip({
   active,
   payload,
 }: SubjectTooltipProps) {
-  const { tr } = useI18n()
+  const { language, tr } = useI18n()
   if (
     !active ||
     !payload ||
@@ -188,7 +188,7 @@ function SubjectTooltip({
             item.dataKey ===
             'thisWeek'
         )?.value ?? 0}
-        m
+        {language === 'ku' ? ' خولەک' : 'm'}
       </strong>
 
       <small className="mono">
@@ -198,7 +198,7 @@ function SubjectTooltip({
             item.dataKey ===
             'lastWeek'
         )?.value ?? 0}
-        m
+        {language === 'ku' ? ' خولەک' : 'm'}
       </small>
     </div>
   )
@@ -207,7 +207,7 @@ function SubjectTooltip({
 export default function SubjectBalance({
   sessions,
 }: SubjectBalanceProps) {
-  const { tr } = useI18n()
+  const { language, tr } = useI18n()
   const cardRef =
     useRef<HTMLDivElement>(null)
 
@@ -343,7 +343,7 @@ export default function SubjectBalance({
                   fill: 'var(--text-muted)',
                   fontSize: 10,
                 }}
-                unit="m"
+                unit={language === 'ku' ? ' خولەک' : 'm'}
               />
 
               <YAxis
@@ -367,7 +367,7 @@ export default function SubjectBalance({
 
               <Bar
                 dataKey="lastWeek"
-                name="Last week"
+                name={tr('Last week', 'هەفتەی ڕابردوو')}
                 fill="var(--text-muted)"
                 fillOpacity={0.28}
                 radius={[0, 4, 4, 0]}
@@ -376,7 +376,7 @@ export default function SubjectBalance({
 
               <Bar
                 dataKey="thisWeek"
-                name="This week"
+                name={tr('This week', 'ئەم هەفتەیە')}
                 fill="var(--primary-glow)"
                 radius={[0, 4, 4, 0]}
                 barSize={9}
