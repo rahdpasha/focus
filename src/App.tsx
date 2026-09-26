@@ -79,6 +79,10 @@ function AuthenticatedApp({
   ] = useState<
     RoutineSessionContext | undefined
   >()
+  const [
+    planSubjectCreateRequest,
+    setPlanSubjectCreateRequest,
+  ] = useState(0)
 
   const data = useFocusData(
     t,
@@ -178,6 +182,13 @@ function AuthenticatedApp({
     setPage('dashboard')
   }
 
+  const openSubjectCreator = () => {
+    setPlanSubjectCreateRequest(
+      (value) => value + 1,
+    )
+    setPage('plan')
+  }
+
   return (
     <AppShell
       page={page}
@@ -240,6 +251,9 @@ function AuthenticatedApp({
               subjectId,
             )
           }}
+          onAddSubjectRequest={
+            openSubjectCreator
+          }
         />
       )}
 
@@ -276,6 +290,9 @@ function AuthenticatedApp({
           onUpdateRoutineItem={data.updateRoutineItem}
           onDeleteRoutineItem={data.deleteRoutineItem}
           onStartSession={startRecommendedSession}
+          subjectCreateRequestKey={
+            planSubjectCreateRequest
+          }
         />
       )}
 
