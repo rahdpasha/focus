@@ -1,6 +1,5 @@
 import {
   BarChart3,
-  BrainCircuit,
   Check,
   CalendarRange,
   ChevronLeft,
@@ -80,12 +79,6 @@ const navGroups = [
         label: 'Plan',
         labelKu: 'پلان',
         icon: CalendarRange,
-      },
-      {
-        page: 'advisor' as const,
-        label: 'Advisor',
-        labelKu: 'ڕاوێژکار',
-        icon: BrainCircuit,
       },
     ],
   },
