@@ -172,6 +172,7 @@ export default function PlanPage({
   return (
     <PageContainer>
       <PageHeader
+        compact
         title={tr(
           'Plan',
           'پلان',
