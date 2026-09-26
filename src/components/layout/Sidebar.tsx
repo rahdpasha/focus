@@ -8,13 +8,11 @@ import {
   Clock3,
   Gauge,
   Hexagon,
-  History,
   Menu,
   Plus,
   Settings,
   Swords,
   Archive,
-  Trophy,
   X,
 } from 'lucide-react'
 import {
@@ -96,22 +94,10 @@ const navGroups = [
     labelKu: 'پێشکەوتن',
     items: [
       {
-        page: 'statistics' as const,
-        label: 'Overview',
-        labelKu: 'پوختە',
+        page: 'progress' as const,
+        label: 'Progress',
+        labelKu: 'پێشکەوتن',
         icon: BarChart3,
-      },
-      {
-        page: 'records' as const,
-        label: 'Records',
-        labelKu: 'تۆمارەکان',
-        icon: Trophy,
-      },
-      {
-        page: 'history' as const,
-        label: 'History',
-        labelKu: 'مێژوو',
-        icon: History,
       },
     ],
   },
