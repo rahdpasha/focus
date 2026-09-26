@@ -13402,3 +13402,59 @@ textarea::placeholder {
     width: 100%;
   }
 }
+
+
+/* V4.7 — safe first-use Focus state */
+.focus-first-subject {
+  min-height: 300px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 28px;
+}
+
+.focus-first-subject-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--primary-border);
+  border-radius: 14px;
+  background: var(--primary-soft);
+  color: var(--primary-glow);
+}
+
+.focus-first-subject > div:nth-child(2) {
+  display: grid;
+  gap: 7px;
+}
+
+.focus-first-subject h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(24px, 3vw, 34px);
+}
+
+.focus-first-subject p {
+  max-width: 650px;
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.focus-first-subject .cyber-btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .focus-first-subject {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .focus-first-subject .cyber-btn {
+    width: 100%;
+  }
+}
