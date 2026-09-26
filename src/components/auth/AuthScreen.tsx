@@ -6,9 +6,63 @@ import {
   ShieldCheck,
   UserRound,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useAuth } from '../../auth/useAuth'
 import { useI18n } from '../../useI18n'
+
+function getAuthMessage(
+  error: unknown,
+  tr: (english: string, kurdish: string) => string,
+): string {
+  if (error && typeof error === 'object') {
+    const authError = error as {
+      code?: string
+      status?: number
+      message?: string
+    }
+
+    if (
+      authError.code === 'over_email_send_rate_limit' ||
+      authError.status === 429 ||
+      authError.message
+        ?.toLowerCase()
+        .includes('email rate limit')
+    ) {
+      return tr(
+        'FOCUS has temporarily reached its email sending limit. Please try again later. Your account data is safe.',
+        'FOCUS بە کاتی سنووری ناردنی ئیمەیڵی پڕ کردووە. تکایە دواتر هەوڵ بدەوە. داتای هەژمارەکەت پارێزراوە.',
+      )
+    }
+
+    if (authError.code === 'email_not_confirmed') {
+      return tr(
+        'Please confirm your email before signing in.',
+        'تکایە پێش چوونەژوورەوە ئیمەیڵەکەت پشتڕاست بکەرەوە.',
+      )
+    }
+
+    if (
+      authError.code === 'invalid_credentials' ||
+      authError.message
+        ?.toLowerCase()
+        .includes('invalid login credentials')
+    ) {
+      return tr(
+        'The email or password is incorrect.',
+        'ئیمەیڵ یان وشەی نهێنی هەڵەیە.',
+      )
+    }
+
+    if (authError.message) {
+      return authError.message
+    }
+  }
+
+  return tr(
+    'Authentication failed. Please try again.',
+    'چوونەژوورەوە سەرکەوتوو نەبوو. تکایە دووبارە هەوڵ بدەوە.',
+  )
+}
 
 export default function AuthScreen() {
   const { tr } = useI18n()
@@ -21,18 +75,24 @@ export default function AuthScreen() {
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const submitLock = useRef(false)
 
   const signingUp = mode === 'signup'
   const passwordReady = !signingUp || password.length >= 10
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
+
+    if (submitLock.current) return
+
+    submitLock.current = true
     setMessage('')
 
     const cleanEmail = email.trim()
     const cleanName = displayName.trim()
 
     if (signingUp && !cleanName) {
+      submitLock.current = false
       setMessage(
         tr(
           'Add a display name before creating your account.',
@@ -43,6 +103,7 @@ export default function AuthScreen() {
     }
 
     if (!passwordReady) {
+      submitLock.current = false
       setMessage(
         tr(
           'Use at least 10 characters for a new password.',
@@ -77,15 +138,9 @@ export default function AuthScreen() {
         )
       }
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : tr(
-              'Authentication failed.',
-              'چوونەژوورەوە سەرکەوتوو نەبوو.',
-            ),
-      )
+      setMessage(getAuthMessage(error, tr))
     } finally {
+      submitLock.current = false
       setLoading(false)
     }
   }
