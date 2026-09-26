@@ -435,25 +435,25 @@ export default function Settings({
               }
             >
               <option value={30}>
-                30m
+                {tr('30m', '٣٠ خولەک')}
               </option>
               <option value={60}>
-                1h
+                {tr('1h', '١ کاتژمێر')}
               </option>
               <option value={90}>
-                1.5h
+                {tr('1.5h', '١.٥ کاتژمێر')}
               </option>
               <option value={120}>
-                2h
+                {tr('2h', '٢ کاتژمێر')}
               </option>
               <option value={180}>
-                3h
+                {tr('3h', '٣ کاتژمێر')}
               </option>
               <option value={240}>
-                4h
+                {tr('4h', '٤ کاتژمێر')}
               </option>
               <option value={300}>
-                5h
+                {tr('5h', '٥ کاتژمێر')}
               </option>
             </select>
           </label>
@@ -479,22 +479,22 @@ export default function Settings({
               }
             >
               <option value={300}>
-                5h
+                {tr('5h', '٥ کاتژمێر')}
               </option>
               <option value={600}>
-                10h
+                {tr('10h', '١٠ کاتژمێر')}
               </option>
               <option value={900}>
-                15h
+                {tr('15h', '١٥ کاتژمێر')}
               </option>
               <option value={1200}>
-                20h
+                {tr('20h', '٢٠ کاتژمێر')}
               </option>
               <option value={1500}>
-                25h
+                {tr('25h', '٢٥ کاتژمێر')}
               </option>
               <option value={1800}>
-                30h
+                {tr('30h', '٣٠ کاتژمێر')}
               </option>
             </select>
           </label>
