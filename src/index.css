@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 * {
   margin: 0;
@@ -12588,4 +12588,38 @@ small {
 [data-theme='light'] .timer-v5-time {
   text-shadow:
     0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+
+/* Sorani Kurdish typography */
+html[dir='rtl'] body,
+html[dir='rtl'] button,
+html[dir='rtl'] input,
+html[dir='rtl'] select,
+html[dir='rtl'] textarea {
+  font-family:
+    'Noto Sans Arabic',
+    'Manrope',
+    sans-serif;
+}
+
+html[dir='rtl'] h1,
+html[dir='rtl'] h2,
+html[dir='rtl'] h3,
+html[dir='rtl'] h4,
+html[dir='rtl'] h5,
+html[dir='rtl'] h6 {
+  font-family:
+    'Noto Sans Arabic',
+    'Space Grotesk',
+    sans-serif;
+  letter-spacing: 0;
+}
+
+html[dir='rtl'] .mono {
+  font-family:
+    'Noto Sans Arabic',
+    'JetBrains Mono',
+    monospace;
+  letter-spacing: 0;
 }
