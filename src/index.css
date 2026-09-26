@@ -13575,3 +13575,51 @@ textarea::placeholder {
     width: 100%;
   }
 }
+
+
+/* V4.10 — optional ambient audio */
+.focus-audio-v4 {
+  padding: 0;
+  overflow: hidden;
+}
+
+.focus-audio-v4 > summary {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.focus-audio-v4 > summary::-webkit-details-marker {
+  display: none;
+}
+
+.focus-audio-summary-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.focus-audio-v4 > summary small {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.focus-audio-v4[open] > summary {
+  border-bottom: 1px solid var(--focus-hairline);
+}
+
+.focus-audio-v4 > .focus-audio-options {
+  padding: 10px 12px 12px;
+}
+
+@media (max-width: 600px) {
+  .focus-audio-v4 > summary {
+    min-height: 46px;
+  }
+}
