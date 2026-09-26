@@ -4,15 +4,17 @@ interface PageHeaderProps {
   title: string
   description?: string
   action?: ReactNode
+  compact?: boolean
 }
 
 export default function PageHeader({
   title,
   description,
   action,
+  compact = false,
 }: PageHeaderProps) {
   return (
-    <header className="page-header">
+    <header className={compact ? 'page-header page-header-compact' : 'page-header'}>
       <div className="page-header-copy">
         <div className="page-header-kicker">
           FOCUS / {title}
