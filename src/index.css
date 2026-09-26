@@ -12562,8 +12562,17 @@ html[dir='rtl'][data-theme='light'] .app-sidebar {
 }
 
 .timer-v5-center {
-  width: 55%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  width: 64%;
   aspect-ratio: 1;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  transform: translate(-50%, -50%);
   border:
     1px solid
     color-mix(
@@ -12667,7 +12676,7 @@ html[dir='rtl'][data-theme='light'] .app-sidebar {
   }
 
   .timer-v5-center {
-    width: 58%;
+    width: 68%;
   }
 
   .timer-v5-time {
