@@ -65,6 +65,10 @@ export default function StudyPlanPage({
   const [goalSubjectId, setGoalSubjectId] = useState('')
   const [goalPriority, setGoalPriority] =
     useState<AdvancedGoal['priority']>('medium')
+  const [
+    showGoalAdvanced,
+    setShowGoalAdvanced,
+  ] = useState(false)
   const [pendingGoalDelete, setPendingGoalDelete] =
     useState<string | null>(null)
 
@@ -488,7 +492,7 @@ export default function StudyPlanPage({
             </span>
           </div>
 
-          <div className="advanced-goal-create">
+          <div className="advanced-goal-create goal-create-v4">
             <input
               aria-label={tr('Goal title', 'ناوی ئامانج')}
               value={goalTitle}
@@ -500,30 +504,6 @@ export default function StudyPlanPage({
               }
               placeholder={tr('Goal name', 'ناوی ئامانج')}
             />
-
-            <select
-              aria-label={tr('Goal subject', 'بابەتی ئامانج')}
-              value={goalSubjectId}
-              onChange={(event) =>
-                setGoalSubjectId(
-                  event.target.value,
-                )
-              }
-            >
-              <option value="">
-                {tr('All focus sessions', 'هەموو سێشنەکانی سەرنج')}
-              </option>
-              {subjects.map(
-                (subject) => (
-                  <option
-                    key={subject.id}
-                    value={subject.id}
-                  >
-                    {subject.name}
-                  </option>
-                ),
-              )}
-            </select>
 
             <input
               type="number"
@@ -539,6 +519,7 @@ export default function StudyPlanPage({
                 )
               }
               aria-label={tr('Target minutes', 'خولەکەکانی ئامانج')}
+              placeholder={tr('Target minutes', 'خولەکی ئامانج')}
             />
 
             <input
@@ -552,26 +533,79 @@ export default function StudyPlanPage({
               aria-label={tr('Goal deadline', 'کۆتا مۆڵەتی ئامانج')}
             />
 
-            <select
-              aria-label={tr('Goal priority', 'گرنگی ئامانج')}
-              value={goalPriority}
-              onChange={(event) =>
-                setGoalPriority(
-                  event.target
-                    .value as AdvancedGoal['priority'],
+            <button
+              type="button"
+              className="v4-advanced-toggle"
+              aria-expanded={showGoalAdvanced}
+              onClick={() =>
+                setShowGoalAdvanced(
+                  (value) => !value,
                 )
               }
             >
-              <option value="low">
-                {tr('Low priority', 'گرنگی کەم')}
-              </option>
-              <option value="medium">
-                {tr('Medium priority', 'گرنگی ناوەند')}
-              </option>
-              <option value="high">
-                {tr('High priority', 'گرنگی زۆر')}
-              </option>
-            </select>
+              {showGoalAdvanced
+                ? tr('Hide advanced options', 'هەڵبژاردە پێشکەوتووەکان بشارەوە')
+                : tr('Advanced options', 'هەڵبژاردە پێشکەوتووەکان')}
+            </button>
+
+            {showGoalAdvanced && (
+              <div className="v4-advanced-panel goal-advanced-panel">
+                <label>
+                  <span>
+                    {tr('Subject', 'بابەت')}
+                  </span>
+                  <select
+                    aria-label={tr('Goal subject', 'بابەتی ئامانج')}
+                    value={goalSubjectId}
+                    onChange={(event) =>
+                      setGoalSubjectId(
+                        event.target.value,
+                      )
+                    }
+                  >
+                    <option value="">
+                      {tr('All focus sessions', 'هەموو سێشنەکانی سەرنج')}
+                    </option>
+                    {subjects.map(
+                      (subject) => (
+                        <option
+                          key={subject.id}
+                          value={subject.id}
+                        >
+                          {subject.name}
+                        </option>
+                      ),
+                    )}
+                  </select>
+                </label>
+
+                <label>
+                  <span>
+                    {tr('Priority', 'گرنگی')}
+                  </span>
+                  <select
+                    aria-label={tr('Goal priority', 'گرنگی ئامانج')}
+                    value={goalPriority}
+                    onChange={(event) =>
+                      setGoalPriority(
+                        event.target
+                          .value as AdvancedGoal['priority'],
+                      )
+                    }
+                  >
+                    <option value="low">
+                      {tr('Low', 'کەم')}
+                    </option>
+                    <option value="medium">
+                      {tr('Medium', 'ناوەند')}
+                    </option>
+                    <option value="high">
+                      {tr('High', 'زۆر')}
+                    </option>
+                  </select>
+                </label>
+              </div>
+            )}
 
             <button
               type="button"
