@@ -58,37 +58,49 @@ interface SidebarProps {
 
 const navGroups = [
   {
-    label: 'Workspace',
-    labelKu: 'شوێنی کار',
+    label: 'Now',
+    labelKu: 'ئێستا',
     items: [
       {
         page: 'dashboard' as const,
-        labelKey: 'dashboard' as const,
+        label: 'Today',
+        labelKu: 'ئەمڕۆ',
         icon: Gauge,
       },
       {
         page: 'focus' as const,
-        labelKey: 'focus' as const,
+        label: 'Focus',
+        labelKu: 'سەرنج',
         icon: Clock3,
       },
+    ],
+  },
+  {
+    label: 'Plan',
+    labelKu: 'پلان',
+    items: [
       {
         page: 'subjects' as const,
-        labelKey: 'subjects' as const,
+        label: 'Subjects',
+        labelKu: 'بابەتەکان',
         icon: BookOpen,
       },
       {
         page: 'study-plan' as const,
-        labelKey: 'studyPlan' as const,
+        label: 'Study plan',
+        labelKu: 'پلانی خوێندن',
         icon: CalendarRange,
       },
       {
         page: 'routine' as const,
-        labelKey: 'routine' as const,
+        label: 'Routine',
+        labelKu: 'ڕوتین',
         icon: Repeat2,
       },
       {
         page: 'advisor' as const,
-        labelKey: 'advisor' as const,
+        label: 'Advisor',
+        labelKu: 'ڕاوێژکار',
         icon: BrainCircuit,
       },
     ],
@@ -99,22 +111,32 @@ const navGroups = [
     items: [
       {
         page: 'statistics' as const,
-        labelKey: 'statistics' as const,
+        label: 'Overview',
+        labelKu: 'پوختە',
         icon: BarChart3,
       },
       {
         page: 'records' as const,
-        labelKey: 'records' as const,
+        label: 'Records',
+        labelKu: 'تۆمارەکان',
         icon: Trophy,
       },
       {
         page: 'history' as const,
-        labelKey: 'history' as const,
+        label: 'History',
+        labelKu: 'مێژوو',
         icon: History,
       },
+    ],
+  },
+  {
+    label: 'Community',
+    labelKu: 'کۆمەڵگا',
+    items: [
       {
         page: 'league' as const,
-        labelKey: 'league' as const,
+        label: 'League',
+        labelKu: 'پێشبڕکێ',
         icon: Swords,
       },
     ],
@@ -125,7 +147,8 @@ const navGroups = [
     items: [
       {
         page: 'settings' as const,
-        labelKey: 'settings' as const,
+        label: 'Settings',
+        labelKu: 'ڕێکخستنەکان',
         icon: Settings,
       },
     ],
@@ -313,8 +336,9 @@ export default function Sidebar({
                         }
                         title={
                           collapsed
-                            ? t(
-                                item.labelKey,
+                            ? tr(
+                                item.label,
+                                item.labelKu,
                               )
                             : undefined
                         }
@@ -333,8 +357,9 @@ export default function Sidebar({
 
                         {showLabels && (
                           <span>
-                            {t(
-                              item.labelKey,
+                            {tr(
+                              item.label,
+                              item.labelKu,
                             )}
                           </span>
                         )}
