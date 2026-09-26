@@ -12785,3 +12785,71 @@ textarea::placeholder {
   }
 
 }
+
+
+/* V4 — calm Today surface */
+.dashboard-v4 {
+  gap: 18px;
+}
+
+.dashboard-v4-header {
+  min-height: 88px;
+}
+
+.dashboard-v4 .focus-pulse-v4 {
+  min-height: 220px;
+  grid-template-columns: minmax(0, 1.55fr) minmax(240px, 0.65fr);
+}
+
+.focus-pulse-v4 .focus-pulse-headline {
+  max-width: 640px;
+}
+
+.focus-pulse-v4 .focus-pulse-side {
+  align-content: center;
+  gap: 18px;
+}
+
+.dashboard-v4-section {
+  padding: 20px;
+}
+
+.dashboard-v4 .dashboard-route {
+  width: 100%;
+}
+
+.dashboard-v4 .dashboard-route-footer {
+  display: none;
+}
+
+.dashboard-v4 .dashboard-routine-state {
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+@media (max-width: 900px) {
+  .dashboard-v4 .focus-pulse-v4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-v4 {
+    gap: 14px;
+  }
+
+  .dashboard-v4 .focus-pulse-v4 {
+    min-height: 0;
+    padding: 20px;
+  }
+
+  .focus-pulse-v4 .focus-pulse-week {
+    opacity: 0.8;
+  }
+
+  .dashboard-v4-section {
+    padding: 17px;
+  }
+}
