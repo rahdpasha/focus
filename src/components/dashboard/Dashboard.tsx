@@ -387,7 +387,10 @@ export default function Dashboard({
                         )
                       }
                     >
-                      {item.minutes}m
+                      {item.minutes}
+                      {language === 'ku'
+                        ? ' خولەک'
+                        : 'm'}
                       <ArrowRight
                         size={14}
                       />
