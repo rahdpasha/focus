@@ -133,6 +133,7 @@ export default function Dashboard({
         }
       />
 
+      <div className="dashboard-v4-lower">
       <section className="glass-panel dashboard-routine-preview dashboard-v4-section">
         <div className="dashboard-section-head dashboard-routine-head">
           <div>
@@ -353,6 +354,7 @@ export default function Dashboard({
           )}
         </div>
       </section>
+      </div>
     </main>
   )
 }
