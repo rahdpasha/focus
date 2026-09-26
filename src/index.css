@@ -13644,3 +13644,64 @@ textarea::placeholder {
     gap: 7px;
   }
 }
+
+
+/* V4.12 — timer-first smart cue */
+.focus-advisor-v4 {
+  padding: 0;
+  overflow: hidden;
+}
+
+.focus-advisor-v4 > summary {
+  min-height: 54px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.focus-advisor-v4 > summary::-webkit-details-marker {
+  display: none;
+}
+
+.focus-advisor-summary {
+  justify-content: space-between;
+}
+
+.focus-advisor-summary-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.focus-advisor-summary small {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.focus-advisor-v4[open] > summary {
+  border-bottom: 1px solid var(--focus-hairline);
+}
+
+.focus-advisor-v4 > :not(summary) {
+  margin-inline: 16px;
+}
+
+.focus-advisor-v4 > p {
+  margin-top: 14px;
+}
+
+.focus-advisor-v4 > .focus-switch-subject {
+  margin-bottom: 16px;
+}
+
+@media (max-width: 600px) {
+  .focus-advisor-v4 > summary {
+    min-height: 50px;
+    padding: 12px 14px;
+  }
+
+  .focus-advisor-v4 > :not(summary) {
+    margin-inline: 14px;
+  }
+}
