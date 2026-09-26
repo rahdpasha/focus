@@ -1,6 +1,7 @@
 import {
   BarChart3,
   History as HistoryIcon,
+  TimerReset,
   Trophy,
 } from 'lucide-react'
 import {
@@ -36,12 +37,14 @@ interface ProgressPageProps {
   sessions: StudySession[]
   weeklyGoal: number
   weeklyGoalsHistory: WeeklyGoalMap
+  onStartFocus: () => void
 }
 
 export default function ProgressPage({
   sessions,
   weeklyGoal,
   weeklyGoalsHistory,
+  onStartFocus,
 }: ProgressPageProps) {
   const { tr } = useI18n()
   const [
@@ -91,6 +94,41 @@ export default function ProgressPage({
         )}
       />
 
+      {sessions.length === 0 ? (
+        <section className="glass-panel progress-first-session">
+          <div className="progress-first-session-icon">
+            <TimerReset size={22} />
+          </div>
+
+          <div className="progress-first-session-copy">
+            <div className="eyebrow">
+              {tr('First progress', 'یەکەم پێشکەوتن')}
+            </div>
+            <h2>
+              {tr(
+                'Complete your first Focus session.',
+                'یەکەم سێشنی سەرنجت تەواو بکە.',
+              )}
+            </h2>
+            <p>
+              {tr(
+                'After one saved session, FOCUS will show your overview, records, and history here.',
+                'دوای یەک سێشنی پاشەکەوتکراو، FOCUS پوختە، تۆمار و مێژووت لێرە پیشان دەدات.',
+              )}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="cyber-btn"
+            onClick={onStartFocus}
+          >
+            <TimerReset size={15} />
+            {tr('Start focus', 'دەستپێکردنی سەرنج')}
+          </button>
+        </section>
+      ) : (
+        <>
       <nav
         className="progress-v4-tabs"
         aria-label={tr(
@@ -172,6 +210,8 @@ export default function ProgressPage({
           />
         )}
       </div>
+        </>
+      )}
     </PageContainer>
   )
 }
