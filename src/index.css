@@ -13110,7 +13110,145 @@ html[dir='rtl'][data-theme='light'] .app-sidebar {
 }
 
 
-/* Readability polish v2 */
+
+
+/* Focus corrective composition */
+@media (min-width: 1051px) {
+  .focus-workspace {
+    grid-template-columns: minmax(0, 1.46fr) minmax(330px, 0.72fr);
+    gap: 20px;
+  }
+
+  .focus-timer-stage {
+    min-height: 540px;
+    padding: 26px 28px 22px;
+  }
+
+  .focus-timer-wrap {
+    min-height: 375px;
+    place-items: center;
+  }
+
+  .timer-v5 {
+    gap: 14px;
+  }
+
+  .timer-v5-status {
+    min-height: 34px;
+    padding: 7px 12px;
+  }
+
+  .duration-v5-presets {
+    gap: 8px;
+  }
+
+  .duration-v5-presets button,
+  .duration-v5-set {
+    min-height: 42px;
+    padding: 9px 14px;
+    border-radius: 10px;
+    font-size: 11px;
+  }
+
+  .timer-v5-ring {
+    width: min(368px, 31vw);
+  }
+
+  .timer-v5-ring::before {
+    inset: 18%;
+    opacity: 0.32;
+    filter: blur(22px);
+  }
+
+  .timer-v5-ring::after {
+    display: none;
+  }
+
+  .timer-v5-ring-track {
+    stroke-width: 5;
+    opacity: 0.76;
+  }
+
+  .timer-v5-ring-progress {
+    stroke-width: 6.5;
+    filter:
+      drop-shadow(
+        0 0 5px
+        color-mix(in srgb, var(--timer-color) 22%, transparent)
+      );
+  }
+
+  .timer-v5-center {
+    width: 54%;
+    aspect-ratio: 1;
+    border:
+      1px solid
+      color-mix(
+        in srgb,
+        var(--timer-color) 7%,
+        var(--focus-hairline)
+      );
+    border-radius: 50%;
+    background:
+      color-mix(
+        in srgb,
+        var(--void-surface) 22%,
+        transparent
+      );
+    box-shadow:
+      inset 0 1px 0
+        color-mix(
+          in srgb,
+          var(--text-primary) 3%,
+          transparent
+        );
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+  }
+
+  .timer-v5-center::before {
+    display: none;
+  }
+
+  .timer-v5-time {
+    font-size: clamp(64px, 5.2vw, 78px);
+    font-weight: 520;
+    letter-spacing: -0.055em;
+    text-shadow: none;
+  }
+
+  .timer-v5-mode {
+    margin-top: 10px;
+    font-size: 11px;
+  }
+
+  .timer-v5-primary {
+    min-width: 166px;
+    min-height: 48px;
+    padding: 11px 18px;
+    font-size: 13px;
+  }
+
+  .focus-audio {
+    margin-top: 2px;
+    padding-top: 14px;
+  }
+
+  .focus-audio-options button {
+    min-height: 36px;
+    padding: 8px 11px;
+    font-size: 10px;
+  }
+}
+
+[data-theme='light'] .timer-v5-center {
+  background: rgba(255, 255, 255, 0.34);
+  border-color: rgba(65, 61, 93, 0.065);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+/* Readability hierarchy corrective */
 body {
   font-size: 15px;
 }
@@ -13118,20 +13256,18 @@ body {
 .page-header p,
 .focus-advisor-card p,
 .focus-intent-helper,
-.dashboard-insight-head p,
-.analytics-v3-card small,
 .settings-section p,
 .subject-card p,
 .history-day-copy,
 .league-v4-copy,
 .stats-v4-copy {
   font-size: 13px;
+  line-height: 1.6;
 }
 
 input,
 select,
-textarea,
-button {
+textarea {
   font-size: 13px;
 }
 
@@ -13153,45 +13289,24 @@ textarea::placeholder {
   font-size: 14px;
 }
 
-.sidebar-subject-name {
-  font-size: 13px;
-}
-
+.sidebar-subject-name,
 .sidebar-add-subject span {
   font-size: 13px;
 }
 
-.settings-group-label span,
 .focus-card-title,
-.focus-audio-label {
+.focus-audio-label,
+.settings-group-label span {
   font-size: 12px;
 }
 
-.settings-group-label small,
-.focus-intent-meta,
 .focus-advisor-priority,
-.focus-switch-subject,
-.focus-audio-options button {
+.focus-intent-meta,
+.settings-group-label small {
   font-size: 10px;
 }
 
-.duration-v5-presets button,
-.duration-v5-set {
-  font-size: 11px;
-}
-
-.timer-v5-status strong,
-.timer-v5-mode,
-.timer-v5-paused,
-.timer-v5-focused {
-  font-size: 11px;
-}
-
 @media (max-width: 768px) {
-  body {
-    font-size: 15px;
-  }
-
   .sidebar-nav-item span {
     font-size: 15px;
   }
@@ -13218,8 +13333,7 @@ textarea::placeholder {
 
   input,
   select,
-  textarea,
-  button {
+  textarea {
     font-size: 14px;
   }
 
@@ -13227,86 +13341,16 @@ textarea::placeholder {
   textarea::placeholder {
     font-size: 13.5px;
   }
-}
-
-
-/* Focus centerpiece scale polish */
-@media (min-width: 1051px) {
-  .focus-timer-stage {
-    min-height: 590px;
-    padding: 28px 30px 24px;
-  }
-
-  .focus-timer-wrap {
-    min-height: 455px;
-  }
-
-  .timer-v5 {
-    gap: 16px;
-  }
-
-  .timer-v5-status {
-    min-height: 34px;
-    padding: 7px 12px;
-  }
-
-  .duration-v5-presets {
-    gap: 9px;
-  }
-
-  .duration-v5-presets button,
-  .duration-v5-set {
-    min-height: 44px;
-    padding: 10px 15px;
-    border-radius: 11px;
-    font-size: 11px;
-  }
 
   .timer-v5-ring {
-    width: min(400px, 34vw);
+    width: min(292px, 82vw);
   }
 
   .timer-v5-center {
-    width: 59%;
+    width: 57%;
   }
 
   .timer-v5-time {
-    font-size: clamp(68px, 5.8vw, 82px);
-  }
-
-  .timer-v5-mode {
-    margin-top: 10px;
-    font-size: 11px;
-  }
-
-  .timer-v5-primary {
-    min-width: 172px;
-    min-height: 50px;
-    padding: 12px 20px;
-    font-size: 13px;
-  }
-
-  .focus-audio {
-    padding-top: 14px;
-  }
-
-  .focus-audio-options button {
-    min-height: 38px;
-    padding: 8px 12px;
-    font-size: 10px;
-  }
-}
-
-@media (min-width: 1320px) {
-  .focus-workspace {
-    grid-template-columns: minmax(0, 1.62fr) minmax(320px, 0.72fr);
-  }
-
-  .timer-v5-ring {
-    width: min(420px, 32vw);
-  }
-
-  .timer-v5-time {
-    font-size: clamp(72px, 5.4vw, 86px);
+    font-size: clamp(50px, 14vw, 64px);
   }
 }
