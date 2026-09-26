@@ -13458,3 +13458,64 @@ textarea::placeholder {
     width: 100%;
   }
 }
+
+
+/* V4.7 — keep optional session planning out of the way */
+.focus-intent-v4 {
+  padding: 0;
+  overflow: hidden;
+}
+
+.focus-intent-v4 > summary {
+  min-height: 54px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.focus-intent-v4 > summary::-webkit-details-marker {
+  display: none;
+}
+
+.focus-intent-summary {
+  justify-content: space-between;
+}
+
+.focus-intent-summary-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.focus-intent-summary small {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.focus-intent-v4[open] > summary {
+  border-bottom: 1px solid var(--focus-hairline);
+}
+
+.focus-intent-v4 > :not(summary) {
+  margin-inline: 16px;
+}
+
+.focus-intent-v4 > .focus-intent-helper {
+  margin-top: 14px;
+}
+
+.focus-intent-v4 > .focus-intent-meta {
+  margin-bottom: 16px;
+}
+
+@media (max-width: 600px) {
+  .focus-intent-v4 > summary {
+    min-height: 50px;
+    padding: 12px 14px;
+  }
+
+  .focus-intent-v4 > :not(summary) {
+    margin-inline: 14px;
+  }
+}
