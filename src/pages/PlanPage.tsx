@@ -88,6 +88,7 @@ interface PlanPageProps {
     minutes?: number,
     routineContext?: RoutineSessionContext,
   ) => void
+  subjectCreateRequestKey?: number
 }
 
 export default function PlanPage({
@@ -110,14 +111,21 @@ export default function PlanPage({
   onUpdateRoutineItem,
   onDeleteRoutineItem,
   onStartSession,
+  subjectCreateRequestKey = 0,
 }: PlanPageProps) {
   const { tr } = useI18n()
   const [section, setSection] =
-    useState<PlanSection>('plan')
+    useState<PlanSection>(
+      subjectCreateRequestKey > 0
+        ? 'subjects'
+        : 'plan',
+    )
   const [
     subjectCreateRequest,
     setSubjectCreateRequest,
-  ] = useState(0)
+  ] = useState(
+    subjectCreateRequestKey,
+  )
 
   const requestSubjectCreation = () => {
     setSection('subjects')
