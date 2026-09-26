@@ -194,7 +194,7 @@ export const translations = {
 
   ku: {
     // Language
-    english: 'English',
+    english: 'ئینگلیزی',
     kurdishSorani: 'کوردی',
     language: 'زمان',
     appearance: 'ڕووکار',
@@ -216,11 +216,11 @@ export const translations = {
     league: 'پێشبڕکێ',
     advisor: 'ڕاوێژکار',
 
-    focusPageQuestion: 'لە ئێستادا چی دەخوێنم؟',
-    subjectsPageQuestion: 'چی دەخوێنم؟',
-    studyPlanPageQuestion: 'ئەمڕۆ و ئەم هەفتەیە چی بخوێنم؟',
-    routinePageQuestion: 'ئەمڕۆ چی دەبێت تەواو بکەم؟',
-    recordsPageQuestion: 'چی بەدەستهێناوم؟',
+    focusPageQuestion: 'یەک بابەت. یەک کاتژمێر. یەک ئەنجامی ڕوون.',
+    subjectsPageQuestion: 'هەر بابەتێک ڕوون و چالاک بپارێزە و گەڕانەوە بۆی ئاسان بکە.',
+    studyPlanPageQuestion: 'ئامانجەکانت بگۆڕە بۆ پلانێکی ڕوون بۆ ئەمڕۆ و ئەم هەفتەیە.',
+    routinePageQuestion: 'کاری گرنگەکان دیار، دووبارەکراوە و ئاسان بۆ دەستپێکردن بپارێزە.',
+    recordsPageQuestion: 'بەهێزترین ئەنجامەکانی خوێندنت بپارێزە هەرچەند مێژووت گەورەتر دەبێت.',
     weeklyFocusGoal: 'ئامانجی سەرنجی هەفتانە',
 
     // Subjects
