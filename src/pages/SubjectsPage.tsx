@@ -7,6 +7,7 @@ import {
   X,
 } from 'lucide-react'
 import {
+  useEffect,
   useMemo,
   useState,
 } from 'react'
@@ -43,6 +44,7 @@ interface SubjectsPageProps {
     subjectId?: string,
     minutes?: number,
   ) => void
+  createRequestKey?: number
 }
 
 interface SubjectMetrics {
@@ -105,6 +107,7 @@ export default function SubjectsPage({
   onAddSubject,
   onDeleteSubject,
   onStartSession,
+  createRequestKey = 0,
 }: SubjectsPageProps) {
   const { language, t, tr } = useI18n()
   const [
@@ -126,6 +129,12 @@ export default function SubjectsPage({
           SUBJECT_COLORS.length
       ],
     )
+
+  useEffect(() => {
+    if (createRequestKey > 0) {
+      setShowCreate(true)
+    }
+  }, [createRequestKey])
 
   const metrics =
     useMemo<
