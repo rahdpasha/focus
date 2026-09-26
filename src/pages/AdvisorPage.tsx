@@ -299,8 +299,18 @@ export default function AdvisorPage({
           </div>
         </section>
 
-        <aside className="advisor-v5-side">
-          <div className="glass-panel advisor-v5-facts-card">
+        <details className="glass-panel advisor-v4-details">
+          <summary>
+            <span>
+              <LockKeyhole size={16} />
+              {tr('What FOCUS uses', 'FOCUS چی بەکاردەهێنێت')}
+            </span>
+            <small>
+              {tr('Your study summary only', 'تەنها پوختەی خوێندنت')}
+            </small>
+          </summary>
+
+          <div className="advisor-v5-facts-card">
             <div className="advisor-v5-facts-title">
               <LockKeyhole
                 size={17}
@@ -413,7 +423,7 @@ export default function AdvisorPage({
               {tr('Raw session notes are not sent. The advisor receives summarized study facts and recent session metrics only, and only when you press Ask FOCUS.', 'تێبینی خامی سێشنەکان نانێردرێن. ڕاوێژکارەکە تەنها پوختەی زانیارییەکانی خوێندن و پێوانەکانی سێشنە نوێیەکان وەردەگرێت، تەنها کاتێک کرتە لە FOCUS بکەیت.')}
             </p>
           </div>
-        </aside>
+        </details>
       </div>
     </PageContainer>
   )
