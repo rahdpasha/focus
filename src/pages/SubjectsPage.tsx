@@ -7,7 +7,6 @@ import {
   X,
 } from 'lucide-react'
 import {
-  useEffect,
   useMemo,
   useState,
 } from 'react'
@@ -113,7 +112,9 @@ export default function SubjectsPage({
   const [
     showCreate,
     setShowCreate,
-  ] = useState(false)
+  ] = useState(
+    createRequestKey > 0,
+  )
   const [name, setName] =
     useState('')
   const [
@@ -129,12 +130,6 @@ export default function SubjectsPage({
           SUBJECT_COLORS.length
       ],
     )
-
-  useEffect(() => {
-    if (createRequestKey > 0) {
-      setShowCreate(true)
-    }
-  }, [createRequestKey])
 
   const metrics =
     useMemo<
