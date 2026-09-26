@@ -12932,3 +12932,84 @@ textarea::placeholder {
     font-size: 11px;
   }
 }
+
+
+/* V4 — unified Progress workspace */
+.progress-v4-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -4px 0 18px;
+  padding: 5px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 14px;
+  background: color-mix(
+    in srgb,
+    var(--void-surface-hover) 72%,
+    transparent
+  );
+}
+
+.progress-v4-tab {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 13px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.progress-v4-tab:hover {
+  color: var(--text-primary);
+  background: var(--void-surface-hover);
+}
+
+.progress-v4-tab.active {
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+  color: var(--text-primary);
+}
+
+.progress-v4-tab.active svg {
+  color: var(--primary-glow);
+}
+
+.progress-v4-body > .page-container {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.progress-v4-body > .page-container > .page-header {
+  display: none;
+}
+
+.progress-v4-loading {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+@media (max-width: 600px) {
+  .progress-v4-tabs {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 14px;
+  }
+
+  .progress-v4-tab {
+    justify-content: center;
+    padding-inline: 8px;
+    font-size: 11px;
+  }
+}
