@@ -27,7 +27,7 @@ const items = [
     icon: TimerReset,
   },
   {
-    page: 'study-plan' as const,
+    page: 'plan' as const,
     label: 'Plan',
     labelKu: 'پلان',
     icon: CalendarRange,
