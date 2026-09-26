@@ -33,7 +33,7 @@ const items = [
     icon: CalendarRange,
   },
   {
-    page: 'statistics' as const,
+    page: 'progress' as const,
     label: 'Progress',
     labelKu: 'پێشکەوتن',
     icon: BarChart3,
