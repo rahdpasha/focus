@@ -114,6 +114,17 @@ export default function PlanPage({
   const { tr } = useI18n()
   const [section, setSection] =
     useState<PlanSection>('plan')
+  const [
+    subjectCreateRequest,
+    setSubjectCreateRequest,
+  ] = useState(0)
+
+  const requestSubjectCreation = () => {
+    setSection('subjects')
+    setSubjectCreateRequest(
+      (value) => value + 1,
+    )
+  }
 
   const tabs = [
     {
@@ -230,6 +241,9 @@ export default function PlanPage({
             onStartSession={
               onStartSession
             }
+            onAddSubjectRequest={
+              requestSubjectCreation
+            }
           />
         )}
 
@@ -253,6 +267,9 @@ export default function PlanPage({
             onStartSession={
               onStartSession
             }
+            createRequestKey={
+              subjectCreateRequest
+            }
           />
         )}
 
@@ -275,6 +292,9 @@ export default function PlanPage({
             }
             onStartSession={
               onStartSession
+            }
+            onAddSubjectRequest={
+              requestSubjectCreation
             }
           />
         )}
