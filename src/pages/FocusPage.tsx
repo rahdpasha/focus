@@ -1,4 +1,5 @@
 import {
+  BookOpen,
   Headphones,
   Sparkles,
   Volume2,
@@ -52,6 +53,7 @@ interface FocusPageProps {
   onSelectSubject?: (
     subjectId: string,
   ) => void
+  onAddSubjectRequest?: () => void
 }
 
 const ambientOptions: Array<{
@@ -102,6 +104,7 @@ export default function FocusPage({
   routineContext,
   onAddSession,
   onSelectSubject,
+  onAddSubjectRequest,
 }: FocusPageProps) {
   const { t, tr } = useI18n()
 
@@ -227,6 +230,44 @@ export default function FocusPage({
         )}
       />
 
+      {subjects.length === 0 ? (
+        <section className="glass-panel focus-first-subject">
+          <div className="focus-first-subject-icon">
+            <BookOpen size={22} />
+          </div>
+
+          <div>
+            <div className="eyebrow">
+              {tr('First step', 'هەنگاوی یەکەم')}
+            </div>
+            <h2>
+              {tr(
+                'Add a subject before you start.',
+                'پێش دەستپێکردن بابەتێک زیاد بکە.',
+              )}
+            </h2>
+            <p>
+              {tr(
+                'FOCUS needs a subject so your timer session can be saved, planned, and counted in progress.',
+                'FOCUS پێویستی بە بابەتێک هەیە تا سێشنی کاتژمێرەکەت پاشەکەوت بکرێت، پلان بۆ دابنرێت و لە پێشکەوتندا هەژمار بکرێت.',
+              )}
+            </p>
+          </div>
+
+          {onAddSubjectRequest && (
+            <button
+              type="button"
+              className="cyber-btn"
+              onClick={onAddSubjectRequest}
+            >
+              {tr(
+                'Add your first subject',
+                'یەکەم بابەتت زیاد بکە',
+              )}
+            </button>
+          )}
+        </section>
+      ) : (
       <div className="focus-workspace">
         <section className="glass-panel focus-timer-stage">
           <div className="focus-stage-head">
@@ -649,6 +690,7 @@ export default function FocusPage({
           </section>
         </aside>
       </div>
+      )}
     </PageContainer>
   )
 }
