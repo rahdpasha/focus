@@ -903,35 +903,8 @@ export default function Timer({
           <circle
             cx="170"
             cy="170"
-            r="154"
-            className="timer-v5-ring-outer"
-          />
-
-          <circle
-            cx="170"
-            cy="170"
-            r="118"
-            className="timer-v5-ring-inner"
-          />
-
-          <circle
-            cx="170"
-            cy="170"
             r="135"
             className="timer-v5-ring-track"
-          />
-
-          <circle
-            cx="170"
-            cy="170"
-            r="135"
-            className="timer-v5-ring-progress-glow"
-            strokeDasharray={
-              circumference
-            }
-            strokeDashoffset={
-              dashOffset
-            }
           />
 
           <circle
