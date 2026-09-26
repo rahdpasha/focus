@@ -402,22 +402,36 @@ export default function FocusPage({
             />
           </div>
 
-          <div className="focus-audio">
-            <div className="focus-audio-label">
-              {ambientSound ===
-              'off' ? (
-                <VolumeX
-                  size={16}
-                />
-              ) : (
-                <Volume2
-                  size={16}
-                />
-              )}
-              <span>
-                {tr('Ambient audio', 'دەنگی ژینگە')}
+          <details className="focus-audio focus-audio-v4">
+            <summary className="focus-audio-label">
+              <span className="focus-audio-summary-title">
+                {ambientSound ===
+                'off' ? (
+                  <VolumeX
+                    size={16}
+                  />
+                ) : (
+                  <Volume2
+                    size={16}
+                  />
+                )}
+                <span>
+                  {tr('Ambient audio', 'دەنگی ژینگە')}
+                </span>
               </span>
-            </div>
+
+              <small>
+                {ambientSound === 'off'
+                  ? tr('Off', 'کوژاوە')
+                  : ambientSound === 'brown'
+                    ? tr('Brown', 'براون')
+                    : ambientSound === 'pink'
+                      ? tr('Pink', 'پینک')
+                      : ambientSound === 'white'
+                        ? tr('White', 'سپێ')
+                        : tr('Alpha', 'ئەلفا')}
+              </small>
+            </summary>
 
             <div className="focus-audio-options">
               {ambientOptions.map(
@@ -454,7 +468,7 @@ export default function FocusPage({
                 ),
               )}
             </div>
-          </div>
+          </details>
         </section>
 
         <aside className="focus-side-stack">
