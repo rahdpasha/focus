@@ -14,6 +14,7 @@ import type { AuthState } from './auth/types'
 import FocusPage from './pages/FocusPage'
 import SubjectsPage from './pages/SubjectsPage'
 import StudyPlanPage from './pages/StudyPlanPage'
+import PlanPage from './pages/PlanPage'
 import RoutinePage from './pages/RoutinePage'
 import RecordsPage from './pages/RecordsPage'
 import HistoryPage from './pages/HistoryPage'
@@ -249,6 +250,30 @@ function AuthenticatedApp({
           onSelectSubject={data.selectSubject}
           onAddSubject={data.addSubject}
           onDeleteSubject={data.deleteSubject}
+          onStartSession={startRecommendedSession}
+        />
+      )}
+
+      {page === 'plan' && (
+        <PlanPage
+          subjects={data.subjects}
+          activeSubjectId={data.activeSubjectId}
+          sessions={data.sessions}
+          weeklyGoal={data.weeklyGoal}
+          dailyGoal={data.dailyGoal}
+          advancedGoals={data.advancedGoals}
+          routineItems={data.routineItems}
+          onSelectSubject={data.selectSubject}
+          onAddSubject={data.addSubject}
+          onDeleteSubject={data.deleteSubject}
+          onDailyGoalChange={data.setDailyGoal}
+          onWeeklyGoalChange={data.setWeeklyGoal}
+          onAddAdvancedGoal={data.addAdvancedGoal}
+          onUpdateAdvancedGoal={data.updateAdvancedGoal}
+          onDeleteAdvancedGoal={data.deleteAdvancedGoal}
+          onAddRoutineItem={data.addRoutineItem}
+          onUpdateRoutineItem={data.updateRoutineItem}
+          onDeleteRoutineItem={data.deleteRoutineItem}
           onStartSession={startRecommendedSession}
         />
       )}
