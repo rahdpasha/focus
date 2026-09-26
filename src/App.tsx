@@ -18,6 +18,7 @@ import PlanPage from './pages/PlanPage'
 import RoutinePage from './pages/RoutinePage'
 import RecordsPage from './pages/RecordsPage'
 import HistoryPage from './pages/HistoryPage'
+import ProgressPage from './pages/ProgressPage'
 import LeaguePage from './pages/LeaguePage'
 import AdvisorPage from './pages/AdvisorPage'
 import { useFocusData } from './hooks/useFocusData'
@@ -327,6 +328,16 @@ function AuthenticatedApp({
           weeklyGoal={data.weeklyGoal}
           advancedGoals={data.advancedGoals}
           onStartSession={startRecommendedSession}
+        />
+      )}
+
+      {page === 'progress' && (
+        <ProgressPage
+          sessions={data.sessions}
+          weeklyGoal={data.weeklyGoal}
+          weeklyGoalsHistory={
+            data.weeklyGoalsHistory
+          }
         />
       )}
 
