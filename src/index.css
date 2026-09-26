@@ -13623,3 +13623,24 @@ textarea::placeholder {
     min-height: 46px;
   }
 }
+
+
+/* V4.11 — flat primary navigation */
+.sidebar-nav-v4 {
+  display: grid;
+  gap: 6px;
+}
+
+.sidebar-nav-v4 .sidebar-nav-item {
+  margin: 0;
+}
+
+.app-sidebar:not(.is-collapsed) .sidebar-nav-v4 {
+  padding-top: 4px;
+}
+
+@media (max-width: 900px) {
+  .sidebar-nav-v4 {
+    gap: 7px;
+  }
+}
