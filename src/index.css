@@ -13228,3 +13228,85 @@ textarea::placeholder {
     font-size: 13.5px;
   }
 }
+
+
+/* Focus centerpiece scale polish */
+@media (min-width: 1051px) {
+  .focus-timer-stage {
+    min-height: 590px;
+    padding: 28px 30px 24px;
+  }
+
+  .focus-timer-wrap {
+    min-height: 455px;
+  }
+
+  .timer-v5 {
+    gap: 16px;
+  }
+
+  .timer-v5-status {
+    min-height: 34px;
+    padding: 7px 12px;
+  }
+
+  .duration-v5-presets {
+    gap: 9px;
+  }
+
+  .duration-v5-presets button,
+  .duration-v5-set {
+    min-height: 44px;
+    padding: 10px 15px;
+    border-radius: 11px;
+    font-size: 11px;
+  }
+
+  .timer-v5-ring {
+    width: min(400px, 34vw);
+  }
+
+  .timer-v5-center {
+    width: 59%;
+  }
+
+  .timer-v5-time {
+    font-size: clamp(68px, 5.8vw, 82px);
+  }
+
+  .timer-v5-mode {
+    margin-top: 10px;
+    font-size: 11px;
+  }
+
+  .timer-v5-primary {
+    min-width: 172px;
+    min-height: 50px;
+    padding: 12px 20px;
+    font-size: 13px;
+  }
+
+  .focus-audio {
+    padding-top: 14px;
+  }
+
+  .focus-audio-options button {
+    min-height: 38px;
+    padding: 8px 12px;
+    font-size: 10px;
+  }
+}
+
+@media (min-width: 1320px) {
+  .focus-workspace {
+    grid-template-columns: minmax(0, 1.62fr) minmax(320px, 0.72fr);
+  }
+
+  .timer-v5-ring {
+    width: min(420px, 32vw);
+  }
+
+  .timer-v5-time {
+    font-size: clamp(72px, 5.4vw, 86px);
+  }
+}
