@@ -92,7 +92,10 @@ export default function FocusPulse({
             </span>
             <strong>
               {pulse.todayMinutes}/
-              {pulse.dailyGoal}m
+              {pulse.dailyGoal}
+              {language === 'ku'
+                ? ' خولەک'
+                : 'm'}
             </strong>
           </div>
 
@@ -116,7 +119,10 @@ export default function FocusPulse({
             </span>
             <strong>
               {pulse.weeklyMinutes}/
-              {pulse.weeklyGoal}m
+              {pulse.weeklyGoal}
+              {language === 'ku'
+                ? ' خولەک'
+                : 'm'}
             </strong>
           </div>
 
