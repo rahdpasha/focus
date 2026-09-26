@@ -19,61 +19,67 @@ export const translations = {
     settings: 'Settings',
     subjects: 'Subjects',
     studyPlan: 'Study Plan',
+    routine: 'Routine',
     records: 'Records',
     history: 'History',
+    league: 'League',
+    advisor: 'Advisor',
 
-    focusPageQuestion: 'What am I studying right now?',
-    subjectsPageQuestion: 'What am I studying?',
-    studyPlanPageQuestion: 'What should I study today and this week?',
-    recordsPageQuestion: 'What have I achieved?',
+    focusPageQuestion: 'One subject. One timer. One clear outcome.',
+    subjectsPageQuestion: 'Keep every subject clear, active, and easy to return to.',
+    studyPlanPageQuestion: 'Turn your goals into a clear plan for today and the week ahead.',
+    routinePageQuestion: 'Keep the work that matters visible, repeatable, and easy to start.',
+    recordsPageQuestion: 'Your strongest study performances, preserved as your history grows.',
     weeklyFocusGoal: 'Weekly Focus Goal',
 
     // Subjects
-    addSubject: 'Add Subject',
-    newSubject: 'NEW SUBJECT',
+    addSubject: 'Add subject',
+    newSubject: 'New subject',
     subjectName: 'Subject name',
-    color: 'COLOR',
-    createSubject: 'CREATE SUBJECT',
-    deleteSubject: 'Delete',
+    color: 'Color',
+    createSubject: 'Create subject',
+    deleteSubject: 'Remove',
 
     // Duration selector
-    custom: 'CUSTOM',
+    custom: 'Custom',
     minutes: 'Minutes',
-    set: 'SET',
-    tenSec: '10 SEC',
-    minutes25: '25 MIN',
-    minutes45: '45 MIN',
-    minutes60: '60 MIN',
+    set: 'Set',
+    tenSec: '10 sec',
+    minutes25: '25 min',
+    minutes45: '45 min',
+    minutes60: '60 min',
 
     // Session history
-    sessionHistory: 'Session History',
-    all: 'ALL',
-    completed: 'COMPLETED',
-    interrupted: 'INTERRUPTED',
-    allSubjects: 'ALL SUBJECTS',
-    noMatchingSessions: 'No matching sessions.',
+    sessionHistory: 'Session history',
+    all: 'All',
+    completed: 'Completed',
+    interrupted: 'Interrupted',
+    allSubjects: 'All subjects',
+    noMatchingSessions: 'Nothing matches these filters yet.',
     deleteSession: 'Delete session',
+    confirmDeleteSession:
+      'Click again to delete session',
 
     // Dashboard
-    goodEvening: 'GOOD EVENING, BRO',
-    systemStatus: 'System Status: Optimal',
+    goodEvening: 'Good evening',
+    systemStatus: 'Everything is ready',
     activeFocus: 'Active Focus',
     sessions: 'Sessions',
     streak: 'Streak',
-    days: 'DAYS',
+    days: 'days',
     dailyFocusGoal: 'Daily Focus Goal',
     dailyObjectiveComplete:
-      'DAILY OBJECTIVE COMPLETE',
-    completePercent: '% COMPLETE',
+      'Daily target complete',
+    completePercent: '% complete',
     loadingAnalytics:
-      'LOADING ANALYTICS...',
-    selectSubject: 'Select Subject',
+      'Preparing your focus insights…',
+    selectSubject: 'Select a subject',
 
     // Statistics
-    today: 'TODAY',
-    last7Days: 'LAST 7 DAYS',
-    totalFocus: 'TOTAL FOCUS',
-    avgSession: 'AVG SESSION',
+    today: 'Today',
+    last7Days: 'Last 7 days',
+    totalFocus: 'Total focus',
+    avgSession: 'Average session',
     bestStudyTime: 'Best Study Time',
     studyTimeDistribution: 'Study Time Distribution',
     consistencyTrend: 'Consistency Trend',
@@ -149,12 +155,12 @@ export const translations = {
     breakComplete: 'BREAK COMPLETE',
     takeLongBreak: 'TAKE LONG BREAK',
     takeShortBreak: 'TAKE SHORT BREAK',
-    newSequence: 'NEW SEQUENCE',
-    initiateSequence: 'INITIATE SEQUENCE',
-    startBreak: 'START BREAK',
-    resume: 'RESUME',
-    pause: 'PAUSE',
-    reset: 'RESET',
+    newSequence: 'Start another session',
+    initiateSequence: 'Start focus',
+    startBreak: 'Start break',
+    resume: 'Resume',
+    pause: 'Pause',
+    reset: 'Reset',
     paused: 'PAUSED',
     focused: 'focused',
     interruptions: 'interruptions',
@@ -174,8 +180,10 @@ export const translations = {
     data: 'DATA',
     backupDescription:
       'Backup your subjects, sessions, goals, and timer settings.',
-    exportData: 'EXPORT DATA',
-    importData: 'IMPORT DATA',
+    exportData: 'Export data',
+    importData: 'Import data',
+    confirmImportData:
+      'Click again to replace data',
 
     // App messages
     dataImported: 'FOCUS DATA IMPORTED',
@@ -186,7 +194,7 @@ export const translations = {
 
   ku: {
     // Language
-    english: 'English',
+    english: 'ئینگلیزی',
     kurdishSorani: 'کوردی',
     language: 'زمان',
     appearance: 'ڕووکار',
@@ -201,14 +209,18 @@ export const translations = {
     statistics: 'ئامار',
     settings: 'ڕێکخستنەکان',
     subjects: 'بابەتەکان',
-    studyPlan: 'پلانێ خوێندن',
+    studyPlan: 'پلانی خوێندن',
+    routine: 'ڕوتین',
     records: 'تۆمارەکان',
     history: 'مێژوو',
+    league: 'پێشبڕکێ',
+    advisor: 'ڕاوێژکار',
 
-    focusPageQuestion: 'لە ئێستادا چی دەخوێنم؟',
-    subjectsPageQuestion: 'چی دەخوێنم؟',
-    studyPlanPageQuestion: 'ئەمڕۆ و ئەم هەفتەیە چی بخوێنم؟',
-    recordsPageQuestion: 'چی بەدەستهێناوم؟',
+    focusPageQuestion: 'یەک بابەت. یەک کاتژمێر. یەک ئەنجامی ڕوون.',
+    subjectsPageQuestion: 'هەر بابەتێک ڕوون و چالاک بپارێزە و گەڕانەوە بۆی ئاسان بکە.',
+    studyPlanPageQuestion: 'ئامانجەکانت بگۆڕە بۆ پلانێکی ڕوون بۆ ئەمڕۆ و ئەم هەفتەیە.',
+    routinePageQuestion: 'کاری گرنگەکان دیار، دووبارەکراوە و ئاسان بۆ دەستپێکردن بپارێزە.',
+    recordsPageQuestion: 'بەهێزترین ئەنجامەکانی خوێندنت بپارێزە هەرچەند مێژووت گەورەتر دەبێت.',
     weeklyFocusGoal: 'ئامانجی سەرنجی هەفتانە',
 
     // Subjects
@@ -217,7 +229,7 @@ export const translations = {
     subjectName: 'ناوی بابەت',
     color: 'ڕەنگ',
     createSubject: 'دروستکردنی بابەت',
-    deleteSubject: 'سڕینەوە',
+    deleteSubject: 'لابردن',
 
     // Duration selector
     custom: 'خۆت دیاری بکە',
@@ -237,10 +249,12 @@ export const translations = {
     noMatchingSessions:
       'هیچ سێشنێکی گونجاو نییە.',
     deleteSession: 'سڕینەوەی سێشن',
+    confirmDeleteSession:
+      'دووبارە کرتە بکە بۆ سڕینەوەی سێشن',
 
     // Dashboard
-    goodEvening: 'بەیانی باش، برا',
-    systemStatus: 'دۆخی سیستەم: باشە',
+    goodEvening: 'ئێوارە باش',
+    systemStatus: 'هەموو شتێک ئامادەیە',
     activeFocus: 'سەرنجی چالاک',
     sessions: 'سێشنەکان',
     streak: 'زنجیرە',
@@ -366,6 +380,8 @@ export const translations = {
       'لە بابەتەکان، سێشنەکان، ئامانجەکان و ڕێکخستنەکانی کاتی کارەکەت باکاپ بگرە.',
     exportData: 'هەناردەکردنی داتا',
     importData: 'هێنانی داتا',
+    confirmImportData:
+      'دووبارە کرتە بکە بۆ گۆڕینی داتا',
 
     // App messages
     dataImported:

@@ -53,13 +53,16 @@ export function getStudyPlan(
   const now = new Date()
   const startOfToday = new Date(now)
   startOfToday.setHours(0, 0, 0, 0)
-  const endOfToday = startOfToday.getTime() + 24 * 60 * 60 * 1000
+  const endOfToday = new Date(startOfToday)
+  endOfToday.setDate(
+    endOfToday.getDate() + 1,
+  )
 
   const todayMinutes = Math.round(
     sessions.reduce((total, session) => {
       const timestamp = new Date(session.completedAt).getTime()
-      return timestamp >= startOfToday.getTime() && timestamp < endOfToday && session.completed
-        ? total + (session.actualDuration || session.duration || 0) / 60
+      return timestamp >= startOfToday.getTime() && timestamp < endOfToday.getTime() && session.completed
+        ? total + Math.max(0, session.actualDuration) / 60
         : total
     }, 0)
   )
@@ -74,7 +77,7 @@ export function getStudyPlan(
     sessions.reduce((total, session) => {
       const timestamp = new Date(session.completedAt).getTime()
       return timestamp >= startOfWeek.getTime() && session.completed
-        ? total + (session.actualDuration || session.duration || 0) / 60
+        ? total + Math.max(0, session.actualDuration) / 60
         : total
     }, 0)
   )
@@ -87,7 +90,7 @@ export function getStudyPlan(
     const timestamp = new Date(session.completedAt).getTime()
     if (timestamp >= startOfWeek.getTime() && session.completed) {
       const prev = subjectMinutesMap.get(session.subjectId) || 0
-      subjectMinutesMap.set(session.subjectId, prev + (session.actualDuration || session.duration || 0) / 60)
+      subjectMinutesMap.set(session.subjectId, prev + Math.max(0, session.actualDuration) / 60)
     }
   })
 
@@ -127,8 +130,8 @@ export function getStudyPlan(
     const todaySubMinutes = Math.round(
       sessions.reduce((tot, s) => {
         const ts = new Date(s.completedAt).getTime()
-        return ts >= startOfToday.getTime() && ts < endOfToday && s.subjectId === recommendedSubject.id && s.completed
-          ? tot + (s.actualDuration || s.duration || 0) / 60
+        return ts >= startOfToday.getTime() && ts < endOfToday.getTime() && s.subjectId === recommendedSubject.id && s.completed
+          ? tot + Math.max(0, s.actualDuration) / 60
           : tot
       }, 0)
     )
@@ -160,8 +163,8 @@ export function getStudyPlan(
       const todaySubMinutes = Math.round(
         sessions.reduce((tot, s) => {
           const ts = new Date(s.completedAt).getTime()
-          return ts >= startOfToday.getTime() && ts < endOfToday && s.subjectId === sub.id && s.completed
-            ? tot + (s.actualDuration || s.duration || 0) / 60
+          return ts >= startOfToday.getTime() && ts < endOfToday.getTime() && s.subjectId === sub.id && s.completed
+            ? tot + Math.max(0, s.actualDuration) / 60
             : tot
         }, 0)
       )

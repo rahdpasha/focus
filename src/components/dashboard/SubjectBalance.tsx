@@ -10,6 +10,7 @@ import {
 } from 'recharts'
 import type { StudySession } from '../../types'
 import { getStartOfWeek } from '../../utils/goalHistory'
+import { useI18n } from '../../useI18n'
 
 interface SubjectBalanceProps {
   sessions: StudySession[]
@@ -160,6 +161,7 @@ function SubjectTooltip({
   active,
   payload,
 }: SubjectTooltipProps) {
+  const { language, tr } = useI18n()
   if (
     !active ||
     !payload ||
@@ -176,63 +178,28 @@ function SubjectTooltip({
   }
 
   return (
-    <div
-      style={{
-        background:
-          'rgba(10,10,30,0.96)',
-        border:
-          `1px solid ${data.color}55`,
-        borderRadius: '10px',
-        padding: '12px 16px',
-      }}
-    >
-      <div
-        style={{
-          fontSize: '10px',
-          fontFamily:
-            'Orbitron, sans-serif',
-          color:
-            'var(--text-muted)',
-          marginBottom: '8px',
-        }}
-      >
-        {data.name}
-      </div>
+    <div className="focus-chart-tooltip">
+      <span>{data.name}</span>
 
-      <div
-        className="mono"
-        style={{
-          fontSize: '12px',
-          color:
-            'var(--text-primary)',
-          marginBottom: '4px',
-        }}
-      >
-        This week:{' '}
+      <strong className="mono">
+        {tr('This week', 'ئەم هەفتەیە')}:{' '}
         {payload.find(
           (item) =>
             item.dataKey ===
             'thisWeek'
         )?.value ?? 0}
-        m
-      </div>
+        {language === 'ku' ? ' خولەک' : 'm'}
+      </strong>
 
-      <div
-        className="mono"
-        style={{
-          fontSize: '12px',
-          color:
-            'var(--text-muted)',
-        }}
-      >
-        Last week:{' '}
+      <small className="mono">
+        {tr('Last week', 'هەفتەی ڕابردوو')}:{' '}
         {payload.find(
           (item) =>
             item.dataKey ===
             'lastWeek'
         )?.value ?? 0}
-        m
-      </div>
+        {language === 'ku' ? ' خولەک' : 'm'}
+      </small>
     </div>
   )
 }
@@ -240,6 +207,7 @@ function SubjectTooltip({
 export default function SubjectBalance({
   sessions,
 }: SubjectBalanceProps) {
+  const { language, tr } = useI18n()
   const cardRef =
     useRef<HTMLDivElement>(null)
 
@@ -329,178 +297,94 @@ export default function SubjectBalance({
   }, [])
 
   return (
-    <div
+    <section
       ref={cardRef}
-      className="glass-panel"
-      style={{
-        padding: '24px',
-        minHeight: '340px',
-        flex: '1 1 340px',
-        transition:
-          'transform 0.3s ease',
-      }}
+      className="glass-panel dashboard-insight-card subject-balance-v5"
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent:
-            'space-between',
-          gap: '12px',
-          marginBottom: '8px',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
-          <div
-            style={{
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              background:
-                'var(--cyber-blue)',
-            }}
-          />
-
-          <span
-            style={{
-              fontSize: '11px',
-              fontFamily:
-                'Orbitron, sans-serif',
-              color:
-                'var(--text-muted)',
-              textTransform:
-                'uppercase',
-              letterSpacing:
-                '0.12em',
-            }}
-          >
-            Subject Balance
-          </span>
+      <div className="dashboard-insight-head">
+        <div>
+          <span className="dashboard-insight-kicker">{tr('Subject balance', 'هاوسەنگی بابەتەکان')}</span>
+          <p>{tr('Compare where your focus went this week against last week.', 'ببینە سەرنجت ئەم هەفتەیە بەراورد بە هەفتەی ڕابردوو لە کوێ بوو.')}</p>
         </div>
 
-        <span
-          className="mono"
-          style={{
-            fontSize: '10px',
-            color:
-              'var(--text-muted)',
-          }}
-        >
-          THIS WEEK / LAST WEEK
+        <span className="dashboard-insight-meta mono">
+          {tr('This week / last week', 'ئەم هەفتەیە / هەفتەی ڕابردوو')}
         </span>
       </div>
 
       {!hasData ? (
-        <div
-          style={{
-            display: 'flex',
-            alignItems:
-              'center',
-            justifyContent:
-              'center',
-            height: '240px',
-          }}
-        >
-          <span
-            style={{
-              color:
-                'var(--text-muted)',
-              fontFamily:
-                'Orbitron, sans-serif',
-              fontSize: '11px',
-            }}
-          >
-            NO DATA STREAM
-          </span>
+        <div className="dashboard-insight-empty">
+          {tr('Complete a focus session to reveal your subject balance.', 'سێشنێکی سەرنج تەواو بکە بۆ بینینی هاوسەنگی بابەتەکانت.')}
         </div>
       ) : (
-        <ResponsiveContainer
-          width="100%"
-          height={270}
-        >
-          <BarChart
-            data={data}
-            layout="vertical"
-            margin={{
-              top: 8,
-              right: 12,
-              bottom: 8,
-              left: 24,
-            }}
-          >
-            <CartesianGrid
-              strokeDasharray="3 3"
-              horizontal={false}
-              stroke="rgba(106,106,136,0.18)"
-            />
-
-            <XAxis
-              type="number"
-              axisLine={false}
-              tickLine={false}
-              tick={{
-                fill: '#6a6a88',
-                fontSize: 10,
+        <div className="dashboard-insight-chart">
+          <ResponsiveContainer width="100%" height={270}>
+            <BarChart
+              data={data}
+              layout="vertical"
+              margin={{
+                top: 8,
+                right: 12,
+                bottom: 8,
+                left: 24,
               }}
-              unit="m"
-            />
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                horizontal={false}
+                stroke="var(--focus-hairline)"
+              />
 
-            <YAxis
-              type="category"
-              dataKey="name"
-              axisLine={false}
-              tickLine={false}
-              width={110}
-              tick={{
-                fill: '#b0b0cc',
-                fontSize: 10,
-              }}
-            />
+              <XAxis
+                type="number"
+                axisLine={false}
+                tickLine={false}
+                tick={{
+                  fill: 'var(--text-muted)',
+                  fontSize: 10,
+                }}
+                unit={language === 'ku' ? ' خولەک' : 'm'}
+              />
 
-            <Tooltip
-              content={
-                <SubjectTooltip />
-              }
-              cursor={{
-                fill:
-                  'rgba(139,92,246,0.05)',
-              }}
-            />
+              <YAxis
+                type="category"
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                width={110}
+                tick={{
+                  fill: 'var(--text-secondary)',
+                  fontSize: 10,
+                }}
+              />
 
-            <Bar
-              dataKey="lastWeek"
-              name="Last week"
-              fill="rgba(106,106,136,0.45)"
-              radius={[
-                0,
-                4,
-                4,
-                0,
-              ]}
-              barSize={9}
-            />
+              <Tooltip
+                content={<SubjectTooltip />}
+                cursor={{
+                  fill: 'var(--primary-soft)',
+                }}
+              />
 
-            <Bar
-              dataKey="thisWeek"
-              name="This week"
-              fill="#8b5cf6"
-              radius={[
-                0,
-                4,
-                4,
-                0,
-              ]}
-              barSize={9}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+              <Bar
+                dataKey="lastWeek"
+                name={tr('Last week', 'هەفتەی ڕابردوو')}
+                fill="var(--text-muted)"
+                fillOpacity={0.28}
+                radius={[0, 4, 4, 0]}
+                barSize={9}
+              />
+
+              <Bar
+                dataKey="thisWeek"
+                name={tr('This week', 'ئەم هەفتەیە')}
+                fill="var(--primary-glow)"
+                radius={[0, 4, 4, 0]}
+                barSize={9}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       )}
-    </div>
+    </section>
   )
 }

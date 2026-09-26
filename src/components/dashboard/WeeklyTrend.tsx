@@ -47,7 +47,8 @@ interface HourTooltipProps {
 }
 
 function formatDuration(
-  seconds: number
+  seconds: number,
+  language: 'en' | 'ku',
 ): string {
   const totalMinutes =
     Math.floor(seconds / 60)
@@ -63,25 +64,36 @@ function formatDuration(
 
   if (hours > 0) {
     if (minutes > 0) {
-      return `${hours}h ${minutes}m`
+      return language === 'ku'
+        ? `${hours} کاتژمێر ${minutes} خولەک`
+        : `${hours}h ${minutes}m`
     }
 
-    return `${hours}h`
+    return language === 'ku'
+      ? `${hours} کاتژمێر`
+      : `${hours}h`
   }
 
   if (minutes > 0) {
     if (remainingSeconds > 0) {
-      return `${minutes}m ${remainingSeconds}s`
+      return language === 'ku'
+        ? `${minutes} خولەک ${remainingSeconds} چرکە`
+        : `${minutes}m ${remainingSeconds}s`
     }
 
-    return `${minutes}m`
+    return language === 'ku'
+      ? `${minutes} خولەک`
+      : `${minutes}m`
   }
 
-  return `${remainingSeconds}s`
+  return language === 'ku'
+    ? `${remainingSeconds} چرکە`
+    : `${remainingSeconds}s`
 }
 
 function formatAxisDuration(
-  seconds: number
+  seconds: number,
+  language: 'en' | 'ku',
 ): string {
   const totalMinutes =
     Math.round(seconds / 60)
@@ -93,17 +105,27 @@ function formatAxisDuration(
     totalMinutes % 60
 
   if (hours === 0) {
-    return `${minutes}m`
+    return language === 'ku'
+      ? `${minutes} خولەک`
+      : `${minutes}m`
   }
 
-  return minutes > 0
-    ? `${hours}h ${minutes}m`
+  if (minutes > 0) {
+    return language === 'ku'
+      ? `${hours} کاتژمێر ${minutes} خولەک`
+      : `${hours}h ${minutes}m`
+  }
+
+  return language === 'ku'
+    ? `${hours} کاتژمێر`
     : `${hours}h`
 }
 
 function buildDays(
   sessions: StudySession[],
-  dayNames: string[]
+  dayNames: string[],
+  todayLabel: string,
+  locale: string,
 ): DayPoint[] {
   const now = new Date()
   const days: DayPoint[] = []
@@ -159,13 +181,13 @@ function buildDays(
     days.push({
       day:
         offset === 0
-          ? 'Today'
+          ? todayLabel
           : dayNames[
               start.getDay()
             ],
       dateLabel:
         start.toLocaleDateString(
-          undefined,
+          locale,
           {
             weekday: 'long',
             month: 'short',
@@ -251,6 +273,7 @@ function DayTooltip({
   active,
   payload,
 }: TooltipProps) {
+  const { language, tr } = useI18n()
   if (
     !active ||
     !payload ||
@@ -267,58 +290,15 @@ function DayTooltip({
   }
 
   return (
-    <div
-      style={{
-        minWidth: '190px',
-        padding: '14px 16px',
-        borderRadius: '14px',
-        background:
-          'rgba(8,10,18,0.97)',
-        border:
-          '1px solid rgba(139,92,246,0.28)',
-        boxShadow:
-          '0 18px 45px rgba(0,0,0,0.32)',
-        backdropFilter:
-          'blur(20px)',
-      }}
-    >
-      <div
-        style={{
-          fontSize: '10px',
-          color:
-            'var(--text-muted)',
-          marginBottom: '7px',
-        }}
-      >
-        {point.dateLabel}
-      </div>
-
-      <div
-        className="mono"
-        style={{
-          fontSize: '20px',
-          color:
-            'var(--primary-glow)',
-        }}
-      >
-        {formatDuration(
-          point.seconds
-        )}
-      </div>
-
-      <div
-        style={{
-          marginTop: '6px',
-          fontSize: '10px',
-          color:
-            'var(--text-muted)',
-        }}
-      >
+    <div className="focus-chart-tooltip focus-chart-tooltip-wide">
+      <span>{point.dateLabel}</span>
+      <strong className="mono">
+        {formatDuration(point.seconds, language)}
+      </strong>
+      <small>
         {point.sessions}{' '}
-        {point.sessions === 1
-          ? 'session'
-          : 'sessions'}
-      </div>
+        {tr(point.sessions === 1 ? 'session' : 'sessions', 'سێشن')}
+      </small>
     </div>
   )
 }
@@ -327,6 +307,7 @@ function HourTooltip({
   active,
   payload,
 }: HourTooltipProps) {
+  const { language } = useI18n()
   if (
     !active ||
     !payload ||
@@ -346,49 +327,13 @@ function HourTooltip({
     (point.hour + 1) % 24
 
   return (
-    <div
-      style={{
-        minWidth: '155px',
-        padding: '12px 14px',
-        borderRadius: '12px',
-        background:
-          'rgba(8,10,18,0.97)',
-        border:
-          '1px solid rgba(56,189,248,0.24)',
-        boxShadow:
-          '0 16px 40px rgba(0,0,0,0.28)',
-        backdropFilter:
-          'blur(18px)',
-      }}
-    >
-      <div
-        style={{
-          fontSize: '10px',
-          color:
-            'var(--text-muted)',
-        }}
-      >
-        {point.label} →{' '}
-        {String(nextHour).padStart(
-          2,
-          '0'
-        )}
-        :00
-      </div>
-
-      <div
-        className="mono"
-        style={{
-          marginTop: '5px',
-          fontSize: '17px',
-          color:
-            'var(--cyber-glow)',
-        }}
-      >
-        {formatDuration(
-          point.seconds
-        )}
-      </div>
+    <div className="focus-chart-tooltip">
+      <span>
+        {point.label} → {String(nextHour).padStart(2, '0')}:00
+      </span>
+      <strong className="mono">
+        {formatDuration(point.seconds, language)}
+      </strong>
     </div>
   )
 }
@@ -396,7 +341,7 @@ function HourTooltip({
 export default function WeeklyTrend({
   sessions,
 }: WeeklyTrendProps) {
-  const { t } = useI18n()
+  const { language, t, tr } = useI18n()
 
   const data = useMemo(() => {
     const dayNames = [
@@ -411,9 +356,13 @@ export default function WeeklyTrend({
 
     return buildDays(
       sessions,
-      dayNames
+      dayNames,
+      t('today'),
+      language === 'ku'
+        ? 'ku-IQ'
+        : 'en-US',
     )
-  }, [sessions, t])
+  }, [language, sessions, t])
 
   const hourlyData = useMemo(
     () =>
@@ -465,143 +414,33 @@ export default function WeeklyTrend({
     totalSeconds > 0
 
   return (
-    <div
-      className="glass-panel"
-      style={{
-        padding: '24px',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent:
-            'space-between',
-          gap: '18px',
-          marginBottom: '20px',
-          flexWrap: 'wrap',
-        }}
-      >
+    <section className="glass-panel dashboard-insight-card weekly-trend-v5">
+      <div className="dashboard-insight-head weekly-trend-v5-head">
         <div>
-          <div
-            style={{
-              fontSize: '11px',
-              fontFamily:
-                'Space Grotesk, sans-serif',
-              fontWeight: 600,
-              color:
-                'var(--text-muted)',
-              textTransform:
-                'uppercase',
-              letterSpacing:
-                '0.12em',
-            }}
-          >
-            DAILY FOCUS
-          </div>
-
-          <div
-            style={{
-              marginTop: '5px',
-              fontSize: '12px',
-              color:
-                'var(--text-secondary)',
-            }}
-          >
-            Your exact focus rhythm
-            across the last seven days.
-          </div>
+          <span className="dashboard-insight-kicker">{tr('Daily focus', 'سەرنجی ڕۆژانە')}</span>
+          <p>{tr('Your focus rhythm across the last seven days.', 'ڕێتمی سەرنجت لە حەوت ڕۆژی ڕابردوو.')}</p>
         </div>
 
-        <div
-          style={{
-            display: 'flex',
-            gap: '8px',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div
-            style={{
-              padding:
-                '7px 10px',
-              borderRadius: '9px',
-              background:
-                'rgba(139,92,246,0.07)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '9px',
-                color:
-                  'var(--text-muted)',
-              }}
-            >
-              TOTAL
-            </div>
-
-            <div
-              className="mono"
-              style={{
-                marginTop: '2px',
-                fontSize: '12px',
-                color:
-                  'var(--primary-glow)',
-              }}
-            >
-              {formatDuration(
-                totalSeconds
-              )}
-            </div>
+        <div className="dashboard-insight-summary">
+          <div>
+            <span>{tr('Total', 'کۆی گشتی')}</span>
+            <strong className="mono">{formatDuration(totalSeconds, language)}</strong>
           </div>
 
-          <div
-            style={{
-              padding:
-                '7px 10px',
-              borderRadius: '9px',
-              background:
-                'rgba(56,189,248,0.06)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '9px',
-                color:
-                  'var(--text-muted)',
-              }}
-            >
-              PEAK DAY
-            </div>
-
-            <div
-              className="mono"
-              style={{
-                marginTop: '2px',
-                fontSize: '12px',
-                color:
-                  'var(--cyber-glow)',
-              }}
-            >
+          <div>
+            <span>{tr('Peak day', 'بەهێزترین ڕۆژ')}</span>
+            <strong className="mono">
               {peakDay
-                ? `${peakDay.day} · ${formatDuration(peakDay.seconds)}`
+                ? `${peakDay.day} · ${formatDuration(peakDay.seconds, language)}`
                 : '—'}
-            </div>
+            </strong>
           </div>
         </div>
       </div>
 
       {!hasData ? (
-        <div
-          style={{
-            padding:
-              '80px 20px',
-            textAlign: 'center',
-            color:
-              'var(--text-muted)',
-            fontSize: '11px',
-          }}
-        >
-          No completed focus sessions yet.
+        <div className="dashboard-insight-empty">
+          {tr('Complete a focus session to reveal your weekly rhythm.', 'سێشنێکی سەرنج تەواو بکە بۆ بینینی ڕێتمی هەفتانەت.')}
         </div>
       ) : (
         <>
@@ -628,17 +467,17 @@ export default function WeeklyTrend({
                 >
                   <stop
                     offset="0%"
-                    stopColor="#8b5cf6"
+                    stopColor="var(--primary)"
                     stopOpacity={0.28}
                   />
                   <stop
                     offset="65%"
-                    stopColor="#8b5cf6"
+                    stopColor="var(--primary)"
                     stopOpacity={0.07}
                   />
                   <stop
                     offset="100%"
-                    stopColor="#8b5cf6"
+                    stopColor="var(--primary)"
                     stopOpacity={0}
                   />
                 </linearGradient>
@@ -669,7 +508,7 @@ export default function WeeklyTrend({
 
               <CartesianGrid
                 vertical={false}
-                stroke="rgba(255,255,255,0.045)"
+                stroke="var(--focus-hairline)"
                 strokeDasharray="3 7"
               />
 
@@ -697,8 +536,11 @@ export default function WeeklyTrend({
                     'var(--text-muted)',
                   fontSize: 10,
                 }}
-                tickFormatter={
-                  formatAxisDuration
+                tickFormatter={(value: number) =>
+                  formatAxisDuration(
+                    value,
+                    language,
+                  )
                 }
                 width={60}
               />
@@ -707,7 +549,7 @@ export default function WeeklyTrend({
                 y={
                   averageSeconds
                 }
-                stroke="rgba(167,139,250,0.36)"
+                stroke="var(--primary-border)"
                 strokeDasharray="4 7"
               />
 
@@ -717,7 +559,7 @@ export default function WeeklyTrend({
                 }
                 cursor={{
                   stroke:
-                    'rgba(139,92,246,0.30)',
+                    'var(--primary-border)',
                   strokeWidth: 1,
                 }}
               />
@@ -725,7 +567,7 @@ export default function WeeklyTrend({
               <Area
                 type="natural"
                 dataKey="seconds"
-                stroke="#b59cff"
+                stroke="var(--primary-glow)"
                 strokeWidth={2}
                 strokeDasharray="8 6"
                 fill="url(#focusFill)"
@@ -735,9 +577,9 @@ export default function WeeklyTrend({
                 activeDot={{
                   r: 5,
                   fill:
-                    '#b59cff',
+                    'var(--primary-glow)',
                   stroke:
-                    '#0b0c12',
+                    'var(--void-bg)',
                   strokeWidth: 2,
                   filter:
                     'url(#focusGlow)',
@@ -747,69 +589,18 @@ export default function WeeklyTrend({
             </AreaChart>
           </ResponsiveContainer>
 
-          <div
-            style={{
-              marginTop: '20px',
-              paddingTop: '20px',
-              borderTop:
-                '1px solid var(--void-border)',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent:
-                  'space-between',
-                gap: '12px',
-                marginBottom: '12px',
-                flexWrap: 'wrap',
-              }}
-            >
+          <div className="weekly-trend-v5-hourly">
+            <div className="dashboard-insight-subhead">
               <div>
-                <div
-                  style={{
-                    fontSize: '10px',
-                    fontFamily:
-                      'Space Grotesk, sans-serif',
-                    fontWeight: 600,
-                    color:
-                      'var(--text-muted)',
-                    textTransform:
-                      'uppercase',
-                    letterSpacing:
-                      '0.1em',
-                  }}
-                >
-                  24-HOUR RHYTHM
-                </div>
-
-                <div
-                  style={{
-                    marginTop: '4px',
-                    fontSize: '10px',
-                    color:
-                      'var(--text-muted)',
-                  }}
-                >
-                  Recorded sessions by
-                  completion hour.
-                </div>
+                <span>{tr('24-hour rhythm', 'ڕێتمی ٢٤ کاتژمێر')}</span>
+                <p>{tr('Recorded sessions by completion hour.', 'سێشنە تۆمارکراوەکان بەپێی کاتی تەواوبوون.')}</p>
               </div>
 
-              <div
-                className="mono"
-                style={{
-                  fontSize: '10px',
-                  color:
-                    'var(--text-muted)',
-                }}
-              >
-                {peakHour &&
-                peakHour.seconds > 0
-                  ? `Peak · ${peakHour.label}`
-                  : 'No peak yet'}
-              </div>
+              <strong className="mono">
+                {peakHour && peakHour.seconds > 0
+                  ? `${tr('Peak', 'لووتکە')} · ${peakHour.label}`
+                  : tr('No peak yet', 'هێشتا لووتکە نییە')}
+              </strong>
             </div>
 
             <ResponsiveContainer
@@ -835,12 +626,12 @@ export default function WeeklyTrend({
                   >
                     <stop
                       offset="0%"
-                      stopColor="#38bdf8"
+                      stopColor="var(--energy)"
                       stopOpacity={0.25}
                     />
                     <stop
                       offset="100%"
-                      stopColor="#8b5cf6"
+                      stopColor="var(--primary)"
                       stopOpacity={0.9}
                     />
                   </linearGradient>
@@ -848,7 +639,7 @@ export default function WeeklyTrend({
 
                 <CartesianGrid
                   vertical={false}
-                  stroke="rgba(255,255,255,0.035)"
+                  stroke="var(--focus-hairline)"
                   strokeDasharray="2 8"
                 />
 
@@ -882,7 +673,7 @@ export default function WeeklyTrend({
                   }
                   cursor={{
                     fill:
-                      'rgba(139,92,246,0.06)',
+                      'var(--primary-soft)',
                   }}
                 />
 
@@ -903,62 +694,16 @@ export default function WeeklyTrend({
             </ResponsiveContainer>
           </div>
 
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent:
-                'space-between',
-              gap: '16px',
-              marginTop: '16px',
-              paddingTop: '14px',
-              borderTop:
-                '1px solid var(--void-border)',
-              flexWrap: 'wrap',
-            }}
-          >
+          <div className="weekly-trend-v5-footer">
             <div>
-              <div
-                style={{
-                  fontSize: '9px',
-                  color:
-                    'var(--text-muted)',
-                  textTransform:
-                    'uppercase',
-                }}
-              >
-                DAILY AVERAGE
-              </div>
-
-              <div
-                className="mono"
-                style={{
-                  marginTop: '4px',
-                  fontSize: '12px',
-                  color:
-                    'var(--text-secondary)',
-                }}
-              >
-                {formatDuration(
-                  averageSeconds
-                )}
-              </div>
+              <span>{tr('Daily average', 'ناوەندی ڕۆژانە')}</span>
+              <strong className="mono">{formatDuration(averageSeconds, language)}</strong>
             </div>
 
-            <div
-              style={{
-                fontSize: '10px',
-                color:
-                  'var(--text-muted)',
-                textAlign: 'right',
-              }}
-            >
-              Hover any day or hour for
-              exact recorded time.
-            </div>
+            <p>{tr('Hover any day or hour for exact recorded time.', 'لەسەر هەر ڕۆژ یان کاتژمێرێک بوەستە بۆ بینینی کاتی ورد.')}</p>
           </div>
         </>
       )}
-    </div>
+    </section>
   )
 }

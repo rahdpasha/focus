@@ -1,1614 +1,530 @@
-import { Suspense, useEffect, useRef } from 'react'
 import {
-  Clock,
-  Target,
+  ArrowRight,
+  CalendarDays,
+  Clock3,
   Flame,
+  Layers3,
 } from 'lucide-react'
 import type {
   Subject,
   StudySession,
 } from '../../types'
-import Timer from '../timer/Timer'
-import StatCard from './StatCard'
+import type {
+  RoutineItem,
+  RoutineSessionContext,
+} from '../../storage/types'
+import FocusPulse from './FocusPulse'
 import RecentSessions from './RecentSessions'
-import { useI18n } from '../../useI18n'
+import StatCard from './StatCard'
 import {
   getStreakStats,
 } from '../../utils/goalHistory'
 import {
-  getProductivityInsights,
-} from '../../utils/productivityInsights'
+  getStudyPlan,
+} from '../../utils/studyPlan'
+import { useI18n } from '../../useI18n'
+import { localizeUiText } from '../../utils/localizeUiText'
 import {
-  getConsistencyInsights,
-} from '../../utils/consistencyInsights'
-import { getStudyPlan } from '../../utils/studyPlan'
-import {
-  getStudyAdvisor,
-} from '../../utils/studyAdvisor'
+  getRotationItemForDate,
+  getRoutineItemsForDate,
+  getRoutineMinutesForDate,
+  toRoutineDateKey,
+} from '../../utils/routine'
 
 interface DashboardProps {
   subjects: Subject[]
-  activeSubjectId: string | null
   sessions: StudySession[]
   dailyGoal: number
   weeklyGoal: number
-  onDailyGoalChange: (
-    goal: number
-  ) => void
-  onWeeklyGoalChange: (
-    goal: number
-  ) => void
-  onAddSession: (
-    session: StudySession
-  ) => void
+  routineItems: RoutineItem[]
   onDeleteSession: (
-    id: string
+    id: string,
   ) => void
-  shortBreak: number
-  longBreak: number
-  sessionsBeforeLongBreak: number
-  autoStartBreak: boolean
-  soundEnabled: boolean
-  soundVolume: number
-  notificationsEnabled: boolean
-  onStartRecommendedSession: (subjectId?: string, minutes?: number) => void
+  onStartRecommendedSession: (
+    subjectId?: string,
+    minutes?: number,
+    routineContext?: RoutineSessionContext,
+  ) => void
 }
 
-function getStartOfDay(
-  date: Date
-): Date {
-  const result = new Date(date)
-
-  result.setHours(0, 0, 0, 0)
-
-  return result
+function startOfDay(
+  date: Date,
+): number {
+  const value = new Date(date)
+  value.setHours(0, 0, 0, 0)
+  return value.getTime()
 }
 
-function getStartOfWeek(
-  date: Date
-): Date {
-  const result =
-    getStartOfDay(date)
+function startOfWeek(
+  date: Date,
+): number {
+  const value = new Date(date)
+  value.setHours(0, 0, 0, 0)
 
-  const day =
-    result.getDay()
-
-  const daysSinceMonday =
-    day === 0
+  const weekday =
+    value.getDay()
+  const offset =
+    weekday === 0
       ? 6
-      : day - 1
+      : weekday - 1
 
-  result.setDate(
-    result.getDate() -
-      daysSinceMonday
+  value.setDate(
+    value.getDate() - offset,
   )
 
-  return result
+  return value.getTime()
 }
 
-function formatHoursMinutes(
-  minutes: number
+function minutesLabel(
+  minutes: number,
+  language: 'en' | 'ku',
 ): string {
   const hours =
-    Math.floor(
-      minutes / 60
-    )
-
-  const remainingMinutes =
+    Math.floor(minutes / 60)
+  const remainder =
     minutes % 60
 
-  if (hours > 0) {
-    return `${hours}h ${remainingMinutes}m`
+  if (hours === 0) {
+    return language === 'ku'
+      ? `${remainder} خولەک`
+      : `${remainder}m`
   }
 
-  return `${remainingMinutes}m`
-}
-
-function formatGoal(
-  minutes: number
-): string {
-  if (minutes >= 60) {
-    const hours =
-      Math.floor(
-        minutes / 60
-      )
-
-    const remainingMinutes =
-      minutes % 60
-
-    return remainingMinutes > 0
-      ? `${hours}h ${remainingMinutes}m`
-      : `${hours}h`
+  if (remainder > 0) {
+    return language === 'ku'
+      ? `${hours} کاتژمێر ${remainder} خولەک`
+      : `${hours}h ${remainder}m`
   }
 
-  return `${minutes}m`
+  return language === 'ku'
+    ? `${hours} کاتژمێر`
+    : `${hours}h`
 }
-
 
 export default function Dashboard({
   subjects,
-  activeSubjectId,
   sessions,
   dailyGoal,
   weeklyGoal,
-  onDailyGoalChange,
-  onWeeklyGoalChange,
-  onAddSession,
+  routineItems,
   onDeleteSession,
-  shortBreak,
-  longBreak,
-  sessionsBeforeLongBreak,
-  autoStartBreak,
-  soundEnabled,
-  soundVolume,
-  notificationsEnabled,
   onStartRecommendedSession,
 }: DashboardProps) {
-  const { t } =
-    useI18n()
-
-  const timerCardRef =
-    useRef<HTMLDivElement>(null)
-
-  const activeSubject =
-    subjects.find(
-      (subject) =>
-        subject.id ===
-        activeSubjectId
-    )
-
-  const today =
-    getStartOfDay(
-      new Date()
-    )
-
+  const { language, tr } = useI18n()
+  const now = new Date()
+  const todayStart =
+    startOfDay(now)
   const weekStart =
-    getStartOfWeek(
-      new Date()
-    )
+    startOfWeek(now)
 
-  const completedSessions =
+  const completed =
     sessions.filter(
       (session) =>
-        session.completed
+        session.completed &&
+        session.actualDuration > 0,
     )
 
   const todaySessions =
-    completedSessions.filter(
-      (session) => {
-        const sessionDate =
-          getStartOfDay(
-            new Date(
-              session.completedAt
-            )
-          )
-
-        return (
-          sessionDate.getTime() ===
-          today.getTime()
-        )
-      }
+    completed.filter(
+      (session) =>
+        startOfDay(
+          new Date(
+            session.completedAt,
+          ),
+        ) === todayStart,
     )
 
   const weekSessions =
-    completedSessions.filter(
-      (session) => {
-        const sessionDate =
-          getStartOfDay(
-            new Date(
-              session.completedAt
-            )
-          )
-
-        return (
-          sessionDate.getTime() >=
-          weekStart.getTime()
-        )
-      }
+    completed.filter(
+      (session) =>
+        new Date(
+          session.completedAt,
+        ).getTime() >=
+        weekStart,
     )
 
   const todayMinutes =
-    Math.floor(
+    Math.round(
       todaySessions.reduce(
-        (
-          sum,
-          session
-        ) =>
+        (sum, session) =>
           sum +
           session.actualDuration,
-        0
-      ) / 60
+        0,
+      ) / 60,
     )
 
   const weekMinutes =
-    Math.floor(
+    Math.round(
       weekSessions.reduce(
-        (
-          sum,
-          session
-        ) =>
+        (sum, session) =>
           sum +
           session.actualDuration,
-        0
-      ) / 60
-    )
-
-  const totalSessions =
-    completedSessions.length
-
-  const dailyGoalProgress =
-    dailyGoal > 0
-      ? Math.min(
-          100,
-          (todayMinutes /
-            dailyGoal) *
-            100
-        )
-      : 0
-
-  const weeklyGoalProgress =
-    weeklyGoal > 0
-      ? Math.min(
-          100,
-          (weekMinutes /
-            weeklyGoal) *
-            100
-        )
-      : 0
-
-  const dailyGoalReached =
-    dailyGoal > 0 &&
-    todayMinutes >= dailyGoal
-
-  const weeklyGoalReached =
-    weeklyGoal > 0 &&
-    weekMinutes >= weeklyGoal
-
-  const streakStats =
-    getStreakStats(
-      sessions,
-      {},
-      weeklyGoal
+        0,
+      ) / 60,
     )
 
   const streak =
-    streakStats.currentDailyStreak
-
-  const bestStreak =
-    streakStats.bestDailyStreak
-
-  const insights =
-    getProductivityInsights(
-      sessions
-    )
-
-  const consistency =
-    getConsistencyInsights(
+    getStreakStats(
       sessions,
-      weeklyGoal
-    )
+      {},
+      weeklyGoal,
+    ).currentDailyStreak
 
-
-  const advisor =
-    getStudyAdvisor(
-      sessions,
-      subjects,
-      weeklyGoal
-    )
-
-  const recommendation = advisor.recommendation
-
-  const studyPlan =
+  const plan =
     getStudyPlan(
       sessions,
       subjects,
-      weeklyGoal
+      weeklyGoal,
+      dailyGoal,
     )
 
-
-  const recommendationReason =
-    (() => {
-      if (
-        recommendation.type ===
-        'understudiedSubject'
-      ) {
-        const subject =
-          insights.subjectBalance.find(
-            (item) =>
-              item.subjectName ===
-              recommendation.subjectName
-          )
-
-        if (
-          subject &&
-          recommendation.consistencyTrend ===
-            'declining'
-        ) {
-          return `Your consistency is declining, and ${subject.subjectName} has only ${subject.minutes} minutes this week.`
-        }
-
-        if (subject) {
-          return `${subject.subjectName} has only ${subject.minutes} minutes this week.`
-        }
-      }
-
-      if (
-        recommendation.type ===
-        'unstudiedSubject'
-      ) {
-        if (
-          recommendation.consistencyTrend ===
-          'declining'
-        ) {
-          return 'Your consistency is declining, so giving an untouched subject some attention can help rebalance your week.'
-        }
-
-        return 'You have not studied this subject yet this week.'
-      }
-
-      if (
-        recommendation.type ===
-        'shortSessions'
-      ) {
-        return `Your average session is only ${insights.averageSessionMinutes} minutes. A focused 25-minute session would strengthen the habit.`
-      }
-
-      if (
-        recommendation.type ===
-        'weeklyGoal'
-      ) {
-        return `You are ${recommendation.remainingMinutes} minutes short of your weekly goal.`
-      }
-
-      if (
-        recommendation.type ===
-        'maintain'
-      ) {
-        if (
-          recommendation.consistencyTrend ===
-          'improving'
-        ) {
-          return 'Your consistency is improving. Keep the current rhythm.'
-        }
-
-        if (
-          recommendation.consistencyTrend ===
-          'declining'
-        ) {
-          return 'Your consistency is declining. A focused session can help you get back on track.'
-        }
-
-        return 'Your study rhythm is stable. Keep it going.'
-      }
-
-      return ''
-    })()
-
-  useEffect(() => {
-    const card =
-      timerCardRef.current
-
-    if (!card) {
-      return
-    }
-
-    const handleMouseMove =
-      (event: MouseEvent) => {
-        const rect =
-          card.getBoundingClientRect()
-
-        if (
-          rect.width === 0 ||
-          rect.height === 0
-        ) {
-          return
-        }
-
-        const x =
-          event.clientX -
-          rect.left
-
-        const y =
-          event.clientY -
-          rect.top
-
-        const rotateX =
-          ((y -
-            rect.height / 2) /
-            rect.height) *
-          -4
-
-        const rotateY =
-          ((x -
-            rect.width / 2) /
-            rect.width) *
-          4
-
-        card.style.transform =
-          `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`
-      }
-
-    const handleMouseLeave =
-      () => {
-        card.style.transform =
-          'perspective(1000px) rotateX(0deg) rotateY(0deg)'
-      }
-
-    card.addEventListener(
-      'mousemove',
-      handleMouseMove
+  const todaysRoutine =
+    getRoutineItemsForDate(
+      routineItems,
+      now,
     )
 
-    card.addEventListener(
-      'mouseleave',
-      handleMouseLeave
+  const todaysRotation =
+    getRotationItemForDate(
+      routineItems,
+      now,
     )
 
-    return () => {
-      card.removeEventListener(
-        'mousemove',
-        handleMouseMove
-      )
+  const routineCompleted =
+    todaysRoutine.filter(
+      (item) =>
+        getRoutineMinutesForDate(
+          item,
+          sessions,
+          now,
+        ) >= item.targetMinutes,
+    ).length
 
-      card.removeEventListener(
-        'mouseleave',
-        handleMouseLeave
-      )
-    }
-  }, [])
-
-  const handleTimerComplete =
-    () => {
-      // Timer handles completion internally.
-    }
-
-  const handleSessionEnd = (
-    duration: number,
-    actualDuration: number,
-    completed: boolean,
-    interruptions: number,
-    totalPausedSeconds: number,
-    startedAt: Date
-  ) => {
-    
-
-    if (!activeSubject) {
-      return
-    }
-
-    const newSession:
-      StudySession = {
-      id: `s${Date.now()}`,
-      subjectId:
-        activeSubject.id,
-      subjectName:
-        activeSubject.name,
-      subjectColor:
-        activeSubject.color,
-      duration,
-      actualDuration,
-      startedAt,
-      completedAt:
-        new Date(),
-      completed,
-      interruptions,
-      totalPausedSeconds,
-    }
-
-    onAddSession(
-      newSession
+  const routinePreview =
+    todaysRoutine.slice(0, 4)
+  const hiddenRoutineCount =
+    Math.max(
+      0,
+      todaysRoutine.length -
+        routinePreview.length,
     )
-  }
 
   return (
-    <div
-      className="dashboard"
-      style={{
-        flex: 1,
-        minWidth: 0,
-        padding: '32px',
-        overflowY: 'auto',
-        display: 'flex',
-        flexDirection:
-          'column',
-        gap: '24px',
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent:
-            'space-between',
-          alignItems:
-            'flex-start',
-          gap: '16px',
-          flexWrap:
-            'wrap',
-        }}
-      >
+    <main className="dashboard dashboard-v3">
+      <header className="dashboard-v3-header">
         <div>
-          <h1
-            style={{
-              fontSize: '22px',
-              color:
-                'var(--text-primary)',
-              marginBottom: '4px',
-            }}
-          >
-            {t('goodEvening')}
+          <div className="eyebrow">
+            {tr('Today', 'ئەمڕۆ')}
+          </div>
+          <h1>
+            {tr('Make the next session count.', 'سێشنی داهاتوو بەهێز بکە.')}
           </h1>
-
-          <span
-            style={{
-              fontSize: '11px',
-              color:
-                'var(--text-muted)',
-              fontFamily:
-                'Orbitron, sans-serif',
-              textTransform:
-                'uppercase',
-              letterSpacing:
-                '0.1em',
-            }}
-          >
-            {t('systemStatus')}
-          </span>
+          <p>
+            {tr("Your next move, current momentum, and today's plan — all in one place.", 'هەنگاوی داهاتوو، بەردەوامی ئێستا و پلانی ئەمڕۆ هەمووی لە یەک شوێندایە.')}
+          </p>
         </div>
 
-        <span
-          className="mono"
-          style={{
-            fontSize: '11px',
-            color:
-              'var(--text-muted)',
-          }}
-        >
-          {new Date().toLocaleDateString(
-            'en-US',
+        <div className="dashboard-date">
+          <CalendarDays
+            size={15}
+          />
+          {now.toLocaleDateString(
+            language === 'ku' ? 'ku-IQ' : 'en-US',
             {
-              weekday:
-                'long',
+              weekday: 'long',
               month: 'short',
               day: 'numeric',
-            }
+            },
           )}
-        </span>
-      </div>
+        </div>
+      </header>
 
-      {/* Stats */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '14px',
-          flexWrap: 'wrap',
-        }}
-      >
+      <FocusPulse
+        sessions={sessions}
+        subjects={subjects}
+        dailyGoal={dailyGoal}
+        weeklyGoal={weeklyGoal}
+        onStart={
+          onStartRecommendedSession
+        }
+      />
+
+      <section className="dashboard-stat-grid">
         <StatCard
-          icon={Clock}
-          label={t(
-            'activeFocus'
-          )}
-          value={formatHoursMinutes(
-            todayMinutes
-          )}
+          icon={Clock3}
+          label={tr('Today', 'ئەمڕۆ')}
+          value={minutesLabel(todayMinutes, language)}
           accentColor="var(--primary)"
         />
 
         <StatCard
-          icon={Target}
-          label={t(
-            'sessions'
-          )}
+          icon={Layers3}
+          label={tr("Today's sessions", 'سێشنەکانی ئەمڕۆ')}
           value={String(
-            totalSessions
+            todaySessions.length,
           )}
           accentColor="var(--cyber-blue)"
         />
 
         <StatCard
           icon={Flame}
-          label={t('streak')}
-          value={`${streak} ${t(
-            'days'
-          )}`}
+          label={tr('Current streak', 'زنجیرەی ئێستا')}
+          value={
+            language === 'ku'
+              ? `${streak} ڕۆژ`
+              : `${streak}d`
+          }
           accentColor="var(--energy)"
         />
 
         <StatCard
-          icon={Flame}
-          label="BEST STREAK"
-          value={`${bestStreak} ${t(
-            'days'
-          )}`}
+          icon={Clock3}
+          label={tr('This week', 'ئەم هەفتەیە')}
+          value={minutesLabel(weekMinutes, language)}
           accentColor="var(--teal)"
         />
-      </div>
+      </section>
 
-      {/* Productivity Insights */}
-      {/* Consistency */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '20px',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '16px',
-            flexWrap: 'wrap',
-          }}
-        >
+      <section className="glass-panel dashboard-routine-preview">
+        <div className="dashboard-section-head dashboard-routine-head">
           <div>
-            <div
-              style={{
-                fontSize: '11px',
-                fontFamily: 'Orbitron, sans-serif',
-                color: 'var(--text-muted)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em',
-                marginBottom: '4px',
-              }}
-            >
-              {t('consistencyTrend')}
+            <div className="eyebrow">
+              {tr("Today's routine", 'ڕوتینی ئەمڕۆ')}
             </div>
-
-            <div
-              style={{
-                fontSize: '11px',
-                color: 'var(--text-muted)',
-              }}
-            >
-              {t('consistencyDescription')}
-            </div>
+            <h2>
+              {routineCompleted}/{
+                todaysRoutine.length
+              } {tr('complete', 'تەواو')}
+            </h2>
           </div>
 
-          <div
-            className="mono"
-            style={{
-              fontSize: '12px',
-              color:
-                consistency.trend === 'improving'
-                  ? 'var(--success)'
-                  : consistency.trend === 'declining'
-                    ? 'var(--danger)'
-                    : 'var(--text-muted)',
-            }}
-          >
-            {consistency.changePercent > 0
-              ? `+${consistency.changePercent}%`
-              : `${consistency.changePercent}%`}{' '}
-            {t('vsPreviousWeek')}
-          </div>
-        </div>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns:
-              'repeat(auto-fit, minmax(150px, 1fr))',
-            gap: '12px',
-          }}
-        >
-          <div
-            style={{
-              padding: '14px',
-              borderRadius: '10px',
-              background:
-                'rgba(34,197,94,0.06)',
-              border:
-                '1px solid var(--void-border)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '10px',
-                color: 'var(--text-muted)',
-                marginBottom: '6px',
-              }}
-            >
-              {t('trend')}
-            </div>
-
-            <div
-              style={{
-                fontSize: '18px',
-                color:
-                  consistency.trend === 'improving'
-                    ? 'var(--success)'
-                    : consistency.trend === 'declining'
-                      ? 'var(--danger)'
-                      : 'var(--text-primary)',
-              }}
-            >
-              {t(
-                consistency.trend === 'improving'
-                  ? 'improving'
-                  : consistency.trend === 'declining'
-                    ? 'declining'
-                    : 'stable'
-              )}
-            </div>
-          </div>
-
-          <div
-            style={{
-              padding: '14px',
-              borderRadius: '10px',
-              background:
-                'rgba(139,92,246,0.06)',
-              border:
-                '1px solid var(--void-border)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '10px',
-                color: 'var(--text-muted)',
-                marginBottom: '6px',
-              }}
-            >
-              {t('weeklyAverage')}
-            </div>
-
-            <div
-              className="mono"
-              style={{
-                fontSize: '18px',
-                color: 'var(--primary-glow)',
-              }}
-            >
-              {formatHoursMinutes(
-                consistency.averageWeeklyMinutes
-              )}
-            </div>
-          </div>
-
-          <div
-            style={{
-              padding: '14px',
-              borderRadius: '10px',
-              background:
-                'rgba(6,182,212,0.06)',
-              border:
-                '1px solid var(--void-border)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '10px',
-                color: 'var(--text-muted)',
-                marginBottom: '6px',
-              }}
-            >
-              {t('bestWeek')}
-            </div>
-
-            <div
-              className="mono"
-              style={{
-                fontSize: '18px',
-                color: 'var(--cyber-glow)',
-              }}
-            >
-              {formatHoursMinutes(
-                consistency.bestWeek?.minutes ?? 0
-              )}
-            </div>
-          </div>
-
-          <div
-            style={{
-              padding: '14px',
-              borderRadius: '10px',
-              background:
-                'rgba(245,158,11,0.06)',
-              border:
-                '1px solid var(--void-border)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '10px',
-                color: 'var(--text-muted)',
-                marginBottom: '6px',
-              }}
-            >
-              {t('strongestConsistency')}
-            </div>
-
-            <div
-              className="mono"
-              style={{
-                fontSize: '18px',
-                color: 'var(--energy)',
-              }}
-            >
-              {consistency.strongestConsistencyWeek
-                ?.studyDays ?? 0}{' '}
-              / 7
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Study Plan */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '20px',
-          background:
-            'rgba(139,92,246,0.05)',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '16px',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontSize: '11px',
-                fontFamily: 'Orbitron, sans-serif',
-                color: 'var(--primary-glow)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em',
-                marginBottom: '4px',
-              }}
-            >
-              TODAY'S STUDY PLAN
-            </div>
-
-            <div
-              style={{
-                fontSize: '11px',
-                color: 'var(--text-muted)',
-              }}
-            >
-              {(studyPlan as unknown as { totalMinutes?: number }).totalMinutes}m planned
-              {studyPlan.bestTime
-                ? ` · Best time ${studyPlan.bestTime}`
-                : ''}
-            </div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            display: 'grid',
-            gap: '10px',
-          }}
-        >
-          {studyPlan.items.map(
-            (item, index) => (
-              <div
-                key={`${item.subjectId}-${index}`}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '14px',
-                  padding: '13px 14px',
-                  borderRadius: '10px',
-                  background:
-                    'rgba(255,255,255,0.02)',
-                  border:
-                    '1px solid var(--void-border)',
-                }}
-              >
-                <div
-                  style={{
-                    minWidth: 0,
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: '14px',
-                      color:
-                        'var(--text-primary)',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {index + 1}. {item.subjectName}
-                  </div>
-
-                  <div
-                    style={{
-                      marginTop: '4px',
-                      fontSize: '10px',
-                      color:
-                        'var(--text-muted)',
-                    }}
-                  >
-                    {item.reason}
-                  </div>
-                </div>
-
-                <div
-                  className="mono"
-                  style={{
-                    flexShrink: 0,
-                    fontSize: '14px',
-                    color:
-                      'var(--primary-glow)',
-                  }}
-                >
-                  {item.minutes}m
-                </div>
-              </div>
-            )
+          {todaysRotation && (
+            <span className="mono">
+              {tr('Rotation', 'گۆڕانکاری')} · {
+                todaysRotation.title
+              }
+            </span>
           )}
         </div>
-      </div>
 
-      {/* Recommendation */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '20px',
-          borderColor: 'rgba(245,158,11,0.18)',
-          background: 'rgba(245,158,11,0.05)',
-        }}
-      >
-        <div
-          style={{
-            fontSize: '11px',
-            fontFamily: 'Orbitron, sans-serif',
-            color: 'var(--energy)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-            marginBottom: '8px',
-          }}
-        >
-          {t('recommendationTitle')}
-        </div>
-
-        {recommendation.type === 'noData' && (
-          <div>
-            <div
-              style={{
-                fontSize: '15px',
-                color: 'var(--text-primary)',
-                marginBottom: '6px',
-              }}
-            >
-              {t('recommendNoData')}
-            </div>
-            <div className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-              {recommendation.minutes}m
-            </div>
+        {todaysRoutine.length === 0 ? (
+          <div className="dashboard-empty">
+            {tr('Add fixed or rotating study items in Routine.', 'لە بەشی ڕوتیندا بڕگەی جێگیر یان گۆڕاو زیاد بکە.')}
           </div>
-        )}
+        ) : (
+          <div className="dashboard-routine-grid">
+            {routinePreview.map(
+              (item) => {
+                const subject =
+                  subjects.find(
+                    (candidate) =>
+                      candidate.id ===
+                      item.subjectId,
+                  )
 
-        {recommendation.type === 'unstudiedSubject' && (
-          <div>
-            <div
-              style={{
-                fontSize: '15px',
-                color: 'var(--text-primary)',
-                marginBottom: '6px',
-              }}
-            >
-              {t('recommendUnstudied')}{' '}
-              <strong>{recommendation.subjectName}</strong>
-            </div>
-            <div className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-              {recommendation.minutes}m
-            </div>
-          </div>
-        )}
+                const minutes =
+                  getRoutineMinutesForDate(
+                    item,
+                    sessions,
+                    now,
+                  )
 
-        {recommendation.type === 'understudiedSubject' && (
-          <div>
-            <div
-              style={{
-                fontSize: '15px',
-                color: 'var(--text-primary)',
-                marginBottom: '6px',
-              }}
-            >
-              {t('recommendUnderstudied')}{' '}
-              <strong>{recommendation.subjectName}</strong>
-            </div>
+                const done =
+                  minutes >=
+                  item.targetMinutes
 
-            <div
-              className="mono"
-              style={{
-                fontSize: '11px',
-                color: 'var(--text-muted)',
-              }}
-            >
-              {recommendation.minutes}m
-            </div>
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    disabled={!subject}
+                    onClick={() =>
+                      onStartRecommendedSession(
+                        item.subjectId,
+                        item.targetMinutes,
+                        {
+                          itemId:
+                            item.id,
+                          routineDate:
+                            toRoutineDateKey(
+                              now,
+                            ),
+                        },
+                      )
+                    }
+                    className="dashboard-routine-card"
+                  >
+                    <span
+                      aria-label={
+                        done
+                          ? tr('Completed', 'تەواوکراو')
+                          : tr('Pending', 'چاوەڕوان')
+                      }
+                      className={`dashboard-routine-state ${done ? 'done' : ''}`}
+                    >
+                      {done
+                        ? '✅'
+                        : '⬜'}
+                    </span>
 
-            {recommendationReason && (
-              <div
-                style={{
-                  marginTop: '10px',
-                  fontSize: '11px',
-                  lineHeight: 1.5,
-                  color: 'var(--text-secondary)',
-                }}
-              >
-                {recommendationReason}
-              </div>
-            )}
-          </div>
-        )}
-
-        {recommendation.type === 'shortSessions' && (
-          <div>
-            <div style={{ fontSize: '15px', color: 'var(--text-primary)', marginBottom: '6px' }}>
-              {t('recommendShortSessions')}
-            </div>
-            <div className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-              {recommendation.minutes}m
-            </div>
-
-            {recommendationReason && (
-              <div
-                style={{
-                  marginTop: '10px',
-                  fontSize: '11px',
-                  lineHeight: 1.5,
-                  color: 'var(--text-secondary)',
-                }}
-              >
-                {recommendationReason}
-              </div>
-            )}
-          </div>
-        )}
-
-        {recommendation.type === 'weeklyGoal' && (
-          <div>
-            <div style={{ fontSize: '15px', color: 'var(--text-primary)', marginBottom: '6px' }}>
-              {t('recommendWeeklyGoal')}{' '}
-              <strong>{recommendation.remainingMinutes}m</strong>
-            </div>
-            <div className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-              {recommendation.minutes}m
-            </div>
-
-            {recommendationReason && (
-              <div
-                style={{
-                  marginTop: '10px',
-                  fontSize: '11px',
-                  lineHeight: 1.5,
-                  color: 'var(--text-secondary)',
-                }}
-              >
-                {recommendationReason}
-              </div>
-            )}
-          </div>
-        )}
-
-        {recommendation.type === 'maintain' && (
-          <div>
-            <div style={{ fontSize: '15px', color: 'var(--text-primary)', marginBottom: '6px' }}>
-              {t('recommendMaintain')}
-            </div>
-            <div
-              className="mono"
-              style={{
-                fontSize: '11px',
-                color:
-                  (recommendation.changePercent ?? 0) > 0
-                    ? 'var(--success)'
-                    : 'var(--text-muted)',
-              }}
-            >
-              {(recommendation.changePercent ?? 0) > 0
-                ? `+${recommendation.changePercent}%`
-                : `${recommendation.changePercent ?? 0}%`}{' '}
-              {t('vsLastWeek')}
-            </div>
-          </div>
-        )}
-        <button
-          type="button"
-          onClick={() => onStartRecommendedSession(advisor.action.subjectId, advisor.action.minutes)}
-          style={{
-            marginTop: '14px',
-            border: '1px solid var(--primary-border)',
-            background: 'var(--primary-soft)',
-            color: 'var(--text-primary)',
-            borderRadius: '10px',
-            padding: '9px 12px',
-            cursor: 'pointer',
-            fontSize: '11px',
-            fontWeight: 600,
-          }}
-        >
-          Start recommended session
-        </button>
-      </div>
-
-      {/* Daily Goal */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '20px',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent:
-              'space-between',
-            alignItems:
-              'center',
-            gap: '16px',
-            marginBottom:
-              '14px',
-            flexWrap:
-              'wrap',
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontSize: '11px',
-                fontFamily:
-                  'Orbitron, sans-serif',
-                color:
-                  'var(--text-muted)',
-                textTransform:
-                  'uppercase',
-                letterSpacing:
-                  '0.1em',
-                marginBottom:
-                  '6px',
-              }}
-            >
-              {t(
-                'dailyFocusGoal'
-              )}
-            </div>
-
-            <div
-              className="mono"
-              style={{
-                fontSize: '22px',
-                color:
-                  dailyGoalReached
-                    ? 'var(--success)'
-                    : 'var(--text-primary)',
-              }}
-            >
-              {formatHoursMinutes(
-                todayMinutes
-              )}
-
-              <span
-                style={{
-                  color:
-                    'var(--text-muted)',
-                  fontSize:
-                    '14px',
-                }}
-              >
-                {' '}
-                /{' '}
-                {formatGoal(
-                  dailyGoal
-                )}
-              </span>
-            </div>
-          </div>
-
-          <select
-            value={dailyGoal}
-            onChange={(
-              event
-            ) =>
-              onDailyGoalChange(
-                Number(
-                  event.target.value
+                    <span className="dashboard-routine-copy">
+                      <strong>
+                        {item.title}
+                      </strong>
+                      <small>
+                        {minutes}/{
+                          item.targetMinutes
+                        }m · {
+                          item.mode ===
+                          'rotation'
+                            ? tr('rotation', 'گۆڕاو')
+                            : tr('daily', 'ڕۆژانە')
+                        }
+                      </small>
+                    </span>
+                  </button>
                 )
-              )
-            }
-            style={{
-              padding:
-                '8px 10px',
-              background:
-                'var(--void-surface-hover)',
-              border:
-                '1px solid var(--void-border)',
-              borderRadius:
-                '8px',
-              color:
-                'var(--text-primary)',
-              outline:
-                'none',
-              cursor:
-                'pointer',
-            }}
-          >
-            <option value={30}>
-              {t(
-                'minutes30'
-              )}
-            </option>
+              },
+            )}
 
-            <option value={60}>
-              {t('hour1')}
-            </option>
+            {hiddenRoutineCount > 0 && (
+              <div className="dashboard-routine-more">
+                +{hiddenRoutineCount} {tr('more in Routine', 'زیاتر لە ڕوتین')}
+              </div>
+            )}
+          </div>
+        )}
+      </section>
 
-            <option value={90}>
-              {t('hours15')}
-            </option>
-
-            <option value={120}>
-              {t('hours2')}
-            </option>
-
-            <option value={180}>
-              {t('hours3')}
-            </option>
-
-            <option value={240}>
-              {t('hours4')}
-            </option>
-
-            <option value={300}>
-              {t('hours5')}
-            </option>
-          </select>
-        </div>
-
-        <div
-          style={{
-            height: '8px',
-            background:
-              'var(--void-border)',
-            borderRadius:
-              '999px',
-            overflow:
-              'hidden',
-          }}
-        >
-          <div
-            style={{
-              width:
-                `${dailyGoalProgress}%`,
-              height:
-                '100%',
-              background:
-                dailyGoalReached
-                  ? 'var(--success)'
-                  : 'linear-gradient(90deg, var(--primary), var(--cyber-blue))',
-              borderRadius:
-                '999px',
-              transition:
-                'width 0.5s ease',
-              boxShadow:
-                dailyGoalReached
-                  ? '0 0 15px rgba(34,197,94,0.4)'
-                  : '0 0 15px rgba(139,92,246,0.3)',
-            }}
-          />
-        </div>
-
-        <div
-          className="mono"
-          style={{
-            marginTop:
-              '8px',
-            fontSize:
-              '10px',
-            color:
-              dailyGoalReached
-                ? 'var(--success)'
-                : 'var(--text-muted)',
-          }}
-        >
-          {dailyGoalReached
-            ? t(
-                'dailyObjectiveComplete'
-              )
-            : `${Math.round(
-                dailyGoalProgress
-              )}${t(
-                'completePercent'
-              )}`}
-        </div>
-      </div>
-
-      {/* Weekly Goal */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '20px',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent:
-              'space-between',
-            alignItems:
-              'center',
-            gap: '16px',
-            marginBottom:
-              '14px',
-            flexWrap:
-              'wrap',
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontSize: '11px',
-                fontFamily:
-                  'Orbitron, sans-serif',
-                color:
-                  'var(--text-muted)',
-                textTransform:
-                  'uppercase',
-                letterSpacing:
-                  '0.1em',
-                marginBottom:
-                  '6px',
-              }}
-            >
-              WEEKLY FOCUS GOAL
+      <section className="dashboard-v3-grid">
+        <div className="glass-panel dashboard-route">
+          <div className="dashboard-section-head">
+            <div>
+              <div className="eyebrow">
+                {tr("Today's route", 'ڕێڕەوی ئەمڕۆ')}
+              </div>
+              <h2>
+                {tr('Your next study blocks', 'بڵۆکەکانی خوێندنی داهاتووت')}
+              </h2>
             </div>
 
-            <div
-              className="mono"
-              style={{
-                fontSize: '22px',
-                color:
-                  weeklyGoalReached
-                    ? 'var(--success)'
-                    : 'var(--text-primary)',
-              }}
-            >
-              {formatHoursMinutes(
-                weekMinutes
-              )}
-
-              <span
-                style={{
-                  color:
-                    'var(--text-muted)',
-                  fontSize:
-                    '14px',
-                }}
-              >
-                {' '}
-                /{' '}
-                {formatGoal(
-                  weeklyGoal
-                )}
-              </span>
-            </div>
+            <span className="mono">
+              {
+                plan.totalPlannedTodayMinutes
+              }
+              {language === 'ku'
+                ? ' خولەک '
+                : 'm '}
+              {tr('planned', 'پلانکراو')}
+            </span>
           </div>
 
-          <select
-            value={weeklyGoal}
-            onChange={(
-              event
-            ) =>
-              onWeeklyGoalChange(
-                Number(
-                  event.target.value
+          <div className="dashboard-route-list">
+            {plan.items.length === 0 ? (
+              <div className="dashboard-empty">
+                {tr('Add a subject to generate your plan.', 'بابەتێک زیاد بکە بۆ دروستکردنی پلانەکەت.')}
+              </div>
+            ) : (
+              plan.items
+                .slice(0, 3)
+                .map(
+                  (
+                    item,
+                    index,
+                  ) => (
+                    <article
+                      key={
+                        item.subjectId +
+                        index
+                      }
+                      className="dashboard-route-item"
+                    >
+                      <div
+                        className="dashboard-route-index"
+                        style={{
+                          borderColor:
+                            item.subjectColor ??
+                            'var(--primary-border)',
+                          color:
+                            item.subjectColor ??
+                            'var(--primary-glow)',
+                        }}
+                      >
+                        {index + 1}
+                      </div>
+
+                      <div className="dashboard-route-copy">
+                        <strong>
+                          {
+                            item.subjectName
+                          }
+                        </strong>
+                        <span>
+                          {localizeUiText(language, item.reason)}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="dashboard-route-action"
+                        onClick={() =>
+                          onStartRecommendedSession(
+                            item.subjectId,
+                            item.minutes,
+                          )
+                        }
+                      >
+                        {item.minutes}m
+                        <ArrowRight
+                          size={14}
+                        />
+                      </button>
+                    </article>
+                  ),
                 )
-              )
-            }
-            style={{
-              padding:
-                '8px 10px',
-              background:
-                'var(--void-surface-hover)',
-              border:
-                '1px solid var(--void-border)',
-              borderRadius:
-                '8px',
-              color:
-                'var(--text-primary)',
-              outline:
-                'none',
-              cursor:
-                'pointer',
-            }}
-          >
-            <option value={300}>
-              5 HOURS
-            </option>
+            )}
+          </div>
 
-            <option value={600}>
-              10 HOURS
-            </option>
+          <div className="dashboard-route-footer">
+            <span>
+              {tr('Daily remaining', 'ماوەی ڕۆژانە')}
+            </span>
+            <strong>
+              {
+                plan.todayRemainingMinutes
+              }
+              {language === 'ku'
+                ? ' خولەک'
+                : 'm'}
+            </strong>
 
-            <option value={900}>
-              15 HOURS
-            </option>
+            <span>
+              {tr('Weekly remaining', 'ماوەی هەفتانە')}
+            </span>
+            <strong>
+              {
+                plan.weeklyRemainingMinutes
+              }
+              m
+            </strong>
 
-            <option value={1200}>
-              20 HOURS
-            </option>
-
-            <option value={1500}>
-              25 HOURS
-            </option>
-          </select>
+            <span>
+              {tr('Best window', 'باشترین کات')}
+            </span>
+            <strong>
+              {plan.bestTime ??
+                tr('Still learning', 'هێشتا فێردەبێت')}
+            </strong>
+          </div>
         </div>
 
-        <div
-          style={{
-            height: '8px',
-            background:
-              'var(--void-border)',
-            borderRadius:
-              '999px',
-            overflow:
-              'hidden',
-          }}
-        >
-          <div
-            style={{
-              width:
-                `${weeklyGoalProgress}%`,
-              height:
-                '100%',
-              background:
-                weeklyGoalReached
-                  ? 'var(--success)'
-                  : 'linear-gradient(90deg, var(--cyber-blue), var(--teal))',
-              borderRadius:
-                '999px',
-              transition:
-                'width 0.5s ease',
-            }}
-          />
-        </div>
-
-        <div
-          className="mono"
-          style={{
-            marginTop:
-              '8px',
-            fontSize:
-              '10px',
-            color:
-              weeklyGoalReached
-                ? 'var(--success)'
-                : 'var(--text-muted)',
-          }}
-        >
-          {weeklyGoalReached
-            ? 'WEEKLY OBJECTIVE COMPLETE'
-            : `${Math.round(
-                weeklyGoalProgress
-              )}% COMPLETE`}
-        </div>
-      </div>
-
-      {/* Timer */}
-      <div
-        ref={timerCardRef}
-        className="glass-panel"
-        style={{
-          padding: '48px',
-          display: 'flex',
-          justifyContent:
-            'center',
-          transition:
-            'transform 0.3s ease',
-        }}
-      >
-        <Timer
-          subjectName={
-            activeSubject?.name ||
-            t(
-              'selectSubject'
-            )
-          }
-          subjectColor={
-            activeSubject?.color ||
-            '#8b5cf6'
-          }
-          shortBreakMinutes={
-            shortBreak
-          }
-          longBreakMinutes={
-            longBreak
-          }
-          sessionsBeforeLongBreak={
-            sessionsBeforeLongBreak
-          }
-          autoStartBreak={
-            autoStartBreak
-          }
-          soundEnabled={
-            soundEnabled
-          }
-          soundVolume={
-            soundVolume
-          }
-          notificationsEnabled={
-            notificationsEnabled
-          }
-          onComplete={
-            handleTimerComplete
-          }
-          onSessionEnd={
-            handleSessionEnd
+        <RecentSessions
+          sessions={sessions}
+          onDeleteSession={
+            onDeleteSession
           }
         />
-      </div>
-
-      {/* Analytics */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '16px',
-          flexWrap:
-            'wrap',
-          minWidth: 0,
-        }}
-      >
-        <Suspense
-          fallback={
-            <div
-              className="glass-panel"
-              style={{
-                minHeight:
-                  '340px',
-                flex:
-                  '1 1 340px',
-                display:
-                  'flex',
-                alignItems:
-                  'center',
-                justifyContent:
-                  'center',
-                color:
-                  'var(--text-muted)',
-                fontFamily:
-                  'Orbitron, sans-serif',
-                fontSize:
-                  '11px',
-              }}
-            >
-              {t(
-                'loadingAnalytics'
-              )}
-            </div>
-          }
-        >
-
-
-
-        </Suspense>
-      </div>
-
-      {/* Recent Sessions */}
-      <RecentSessions
-        sessions={sessions.slice(
-          0,
-          10
-        )}
-        onDeleteSession={
-          onDeleteSession
-        }
-      />
-    </div>
+      </section>
+    </main>
   )
 }

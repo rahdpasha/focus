@@ -11,6 +11,7 @@ create table if not exists public.profiles (
 create table if not exists public.subjects (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
+  client_id text,
   name text not null,
   color text not null,
   icon text,
@@ -23,6 +24,7 @@ create table if not exists public.subjects (
 create table if not exists public.study_sessions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
+  client_id text,
   subject_id uuid not null references public.subjects(id) on delete restrict,
   planned_seconds integer not null default 0 check (planned_seconds >= 0),
   actual_seconds integer not null default 0 check (actual_seconds >= 0),
@@ -189,3 +191,37 @@ grant select, insert, update, delete on public.study_sessions to authenticated;
 grant select, insert, update, delete on public.goals to authenticated;
 grant select, insert, update, delete on public.weekly_goal_history to authenticated;
 grant select, insert, update, delete on public.user_settings to authenticated;
+
+do $$
+declare
+  table_name text;
+begin
+  if exists (
+    select 1
+    from pg_publication
+    where pubname = 'supabase_realtime'
+  ) then
+    foreach table_name in array array[
+      'subjects',
+      'study_sessions',
+      'goals',
+      'weekly_goal_history',
+      'user_settings'
+    ]
+    loop
+      if not exists (
+        select 1
+        from pg_publication_tables
+        where pubname = 'supabase_realtime'
+          and schemaname = 'public'
+          and tablename = table_name
+      ) then
+        execute format(
+          'alter publication supabase_realtime add table public.%I',
+          table_name
+        );
+      end if;
+    end loop;
+  end if;
+end
+$$;

@@ -1,592 +1,969 @@
-import { useRef } from 'react'
-import { useI18n } from '../../useI18n'
-import { type ThemeMode } from '../../app/theme'
-import { useTheme } from '../../app/useTheme'
-import type { AppSettings } from '../../app/settings'
+import {
+  Bell,
+  BellOff,
+  Cloud,
+  CloudOff,
+  Database,
+  Download,
+  Languages,
+  LogOut,
+  Monitor,
+  Moon,
+  SlidersHorizontal,
+  Sun,
+  TimerReset,
+  Upload,
+  Volume2,
+  VolumeX,
+} from 'lucide-react'
+import {
+  useRef,
+  useState,
+} from 'react'
+import {
+  useI18n,
+} from '../../useI18n'
+import {
+  type ThemeMode,
+} from '../../app/theme'
+import {
+  MONOCHROME_THEME_PACKS,
+  normalizeThemeTokenPack,
+} from '../../app/themeTokens'
+import {
+  useTheme,
+} from '../../app/useTheme'
+import type {
+  AppSettings,
+} from '../../app/settings'
+import type {
+  CloudSyncStatus,
+} from '../../storage/types'
 
 interface SettingsProps {
   settings: AppSettings
   dailyGoal: number
   weeklyGoal: number
-  onDailyGoalChange: (value: number) => void
-  onWeeklyGoalChange: (value: number) => void
-  onSettingChange: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => void
+  accountEmail?: string | null
+  cloudStatus: CloudSyncStatus
+  onDailyGoalChange: (
+    value: number,
+  ) => void
+  onWeeklyGoalChange: (
+    value: number,
+  ) => void
+  onSettingChange: <
+    K extends keyof AppSettings,
+  >(
+    key: K,
+    value: AppSettings[K],
+  ) => void
   onExportData: () => void
-  onImportData: (file: File) => void
+  onImportData: (
+    file: File,
+  ) => void
+  onSignOut?: () => void
 }
+
+const themeOptions: Array<{
+  value: ThemeMode
+  label: string
+  labelKu: string
+  icon: typeof Monitor
+}> = [
+  {
+    value: 'system',
+    label: 'System',
+    labelKu: 'سیستەم',
+    icon: Monitor,
+  },
+  {
+    value: 'dark',
+    label: 'Midnight',
+    labelKu: 'نیوەشەو',
+    icon: Moon,
+  },
+  {
+    value: 'light',
+    label: 'Soft Light',
+    labelKu: 'ڕووناکی نەرم',
+    icon: Sun,
+  },
+  {
+    value: 'black',
+    label: 'Pure Black',
+    labelKu: 'ڕەشی پاک',
+    icon: Moon,
+  },
+  {
+    value: 'white',
+    label: 'Pure White',
+    labelKu: 'سپی پاک',
+    icon: Sun,
+  },
+  {
+    value: 'custom',
+    label: 'Custom theme',
+    labelKu: 'ڕووکارێکی تایبەت',
+    icon: SlidersHorizontal,
+  },
+]
 
 export default function Settings({
   settings,
   dailyGoal,
   weeklyGoal,
+  accountEmail,
+  cloudStatus,
   onDailyGoalChange,
   onWeeklyGoalChange,
   onSettingChange,
   onExportData,
   onImportData,
+  onSignOut,
 }: SettingsProps) {
   const fileInputRef =
-    useRef<HTMLInputElement>(null)
+    useRef<HTMLInputElement>(
+      null,
+    )
+  const themeFileInputRef =
+    useRef<HTMLInputElement>(
+      null,
+    )
+  const [
+    pendingImport,
+    setPendingImport,
+  ] = useState(false)
+  const [
+    themePackError,
+    setThemePackError,
+  ] = useState<string | null>(null)
 
   const {
     language,
-    setLanguage,
     t,
+    tr,
   } = useI18n()
 
-  const { theme, setTheme } = useTheme()
+  const {
+    theme,
+  } = useTheme()
 
-  const selectStyle = {
-    padding: '9px',
-    background:
-      'var(--void-surface-hover)',
-    border:
-      '1px solid var(--void-border)',
-    borderRadius: '8px',
-    color: 'var(--text-primary)',
-    outline: 'none',
-    cursor: 'pointer',
+  const selectedThemePack =
+    theme === 'black'
+      ? MONOCHROME_THEME_PACKS.black
+      : theme === 'white'
+        ? MONOCHROME_THEME_PACKS.white
+        : settings.customThemePack
+
+  const exportThemePack = () => {
+    if (!selectedThemePack) return
+
+    const blob = new Blob(
+      [JSON.stringify(selectedThemePack, null, 2)],
+      { type: 'application/json' },
+    )
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `focus-theme-${selectedThemePack.id}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
   }
 
-  const inputStyle = {
-    padding: '9px',
-    background:
-      'var(--void-surface-hover)',
-    border:
-      '1px solid var(--void-border)',
-    borderRadius: '8px',
-    color: 'var(--text-primary)',
-    outline: 'none',
+  const importThemePack = async (
+    file: File,
+  ) => {
+    setThemePackError(null)
+
+    if (file.size > 64 * 1024) {
+      setThemePackError(
+        tr('Theme pack is too large.', 'پاکێجی ڕووکار زۆر گەورەیە.'),
+      )
+      return
+    }
+
+    try {
+      const parsed: unknown =
+        JSON.parse(await file.text())
+      const pack =
+        normalizeThemeTokenPack(
+          parsed,
+        )
+
+      if (!pack) {
+        setThemePackError(
+          tr('Invalid theme pack. Only approved color tokens are allowed.', 'پاکێجی ڕووکار دروست نییە. تەنها ڕەنگە ڕێگەپێدراوەکان قبوڵ دەکرێن.'),
+        )
+        return
+      }
+
+      onSettingChange(
+        'customThemePack',
+        pack,
+      )
+      onSettingChange(
+        'theme',
+        'custom',
+      )
+    } catch {
+      setThemePackError(
+        tr('Could not read this theme pack.', 'نەتوانرا ئەم پاکێجی ڕووکارە بخوێندرێتەوە.'),
+      )
+    }
   }
 
   return (
-    <div
-      style={{
-        width: '100%',
-        maxWidth: '720px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px',
-      }}
-    >
-      {/* Appearance */}
-      <div
-        className="glass-panel"
-        style={{ padding: '24px' }}
-      >
-        <h2 style={{ fontSize: '16px', marginBottom: '20px' }}>
-          {t('appearance')}
-        </h2>
+    <div className="settings-v3">
+      <section className="glass-panel settings-section settings-section-wide">
+        <div className="settings-section-head">
+          <div className="settings-section-icon">
+            <SlidersHorizontal
+              size={17}
+            />
+          </div>
 
-        <label
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            color: 'var(--text-secondary)',
-            fontSize: '13px',
-          }}
-        >
-          {t('theme')}
-          <select
-            value={theme}
-            onChange={(event) => setTheme(event.target.value as ThemeMode)}
-            style={{ width: '220px', maxWidth: '100%', ...selectStyle }}
-          >
-            <option value="system">{t('themeSystem')}</option>
-            <option value="dark">{t('themeDark')}</option>
-            <option value="light">{t('themeLight')}</option>
-          </select>
-        </label>
-      </div>
-
-      {/* Language */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '24px',
-        }}
-      >
-        <h2
-          style={{
-            fontSize: '16px',
-            marginBottom: '20px',
-          }}
-        >
-          {t('language')}
-        </h2>
-
-        <select
-          value={language}
-          onChange={(event) =>
-            setLanguage(
-              event.target.value === 'ku'
-                ? 'ku'
-                : 'en'
-            )
-          }
-          style={{
-            width: '220px',
-            maxWidth: '100%',
-            ...selectStyle,
-          }}
-        >
-          <option value="en">
-            {t('english')}
-          </option>
-
-          <option value="ku">
-            {t('kurdishSorani')}
-          </option>
-        </select>
-      </div>
-
-      {/* Study Goals */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '24px',
-        }}
-      >
-        <h2
-          style={{
-            fontSize: '16px',
-            marginBottom: '20px',
-          }}
-        >
-          {t('studyGoals')}
-        </h2>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns:
-              'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '16px',
-          }}
-        >
-          <label
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              color:
-                'var(--text-secondary)',
-              fontSize: '13px',
-            }}
-          >
-            {t('dailyFocusGoal')}
-
-            <select
-              value={dailyGoal}
-              onChange={(event) =>
-                onDailyGoalChange(
-                  Number(
-                    event.target.value
-                  )
-                )
-              }
-              style={selectStyle}
-            >
-              <option value={30}>
-                {t('minutes30')}
-              </option>
-              <option value={60}>
-                {t('hour1')}
-              </option>
-              <option value={90}>
-                {t('hours15')}
-              </option>
-              <option value={120}>
-                {t('hours2')}
-              </option>
-              <option value={180}>
-                {t('hours3')}
-              </option>
-              <option value={240}>
-                {t('hours4')}
-              </option>
-              <option value={300}>
-                {t('hours5')}
-              </option>
-            </select>
-          </label>
-
-          <label
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              color:
-                'var(--text-secondary)',
-              fontSize: '13px',
-            }}
-          >
-            WEEKLY FOCUS GOAL
-
-            <select
-              value={weeklyGoal}
-              onChange={(event) =>
-                onWeeklyGoalChange(
-                  Number(
-                    event.target.value
-                  )
-                )
-              }
-              style={selectStyle}
-            >
-              <option value={300}>
-                5 HOURS
-              </option>
-              <option value={600}>
-                10 HOURS
-              </option>
-              <option value={900}>
-                15 HOURS
-              </option>
-              <option value={1200}>
-                20 HOURS
-              </option>
-              <option value={1500}>
-                25 HOURS
-              </option>
-            </select>
-          </label>
+          <div>
+            <h2>
+              {t('appearance')}
+            </h2>
+            <p>
+              {tr('FOCUS follows your system by default. Switch to a curated light, dark, or monochrome mode whenever you want a different atmosphere.', 'FOCUS بە بنەڕەت ڕووکارەکەی سیستەمەکەت بەکاردهێنێت. هەر کاتێک بتەوێت دەتوانیت بگۆڕیت بۆ ڕووناک، تاریک یان ڕەنگ‌تاک.')}
+            </p>
+          </div>
         </div>
-      </div>
 
-      {/* Pomodoro */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '24px',
-        }}
-      >
-        <h2
-          style={{
-            fontSize: '16px',
-            marginBottom: '20px',
-          }}
-        >
-          {t('pomodoro')}
-        </h2>
+        <div className="settings-control-grid">
+          <div className="settings-field">
+            <span className="settings-label">
+              {t('theme')}
+            </span>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns:
-              'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: '16px',
-          }}
-        >
-          <label
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              fontSize: '13px',
-              color:
-                'var(--text-secondary)',
-            }}
-          >
-            {t('shortBreakMinutes')}
+            <div
+              className="settings-theme-grid"
+              role="group"
+              aria-label={t(
+                'theme',
+              )}
+            >
+              {themeOptions.map(
+                (option) => {
+                  const Icon =
+                    option.icon
+                  const active =
+                    theme ===
+                    option.value
+                  const disabled =
+                    option.value === 'custom' &&
+                    !settings.customThemePack
 
-            <input
-              type="number"
-              min="1"
-              max="60"
-              value={settings.shortBreak}
-              onChange={(event) =>
-                onSettingChange(
-                  'shortBreak',
-                  Number(event.target.value)
-                )
-              }
-              style={inputStyle}
-            />
-          </label>
+                  return (
+                    <button
+                      key={
+                        option.value
+                      }
+                      type="button"
+                      className={[
+                        active ? 'active' : '',
+                        `theme-option-${option.value}`,
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                      aria-pressed={
+                        active
+                      }
+                      disabled={disabled}
+                      onClick={() =>
+                        onSettingChange(
+                          'theme',
+                          option.value,
+                        )
+                      }
+                    >
+                      <Icon
+                        size={15}
+                      />
+                      {
+                        option.value === 'custom' &&
+                        settings.customThemePack
+                          ? settings.customThemePack.name
+                          : tr(option.label, option.labelKu)
+                      }
+                    </button>
+                  )
+                },
+              )}
+            </div>
 
-          <label
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              fontSize: '13px',
-              color:
-                'var(--text-secondary)',
-            }}
-          >
-            {t('longBreakMinutes')}
+            <div className="settings-theme-actions">
+              <button
+                type="button"
+                className="settings-secondary-action"
+                onClick={() =>
+                  themeFileInputRef.current?.click()
+                }
+              >
+                <Upload size={14} />
+                {tr('Import theme', 'هێنانی ڕووکار')}
+              </button>
 
-            <input
-              type="number"
-              min="1"
-              max="120"
-              value={settings.longBreak}
-              onChange={(event) =>
-                onSettingChange(
-                  'longBreak',
-                  Number(event.target.value)
-                )
-              }
-              style={inputStyle}
-            />
-          </label>
+              <button
+                type="button"
+                className="settings-secondary-action"
+                disabled={!selectedThemePack}
+                onClick={exportThemePack}
+              >
+                <Download size={14} />
+                {tr('Export theme', 'هەناردەکردنی ڕووکار')}
+              </button>
+            </div>
 
-          <label
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              fontSize: '13px',
-              color:
-                'var(--text-secondary)',
-            }}
-          >
-            {t(
-              'focusSessionsBeforeLongBreak'
+            {themePackError && (
+              <small className="settings-theme-error">
+                {themePackError}
+              </small>
             )}
 
             <input
-              type="number"
-              min="1"
-              max="10"
-              value={settings.sessionsBeforeLongBreak}
-              onChange={(event) =>
-                onSettingChange(
-                  'sessionsBeforeLongBreak',
-                  Number(event.target.value)
+              ref={themeFileInputRef}
+              type="file"
+              accept="application/json,.json"
+              hidden
+              onChange={(event) => {
+                const file =
+                  event.target.files?.[0]
+
+                if (file) {
+                  void importThemePack(file)
+                }
+
+                event.target.value = ''
+              }}
+            />
+          </div>
+
+          <label className="settings-field">
+            <span className="settings-label">
+              {t(
+                'language',
+              )}
+            </span>
+
+            <div className="settings-input-with-icon">
+              <Languages
+                size={15}
+              />
+              <select
+                value={
+                  language
+                }
+                onChange={(
+                  event,
+                ) =>
+                  onSettingChange(
+                    'language',
+                    event.target
+                      .value ===
+                      'ku'
+                      ? 'ku'
+                      : 'en',
+                  )
+                }
+              >
+                <option value="en">
+                  {t(
+                    'english',
+                  )}
+                </option>
+                <option value="ku">
+                  {t(
+                    'kurdishSorani',
+                  )}
+                </option>
+              </select>
+            </div>
+          </label>
+        </div>
+      </section>
+
+      <div className="settings-group-label settings-section-wide">
+        <span>{tr('Focus', 'سەرنج')}</span>
+        <small>{tr('Goals and timer behavior', 'ئامانجەکان و هەڵسوکەوتی کاتژمێر')}</small>
+      </div>
+
+      <section className="glass-panel settings-section">
+        <div className="settings-section-head">
+          <div className="settings-section-icon">
+            <TimerReset
+              size={17}
+            />
+          </div>
+
+          <div>
+            <h2>
+              {tr('Focus targets', 'ئامانجەکانی سەرنج')}
+            </h2>
+            <p>
+              {tr('Define your baseline daily and weekly commitment.', 'بنەمای پابەندبوونی ڕۆژانە و هەفتانەت دیاری بکە.')}
+            </p>
+          </div>
+        </div>
+
+        <div className="settings-control-grid">
+          <label className="settings-field">
+            <span className="settings-label">
+              {t(
+                'dailyFocusGoal',
+              )}
+            </span>
+
+            <select
+              value={
+                dailyGoal
+              }
+              onChange={(
+                event,
+              ) =>
+                onDailyGoalChange(
+                  Number(
+                    event.target
+                      .value,
+                  ),
                 )
               }
-              style={inputStyle}
+            >
+              <option value={30}>
+                {tr('30m', '٣٠ خولەک')}
+              </option>
+              <option value={60}>
+                {tr('1h', '١ کاتژمێر')}
+              </option>
+              <option value={90}>
+                {tr('1.5h', '١.٥ کاتژمێر')}
+              </option>
+              <option value={120}>
+                {tr('2h', '٢ کاتژمێر')}
+              </option>
+              <option value={180}>
+                {tr('3h', '٣ کاتژمێر')}
+              </option>
+              <option value={240}>
+                {tr('4h', '٤ کاتژمێر')}
+              </option>
+              <option value={300}>
+                {tr('5h', '٥ کاتژمێر')}
+              </option>
+            </select>
+          </label>
+
+          <label className="settings-field">
+            <span className="settings-label">
+              {tr('Weekly focus goal', 'ئامانجی سەرنجی هەفتانە')}
+            </span>
+
+            <select
+              value={
+                weeklyGoal
+              }
+              onChange={(
+                event,
+              ) =>
+                onWeeklyGoalChange(
+                  Number(
+                    event.target
+                      .value,
+                  ),
+                )
+              }
+            >
+              <option value={300}>
+                {tr('5h', '٥ کاتژمێر')}
+              </option>
+              <option value={600}>
+                {tr('10h', '١٠ کاتژمێر')}
+              </option>
+              <option value={900}>
+                {tr('15h', '١٥ کاتژمێر')}
+              </option>
+              <option value={1200}>
+                {tr('20h', '٢٠ کاتژمێر')}
+              </option>
+              <option value={1500}>
+                {tr('25h', '٢٥ کاتژمێر')}
+              </option>
+              <option value={1800}>
+                {tr('30h', '٣٠ کاتژمێر')}
+              </option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section className="glass-panel settings-section">
+        <div className="settings-section-head">
+          <div className="settings-section-icon">
+            <TimerReset
+              size={17}
+            />
+          </div>
+
+          <div>
+            <h2>
+              {tr('Timer cycle', 'خولی کاتژمێر')}
+            </h2>
+            <p>
+              {tr('Tune breaks without changing your study history.', 'پشوودانەکان ڕێکبخە بەبێ گۆڕینی مێژووی خوێندنت.')}
+            </p>
+          </div>
+        </div>
+
+        <div className="settings-three-grid">
+          <label className="settings-field">
+            <span className="settings-label">
+              {t(
+                'shortBreakMinutes',
+              )}
+            </span>
+            <input
+              type="number"
+              min={1}
+              max={60}
+              value={
+                settings.shortBreak
+              }
+              onChange={(
+                event,
+              ) =>
+                onSettingChange(
+                  'shortBreak',
+                  Number(
+                    event.target
+                      .value,
+                  ),
+                )
+              }
+            />
+          </label>
+
+          <label className="settings-field">
+            <span className="settings-label">
+              {t(
+                'longBreakMinutes',
+              )}
+            </span>
+            <input
+              type="number"
+              min={1}
+              max={120}
+              value={
+                settings.longBreak
+              }
+              onChange={(
+                event,
+              ) =>
+                onSettingChange(
+                  'longBreak',
+                  Number(
+                    event.target
+                      .value,
+                  ),
+                )
+              }
+            />
+          </label>
+
+          <label className="settings-field">
+            <span className="settings-label">
+              {tr('Sessions / cycle', 'سێشن / خول')}
+            </span>
+            <input
+              type="number"
+              min={1}
+              max={10}
+              value={
+                settings.sessionsBeforeLongBreak
+              }
+              onChange={(
+                event,
+              ) =>
+                onSettingChange(
+                  'sessionsBeforeLongBreak',
+                  Number(
+                    event.target
+                      .value,
+                  ),
+                )
+              }
             />
           </label>
         </div>
 
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            marginTop: '20px',
-            color:
-              'var(--text-secondary)',
-            fontSize: '13px',
-            cursor: 'pointer',
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={settings.autoStartBreak}
-            onChange={(event) =>
-              onSettingChange(
-                'autoStartBreak',
-                event.target.checked
-              )
-            }
-          />
-
-          {t(
-            'automaticallyStartNextBreak'
+        <ToggleRow
+          title={t(
+            'automaticallyStartNextBreak',
           )}
-        </label>
+          description={tr('Start the next break immediately when a focus block finishes.', 'کاتێک بڵۆکی سەرنج تەواو بوو، پشووی دواتر خۆکارانە دەست پێ بکات.')}
+          checked={
+            settings.autoStartBreak
+          }
+          onChange={(
+            checked,
+          ) =>
+            onSettingChange(
+              'autoStartBreak',
+              checked,
+            )
+          }
+        />
+      </section>
+
+      <div className="settings-group-label settings-section-wide">
+        <span>{t('notifications')}</span>
+        <small>{tr('Sound and alerts', 'دەنگ و ئاگادارکردنەوەکان')}</small>
       </div>
 
-      {/* Sound */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '24px',
-        }}
-      >
-        <h2
-          style={{
-            fontSize: '16px',
-            marginBottom: '20px',
-          }}
-        >
-          {t('sound')}
-        </h2>
+      <section className="glass-panel settings-section">
+        <div className="settings-section-head">
+          <div className="settings-section-icon">
+            {settings.soundEnabled ? (
+              <Volume2
+                size={17}
+              />
+            ) : (
+              <VolumeX
+                size={17}
+              />
+            )}
+          </div>
 
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            color:
-              'var(--text-secondary)',
-            fontSize: '13px',
-            cursor: 'pointer',
-            marginBottom: '18px',
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={settings.soundEnabled}
-            onChange={(event) =>
-              onSettingChange(
-                'soundEnabled',
-                event.target.checked
-              )
-            }
-          />
+          <div>
+            <h2>
+              {t('sound')}
+            </h2>
+            <p>
+              {tr('Control timer feedback volume.', 'قەبارەی دەنگی وەڵامدانەوەی کاتژمێر ڕێکبخە.')}
+            </p>
+          </div>
+        </div>
 
-          {t('soundEnabled')}
-        </label>
+        <ToggleRow
+          title={t(
+            'soundEnabled',
+          )}
+          description={tr('Play timer sounds for focus and break transitions.', 'دەنگی کاتژمێر لە گۆڕینی نێوان سەرنج و پشوودان پخش بکە.')}
+          checked={
+            settings.soundEnabled
+          }
+          onChange={(
+            checked,
+          ) =>
+            onSettingChange(
+              'soundEnabled',
+              checked,
+            )
+          }
+        />
 
-        <label
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            color:
-              'var(--text-secondary)',
-            fontSize: '13px',
-          }}
-        >
-          {t('soundVolume')}
+        <label className="settings-range">
+          <div>
+            <span>
+              {t(
+                'soundVolume',
+              )}
+            </span>
+            <strong className="mono">
+              {
+                settings.soundVolume
+              }
+              %
+            </strong>
+          </div>
 
           <input
             type="range"
-            min="0"
-            max="100"
-            step="1"
-            value={settings.soundVolume}
-            disabled={!settings.soundEnabled}
-            onChange={(event) =>
+            min={0}
+            max={100}
+            step={1}
+            value={
+              settings.soundVolume
+            }
+            disabled={
+              !settings.soundEnabled
+            }
+            onChange={(
+              event,
+            ) =>
               onSettingChange(
                 'soundVolume',
-                Number(event.target.value)
+                Number(
+                  event.target
+                    .value,
+                ),
               )
             }
           />
-
-          <span
-            className="mono"
-            style={{
-              fontSize: '11px',
-              color:
-                'var(--text-muted)',
-            }}
-          >
-            {settings.soundVolume}%
-          </span>
         </label>
+      </section>
+
+      <section className="glass-panel settings-section">
+        <div className="settings-section-head">
+          <div className="settings-section-icon">
+            {settings.notificationsEnabled ? (
+              <Bell
+                size={17}
+              />
+            ) : (
+              <BellOff
+                size={17}
+              />
+            )}
+          </div>
+
+          <div>
+            <h2>
+              {t('notifications')}
+            </h2>
+            <p>
+              {tr('Decide whether FOCUS can alert you when a timer changes state.', 'دیاری بکە FOCUS کاتێک دۆخی کاتژمێر دەگۆڕێت ئاگادارت بکاتەوە یان نا.')}
+            </p>
+          </div>
+        </div>
+
+        <ToggleRow
+          title={t(
+            'notificationsEnabled',
+          )}
+          description={tr('Browser permission may still be required before notifications can appear.', 'لەوانەیە پێش پیشاندانی ئاگادارکردنەوەکان مۆڵەتی وێبگە پێویست بێت.')}
+          checked={
+            settings.notificationsEnabled
+          }
+          onChange={(
+            checked,
+          ) =>
+            onSettingChange(
+              'notificationsEnabled',
+              checked,
+            )
+          }
+        />
+      </section>
+
+      <div className="settings-group-label settings-section-wide">
+        <span>{tr('Data / Account', 'داتا / هەژمار')}</span>
+        <small>{tr('Sync, backups and account actions', 'هاوکاتکردن، باکاپ و کردارەکانی هەژمار')}</small>
       </div>
 
-      {/* Notifications */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '24px',
-        }}
-      >
-        <h2
-          style={{
-            fontSize: '16px',
-            marginBottom: '20px',
-          }}
-        >
-          {t('notifications')}
-        </h2>
+      <section className="glass-panel settings-section settings-section-wide">
+        <div className="settings-section-head">
+          <div className="settings-section-icon">
+            <Database
+              size={17}
+            />
+          </div>
 
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            color:
-              'var(--text-secondary)',
-            fontSize: '13px',
-            cursor: 'pointer',
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={settings.notificationsEnabled}
-            onChange={(event) =>
-              onSettingChange(
-                'notificationsEnabled',
-                event.target.checked
-              )
-            }
-          />
+          <div>
+            <h2>
+              {tr('Data & account', 'داتا و هەژمار')}
+            </h2>
+            <p>
+              {tr('Keep a portable backup and control the current session.', 'باکاپێکی گواستنەوەهەڵگر بپارێزە و هەژماری ئێستا کۆنترۆڵ بکە.')}
+            </p>
+          </div>
+        </div>
 
-          {t('notificationsEnabled')}
-        </label>
-      </div>
+        <div className="settings-data-row">
+          <div className="settings-account-copy">
+            <span>
+              {tr('Account', 'هەژمار')}
+            </span>
+            <strong>
+              {accountEmail ??
+                tr('Local mode', 'دۆخی ناوخۆیی')}
+            </strong>
 
-      {/* Data */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '24px',
-        }}
-      >
-        <h2
-          style={{
-            fontSize: '16px',
-            marginBottom: '8px',
-          }}
-        >
-          {t('data')}
-        </h2>
+            <div
+              className={
+                cloudStatus === 'error'
+                  ? 'settings-sync-status error'
+                  : cloudStatus === 'offline'
+                    ? 'settings-sync-status offline'
+                    : cloudStatus === 'synced'
+                      ? 'settings-sync-status synced'
+                      : 'settings-sync-status'
+              }
+            >
+              {cloudStatus === 'error' ||
+              cloudStatus === 'offline' ? (
+                <CloudOff size={13} />
+              ) : (
+                <Cloud size={13} />
+              )}
+              <span>
+                {cloudStatus === 'local'
+                  ? tr('Saved on this device', 'لەسەر ئەم ئامێرە پاشەکەوت کراوە')
+                  : cloudStatus === 'loading'
+                    ? tr('Connecting to cloud…', 'پەیوەندی بە کڵاودەوە دەکرێت…')
+                    : cloudStatus === 'saving'
+                      ? tr('Saving changes…', 'گۆڕانکارییەکان پاشەکەوت دەکرێن…')
+                      : cloudStatus === 'synced'
+                        ? tr('Cloud synced', 'کڵاود هاوکات کراوە')
+                        : cloudStatus === 'offline'
+                          ? tr('Offline · changes stay on this device', 'ئۆفلاین · گۆڕانکارییەکان لەم ئامێرە دەمێننەوە')
+                          : tr('Cloud sync needs attention', 'هاوکاتکردنی کڵاود پێویستی بە سەرنج هەیە')}
+              </span>
+            </div>
+          </div>
 
-        <p
-          style={{
-            fontSize: '12px',
-            color:
-              'var(--text-muted)',
-            marginBottom:
-              '18px',
-          }}
-        >
-          {t('backupDescription')}
-        </p>
+          <div className="settings-data-actions">
+            <button
+              type="button"
+              className="settings-secondary-action"
+              onClick={
+                onExportData
+              }
+            >
+              <Download
+                size={15}
+              />
+              {t(
+                'exportData',
+              )}
+            </button>
 
-        <div
-          style={{
-            display: 'flex',
-            gap: '10px',
-            flexWrap: 'wrap',
-          }}
-        >
-          <button
-            className="cyber-btn"
-            onClick={
-              onExportData
-            }
-          >
-            {t('exportData')}
-          </button>
+            <button
+              type="button"
+              className="settings-secondary-action"
+              onClick={() => {
+                if (!pendingImport) {
+                  setPendingImport(true)
+                  return
+                }
 
-          <button
-            className="cyber-btn"
-            onClick={() =>
-              fileInputRef.current?.click()
-            }
-          >
-            {t('importData')}
-          </button>
+                setPendingImport(false)
+                fileInputRef
+                  .current
+                  ?.click()
+              }}
+              onBlur={() =>
+                setPendingImport(false)
+              }
+              aria-label={
+                pendingImport
+                  ? t(
+                      'confirmImportData',
+                    )
+                  : t(
+                      'importData',
+                    )
+              }
+              title={
+                pendingImport
+                  ? t(
+                      'confirmImportData',
+                    )
+                  : undefined
+              }
+            >
+              <Upload
+                size={15}
+              />
+              {pendingImport
+                ? t(
+                    'confirmImportData',
+                  )
+                : t(
+                    'importData',
+                  )}
+            </button>
+
+            {onSignOut && (
+              <button
+                type="button"
+                className="settings-danger-action"
+                onClick={
+                  onSignOut
+                }
+              >
+                <LogOut
+                  size={15}
+                />
+                {tr('Sign out', 'چوونەدەرەوە')}
+              </button>
+            )}
+          </div>
 
           <input
             ref={fileInputRef}
             type="file"
             accept="application/json,.json"
             hidden
-            onChange={(event) => {
+            onChange={(
+              event,
+            ) => {
               const file =
-                event.target.files?.[0]
+                event.target
+                  .files?.[0]
 
               if (file) {
-                onImportData(file)
+                onImportData(
+                  file,
+                )
               }
 
-              event.target.value = ''
+              event.target.value =
+                ''
             }}
           />
         </div>
-      </div>
+      </section>
     </div>
+  )
+}
+
+function ToggleRow({
+  title,
+  description,
+  checked,
+  onChange,
+}: {
+  title: string
+  description: string
+  checked: boolean
+  onChange: (
+    value: boolean,
+  ) => void
+}) {
+  return (
+    <label className="settings-toggle-row">
+      <div>
+        <strong>
+          {title}
+        </strong>
+        <span>
+          {description}
+        </span>
+      </div>
+
+      <input
+        className="settings-switch-input"
+        type="checkbox"
+        checked={checked}
+        onChange={(
+          event,
+        ) =>
+          onChange(
+            event.target
+              .checked,
+          )
+        }
+      />
+
+      <span
+        className="settings-switch"
+        aria-hidden="true"
+      />
+    </label>
   )
 }

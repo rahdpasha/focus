@@ -1,258 +1,350 @@
-import { useMemo, useState } from 'react'
-import type { StudySession } from '../types'
+import {
+  BookOpenCheck,
+  CalendarDays,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  ListChecks,
+} from 'lucide-react'
+import {
+  useMemo,
+  useState,
+} from 'react'
+import type {
+  StudySession,
+} from '../types'
 import PageContainer from './PageContainer'
 import PageHeader from '../components/layout/PageHeader'
-import { useI18n } from '../useI18n'
+import {
+  useI18n,
+} from '../useI18n'
 
 interface HistoryPageProps {
   sessions: StudySession[]
 }
 
-function dayKey(date: Date): string {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
+function dayKey(
+  date: Date,
+): string {
+  const year =
+    date.getFullYear()
+  const month = String(
+    date.getMonth() + 1,
+  ).padStart(2, '0')
+  const day = String(
+    date.getDate(),
+  ).padStart(2, '0')
 
   return `${year}-${month}-${day}`
 }
 
-function formatDurationSeconds(seconds: number): string {
-  const safeSeconds = Math.max(
-    0,
-    Math.round(seconds),
-  )
-
-  if (safeSeconds < 60) {
-    return `${safeSeconds}s`
-  }
-
-  const totalMinutes = Math.floor(
-    safeSeconds / 60,
-  )
-
-  const remainingSeconds =
-    safeSeconds % 60
+function durationLabel(
+  seconds: number,
+  language: 'en' | 'ku',
+): string {
+  const totalMinutes =
+    Math.round(
+      Math.max(
+        0,
+        seconds,
+      ) / 60,
+    )
 
   if (totalMinutes < 60) {
-    return remainingSeconds > 0
-      ? `${totalMinutes}m ${remainingSeconds}s`
+    return language === 'ku'
+      ? `${totalMinutes} خولەک`
       : `${totalMinutes}m`
   }
 
-  const hours = Math.floor(
-    totalMinutes / 60,
-  )
-
-  const minutesRemaining =
+  const hours =
+    Math.floor(
+      totalMinutes / 60,
+    )
+  const minutes =
     totalMinutes % 60
 
-  if (
-    minutesRemaining === 0 &&
-    remainingSeconds === 0
-  ) {
-    return `${hours}h`
+  if (minutes > 0) {
+    return language === 'ku'
+      ? `${hours} کاتژمێر ${minutes} خولەک`
+      : `${hours}h ${minutes}m`
   }
 
-  if (remainingSeconds === 0) {
-    return `${hours}h ${minutesRemaining}m`
-  }
-
-  return `${hours}h ${minutesRemaining}m ${remainingSeconds}s`
+  return language === 'ku'
+    ? `${hours} کاتژمێر`
+    : `${hours}h`
 }
 
-function formatTime(date: Date): string {
-  return date.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+function sessionTime(
+  date: Date,
+  locale: string,
+): string {
+  return date.toLocaleTimeString(
+    locale,
+    {
+      hour: '2-digit',
+      minute: '2-digit',
+    },
+  )
+}
+
+function checklistProgress(
+  session: StudySession,
+): string | null {
+  const tasks =
+    session.subtasks ?? []
+
+  if (tasks.length === 0) {
+    return null
+  }
+
+  const completed =
+    tasks.filter(
+      (task) =>
+        task.completed,
+    ).length
+
+  return `${completed}/${tasks.length}`
 }
 
 export default function HistoryPage({
   sessions,
 }: HistoryPageProps) {
-  const { language } = useI18n()
+  const { language, tr } =
+    useI18n()
 
   const locale =
     language === 'ku'
       ? 'ku-IQ'
       : 'en-US'
 
-  const [visibleMonth, setVisibleMonth] = useState(
-    () => {
+  const [visibleMonth, setVisibleMonth] =
+    useState(() => {
       const now = new Date()
+
       return new Date(
         now.getFullYear(),
         now.getMonth(),
         1,
       )
-    },
-  )
+    })
 
-  const [selectedDay, setSelectedDay] = useState(
-    () => dayKey(new Date()),
-  )
-
-  const completedSessions = useMemo(
-    () =>
-      sessions.filter(
-        (session) => session.completed,
+  const [selectedDay, setSelectedDay] =
+    useState(() =>
+      dayKey(
+        new Date(),
       ),
-    [sessions],
-  )
+    )
 
-  const sessionsByDay = useMemo(() => {
-    const map = new Map<
-      string,
-      StudySession[]
-    >()
+  const completedSessions =
+    useMemo(
+      () =>
+        sessions.filter(
+          (session) =>
+            session.completed &&
+            session.actualDuration >
+              0,
+        ),
+      [sessions],
+    )
 
-    for (const session of completedSessions) {
-      const key = dayKey(
-        new Date(session.completedAt),
+  const sessionsByDay =
+    useMemo(() => {
+      const map =
+        new Map<
+          string,
+          StudySession[]
+        >()
+
+      completedSessions.forEach(
+        (session) => {
+          const key =
+            dayKey(
+              new Date(
+                session.completedAt,
+              ),
+            )
+
+          map.set(
+            key,
+            [
+              ...(map.get(key) ??
+                []),
+              session,
+            ],
+          )
+        },
       )
 
-      const existing = map.get(key) ?? []
-      existing.push(session)
-      map.set(key, existing)
-    }
+      for (const [
+        key,
+        value,
+      ] of map) {
+        map.set(
+          key,
+          [...value].sort(
+            (a, b) =>
+              new Date(
+                a.completedAt,
+              ).getTime() -
+              new Date(
+                b.completedAt,
+              ).getTime(),
+          ),
+        )
+      }
 
-    return map
-  }, [completedSessions])
+      return map
+    }, [completedSessions])
 
-  const calendarDays = useMemo(() => {
-    const year = visibleMonth.getFullYear()
-    const month = visibleMonth.getMonth()
+  const calendarDays =
+    useMemo(() => {
+      const year =
+        visibleMonth.getFullYear()
+      const month =
+        visibleMonth.getMonth()
 
-    const firstDay = new Date(
-      year,
-      month,
-      1,
-    )
-
-    const lastDay = new Date(
-      year,
-      month + 1,
-      0,
-    )
-
-    // Monday = 0 ... Sunday = 6
-    const mondayOffset =
-      (firstDay.getDay() + 6) % 7
-
-    const totalDays =
-      lastDay.getDate()
-
-    const cells: Array<
-      Date | null
-    > = []
-
-    for (
-      let i = 0;
-      i < mondayOffset;
-      i += 1
-    ) {
-      cells.push(null)
-    }
-
-    for (
-      let day = 1;
-      day <= totalDays;
-      day += 1
-    ) {
-      cells.push(
+      const first =
         new Date(
           year,
           month,
-          day,
-        ),
-      )
-    }
-
-    while (cells.length % 7 !== 0) {
-      cells.push(null)
-    }
-
-    return cells
-  }, [visibleMonth])
-
-  const selectedSessions =
-    sessionsByDay.get(selectedDay) ?? []
-
-  const selectedSeconds =
-    selectedSessions.reduce(
-      (total, session) =>
-        total +
-        Math.max(
+          1,
+        )
+      const totalDays =
+        new Date(
+          year,
+          month + 1,
           0,
-          session.actualDuration,
+        ).getDate()
+
+      const mondayOffset =
+        (first.getDay() +
+          6) %
+        7
+
+      const cells: Array<
+        Date | null
+      > = Array.from(
+        {
+          length:
+            mondayOffset,
+        },
+        () => null,
+      )
+
+      for (
+        let day = 1;
+        day <= totalDays;
+        day += 1
+      ) {
+        cells.push(
+          new Date(
+            year,
+            month,
+            day,
+          ),
+        )
+      }
+
+      while (
+        cells.length %
+          7 !==
+        0
+      ) {
+        cells.push(null)
+      }
+
+      return cells
+    }, [visibleMonth])
+
+  const monthSessions =
+    useMemo(
+      () =>
+        completedSessions.filter(
+          (session) => {
+            const date =
+              new Date(
+                session.completedAt,
+              )
+
+            return (
+              date.getFullYear() ===
+                visibleMonth.getFullYear() &&
+              date.getMonth() ===
+                visibleMonth.getMonth()
+            )
+          },
         ),
+      [
+        completedSessions,
+        visibleMonth,
+      ],
+    )
+
+  const monthSeconds =
+    monthSessions.reduce(
+      (sum, session) =>
+        sum +
+        session.actualDuration,
       0,
     )
 
-  const monthlySeconds =
-    completedSessions
-      .filter((session) => {
-        const date =
-          new Date(
-            session.completedAt,
-          )
-
-        return (
-          date.getFullYear() ===
-            visibleMonth.getFullYear() &&
-          date.getMonth() ===
-            visibleMonth.getMonth()
-        )
-      })
-      .reduce(
-        (total, session) =>
-          total +
-          Math.max(
-            0,
-            session.actualDuration,
+  const monthActiveDays =
+    new Set(
+      monthSessions.map(
+        (session) =>
+          dayKey(
+            new Date(
+              session.completedAt,
+            ),
           ),
-        0,
-      )
-
-  const selectedDate = new Date(
-    `${selectedDay}T00:00:00`,
-  )
-
-  const previousMonth = () => {
-    setVisibleMonth((current) => {
-      const next = new Date(
-        current.getFullYear(),
-        current.getMonth() - 1,
-        1,
-      )
-      setSelectedDay(dayKey(next))
-      return next
-    })
-  }
-
-  const nextMonth = () => {
-    setVisibleMonth((current) => {
-      const next = new Date(
-        current.getFullYear(),
-        current.getMonth() + 1,
-        1,
-      )
-      setSelectedDay(dayKey(next))
-      return next
-    })
-  }
-
-  const today = () => {
-    const now = new Date()
-    setVisibleMonth(
-      new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        1,
       ),
+    ).size
+
+  const maxDaySeconds =
+    Math.max(
+      1,
+      ...calendarDays
+        .filter(
+          (
+            value,
+          ): value is Date =>
+            value !== null,
+        )
+        .map((date) =>
+          (
+            sessionsByDay.get(
+              dayKey(date),
+            ) ?? []
+          ).reduce(
+            (
+              sum,
+              session,
+            ) =>
+              sum +
+              session.actualDuration,
+            0,
+          ),
+        ),
     )
-    setSelectedDay(dayKey(now))
-  }
+
+  const selectedSessions =
+    sessionsByDay.get(
+      selectedDay,
+    ) ?? []
+
+  const selectedSeconds =
+    selectedSessions.reduce(
+      (sum, session) =>
+        sum +
+        session.actualDuration,
+      0,
+    )
+
+  const selectedDate =
+    new Date(
+      `${selectedDay}T00:00:00`,
+    )
 
   const monthLabel =
     visibleMonth.toLocaleDateString(
@@ -263,461 +355,462 @@ export default function HistoryPage({
       },
     )
 
-  const weekdayLabels = Array.from(
-    { length: 7 },
-    (_, index) =>
+  const weekdayLabels =
+    Array.from(
+      { length: 7 },
+      (_, index) =>
+        new Date(
+          2024,
+          0,
+          index + 1,
+        ).toLocaleDateString(
+          locale,
+          {
+            weekday: 'short',
+          },
+        ),
+    )
+
+  const moveMonth = (
+    amount: number,
+  ) => {
+    setVisibleMonth(
+      (current) => {
+        const next =
+          new Date(
+            current.getFullYear(),
+            current.getMonth() +
+              amount,
+            1,
+          )
+
+        setSelectedDay(
+          dayKey(next),
+        )
+
+        return next
+      },
+    )
+  }
+
+  const jumpToday = () => {
+    const now =
+      new Date()
+
+    setVisibleMonth(
       new Date(
-        2024,
-        0,
-        1 + index,
-      ).toLocaleDateString(
-        locale,
-        {
-          weekday: 'short',
-        },
+        now.getFullYear(),
+        now.getMonth(),
+        1,
       ),
-  )
+    )
+    setSelectedDay(
+      dayKey(now),
+    )
+  }
 
   return (
     <PageContainer>
       <PageHeader
-        title="Study History"
-        description="Review your study activity day by day."
+        title={tr('Study History', 'مێژووی خوێندن')}
+        description={tr('See how your study rhythm changes over time, then open any day to understand what happened.', 'ببینە ڕێتمی خوێندنت بە تێپەڕبوونی کات چۆن دەگۆڕێت، پاشان هەر ڕۆژێک بکەرەوە بۆ تێگەیشتن لەوەی چی ڕوویداوە.')}
       />
 
-      <div
-        className="glass-panel"
-        style={{
-          padding: '20px',
-          marginBottom: '16px',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent:
-              'space-between',
-            alignItems: 'center',
-            gap: '12px',
-            flexWrap: 'wrap',
-            marginBottom: '18px',
-          }}
-        >
-          <div>
-            <div
-              style={{
-                color:
-                  'var(--text-primary)',
-                fontSize: '18px',
-                fontWeight: 600,
-                textTransform: 'capitalize',
-              }}
-            >
-              {monthLabel}
-            </div>
+      <section className="history-overview">
+        <article className="glass-panel history-summary-card">
+          <CalendarDays
+            size={18}
+          />
+          <span>
+            {tr('Month focus', 'سەرنجی مانگ')}
+          </span>
+          <strong>
+            {durationLabel(monthSeconds, language)}
+          </strong>
+        </article>
 
-            <div
-              style={{
-                color:
-                  'var(--text-muted)',
-                fontSize: '10px',
-                marginTop: '4px',
-              }}
-            >
-              {formatDurationSeconds(
-                monthlySeconds,
-              )}{' '}
-              studied this month
-            </div>
-          </div>
+        <article className="glass-panel history-summary-card">
+          <CheckCircle2
+            size={18}
+          />
+          <span>
+            {tr('Active days', 'ڕۆژە چالاکەکان')}
+          </span>
+          <strong>
+            {monthActiveDays}
+          </strong>
+        </article>
 
-          <div
-            style={{
-              display: 'flex',
-              gap: '8px',
-            }}
-          >
-            <button
-              className="cyber-btn"
-              type="button"
-              onClick={previousMonth}
-            >
-              ←
-            </button>
+        <article className="glass-panel history-summary-card">
+          <BookOpenCheck
+            size={18}
+          />
+          <span>
+            {tr('Sessions', 'سێشنەکان')}
+          </span>
+          <strong>
+            {
+              monthSessions.length
+            }
+          </strong>
+        </article>
+      </section>
 
-            <button
-              className="cyber-btn"
-              type="button"
-              onClick={today}
-            >
-              TODAY
-            </button>
-
-            <button
-              className="cyber-btn"
-              type="button"
-              onClick={nextMonth}
-            >
-              →
-            </button>
-          </div>
-        </div>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns:
-              'repeat(7, minmax(0, 1fr))',
-            gap: '6px',
-          }}
-        >
-          {weekdayLabels.map(
-            (label) => (
-              <div
-                key={label}
-                style={{
-                  color:
-                    'var(--text-muted)',
-                  fontSize: '9px',
-                  textAlign: 'center',
-                  padding:
-                    '6px 2px',
-                  textTransform:
-                    'uppercase',
-                }}
-              >
-                {label}
+      <div className="history-layout">
+        <section className="glass-panel history-calendar-panel">
+          <div className="history-calendar-head">
+            <div>
+              <div className="eyebrow">
+                {tr('Focus calendar', 'ڕۆژژمێری سەرنج')}
               </div>
-            ),
-          )}
-
-          {calendarDays.map(
-            (date, index) => {
-              if (!date) {
-                return (
-                  <div
-                    key={`empty-${index}`}
-                    style={{
-                      minHeight:
-                        '68px',
-                    }}
-                  />
-                )
-              }
-
-              const key =
-                dayKey(date)
-
-              const daySessions =
-                sessionsByDay.get(
-                  key,
-                ) ?? []
-
-              const minutes =
-                daySessions.reduce(
-                  (
-                    total,
-                    session,
-                  ) =>
-                    total +
-                    Math.max(
-                      0,
-                      Math.round(
-                        session.actualDuration ||
-                          session.duration ||
-                          0,
-                      ),
-                    ),
-                  0,
-                )
-
-              const selected =
-                key === selectedDay
-
-              const isToday =
-                key ===
-                dayKey(new Date())
-
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() =>
-                    setSelectedDay(
-                      key,
-                    )
-                  }
-                  style={{
-                    minHeight:
-                      '68px',
-                    borderRadius:
-                      '10px',
-                    border: selected
-                      ? '1px solid var(--primary-glow)'
-                      : '1px solid var(--void-border)',
-                    background:
-                      selected
-                        ? 'var(--void-surface-hover)'
-                        : 'transparent',
-                    color:
-                      'var(--text-primary)',
-                    cursor:
-                      'pointer',
-                    padding:
-                      '8px',
-                    textAlign:
-                      'left',
-                  }}
-                >
-                  <div
-                    style={{
-                      display:
-                        'flex',
-                      justifyContent:
-                        'space-between',
-                      gap: '4px',
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize:
-                          '11px',
-                        fontWeight:
-                          isToday
-                            ? 700
-                            : 400,
-                      }}
-                    >
-                      {date.getDate()}
-                    </span>
-
-                    {isToday && (
-                      <span
-                        style={{
-                          color:
-                            'var(--primary-glow)',
-                          fontSize:
-                            '8px',
-                        }}
-                      >
-                        TODAY
-                      </span>
-                    )}
-                  </div>
-
-                  {daySessions.length >
-                    0 && (
-                    <>
-                      <div
-                        style={{
-                          color:
-                            'var(--primary-glow)',
-                          fontSize:
-                            '11px',
-                          marginTop:
-                            '11px',
-                          fontFamily:
-                            'Orbitron, sans-serif',
-                        }}
-                      >
-                        {formatDurationSeconds(
-                          minutes,
-                        )}
-                      </div>
-
-                      <div
-                        style={{
-                          color:
-                            'var(--text-muted)',
-                          fontSize:
-                            '8px',
-                          marginTop:
-                            '3px',
-                        }}
-                      >
-                        {
-                          daySessions.length
-                        }{' '}
-                        session
-                        {daySessions.length ===
-                        1
-                          ? ''
-                          : 's'}
-                      </div>
-                    </>
-                  )}
-                </button>
-              )
-            },
-          )}
-        </div>
-      </div>
-
-      <div
-        className="glass-panel"
-        style={{
-          padding: '20px',
-        }}
-      >
-        <div
-          style={{
-            display:
-              'flex',
-            justifyContent:
-              'space-between',
-            gap: '12px',
-            alignItems:
-              'flex-start',
-            marginBottom:
-              '16px',
-          }}
-        >
-          <div>
-            <div
-              style={{
-                color:
-                  'var(--text-primary)',
-                fontSize: '16px',
-                fontWeight: 600,
-              }}
-            >
-              {selectedDate.toLocaleDateString(
-                locale,
-                {
-                  weekday:
-                    'long',
-                  month:
-                    'long',
-                  day:
-                    'numeric',
-                  year:
-                    'numeric',
-                },
-              )}
+              <h2>
+                {monthLabel}
+              </h2>
             </div>
 
-            <div
-              style={{
-                color:
-                  'var(--text-muted)',
-                fontSize: '10px',
-                marginTop: '5px',
-              }}
-            >
-              {formatDurationSeconds(
-                selectedSeconds,
-              )}{' '}
-              studied ·{' '}
-              {selectedSessions.length}{' '}
-              session
-              {selectedSessions.length ===
-              1
-                ? ''
-                : 's'}
+            <div className="history-month-controls">
+              <button
+                type="button"
+                onClick={() =>
+                  moveMonth(-1)
+                }
+                aria-label={tr('Previous month', 'مانگی پێشوو')}
+              >
+                <ChevronLeft
+                  size={17}
+                />
+              </button>
+
+              <button
+                type="button"
+                onClick={
+                  jumpToday
+                }
+              >
+                {tr('Today', 'ئەمڕۆ')}
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  moveMonth(1)
+                }
+                aria-label={tr('Next month', 'مانگی داهاتوو')}
+              >
+                <ChevronRight
+                  size={17}
+                />
+              </button>
             </div>
           </div>
-        </div>
 
-        {selectedSessions.length ===
-        0 ? (
-          <div
-            style={{
-              padding:
-                '18px',
-              borderRadius:
-                '10px',
-              border:
-                '1px solid var(--void-border)',
-              color:
-                'var(--text-muted)',
-              fontSize: '12px',
-            }}
-          >
-            No completed study sessions on this day.
-          </div>
-        ) : (
-          <div
-            style={{
-              display:
-                'grid',
-              gap: '9px',
-            }}
-          >
-            {selectedSessions.map(
-              (session) => (
+          <div className="history-calendar">
+            {weekdayLabels.map(
+              (label) => (
                 <div
-                  key={
-                    session.id
-                  }
-                  style={{
-                    display:
-                      'flex',
-                    justifyContent:
-                      'space-between',
-                    alignItems:
-                      'center',
-                    gap: '16px',
-                    padding:
-                      '13px',
-                    borderRadius:
-                      '10px',
-                    border:
-                      '1px solid var(--void-border)',
-                    background:
-                      'var(--void-surface-hover)',
-                  }}
+                  key={label}
+                  className="history-weekday"
                 >
-                  <div>
-                    <div
-                      style={{
-                        color:
-                          'var(--text-primary)',
-                        fontSize:
-                          '13px',
-                      }}
-                    >
-                      {session.subjectName}
-                    </div>
-
-                    <div
-                      style={{
-                        color:
-                          'var(--text-muted)',
-                        fontSize:
-                          '9px',
-                        marginTop:
-                          '4px',
-                      }}
-                    >
-                      {formatTime(
-                        new Date(
-                          session.completedAt,
-                        ),
-                      )}
-                      {session.interruptions >
-                        0 &&
-                        ` · ${session.interruptions} interruptions`}
-                    </div>
-                  </div>
-
-                  <div
-                    className="mono"
-                    style={{
-                      color:
-                        'var(--primary-glow)',
-                      fontSize:
-                        '12px',
-                    }}
-                  >
-                    {formatDurationSeconds(
-                      session.actualDuration,
-                    )}
-                  </div>
+                  {label}
                 </div>
               ),
             )}
+
+            {calendarDays.map(
+              (date, index) => {
+                if (!date) {
+                  return (
+                    <div
+                      key={
+                        'empty-' +
+                        index
+                      }
+                      className="history-day empty"
+                    />
+                  )
+                }
+
+                const key =
+                  dayKey(date)
+                const daySessions =
+                  sessionsByDay.get(
+                    key,
+                  ) ?? []
+
+                const seconds =
+                  daySessions.reduce(
+                    (
+                      sum,
+                      session,
+                    ) =>
+                      sum +
+                      session.actualDuration,
+                    0,
+                  )
+
+                const intensity =
+                  seconds > 0
+                    ? Math.max(
+                        0.12,
+                        seconds /
+                          maxDaySeconds,
+                      )
+                    : 0
+
+                const isSelected =
+                  key ===
+                  selectedDay
+
+                const isToday =
+                  key ===
+                  dayKey(
+                    new Date(),
+                  )
+
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    className={[
+                      'history-day',
+                      isSelected
+                        ? 'selected'
+                        : '',
+                      isToday
+                        ? 'today'
+                        : '',
+                    ]
+                      .filter(
+                        Boolean,
+                      )
+                      .join(' ')}
+                    onClick={() =>
+                      setSelectedDay(
+                        key,
+                      )
+                    }
+                    aria-label={
+                      `${date.toLocaleDateString(
+                        locale,
+                      )}, ${durationLabel(seconds, language)}, ${daySessions.length} ${tr('sessions', 'سێشن')}`
+                    }
+                  >
+                    <div className="history-day-top">
+                      <span>
+                        {
+                          date.getDate()
+                        }
+                      </span>
+
+                      {isToday && (
+                        <small>
+                          {tr('Today', 'ئەمڕۆ')}
+                        </small>
+                      )}
+                    </div>
+
+                    <div
+                      className="history-heat"
+                      style={{
+                        opacity:
+                          intensity,
+                      }}
+                    />
+
+                    {seconds >
+                      0 && (
+                      <div className="history-day-data">
+                        <strong>
+                          {durationLabel(seconds, language)}
+                        </strong>
+                        <span>
+                          {
+                            daySessions.length
+                          }{' '}
+                          {tr('session', 'سێشن')}
+                          {daySessions.length ===
+                          1
+                            ? ''
+                            : ''}
+                        </span>
+                      </div>
+                    )}
+                  </button>
+                )
+              },
+            )}
           </div>
-        )}
+
+          <div className="history-legend">
+            <span>
+              {tr('Less focus', 'سەرنجی کەمتر')}
+            </span>
+            {[0.15, 0.35, 0.6, 0.9].map(
+              (opacity) => (
+                <i
+                  key={
+                    opacity
+                  }
+                  style={{
+                    opacity,
+                  }}
+                />
+              ),
+            )}
+            <span>
+              {tr('More focus', 'سەرنجی زیاتر')}
+            </span>
+          </div>
+        </section>
+
+        <aside className="glass-panel history-day-panel">
+          <div className="history-day-head">
+            <div>
+              <div className="eyebrow">
+                {tr('Selected day', 'ڕۆژی هەڵبژێردراو')}
+              </div>
+              <h2>
+                {selectedDate.toLocaleDateString(
+                  locale,
+                  {
+                    weekday:
+                      'long',
+                    month:
+                      'short',
+                    day:
+                      'numeric',
+                  },
+                )}
+              </h2>
+            </div>
+
+            <div className="history-day-total">
+              <Clock3
+                size={15}
+              />
+              {durationLabel(selectedSeconds, language)}
+            </div>
+          </div>
+
+          {selectedSessions.length ===
+          0 ? (
+            <div className="history-empty-state">
+              {tr('Nothing was recorded here. Choose another day or complete a focus session to add history.', 'لێرە هیچ شتێک تۆمار نەکراوە. ڕۆژێکی تر هەڵبژێرە یان سێشنێکی سەرنج تەواو بکە بۆ زیادکردنی مێژوو.')}
+            </div>
+          ) : (
+            <div className="history-session-list">
+              {selectedSessions.map(
+                (session) => {
+                  const checklist =
+                    checklistProgress(
+                      session,
+                    )
+
+                  return (
+                    <article
+                      key={
+                        session.id
+                      }
+                      className="history-session-card"
+                    >
+                      <div className="history-session-title">
+                        <span
+                          style={{
+                            background:
+                              session.subjectColor,
+                          }}
+                        />
+                        <strong>
+                          {
+                            session.subjectName
+                          }
+                        </strong>
+                        <time>
+                          {sessionTime(
+                            new Date(
+                              session.completedAt,
+                            ),
+                            locale,
+                          )}
+                        </time>
+                      </div>
+
+                      <div className="history-session-metrics">
+                        <span>
+                          {durationLabel(session.actualDuration, language)}
+                        </span>
+
+                        <span>
+                          {
+                            session.interruptions
+                          }{' '}
+                          {tr('interruption', 'وەستاندن')}
+                          {session.interruptions ===
+                          1
+                            ? ''
+                            : ''}
+                        </span>
+
+                        {checklist && (
+                          <span>
+                            <ListChecks
+                              size={12}
+                            />
+                            {checklist}{' '}
+                            {tr('steps', 'هەنگاو')}
+                          </span>
+                        )}
+                      </div>
+
+                      {session.notes?.trim() && (
+                        <p className="history-session-note">
+                          {session.notes.trim()}
+                        </p>
+                      )}
+
+                      {(session.subtasks
+                        ?.length ??
+                        0) > 0 && (
+                        <div className="history-session-checklist">
+                          {session.subtasks
+                            ?.slice(
+                              0,
+                              4,
+                            )
+                            .map(
+                              (
+                                task,
+                              ) => (
+                                <div
+                                  key={
+                                    task.id
+                                  }
+                                  className={
+                                    task.completed
+                                      ? 'complete'
+                                      : ''
+                                  }
+                                >
+                                  <CheckCircle2
+                                    size={12}
+                                  />
+                                  <span>
+                                    {
+                                      task.text
+                                    }
+                                  </span>
+                                </div>
+                              ),
+                            )}
+                        </div>
+                      )}
+                    </article>
+                  )
+                },
+              )}
+            </div>
+          )}
+        </aside>
       </div>
     </PageContainer>
   )

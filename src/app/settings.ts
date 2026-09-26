@@ -1,4 +1,14 @@
+import type { ThemeMode } from './theme'
+import {
+  normalizeThemeTokenPack,
+  type ThemeTokenPack,
+} from './themeTokens.ts'
+import type { Language } from '../translations'
+
 export interface AppSettings {
+  theme: ThemeMode
+  customThemePack: ThemeTokenPack | null
+  language: Language
   shortBreak: number
   longBreak: number
   sessionsBeforeLongBreak: number
@@ -9,6 +19,9 @@ export interface AppSettings {
 }
 
 export const defaultSettings: AppSettings = {
+  theme: 'system',
+  customThemePack: null,
+  language: 'en',
   shortBreak: 5,
   longBreak: 15,
   sessionsBeforeLongBreak: 4,
@@ -27,7 +40,27 @@ export const settingRanges = {
 
 export function normalizeSettings(input: Partial<AppSettings> | null | undefined): AppSettings {
   const source = input ?? {}
+  const customThemePack =
+    normalizeThemeTokenPack(
+      source.customThemePack,
+    )
+
   return {
+    theme:
+      source.theme === 'dark' ||
+      source.theme === 'light' ||
+      source.theme === 'system' ||
+      source.theme === 'black' ||
+      source.theme === 'white' ||
+      (source.theme === 'custom' &&
+        customThemePack)
+        ? source.theme
+        : defaultSettings.theme,
+    customThemePack,
+    language:
+      source.language === 'ku'
+        ? 'ku'
+        : 'en',
     shortBreak: clampNumber(source.shortBreak, settingRanges.shortBreak, defaultSettings.shortBreak),
     longBreak: clampNumber(source.longBreak, settingRanges.longBreak, defaultSettings.longBreak),
     sessionsBeforeLongBreak: clampNumber(source.sessionsBeforeLongBreak, settingRanges.sessionsBeforeLongBreak, defaultSettings.sessionsBeforeLongBreak),
