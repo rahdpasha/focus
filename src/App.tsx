@@ -75,6 +75,10 @@ function AuthenticatedApp({
     planSubjectCreateRequest,
     setPlanSubjectCreateRequest,
   ] = useState(0)
+  const [
+    subjectCreateReturnPage,
+    setSubjectCreateReturnPage,
+  ] = useState<'dashboard' | 'focus' | null>(null)
 
   const data = useFocusData(
     t,
@@ -174,7 +178,12 @@ function AuthenticatedApp({
     setPage('dashboard')
   }
 
-  const openSubjectCreator = () => {
+  const openSubjectCreator = (
+    returnPage: 'dashboard' | 'focus',
+  ) => {
+    setSubjectCreateReturnPage(
+      returnPage,
+    )
     setPlanSubjectCreateRequest(
       (value) => value + 1,
     )
@@ -212,8 +221,10 @@ function AuthenticatedApp({
           onStartRecommendedSession={
             startRecommendedSession
           }
-          onAddSubjectRequest={
-            openSubjectCreator
+          onAddSubjectRequest={() =>
+            openSubjectCreator(
+              'dashboard',
+            )
           }
         />
       )}
@@ -246,8 +257,10 @@ function AuthenticatedApp({
               subjectId,
             )
           }}
-          onAddSubjectRequest={
-            openSubjectCreator
+          onAddSubjectRequest={() =>
+            openSubjectCreator(
+              'focus',
+            )
           }
         />
       )}
@@ -276,6 +289,16 @@ function AuthenticatedApp({
           subjectCreateRequestKey={
             planSubjectCreateRequest
           }
+          onExternalSubjectCreated={() => {
+            const returnPage =
+              subjectCreateReturnPage
+            setSubjectCreateReturnPage(
+              null,
+            )
+            if (returnPage) {
+              setPage(returnPage)
+            }
+          }}
         />
       )}
 
