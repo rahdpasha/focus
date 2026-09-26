@@ -13373,3 +13373,32 @@ textarea::placeholder {
     padding: 12px;
   }
 }
+
+
+/* V4.6 — direct first-use action */
+.study-plan-empty-v4 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  text-align: start;
+}
+
+.study-plan-empty-v4 > span {
+  max-width: 620px;
+}
+
+.study-plan-empty-v4 .cyber-btn {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 600px) {
+  .study-plan-empty-v4 {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .study-plan-empty-v4 .cyber-btn {
+    width: 100%;
+  }
+}
