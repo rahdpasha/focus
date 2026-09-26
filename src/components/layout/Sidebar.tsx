@@ -51,72 +51,42 @@ interface SidebarProps {
   ) => void
 }
 
-const navGroups = [
+const navItems = [
   {
-    label: 'Now',
-    labelKu: 'ئێستا',
-    items: [
-      {
-        page: 'dashboard' as const,
-        label: 'Today',
-        labelKu: 'ئەمڕۆ',
-        icon: Gauge,
-      },
-      {
-        page: 'focus' as const,
-        label: 'Focus',
-        labelKu: 'سەرنج',
-        icon: Clock3,
-      },
-    ],
+    page: 'dashboard' as const,
+    label: 'Today',
+    labelKu: 'ئەمڕۆ',
+    icon: Gauge,
   },
   {
+    page: 'focus' as const,
+    label: 'Focus',
+    labelKu: 'سەرنج',
+    icon: Clock3,
+  },
+  {
+    page: 'plan' as const,
     label: 'Plan',
     labelKu: 'پلان',
-    items: [
-      {
-        page: 'plan' as const,
-        label: 'Plan',
-        labelKu: 'پلان',
-        icon: CalendarRange,
-      },
-    ],
+    icon: CalendarRange,
   },
   {
+    page: 'progress' as const,
     label: 'Progress',
     labelKu: 'پێشکەوتن',
-    items: [
-      {
-        page: 'progress' as const,
-        label: 'Progress',
-        labelKu: 'پێشکەوتن',
-        icon: BarChart3,
-      },
-    ],
+    icon: BarChart3,
   },
   {
-    label: 'Community',
-    labelKu: 'کۆمەڵگا',
-    items: [
-      {
-        page: 'league' as const,
-        label: 'League',
-        labelKu: 'پێشبڕکێ',
-        icon: Swords,
-      },
-    ],
+    page: 'league' as const,
+    label: 'League',
+    labelKu: 'پێشبڕکێ',
+    icon: Swords,
   },
   {
-    label: 'Preferences',
-    labelKu: 'هەڵبژاردەکان',
-    items: [
-      {
-        page: 'settings' as const,
-        label: 'Settings',
-        labelKu: 'ڕێکخستنەکان',
-        icon: Settings,
-      },
-    ],
+    page: 'settings' as const,
+    label: 'Settings',
+    labelKu: 'ڕێکخستنەکان',
+    icon: Settings,
   },
 ]
 
@@ -260,80 +230,59 @@ export default function Sidebar({
         </div>
 
         <nav
-          className="sidebar-nav"
+          className="sidebar-nav sidebar-nav-v4"
           aria-label={tr('Application navigation', 'ڕێنوێنی بەرنامە')}
         >
-          {navGroups.map(
-            (group) => (
-              <div
-                key={group.label}
-                className="sidebar-nav-group"
-              >
-                {showLabels && (
-                  <div className="sidebar-nav-group-label">
-                    {tr(group.label, group.labelKu)}
-                  </div>
-                )}
+          {navItems.map(
+            (item) => {
+              const Icon = item.icon
+              const active =
+                page === item.page
 
-                {group.items.map(
-                  (item) => {
-                    const Icon =
-                      item.icon
-                    const active =
-                      page ===
-                      item.page
-
-                    return (
-                      <button
-                        key={
-                          item.page
-                        }
-                        type="button"
-                        className={
-                          active
-                            ? 'sidebar-nav-item active'
-                            : 'sidebar-nav-item'
-                        }
-                        onClick={() =>
-                          changePage(
-                            item.page,
-                          )
-                        }
-                        title={
-                          collapsed
-                            ? tr(
-                                item.label,
-                                item.labelKu,
-                              )
-                            : undefined
-                        }
-                        aria-current={
-                          active
-                            ? 'page'
-                            : undefined
-                        }
-                      >
-                        <Icon
-                          size={17}
-                          strokeWidth={
-                            1.8
-                          }
-                        />
-
-                        {showLabels && (
-                          <span>
-                            {tr(
-                              item.label,
-                              item.labelKu,
-                            )}
-                          </span>
-                        )}
-                      </button>
+              return (
+                <button
+                  key={item.page}
+                  type="button"
+                  className={
+                    active
+                      ? 'sidebar-nav-item active'
+                      : 'sidebar-nav-item'
+                  }
+                  onClick={() =>
+                    changePage(
+                      item.page,
                     )
-                  },
-                )}
-              </div>
-            ),
+                  }
+                  title={
+                    collapsed
+                      ? tr(
+                          item.label,
+                          item.labelKu,
+                        )
+                      : undefined
+                  }
+                  aria-current={
+                    active
+                      ? 'page'
+                      : undefined
+                  }
+                >
+                  <Icon
+                    size={17}
+                    strokeWidth={1.8}
+                  />
+
+                  {showLabels && (
+                    <span>
+                      {tr(
+                        item.label,
+                        item.labelKu,
+                      )}
+                    </span>
+                  )}
+                </button>
+              )
+            },
           )}
         </nav>
 
