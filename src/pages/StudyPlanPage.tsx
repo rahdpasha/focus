@@ -296,8 +296,21 @@ export default function StudyPlanPage({
 
           <div className="study-plan-list">
             {plan.items.length === 0 ? (
-              <div className="study-plan-empty">
-                {tr('Add a subject and FOCUS will build the first useful plan from it.', 'بابەتێک زیاد بکە و FOCUS یەکەم پلانی بەسوودت بۆ دروست دەکات.')}
+              <div className="study-plan-empty study-plan-empty-v4">
+                <span>
+                  {tr('Add a subject and FOCUS will build the first useful plan from it.', 'بابەتێک زیاد بکە و FOCUS یەکەم پلانی بەسوودت بۆ دروست دەکات.')}
+                </span>
+
+                {onAddSubjectRequest && (
+                  <button
+                    type="button"
+                    className="cyber-btn"
+                    onClick={onAddSubjectRequest}
+                  >
+                    <Plus size={15} />
+                    {tr('Add subject', 'زیادکردنی بابەت')}
+                  </button>
+                )}
               </div>
             ) : (
               plan.items.map(
