@@ -1,10 +1,8 @@
 import {
   BarChart3,
-  BookOpen,
   BrainCircuit,
   Check,
   CalendarRange,
-  Repeat2,
   ChevronLeft,
   ChevronRight,
   Clock3,
@@ -80,22 +78,10 @@ const navGroups = [
     labelKu: 'پلان',
     items: [
       {
-        page: 'subjects' as const,
-        label: 'Subjects',
-        labelKu: 'بابەتەکان',
-        icon: BookOpen,
-      },
-      {
-        page: 'study-plan' as const,
-        label: 'Study plan',
-        labelKu: 'پلانی خوێندن',
+        page: 'plan' as const,
+        label: 'Plan',
+        labelKu: 'پلان',
         icon: CalendarRange,
-      },
-      {
-        page: 'routine' as const,
-        label: 'Routine',
-        labelKu: 'ڕوتین',
-        icon: Repeat2,
       },
       {
         page: 'advisor' as const,
