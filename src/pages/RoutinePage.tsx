@@ -161,6 +161,10 @@ export default function RoutinePage({
     useState<number[]>([0, 1, 2, 3, 4, 5, 6])
   const [recoveryDays, setRecoveryDays] =
     useState(1)
+  const [
+    showRoutineAdvanced,
+    setShowRoutineAdvanced,
+  ] = useState(false)
   const [pendingDelete, setPendingDelete] =
     useState<string | null>(null)
 
@@ -695,52 +699,25 @@ export default function RoutinePage({
               aria-label={tr('Routine target minutes', 'خولەکی ئامانجی ڕوتین')}
             />
 
-            <select
-              value={mode}
-              onChange={(event) =>
-                setMode(
-                  event.target
-                    .value as RoutineItem['mode'],
+            <button
+              type="button"
+              className="v4-advanced-toggle"
+              aria-expanded={showRoutineAdvanced}
+              onClick={() =>
+                setShowRoutineAdvanced(
+                  (value) => !value,
                 )
               }
             >
-              <option value="fixed">
-                {tr('Fixed', 'جێگیر')}
-              </option>
-              <option value="rotation">
-                {tr('Rotation pool', 'کۆمەڵەی گۆڕاو')}
-              </option>
-            </select>
-
-            <select
-              value={recoveryDays}
-              onChange={(event) =>
-                setRecoveryDays(
-                  Number(
-                    event.target.value,
-                  ),
-                )
-              }
-              aria-label={tr('Recovery window', 'ماوەی گەڕاندنەوە')}
-            >
-              <option value={0}>
-                {tr('No recovery', 'بێ گەڕاندنەوە')}
-              </option>
-              <option value={1}>
-                {tr('+1 day recovery', '+١ ڕۆژ گەڕاندنەوە')}
-              </option>
-              <option value={2}>
-                {tr('+2 days recovery', '+٢ ڕۆژ گەڕاندنەوە')}
-              </option>
-              <option value={3}>
-                {tr('+3 days recovery', '+٣ ڕۆژ گەڕاندنەوە')}
-              </option>
-            </select>
+              {showRoutineAdvanced
+                ? tr('Hide advanced options', 'هەڵبژاردە پێشکەوتووەکان بشارەوە')
+                : tr('Advanced options', 'هەڵبژاردە پێشکەوتووەکان')}
+            </button>
 
             <button
               type="button"
               className="cyber-btn routine-primary-action"
-              disabled={!subjectId}
+              disabled={!selectedSubjectId}
               onClick={addItem}
             >
               <Plus size={15} />
@@ -748,84 +725,140 @@ export default function RoutinePage({
             </button>
           </div>
 
-          <div className="routine-builder-row">
-            <span className="routine-builder-label">{tr('Schedule', 'خشتە')}</span>
-
-            {[
-              {
-                label: tr('Every day', 'هەموو ڕۆژێک'),
-                days: [0, 1, 2, 3, 4, 5, 6],
-              },
-              {
-                label: tr('Weekdays', 'ڕۆژانی هەفتە'),
-                days: [1, 2, 3, 4, 5],
-              },
-              {
-                label: tr('Weekends', 'کۆتایی هەفتە'),
-                days: [0, 6],
-              },
-            ].map((preset) => {
-              const active =
-                preset.days.length ===
-                  daysOfWeek.length &&
-                preset.days.every((day) =>
-                  daysOfWeek.includes(day),
-                )
-
-              return (
-                <button
-                  key={preset.label}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() =>
-                    setDaysOfWeek(
-                      preset.days,
-                    )
-                  }
-                  className={
-                    active
-                      ? 'routine-schedule-preset active'
-                      : 'routine-schedule-preset'
-                  }
-                >
-                  {preset.label}
-                </button>
-              )
-            })}
-
-            <span className="routine-builder-value">
-              {dayRuleLabel(daysOfWeek, language)}
-            </span>
-          </div>
-
-          <div className="routine-builder-row compact">
-            <span className="routine-builder-label">{tr('Days', 'ڕۆژەکان')}</span>
-
-            {WEEKDAYS.map(
-              (day) => {
-                const active =
-                  daysOfWeek.includes(
-                    day.value,
-                  )
-
-                return (
-                  <button
-                    key={day.value}
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => toggleBuilderDay(day.value)}
-                    className={
-                      active
-                        ? 'routine-day-toggle builder-day active'
-                        : 'routine-day-toggle builder-day'
+          {showRoutineAdvanced && (
+            <div className="v4-advanced-panel routine-advanced-panel">
+              <div className="routine-advanced-selects">
+                <label>
+                  <span>{tr('Type', 'جۆر')}</span>
+                  <select
+                    value={mode}
+                    onChange={(event) =>
+                      setMode(
+                        event.target
+                          .value as RoutineItem['mode'],
+                      )
                     }
                   >
-                    {language === 'ku' ? day.labelKu : day.label}
-                  </button>
-                )
-              },
-            )}
-          </div>
+                    <option value="fixed">
+                      {tr('Fixed', 'جێگیر')}
+                    </option>
+                    <option value="rotation">
+                      {tr('Rotation pool', 'کۆمەڵەی گۆڕاو')}
+                    </option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>
+                    {tr('Recovery', 'گەڕاندنەوە')}
+                  </span>
+                  <select
+                    value={recoveryDays}
+                    onChange={(event) =>
+                      setRecoveryDays(
+                        Number(
+                          event.target.value,
+                        ),
+                      )
+                    }
+                    aria-label={tr('Recovery window', 'ماوەی گەڕاندنەوە')}
+                  >
+                    <option value={0}>
+                      {tr('No recovery', 'بێ گەڕاندنەوە')}
+                    </option>
+                    <option value={1}>
+                      {tr('+1 day', '+١ ڕۆژ')}
+                    </option>
+                    <option value={2}>
+                      {tr('+2 days', '+٢ ڕۆژ')}
+                    </option>
+                    <option value={3}>
+                      {tr('+3 days', '+٣ ڕۆژ')}
+                    </option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="routine-builder-row">
+                <span className="routine-builder-label">{tr('Schedule', 'خشتە')}</span>
+
+                {[
+                  {
+                    label: tr('Every day', 'هەموو ڕۆژێک'),
+                    days: [0, 1, 2, 3, 4, 5, 6],
+                  },
+                  {
+                    label: tr('Weekdays', 'ڕۆژانی هەفتە'),
+                    days: [1, 2, 3, 4, 5],
+                  },
+                  {
+                    label: tr('Weekends', 'کۆتایی هەفتە'),
+                    days: [0, 6],
+                  },
+                ].map((preset) => {
+                  const active =
+                    preset.days.length ===
+                      daysOfWeek.length &&
+                    preset.days.every((day) =>
+                      daysOfWeek.includes(day),
+                    )
+
+                  return (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() =>
+                        setDaysOfWeek(
+                          preset.days,
+                        )
+                      }
+                      className={
+                        active
+                          ? 'routine-schedule-preset active'
+                          : 'routine-schedule-preset'
+                      }
+                    >
+                      {preset.label}
+                    </button>
+                  )
+                })}
+
+                <span className="routine-builder-value">
+                  {dayRuleLabel(daysOfWeek, language)}
+                </span>
+              </div>
+
+              <div className="routine-builder-row compact">
+                <span className="routine-builder-label">{tr('Days', 'ڕۆژەکان')}</span>
+
+                {WEEKDAYS.map(
+                  (day) => {
+                    const active =
+                      daysOfWeek.includes(
+                        day.value,
+                      )
+
+                    return (
+                      <button
+                        key={day.value}
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() => toggleBuilderDay(day.value)}
+                        className={
+                          active
+                            ? 'routine-day-toggle builder-day active'
+                            : 'routine-day-toggle builder-day'
+                        }
+                      >
+                        {language === 'ku' ? day.labelKu : day.label}
+                      </button>
+                    )
+                  },
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="routine-config-list">
             {routineItems.map(
