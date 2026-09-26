@@ -12138,203 +12138,6 @@ small {
 }
 
 
-/* Focus timer ring — layered precision */
-.timer-v5-ring {
-  width: min(356px, 80vw);
-}
-
-.timer-v5-ring::before {
-  inset: 12%;
-  background:
-    radial-gradient(
-      circle,
-      color-mix(in srgb, var(--timer-color) 9%, transparent) 0 42%,
-      transparent 68%
-    );
-  filter: blur(18px);
-}
-
-.timer-v5-ring::after {
-  content: '';
-  position: absolute;
-  inset: 7.5%;
-  z-index: 0;
-  border: 1px solid color-mix(
-    in srgb,
-    var(--timer-color) 10%,
-    var(--focus-hairline)
-  );
-  border-radius: 50%;
-  box-shadow:
-    inset 0 0 0 10px color-mix(
-      in srgb,
-      var(--void-surface) 34%,
-      transparent
-    ),
-    0 18px 60px color-mix(
-      in srgb,
-      var(--timer-color) 8%,
-      transparent
-    );
-  pointer-events: none;
-}
-
-.timer-v5-ring svg {
-  z-index: 1;
-}
-
-.timer-v5-ring-outer,
-.timer-v5-ring-inner,
-.timer-v5-ring-track,
-.timer-v5-ring-progress {
-  fill: none;
-}
-
-.timer-v5-ring-outer {
-  stroke: color-mix(
-    in srgb,
-    var(--text-primary) 8%,
-    transparent
-  );
-  stroke-width: 1;
-  stroke-dasharray: 1.2 14;
-  stroke-linecap: round;
-  opacity: 0.46;
-}
-
-.timer-v5-ring-inner {
-  stroke: color-mix(
-    in srgb,
-    var(--timer-color) 12%,
-    var(--focus-hairline)
-  );
-  stroke-width: 1;
-  opacity: 0.48;
-}
-
-.timer-v5-ring-track {
-  stroke: color-mix(
-    in srgb,
-    var(--text-primary) 10%,
-    var(--focus-hairline)
-  );
-  stroke-width: 6;
-}
-
-.timer-v5-ring-progress-glow,
-.timer-v5-ring-progress {
-  fill: none;
-  stroke: var(--timer-color);
-  stroke-linecap: round;
-  transition:
-    stroke-dashoffset 0.8s linear,
-    stroke 0.3s ease;
-}
-
-.timer-v5-ring-progress-glow {
-  stroke-width: 11;
-  opacity: 0.11;
-  filter:
-    blur(1.5px)
-    drop-shadow(
-      0 0 18px
-      color-mix(in srgb, var(--timer-color) 24%, transparent)
-    );
-}
-
-.timer-v5-ring-progress {
-  stroke-width: 6;
-  filter:
-    drop-shadow(
-      0 0 4px
-      color-mix(in srgb, var(--timer-color) 38%, transparent)
-    )
-    drop-shadow(
-      0 0 14px
-      color-mix(in srgb, var(--timer-color) 16%, transparent)
-    );
-}
-
-.timer-v5-center {
-  z-index: 2;
-  width: 69%;
-  aspect-ratio: 1;
-  align-content: center;
-  border: 1px solid color-mix(
-    in srgb,
-    var(--text-primary) 6%,
-    transparent
-  );
-  border-radius: 50%;
-  background:
-    radial-gradient(
-      circle at 50% 34%,
-      color-mix(in srgb, var(--timer-color) 6%, transparent),
-      transparent 52%
-    ),
-    color-mix(
-      in srgb,
-      var(--void-surface) 54%,
-      transparent
-    );
-  box-shadow:
-    inset 0 1px 0 color-mix(
-      in srgb,
-      var(--text-primary) 4%,
-      transparent
-    );
-  backdrop-filter: blur(10px);
-}
-
-.timer-v5-time {
-  letter-spacing: -0.065em;
-}
-
-[data-theme='light'] .timer-v5-ring::after {
-  border-color: rgba(57, 54, 72, 0.07);
-  box-shadow:
-    inset 0 0 0 10px rgba(255, 255, 255, 0.28),
-    0 20px 58px rgba(105, 89, 217, 0.07);
-}
-
-[data-theme='light'] .timer-v5-ring-track {
-  stroke: rgba(57, 54, 72, 0.10);
-}
-
-[data-theme='light'] .timer-v5-ring-outer {
-  stroke: rgba(57, 54, 72, 0.14);
-}
-
-[data-theme='light'] .timer-v5-center {
-  border-color: rgba(57, 54, 72, 0.07);
-  background:
-    radial-gradient(
-      circle at 50% 32%,
-      color-mix(in srgb, var(--timer-color) 6%, transparent),
-      transparent 52%
-    ),
-    rgba(255, 255, 255, 0.56);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 16px 50px rgba(54, 49, 70, 0.045);
-}
-
-[data-theme='black'] .timer-v5-center,
-[data-theme='white'] .timer-v5-center {
-  backdrop-filter: none;
-}
-
-@media (max-width: 520px) {
-  .timer-v5-ring {
-    width: min(306px, 84vw);
-  }
-
-  .timer-v5-center {
-    width: 70%;
-  }
-}
-
-
 /* Soft Light polish */
 [data-theme='light'] {
   --void-black: #f7f8fc;
@@ -12459,211 +12262,6 @@ small {
   box-shadow:
     0 8px 20px rgba(95, 91, 216, 0.11),
     inset 0 1px 0 rgba(255, 255, 255, 0.58);
-}
-
-
-/* Focus timer ring — final refinement */
-.timer-v5-ring {
-  width: min(364px, 82vw);
-  isolation: isolate;
-}
-
-.timer-v5-ring::before {
-  inset: 10.5%;
-  background:
-    radial-gradient(
-      circle,
-      color-mix(in srgb, var(--timer-color) 11%, transparent) 0 34%,
-      color-mix(in srgb, var(--timer-color) 5%, transparent) 52%,
-      transparent 72%
-    );
-  filter: blur(20px);
-  opacity: 0.92;
-}
-
-.timer-v5-ring::after {
-  inset: 6.3%;
-  border-color: color-mix(
-    in srgb,
-    var(--timer-color) 13%,
-    var(--focus-hairline)
-  );
-  box-shadow:
-    inset 0 0 0 1px color-mix(
-      in srgb,
-      var(--text-primary) 3.5%,
-      transparent
-    ),
-    inset 0 0 0 12px color-mix(
-      in srgb,
-      var(--void-surface) 28%,
-      transparent
-    ),
-    0 22px 68px color-mix(
-      in srgb,
-      var(--timer-color) 9%,
-      transparent
-    );
-}
-
-.timer-v5-ring-outer {
-  stroke: color-mix(
-    in srgb,
-    var(--text-primary) 10%,
-    transparent
-  );
-  stroke-width: 1.1;
-  stroke-dasharray: 1.5 10.5;
-  opacity: 0.82;
-}
-
-.timer-v5-ring-inner {
-  stroke: color-mix(
-    in srgb,
-    var(--timer-color) 15%,
-    var(--focus-hairline)
-  );
-  stroke-width: 1.25;
-}
-
-.timer-v5-ring-track {
-  stroke: color-mix(
-    in srgb,
-    var(--text-primary) 11%,
-    var(--focus-hairline)
-  );
-  stroke-width: 6;
-}
-
-.timer-v5-ring-progress {
-  stroke-width: 7;
-  filter:
-    drop-shadow(
-      0 0 4px
-      color-mix(in srgb, var(--timer-color) 48%, transparent)
-    )
-    drop-shadow(
-      0 0 12px
-      color-mix(in srgb, var(--timer-color) 24%, transparent)
-    )
-    drop-shadow(
-      0 0 28px
-      color-mix(in srgb, var(--timer-color) 10%, transparent)
-    );
-}
-
-.timer-v5-center {
-  width: 67.5%;
-  border-color: color-mix(
-    in srgb,
-    var(--timer-color) 8%,
-    var(--focus-hairline)
-  );
-  background:
-    radial-gradient(
-      circle at 50% 30%,
-      color-mix(in srgb, var(--timer-color) 7%, transparent),
-      transparent 48%
-    ),
-    color-mix(
-      in srgb,
-      var(--void-surface) 58%,
-      transparent
-    );
-  box-shadow:
-    inset 0 1px 0 color-mix(
-      in srgb,
-      var(--text-primary) 5%,
-      transparent
-    ),
-    inset 0 0 32px color-mix(
-      in srgb,
-      var(--timer-color) 3.5%,
-      transparent
-    );
-}
-
-.timer-v5-time {
-  text-shadow:
-    0 1px 0 color-mix(
-      in srgb,
-      var(--void-bg) 70%,
-      transparent
-    ),
-    0 0 22px color-mix(
-      in srgb,
-      var(--timer-color) 11%,
-      transparent
-    );
-}
-
-[data-theme='light'] .timer-v5-ring::after {
-  border-color: rgba(59, 62, 79, 0.075);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.80),
-    inset 0 0 0 12px rgba(255, 255, 255, 0.25),
-    0 24px 64px rgba(79, 73, 142, 0.075);
-}
-
-[data-theme='light'] .timer-v5-ring-track {
-  stroke: rgba(47, 51, 67, 0.105);
-}
-
-[data-theme='light'] .timer-v5-ring-outer {
-  stroke: rgba(47, 51, 67, 0.145);
-}
-
-[data-theme='light'] .timer-v5-center {
-  border-color: rgba(65, 61, 93, 0.08);
-  background:
-    radial-gradient(
-      circle at 50% 28%,
-      color-mix(in srgb, var(--timer-color) 6%, transparent),
-      transparent 48%
-    ),
-    rgba(255, 255, 255, 0.62);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.98),
-    inset 0 0 26px rgba(95, 91, 216, 0.025),
-    0 18px 52px rgba(55, 62, 84, 0.05);
-}
-
-@media (max-width: 520px) {
-  .timer-v5-ring {
-    width: min(312px, 86vw);
-  }
-
-  .timer-v5-ring-track {
-    stroke-width: 5.5;
-  }
-
-  .timer-v5-ring-progress {
-    stroke-width: 6.5;
-  }
-}
-
-
-/* Soft Light timer refinement */
-[data-theme='light'] .timer-v5-ring::after {
-  background:
-    radial-gradient(
-      circle at 50% 38%,
-      rgba(255, 255, 255, 0.74),
-      rgba(255, 255, 255, 0.18) 58%,
-      transparent 76%
-    );
-  box-shadow:
-    inset 0 0 30px rgba(103, 88, 215, 0.035),
-    0 18px 48px rgba(48, 44, 58, 0.045);
-}
-
-[data-theme='light'] .timer-v5-ring-track {
-  opacity: 0.72;
-}
-
-[data-theme='light'] .timer-v5-time {
-  text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 
@@ -12904,9 +12502,16 @@ html[dir='rtl'][data-theme='light'] .app-sidebar {
 }
 
 
-/* Focus timer balance polish */
+
+
+/* Focus timer — single clean composition */
 .timer-v5 {
-  gap: 18px;
+  gap: 16px;
+}
+
+.timer-v5-status {
+  min-height: 32px;
+  padding: 6px 11px;
 }
 
 .duration-v5-presets {
@@ -12918,82 +12523,59 @@ html[dir='rtl'][data-theme='light'] .app-sidebar {
   min-height: 40px;
   padding: 9px 13px;
   border-radius: 10px;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .timer-v5-ring {
-  width: min(340px, 78vw);
+  width: min(350px, 80vw);
+  isolation: isolate;
 }
 
 .timer-v5-ring::before {
-  inset: 15%;
-  opacity: 0.62;
-  filter: blur(18px);
+  inset: 20%;
+  opacity: 0.24;
+  filter: blur(20px);
 }
 
 .timer-v5-ring::after {
-  inset: 8.5%;
-  border-color:
-    color-mix(
-      in srgb,
-      var(--timer-color) 9%,
-      var(--focus-hairline)
-    );
-  box-shadow:
-    inset 0 0 0 1px
-      color-mix(
-        in srgb,
-        var(--text-primary) 2.5%,
-        transparent
-      ),
-    0 18px 54px
-      color-mix(
-        in srgb,
-        var(--timer-color) 6%,
-        transparent
-      );
-}
-
-.timer-v5-ring-outer {
-  stroke-dasharray: 1.4 13;
-  opacity: 0.44;
-}
-
-.timer-v5-ring-inner {
-  opacity: 0.28;
+  display: none;
 }
 
 .timer-v5-ring-track {
-  stroke-width: 4.5;
-  opacity: 0.82;
-}
-
-.timer-v5-ring-progress-glow {
-  stroke-width: 10;
-  opacity: 0.075;
+  stroke:
+    color-mix(
+      in srgb,
+      var(--text-primary) 11%,
+      var(--focus-hairline)
+    );
+  stroke-width: 5;
+  opacity: 0.78;
 }
 
 .timer-v5-ring-progress {
   stroke-width: 6.5;
+  filter:
+    drop-shadow(
+      0 0 5px
+      color-mix(in srgb, var(--timer-color) 22%, transparent)
+    );
 }
 
 .timer-v5-center {
-  width: 58%;
-  border-color:
+  width: 55%;
+  aspect-ratio: 1;
+  border:
+    1px solid
     color-mix(
       in srgb,
       var(--timer-color) 6%,
       var(--focus-hairline)
     );
+  border-radius: 50%;
   background:
-    radial-gradient(
-      circle at 50% 32%,
-      color-mix(in srgb, var(--timer-color) 4%, transparent),
-      transparent 56%
-    ),
     color-mix(
       in srgb,
-      var(--void-surface) 32%,
+      var(--void-surface) 24%,
       transparent
     );
   box-shadow:
@@ -13003,23 +12585,24 @@ html[dir='rtl'][data-theme='light'] .app-sidebar {
         var(--text-primary) 3%,
         transparent
       );
-  backdrop-filter: blur(7px);
-  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
 .timer-v5-center::before {
-  opacity: 0;
+  display: none;
 }
 
 .timer-v5-time {
-  font-size: clamp(50px, 7vw, 70px);
+  font-size: clamp(58px, 7vw, 76px);
   font-weight: 520;
   letter-spacing: -0.055em;
+  text-shadow: none;
 }
 
 .timer-v5-mode {
   margin-top: 9px;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .timer-v5-actions {
@@ -13027,92 +12610,19 @@ html[dir='rtl'][data-theme='light'] .app-sidebar {
 }
 
 .timer-v5-primary {
-  min-width: 156px;
+  min-width: 160px;
   min-height: 46px;
-}
-
-[data-theme='light'] .timer-v5-ring::after {
-  background:
-    radial-gradient(
-      circle at 50% 38%,
-      rgba(255, 255, 255, 0.46),
-      transparent 68%
-    );
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.72),
-    0 18px 46px rgba(79, 73, 142, 0.055);
+  padding: 11px 18px;
+  font-size: 13px;
 }
 
 [data-theme='light'] .timer-v5-center {
-  background:
-    radial-gradient(
-      circle at 50% 30%,
-      color-mix(in srgb, var(--timer-color) 4%, transparent),
-      transparent 58%
-    ),
-    rgba(255, 255, 255, 0.36);
+  background: rgba(255, 255, 255, 0.34);
   border-color: rgba(65, 61, 93, 0.065);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.82);
 }
 
-@media (max-width: 768px) {
-  .timer-v5 {
-    gap: 16px;
-  }
-
-  .timer-v5-ring {
-    width: min(300px, 82vw);
-  }
-
-  .timer-v5-center {
-    width: 60%;
-  }
-
-  .timer-v5-time {
-    font-size: clamp(48px, 15vw, 64px);
-  }
-
-  .duration-v5-presets {
-    width: min(100%, 420px);
-  }
-
-  .duration-v5-presets button {
-    min-height: 40px;
-    font-size: 10px;
-  }
-
-  .timer-v5-actions .cyber-btn,
-  .timer-v5-actions .timer-v5-secondary {
-    width: auto;
-  }
-}
-
-@media (max-width: 520px) {
-  .timer-v5-ring {
-    width: min(282px, 84vw);
-  }
-
-  .timer-v5-center {
-    width: 61%;
-  }
-
-  .duration-v5-presets {
-    gap: 6px;
-  }
-
-  .duration-v5-presets button {
-    flex: 1 1 68px;
-    min-height: 38px;
-    padding: 8px 9px;
-    font-size: 9.5px;
-  }
-}
-
-
-
-
-/* Focus corrective composition */
 @media (min-width: 1051px) {
   .focus-workspace {
     grid-template-columns: minmax(0, 1.46fr) minmax(330px, 0.72fr);
@@ -13120,118 +12630,24 @@ html[dir='rtl'][data-theme='light'] .app-sidebar {
   }
 
   .focus-timer-stage {
-    min-height: 540px;
-    padding: 26px 28px 22px;
+    min-height: 520px;
+    padding: 26px 28px 20px;
   }
 
   .focus-timer-wrap {
-    min-height: 375px;
-    place-items: center;
-  }
-
-  .timer-v5 {
-    gap: 14px;
-  }
-
-  .timer-v5-status {
-    min-height: 34px;
-    padding: 7px 12px;
-  }
-
-  .duration-v5-presets {
-    gap: 8px;
-  }
-
-  .duration-v5-presets button,
-  .duration-v5-set {
-    min-height: 42px;
-    padding: 9px 14px;
-    border-radius: 10px;
-    font-size: 11px;
+    min-height: 350px;
   }
 
   .timer-v5-ring {
-    width: min(368px, 31vw);
-  }
-
-  .timer-v5-ring::before {
-    inset: 18%;
-    opacity: 0.32;
-    filter: blur(22px);
-  }
-
-  .timer-v5-ring::after {
-    display: none;
-  }
-
-  .timer-v5-ring-track {
-    stroke-width: 5;
-    opacity: 0.76;
-  }
-
-  .timer-v5-ring-progress {
-    stroke-width: 6.5;
-    filter:
-      drop-shadow(
-        0 0 5px
-        color-mix(in srgb, var(--timer-color) 22%, transparent)
-      );
-  }
-
-  .timer-v5-center {
-    width: 54%;
-    aspect-ratio: 1;
-    border:
-      1px solid
-      color-mix(
-        in srgb,
-        var(--timer-color) 7%,
-        var(--focus-hairline)
-      );
-    border-radius: 50%;
-    background:
-      color-mix(
-        in srgb,
-        var(--void-surface) 22%,
-        transparent
-      );
-    box-shadow:
-      inset 0 1px 0
-        color-mix(
-          in srgb,
-          var(--text-primary) 3%,
-          transparent
-        );
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-  }
-
-  .timer-v5-center::before {
-    display: none;
+    width: min(382px, 31vw);
   }
 
   .timer-v5-time {
-    font-size: clamp(64px, 5.2vw, 78px);
-    font-weight: 520;
-    letter-spacing: -0.055em;
-    text-shadow: none;
-  }
-
-  .timer-v5-mode {
-    margin-top: 10px;
-    font-size: 11px;
-  }
-
-  .timer-v5-primary {
-    min-width: 166px;
-    min-height: 48px;
-    padding: 11px 18px;
-    font-size: 13px;
+    font-size: clamp(66px, 5.2vw, 80px);
   }
 
   .focus-audio {
-    margin-top: 2px;
-    padding-top: 14px;
+    padding-top: 13px;
   }
 
   .focus-audio-options button {
@@ -13241,11 +12657,28 @@ html[dir='rtl'][data-theme='light'] .app-sidebar {
   }
 }
 
-[data-theme='light'] .timer-v5-center {
-  background: rgba(255, 255, 255, 0.34);
-  border-color: rgba(65, 61, 93, 0.065);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+@media (max-width: 768px) {
+  .timer-v5 {
+    gap: 14px;
+  }
+
+  .timer-v5-ring {
+    width: min(292px, 82vw);
+  }
+
+  .timer-v5-center {
+    width: 58%;
+  }
+
+  .timer-v5-time {
+    font-size: clamp(50px, 14vw, 64px);
+  }
+
+  .duration-v5-presets button {
+    min-height: 39px;
+    padding: 8px 10px;
+    font-size: 10px;
+  }
 }
 
 /* Readability hierarchy corrective */
