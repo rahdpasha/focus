@@ -507,18 +507,23 @@ export default function FocusPage({
               )}
           </section>
 
-          <section className="glass-panel focus-intent-card">
-            <div className="focus-card-title">
-              <Headphones
-                size={16}
-              />
-              <span>
-                {tr('Session intent', 'مەبەستی سێشن')}
+          <details className="glass-panel focus-intent-card focus-intent-v4">
+            <summary className="focus-card-title focus-intent-summary">
+              <span className="focus-intent-summary-title">
+                <Headphones
+                  size={16}
+                />
+                <span>
+                  {tr('Session notes & steps', 'تێبینی و هەنگاوەکانی سێشن')}
+                </span>
               </span>
-            </div>
+              <small>
+                {tr('Optional', 'ئارەزوومەندانە')}
+              </small>
+            </summary>
 
             <p className="focus-intent-helper">
-              {tr('Define what success looks like before you start.', 'پێش دەستپێکردن دیاری بکە سەرکەوتن بۆ ئەم سێشنە چییە.')}
+              {tr('Add a note or a few small steps only when they help you focus.', 'تەنها کاتێک یارمەتیت دەدات بۆ سەرنج، تێبینی یان چەند هەنگاوێکی بچووک زیاد بکە.')}
             </p>
 
             <textarea
@@ -687,7 +692,7 @@ export default function FocusPage({
                 </button>
               )}
             </div>
-          </section>
+          </details>
         </aside>
       </div>
       )}
