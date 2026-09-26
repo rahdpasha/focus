@@ -250,6 +250,7 @@ export default function PlanPage({
         {section ===
           'subjects' && (
           <SubjectsPage
+            key={subjectCreateRequest}
             subjects={subjects}
             activeSubjectId={
               activeSubjectId
