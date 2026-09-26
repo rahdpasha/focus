@@ -12784,15 +12784,4 @@ textarea::placeholder {
     font-size: 13.5px;
   }
 
-  .timer-v5-ring {
-    width: min(292px, 82vw);
-  }
-
-  .timer-v5-center {
-    width: 57%;
-  }
-
-  .timer-v5-time {
-    font-size: clamp(50px, 14vw, 64px);
-  }
 }
