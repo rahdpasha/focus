@@ -12699,3 +12699,96 @@ html[dir='rtl'] .mono {
     monospace;
   letter-spacing: 0;
 }
+
+
+/* Readability polish */
+.page-header p {
+  font-size: 13px;
+}
+
+.eyebrow {
+  font-size: 11px;
+}
+
+.sidebar-brand-copy span {
+  font-size: 10px;
+}
+
+.sidebar-nav-group-label {
+  font-size: 9px;
+  letter-spacing: 0.085em;
+}
+
+.sidebar-nav-item span {
+  font-size: 13px;
+}
+
+.sidebar-section-label {
+  font-size: 9px;
+}
+
+.sidebar-subject-name {
+  font-size: 12px;
+}
+
+.settings-group-label span {
+  font-size: 12px;
+}
+
+.settings-group-label small {
+  font-size: 10px;
+}
+
+.timer-v5-status strong {
+  font-size: 9px;
+}
+
+.timer-v5-mode {
+  font-size: 10px;
+}
+
+.timer-v5-paused,
+.timer-v5-focused {
+  font-size: 10px;
+}
+
+.timer-v5-secondary {
+  font-size: 11px;
+}
+
+@media (max-width: 768px) {
+  .sidebar-nav-item span {
+    font-size: 14px;
+  }
+
+  .sidebar-nav-group-label,
+  .sidebar-section-label {
+    font-size: 10px;
+  }
+
+  .sidebar-subject-name {
+    font-size: 13px;
+  }
+
+  .sidebar-brand-copy span {
+    font-size: 11px;
+  }
+
+  .mobile-dock-item span {
+    font-size: 9.5px;
+  }
+
+  .page-header p {
+    font-size: 13.5px;
+    line-height: 1.62;
+  }
+}
+
+html[dir='rtl'] .sidebar-nav-group-label,
+html[dir='rtl'] .sidebar-section-label,
+html[dir='rtl'] .eyebrow,
+html[dir='rtl'] .timer-v5-status strong,
+html[dir='rtl'] .timer-v5-mode {
+  letter-spacing: 0;
+  text-transform: none;
+}
