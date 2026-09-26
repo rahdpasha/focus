@@ -13108,3 +13108,123 @@ html[dir='rtl'][data-theme='light'] .app-sidebar {
     font-size: 9.5px;
   }
 }
+
+
+/* Readability polish v2 */
+body {
+  font-size: 15px;
+}
+
+.page-header p,
+.focus-advisor-card p,
+.focus-intent-helper,
+.dashboard-insight-head p,
+.analytics-v3-card small,
+.settings-section p,
+.subject-card p,
+.history-day-copy,
+.league-v4-copy,
+.stats-v4-copy {
+  font-size: 13px;
+}
+
+input,
+select,
+textarea,
+button {
+  font-size: 13px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  font-size: 13px;
+}
+
+.sidebar-brand-copy span {
+  font-size: 11px;
+}
+
+.sidebar-nav-group-label,
+.sidebar-section-label {
+  font-size: 10px;
+}
+
+.sidebar-nav-item span {
+  font-size: 14px;
+}
+
+.sidebar-subject-name {
+  font-size: 13px;
+}
+
+.sidebar-add-subject span {
+  font-size: 13px;
+}
+
+.settings-group-label span,
+.focus-card-title,
+.focus-audio-label {
+  font-size: 12px;
+}
+
+.settings-group-label small,
+.focus-intent-meta,
+.focus-advisor-priority,
+.focus-switch-subject,
+.focus-audio-options button {
+  font-size: 10px;
+}
+
+.duration-v5-presets button,
+.duration-v5-set {
+  font-size: 11px;
+}
+
+.timer-v5-status strong,
+.timer-v5-mode,
+.timer-v5-paused,
+.timer-v5-focused {
+  font-size: 11px;
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 15px;
+  }
+
+  .sidebar-nav-item span {
+    font-size: 15px;
+  }
+
+  .sidebar-nav-group-label,
+  .sidebar-section-label {
+    font-size: 11px;
+  }
+
+  .sidebar-subject-name,
+  .sidebar-add-subject span {
+    font-size: 14px;
+  }
+
+  .mobile-dock-item span {
+    font-size: 10.5px;
+  }
+
+  .page-header p,
+  .focus-advisor-card p,
+  .focus-intent-helper {
+    font-size: 14px;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    font-size: 14px;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    font-size: 13.5px;
+  }
+}
