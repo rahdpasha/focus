@@ -224,6 +224,7 @@ export default function FocusPage({
   return (
     <PageContainer>
       <PageHeader
+        compact
         title={t('focus')}
         description={t(
           'focusPageQuestion',
