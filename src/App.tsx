@@ -212,6 +212,9 @@ function AuthenticatedApp({
           onStartRecommendedSession={
             startRecommendedSession
           }
+          onAddSubjectRequest={
+            openSubjectCreator
+          }
         />
       )}
 
