@@ -1,10 +1,6 @@
 import {
   ArrowRight,
   BrainCircuit,
-  Clock3,
-  Target,
-  TrendingDown,
-  TrendingUp,
 } from 'lucide-react'
 import type {
   Subject,
@@ -27,23 +23,6 @@ interface FocusPulseProps {
   ) => void
 }
 
-function trendIcon(
-  trend:
-    | 'improving'
-    | 'declining'
-    | 'stable',
-) {
-  if (trend === 'improving') {
-    return <TrendingUp size={15} />
-  }
-
-  if (trend === 'declining') {
-    return <TrendingDown size={15} />
-  }
-
-  return <Target size={15} />
-}
-
 export default function FocusPulse({
   sessions,
   subjects,
@@ -60,57 +39,57 @@ export default function FocusPulse({
   )
 
   return (
-    <section className="focus-pulse glass-panel">
+    <section className="focus-pulse focus-pulse-v4 glass-panel">
       <div className="focus-pulse-main">
         <div className="focus-pulse-kicker">
           <BrainCircuit size={16} />
-          {tr('FOCUS Pulse', 'پەڵسی FOCUS')}
+          {tr(
+            'Next move',
+            'هەنگاوی داهاتوو',
+          )}
         </div>
 
         <h2 className="focus-pulse-headline">
-          {localizeUiText(language, pulse.headline)}
+          {localizeUiText(
+            language,
+            pulse.headline,
+          )}
         </h2>
 
         <p className="focus-pulse-summary">
-          {localizeUiText(language, pulse.summary)}
-        </p>
-
-        <div className="focus-pulse-evidence">
-          {pulse.evidence.map(
-            (item) => (
-              <span
-                key={localizeUiText(language, item)}
-                className="focus-pulse-chip"
-              >
-                {localizeUiText(language, item)}
-              </span>
-            ),
+          {localizeUiText(
+            language,
+            pulse.summary,
           )}
-        </div>
+        </p>
 
         <button
           type="button"
           className="focus-pulse-action"
           onClick={() =>
             onStart(
-              pulse.action
-                .subjectId,
-              pulse.action
-                .minutes,
+              pulse.action.subjectId,
+              pulse.action.minutes,
             )
           }
         >
-          {localizeUiText(language, pulse.action.label)}
-          <ArrowRight
-            size={16}
-          />
+          {localizeUiText(
+            language,
+            pulse.action.label,
+          )}
+          <ArrowRight size={16} />
         </button>
       </div>
 
       <div className="focus-pulse-side">
         <div className="focus-pulse-meter">
           <div className="focus-pulse-meter-row">
-            <span>{tr('Today', 'ئەمڕۆ')}</span>
+            <span>
+              {tr(
+                'Today',
+                'ئەمڕۆ',
+              )}
+            </span>
             <strong>
               {pulse.todayMinutes}/
               {pulse.dailyGoal}m
@@ -127,9 +106,14 @@ export default function FocusPulse({
           </div>
         </div>
 
-        <div className="focus-pulse-meter">
+        <div className="focus-pulse-meter focus-pulse-week">
           <div className="focus-pulse-meter-row">
-            <span>{tr('This week', 'ئەم هەفتەیە')}</span>
+            <span>
+              {tr(
+                'This week',
+                'ئەم هەفتەیە',
+              )}
+            </span>
             <strong>
               {pulse.weeklyMinutes}/
               {pulse.weeklyGoal}m
@@ -143,38 +127,6 @@ export default function FocusPulse({
                 width: `${pulse.weeklyProgress}%`,
               }}
             />
-          </div>
-        </div>
-
-        <div className="focus-pulse-mini-grid">
-          <div className="focus-pulse-mini">
-            <div>
-              {trendIcon(
-                pulse.consistencyTrend,
-              )}
-              {tr('Rhythm', 'ڕێتم')}
-            </div>
-            <strong>
-              {tr(
-                pulse.consistencyTrend,
-                pulse.consistencyTrend === 'improving'
-                  ? 'باشتر دەبێت'
-                  : pulse.consistencyTrend === 'declining'
-                    ? 'خراپتر دەبێت'
-                    : 'جێگیرە',
-              )}
-            </strong>
-          </div>
-
-          <div className="focus-pulse-mini">
-            <div>
-              <Clock3 size={15} />
-              {tr('Best window', 'باشترین کات')}
-            </div>
-            <strong>
-              {pulse.bestTime ??
-                tr('Learning', 'هێشتا فێر دەبێت')}
-            </strong>
           </div>
         </div>
       </div>
