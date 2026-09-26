@@ -472,24 +472,25 @@ export default function FocusPage({
         </section>
 
         <aside className="focus-side-stack">
-          <section className="glass-panel focus-advisor-card">
-            <div className="focus-card-title">
-              <Sparkles
-                size={16}
-              />
-              <span>
-                {tr('Smart cue', 'ئاماژەی زیرەک')}
+          <details className="glass-panel focus-advisor-card focus-advisor-v4">
+            <summary className="focus-card-title focus-advisor-summary">
+              <span className="focus-advisor-summary-title">
+                <Sparkles
+                  size={16}
+                />
+                <span>
+                  {tr('Smart cue', 'ئاماژەی زیرەک')}
+                </span>
               </span>
-            </div>
 
-            <div className="focus-advisor-priority">
-              {advisor.priority === 'high'
-                ? tr('High', 'زۆر')
-                : advisor.priority === 'medium'
-                  ? tr('Medium', 'ناوەند')
-                  : tr('Low', 'کەم')}{' '}
-              {tr('priority', 'گرنگی')}
-            </div>
+              <small>
+                {advisor.priority === 'high'
+                  ? tr('High priority', 'گرنگی زۆر')
+                  : advisor.priority === 'medium'
+                    ? tr('Medium priority', 'گرنگی ناوەند')
+                    : tr('Low priority', 'گرنگی کەم')}
+              </small>
+            </summary>
 
             <p>
               {advisorSummary}
@@ -516,10 +517,10 @@ export default function FocusPage({
                   {tr('Switch to', 'بگۆڕە بۆ')}{' '}
                   {advisor.action
                     .subjectName ??
-                    tr(tr('recommended subject', 'بابەتی پێشنیارکراو'), 'بابەتی پێشنیارکراو')}
+                    tr('recommended subject', 'بابەتی پێشنیارکراو')}
                 </button>
               )}
-          </section>
+          </details>
 
           <details className="glass-panel focus-intent-card focus-intent-v4">
             <summary className="focus-card-title focus-intent-summary">
