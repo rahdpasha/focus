@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  BrainCircuit,
   CalendarRange,
   Repeat2,
 } from 'lucide-react'
@@ -19,11 +20,13 @@ import PageHeader from '../components/layout/PageHeader'
 import StudyPlanPage from './StudyPlanPage'
 import SubjectsPage from './SubjectsPage'
 import RoutinePage from './RoutinePage'
+import AdvisorPage from './AdvisorPage'
 
 type PlanSection =
   | 'plan'
   | 'subjects'
   | 'routine'
+  | 'advisor'
 
 interface PlanPageProps {
   subjects: Subject[]
@@ -136,6 +139,14 @@ export default function PlanPage({
         'ڕوتین',
       ),
       icon: Repeat2,
+    },
+    {
+      id: 'advisor' as const,
+      label: tr(
+        'Advisor',
+        'ڕاوێژکار',
+      ),
+      icon: BrainCircuit,
     },
   ]
 
@@ -261,6 +272,22 @@ export default function PlanPage({
             }
             onDeleteRoutineItem={
               onDeleteRoutineItem
+            }
+            onStartSession={
+              onStartSession
+            }
+          />
+        )}
+
+        {section ===
+          'advisor' && (
+          <AdvisorPage
+            sessions={sessions}
+            subjects={subjects}
+            dailyGoal={dailyGoal}
+            weeklyGoal={weeklyGoal}
+            advancedGoals={
+              advancedGoals
             }
             onStartSession={
               onStartSession
