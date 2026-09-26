@@ -1,6 +1,8 @@
 import {
   ArrowRight,
+  BookOpen,
   CalendarDays,
+  Plus,
 } from 'lucide-react'
 import type {
   Subject,
@@ -34,6 +36,7 @@ interface DashboardProps {
     minutes?: number,
     routineContext?: RoutineSessionContext,
   ) => void
+  onAddSubjectRequest?: () => void
 }
 
 export default function Dashboard({
@@ -43,6 +46,7 @@ export default function Dashboard({
   weeklyGoal,
   routineItems,
   onStartRecommendedSession,
+  onAddSubjectRequest,
 }: DashboardProps) {
   const { language, tr } = useI18n()
   const now = new Date()
@@ -123,6 +127,46 @@ export default function Dashboard({
         </div>
       </header>
 
+      {subjects.length === 0 ? (
+        <section className="glass-panel dashboard-first-subject">
+          <div className="dashboard-first-subject-icon">
+            <BookOpen size={22} />
+          </div>
+
+          <div className="dashboard-first-subject-copy">
+            <div className="eyebrow">
+              {tr('Set up FOCUS', 'FOCUS ئامادە بکە')}
+            </div>
+            <h2>
+              {tr(
+                'Start with your first subject.',
+                'بە یەکەم بابەتت دەست پێ بکە.',
+              )}
+            </h2>
+            <p>
+              {tr(
+                'Add a subject once. Then Today can build your next move, Focus can save sessions, and Progress can track your work.',
+                'یەک جار بابەتێک زیاد بکە. پاشان ئەمڕۆ هەنگاوی داهاتووت دروست دەکات، سەرنج سێشنەکان پاشەکەوت دەکات و پێشکەوتن کارت بەدواداچوون دەکات.',
+              )}
+            </p>
+          </div>
+
+          {onAddSubjectRequest && (
+            <button
+              type="button"
+              className="cyber-btn"
+              onClick={onAddSubjectRequest}
+            >
+              <Plus size={15} />
+              {tr(
+                'Add subject',
+                'زیادکردنی بابەت',
+              )}
+            </button>
+          )}
+        </section>
+      ) : (
+        <>
       <FocusPulse
         sessions={sessions}
         subjects={subjects}
@@ -355,6 +399,8 @@ export default function Dashboard({
         </div>
       </section>
       </div>
+        </>
+      )}
     </main>
   )
 }
