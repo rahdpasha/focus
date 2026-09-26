@@ -13705,3 +13705,59 @@ textarea::placeholder {
     margin-inline: 14px;
   }
 }
+
+
+/* V4.13 — clear first-use Progress state */
+.progress-first-session {
+  min-height: 280px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 28px;
+}
+
+.progress-first-session-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--primary-border);
+  border-radius: 14px;
+  background: var(--primary-soft);
+  color: var(--primary-glow);
+}
+
+.progress-first-session-copy {
+  display: grid;
+  gap: 7px;
+}
+
+.progress-first-session-copy h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(24px, 3vw, 34px);
+}
+
+.progress-first-session-copy p {
+  max-width: 650px;
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.progress-first-session .cyber-btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .progress-first-session {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .progress-first-session .cyber-btn {
+    width: 100%;
+  }
+}
