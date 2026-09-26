@@ -13013,3 +13013,114 @@ textarea::placeholder {
     font-size: 11px;
   }
 }
+
+
+/* V4 — guidance and settings simplification */
+.plan-v4-body .advisor-shell {
+  margin-top: 0;
+}
+
+.plan-v4-body .advisor-shell > .advisor-hero {
+  grid-column: 1 / -1;
+}
+
+.advisor-v4-details {
+  grid-column: 1 / -1;
+  padding: 0;
+  overflow: hidden;
+}
+
+.advisor-v4-details > summary {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--text-secondary);
+}
+
+.advisor-v4-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.advisor-v4-details > summary span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.advisor-v4-details > summary small {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.advisor-v4-details .advisor-v5-facts-card {
+  border: 0;
+  border-top: 1px solid var(--focus-hairline);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.settings-v4-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding: 5px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 14px;
+  background: color-mix(
+    in srgb,
+    var(--void-surface-hover) 72%,
+    transparent
+  );
+}
+
+.settings-v4-tab {
+  min-height: 40px;
+  padding: 9px 13px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.settings-v4-tab:hover {
+  color: var(--text-primary);
+  background: var(--void-surface-hover);
+}
+
+.settings-v4-tab.active {
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+  color: var(--text-primary);
+}
+
+@media (max-width: 600px) {
+  .plan-v4-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .settings-v4-tabs {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .settings-v4-tab {
+    justify-content: center;
+  }
+
+  .advisor-v4-details > summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
