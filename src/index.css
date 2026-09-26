@@ -13761,3 +13761,51 @@ textarea::placeholder {
     width: 100%;
   }
 }
+
+
+/* V4.13 — compact workspace headers */
+.page-header-compact {
+  min-height: 0;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+}
+
+.page-header-compact::after {
+  opacity: 0.5;
+}
+
+.page-header-compact .page-header-kicker {
+  margin-bottom: 5px;
+  font-size: 9px;
+}
+
+.page-header-compact h1 {
+  font-size: clamp(30px, 4vw, 42px);
+}
+
+.page-header-compact p {
+  max-width: 720px;
+  margin-top: 7px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.page-header-compact + .plan-v4-tabs,
+.page-header-compact + .progress-v4-tabs {
+  margin-top: 0;
+}
+
+@media (max-width: 600px) {
+  .page-header-compact {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+  }
+
+  .page-header-compact h1 {
+    font-size: 28px;
+  }
+
+  .page-header-compact p {
+    font-size: 12px;
+  }
+}
