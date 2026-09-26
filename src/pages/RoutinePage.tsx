@@ -65,6 +65,7 @@ interface RoutinePageProps {
     minutes?: number,
     routineContext?: RoutineSessionContext,
   ) => void
+  onAddSubjectRequest?: () => void
 }
 
 function shortDay(
@@ -141,6 +142,7 @@ export default function RoutinePage({
   onUpdateRoutineItem,
   onDeleteRoutineItem,
   onStartSession,
+  onAddSubjectRequest,
 }: RoutinePageProps) {
   const { t, tr, language } = useI18n()
   const [title, setTitle] =
@@ -651,35 +653,48 @@ export default function RoutinePage({
               }
             />
 
-            <select
-              value={selectedSubjectId}
-              onChange={(event) =>
-                setSubjectId(
-                  event.target
-                    .value,
-                )
-              }
-            >
-              <option value="">
-                {tr('Select subject', 'بابەت هەڵبژێرە')}
-              </option>
-              {subjects.map(
-                (subject) => (
-                  <option
-                    key={
-                      subject.id
-                    }
-                    value={
-                      subject.id
-                    }
-                  >
-                    {
-                      subject.name
-                    }
-                  </option>
-                ),
+            <div className="v4-subject-field">
+              <select
+                value={selectedSubjectId}
+                onChange={(event) =>
+                  setSubjectId(
+                    event.target
+                      .value,
+                  )
+                }
+              >
+                <option value="">
+                  {tr('Select subject', 'بابەت هەڵبژێرە')}
+                </option>
+                {subjects.map(
+                  (subject) => (
+                    <option
+                      key={
+                        subject.id
+                      }
+                      value={
+                        subject.id
+                      }
+                    >
+                      {
+                        subject.name
+                      }
+                    </option>
+                  ),
+                )}
+              </select>
+
+              {onAddSubjectRequest && (
+                <button
+                  type="button"
+                  className="v4-add-subject"
+                  onClick={onAddSubjectRequest}
+                >
+                  <Plus size={14} />
+                  {tr('Add subject', 'زیادکردنی بابەت')}
+                </button>
               )}
-            </select>
+            </div>
 
             <input
               type="number"
