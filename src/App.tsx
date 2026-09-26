@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import AppShell from './components/layout/AppShell'
 import Dashboard from './components/dashboard/Dashboard'
 import Settings from './components/settings/Settings'
@@ -12,20 +12,11 @@ import type { Page } from './app/navigation'
 import type { TranslationKey } from './translations'
 import type { AuthState } from './auth/types'
 import FocusPage from './pages/FocusPage'
-import SubjectsPage from './pages/SubjectsPage'
-import StudyPlanPage from './pages/StudyPlanPage'
 import PlanPage from './pages/PlanPage'
-import RoutinePage from './pages/RoutinePage'
-import RecordsPage from './pages/RecordsPage'
-import HistoryPage from './pages/HistoryPage'
 import ProgressPage from './pages/ProgressPage'
 import LeaguePage from './pages/LeaguePage'
-import AdvisorPage from './pages/AdvisorPage'
 import { useFocusData } from './hooks/useFocusData'
 import type { RoutineSessionContext } from './storage/types'
-import PageContainer from './pages/PageContainer'
-
-const Statistics = lazy(() => import('./components/statistics/Statistics'))
 
 type Translate = (key: TranslationKey) => string
 
@@ -257,18 +248,6 @@ function AuthenticatedApp({
         />
       )}
 
-      {page === 'subjects' && (
-        <SubjectsPage
-          subjects={data.subjects}
-          activeSubjectId={data.activeSubjectId}
-          sessions={data.sessions}
-          onSelectSubject={data.selectSubject}
-          onAddSubject={data.addSubject}
-          onDeleteSubject={data.deleteSubject}
-          onStartSession={startRecommendedSession}
-        />
-      )}
-
       {page === 'plan' && (
         <PlanPage
           subjects={data.subjects}
@@ -296,58 +275,6 @@ function AuthenticatedApp({
         />
       )}
 
-      {page === 'study-plan' && (
-        <StudyPlanPage
-          sessions={data.sessions}
-          subjects={data.subjects}
-          weeklyGoal={data.weeklyGoal}
-          dailyGoal={data.dailyGoal}
-          advancedGoals={data.advancedGoals}
-          onDailyGoalChange={data.setDailyGoal}
-          onWeeklyGoalChange={data.setWeeklyGoal}
-          onAddAdvancedGoal={data.addAdvancedGoal}
-          onUpdateAdvancedGoal={data.updateAdvancedGoal}
-          onDeleteAdvancedGoal={data.deleteAdvancedGoal}
-          onStartSession={startRecommendedSession}
-        />
-      )}
-
-      {page === 'routine' && (
-        <RoutinePage
-          subjects={data.subjects}
-          sessions={data.sessions}
-          routineItems={data.routineItems}
-          onAddRoutineItem={data.addRoutineItem}
-          onUpdateRoutineItem={data.updateRoutineItem}
-          onDeleteRoutineItem={data.deleteRoutineItem}
-          onStartSession={startRecommendedSession}
-        />
-      )}
-
-      {page === 'records' && (
-        <RecordsPage
-          sessions={data.sessions}
-          weeklyGoal={data.weeklyGoal}
-        />
-      )}
-
-      {page === 'history' && (
-        <HistoryPage
-          sessions={data.sessions}
-        />
-      )}
-
-      {page === 'advisor' && (
-        <AdvisorPage
-          sessions={data.sessions}
-          subjects={data.subjects}
-          dailyGoal={data.dailyGoal}
-          weeklyGoal={data.weeklyGoal}
-          advancedGoals={data.advancedGoals}
-          onStartSession={startRecommendedSession}
-        />
-      )}
-
       {page === 'progress' && (
         <ProgressPage
           sessions={data.sessions}
@@ -363,46 +290,6 @@ function AuthenticatedApp({
           userId={auth.session?.user.id ?? null}
           displayName={auth.session?.user.displayName}
         />
-      )}
-
-      {page === 'statistics' && (
-        <PageContainer>
-          <PageHeader
-            title={t('statistics')}
-            description={tr(
-              'Understand your focus rhythm, consistency, and strongest patterns without the noise.',
-              'ڕێتمی سەرنج، بەردەوامی و بەهێزترین شێوازەکانت بەبێ ئاڵۆزی تێبگە.',
-            )}
-          />
-
-          <Suspense
-            fallback={
-              <div
-                className="glass-panel"
-                style={{
-                  padding: '24px',
-                  minHeight: '240px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--text-muted)',
-                  fontFamily: 'Orbitron, sans-serif',
-                  fontSize: '11px',
-                }}
-              >
-                {t('loadingAnalytics')}
-              </div>
-            }
-          >
-            <Statistics
-              sessions={data.sessions}
-              weeklyGoal={data.weeklyGoal}
-              weeklyGoalsHistory={
-                data.weeklyGoalsHistory
-              }
-            />
-          </Suspense>
-        </PageContainer>
       )}
 
       {page === 'settings' && (
