@@ -286,6 +286,9 @@ function AuthenticatedApp({
           weeklyGoalsHistory={
             data.weeklyGoalsHistory
           }
+          onStartFocus={() =>
+            setPage('focus')
+          }
         />
       )}
 
