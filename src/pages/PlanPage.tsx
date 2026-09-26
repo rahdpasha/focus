@@ -89,6 +89,7 @@ interface PlanPageProps {
     routineContext?: RoutineSessionContext,
   ) => void
   subjectCreateRequestKey?: number
+  onExternalSubjectCreated?: () => void
 }
 
 export default function PlanPage({
@@ -112,6 +113,7 @@ export default function PlanPage({
   onDeleteRoutineItem,
   onStartSession,
   subjectCreateRequestKey = 0,
+  onExternalSubjectCreated,
 }: PlanPageProps) {
   const { tr } = useI18n()
   const [section, setSection] =
@@ -125,6 +127,12 @@ export default function PlanPage({
     setSubjectCreateRequest,
   ] = useState(
     subjectCreateRequestKey,
+  )
+  const [
+    externalSubjectCreatePending,
+    setExternalSubjectCreatePending,
+  ] = useState(
+    subjectCreateRequestKey > 0,
   )
 
   const requestSubjectCreation = () => {
@@ -268,9 +276,24 @@ export default function PlanPage({
             onSelectSubject={
               onSelectSubject
             }
-            onAddSubject={
-              onAddSubject
-            }
+            onAddSubject={(
+              name,
+              color,
+            ) => {
+              onAddSubject(
+                name,
+                color,
+              )
+
+              if (
+                externalSubjectCreatePending
+              ) {
+                setExternalSubjectCreatePending(
+                  false,
+                )
+                onExternalSubjectCreated?.()
+              }
+            }}
             onDeleteSubject={
               onDeleteSubject
             }
