@@ -325,6 +325,7 @@ function AuthenticatedApp({
       {page === 'settings' && (
         <PageContainer>
           <PageHeader
+            compact
             title={t('settings')}
             description={tr(
               'Shape how FOCUS looks, feels, syncs, and supports your daily work.',
