@@ -130,6 +130,8 @@ export default function Settings({
     useRef<HTMLInputElement>(
       null,
     )
+  const [settingsSection, setSettingsSection] =
+    useState<'general' | 'focus' | 'alerts' | 'account'>('general')
   const [
     pendingImport,
     setPendingImport,
@@ -217,6 +219,37 @@ export default function Settings({
 
   return (
     <div className="settings-v3">
+      <nav
+        className="settings-v4-tabs settings-section-wide"
+        aria-label={tr('Settings sections', 'بەشەکانی ڕێکخستنەکان')}
+      >
+        {[
+          ['general', tr('General', 'گشتی')],
+          ['focus', tr('Focus', 'سەرنج')],
+          ['alerts', tr('Alerts', 'ئاگادارکردنەوەکان')],
+          ['account', tr('Account', 'هەژمار')],
+        ].map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            className={
+              settingsSection === id
+                ? 'settings-v4-tab active'
+                : 'settings-v4-tab'
+            }
+            onClick={() =>
+              setSettingsSection(
+                id as 'general' | 'focus' | 'alerts' | 'account',
+              )
+            }
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+
+      {settingsSection === 'general' && (
+        <>
       <section className="glass-panel settings-section settings-section-wide">
         <div className="settings-section-head">
           <div className="settings-section-icon">
@@ -388,6 +421,11 @@ export default function Settings({
         </div>
       </section>
 
+        </>
+      )}
+
+      {settingsSection === 'focus' && (
+        <>
       <div className="settings-group-label settings-section-wide">
         <span>{tr('Focus', 'سەرنج')}</span>
         <small>{tr('Goals and timer behavior', 'ئامانجەکان و هەڵسوکەوتی کاتژمێر')}</small>
@@ -619,6 +657,11 @@ export default function Settings({
         />
       </section>
 
+        </>
+      )}
+
+      {settingsSection === 'alerts' && (
+        <>
       <div className="settings-group-label settings-section-wide">
         <span>{t('notifications')}</span>
         <small>{tr('Sound and alerts', 'دەنگ و ئاگادارکردنەوەکان')}</small>
@@ -750,6 +793,11 @@ export default function Settings({
         />
       </section>
 
+        </>
+      )}
+
+      {settingsSection === 'account' && (
+        <>
       <div className="settings-group-label settings-section-wide">
         <span>{tr('Data / Account', 'داتا / هەژمار')}</span>
         <small>{tr('Sync, backups and account actions', 'هاوکاتکردن، باکاپ و کردارەکانی هەژمار')}</small>
@@ -918,6 +966,8 @@ export default function Settings({
           />
         </div>
       </section>
+        </>
+      )}
     </div>
   )
 }
