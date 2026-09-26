@@ -84,6 +84,7 @@ export default function ProgressPage({
   return (
     <PageContainer>
       <PageHeader
+        compact
         title={tr(
           'Progress',
           'پێشکەوتن',
