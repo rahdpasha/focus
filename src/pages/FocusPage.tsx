@@ -1,4 +1,5 @@
 import {
+  BookOpen,
   Headphones,
   Sparkles,
   Volume2,
@@ -52,6 +53,7 @@ interface FocusPageProps {
   onSelectSubject?: (
     subjectId: string,
   ) => void
+  onAddSubjectRequest?: () => void
 }
 
 const ambientOptions: Array<{
@@ -102,6 +104,7 @@ export default function FocusPage({
   routineContext,
   onAddSession,
   onSelectSubject,
+  onAddSubjectRequest,
 }: FocusPageProps) {
   const { t, tr } = useI18n()
 
@@ -221,12 +224,51 @@ export default function FocusPage({
   return (
     <PageContainer>
       <PageHeader
+        compact
         title={t('focus')}
         description={t(
           'focusPageQuestion',
         )}
       />
 
+      {subjects.length === 0 ? (
+        <section className="glass-panel focus-first-subject">
+          <div className="focus-first-subject-icon">
+            <BookOpen size={22} />
+          </div>
+
+          <div>
+            <div className="eyebrow">
+              {tr('First step', 'هەنگاوی یەکەم')}
+            </div>
+            <h2>
+              {tr(
+                'Add a subject before you start.',
+                'پێش دەستپێکردن بابەتێک زیاد بکە.',
+              )}
+            </h2>
+            <p>
+              {tr(
+                'FOCUS needs a subject so your timer session can be saved, planned, and counted in progress.',
+                'FOCUS پێویستی بە بابەتێک هەیە تا سێشنی کاتژمێرەکەت پاشەکەوت بکرێت، پلان بۆ دابنرێت و لە پێشکەوتندا هەژمار بکرێت.',
+              )}
+            </p>
+          </div>
+
+          {onAddSubjectRequest && (
+            <button
+              type="button"
+              className="cyber-btn"
+              onClick={onAddSubjectRequest}
+            >
+              {tr(
+                'Add your first subject',
+                'یەکەم بابەتت زیاد بکە',
+              )}
+            </button>
+          )}
+        </section>
+      ) : (
       <div className="focus-workspace">
         <section className="glass-panel focus-timer-stage">
           <div className="focus-stage-head">
@@ -361,22 +403,36 @@ export default function FocusPage({
             />
           </div>
 
-          <div className="focus-audio">
-            <div className="focus-audio-label">
-              {ambientSound ===
-              'off' ? (
-                <VolumeX
-                  size={16}
-                />
-              ) : (
-                <Volume2
-                  size={16}
-                />
-              )}
-              <span>
-                {tr('Ambient audio', 'دەنگی ژینگە')}
+          <details className="focus-audio focus-audio-v4">
+            <summary className="focus-audio-label">
+              <span className="focus-audio-summary-title">
+                {ambientSound ===
+                'off' ? (
+                  <VolumeX
+                    size={16}
+                  />
+                ) : (
+                  <Volume2
+                    size={16}
+                  />
+                )}
+                <span>
+                  {tr('Ambient audio', 'دەنگی ژینگە')}
+                </span>
               </span>
-            </div>
+
+              <small>
+                {ambientSound === 'off'
+                  ? tr('Off', 'کوژاوە')
+                  : ambientSound === 'brown'
+                    ? tr('Brown', 'براون')
+                    : ambientSound === 'pink'
+                      ? tr('Pink', 'پینک')
+                      : ambientSound === 'white'
+                        ? tr('White', 'سپێ')
+                        : tr('Alpha', 'ئەلفا')}
+              </small>
+            </summary>
 
             <div className="focus-audio-options">
               {ambientOptions.map(
@@ -413,28 +469,29 @@ export default function FocusPage({
                 ),
               )}
             </div>
-          </div>
+          </details>
         </section>
 
         <aside className="focus-side-stack">
-          <section className="glass-panel focus-advisor-card">
-            <div className="focus-card-title">
-              <Sparkles
-                size={16}
-              />
-              <span>
-                {tr('Smart cue', 'ئاماژەی زیرەک')}
+          <details className="glass-panel focus-advisor-card focus-advisor-v4">
+            <summary className="focus-card-title focus-advisor-summary">
+              <span className="focus-advisor-summary-title">
+                <Sparkles
+                  size={16}
+                />
+                <span>
+                  {tr('Smart cue', 'ئاماژەی زیرەک')}
+                </span>
               </span>
-            </div>
 
-            <div className="focus-advisor-priority">
-              {advisor.priority === 'high'
-                ? tr('High', 'زۆر')
-                : advisor.priority === 'medium'
-                  ? tr('Medium', 'ناوەند')
-                  : tr('Low', 'کەم')}{' '}
-              {tr('priority', 'گرنگی')}
-            </div>
+              <small>
+                {advisor.priority === 'high'
+                  ? tr('High priority', 'گرنگی زۆر')
+                  : advisor.priority === 'medium'
+                    ? tr('Medium priority', 'گرنگی ناوەند')
+                    : tr('Low priority', 'گرنگی کەم')}
+              </small>
+            </summary>
 
             <p>
               {advisorSummary}
@@ -461,23 +518,28 @@ export default function FocusPage({
                   {tr('Switch to', 'بگۆڕە بۆ')}{' '}
                   {advisor.action
                     .subjectName ??
-                    tr(tr('recommended subject', 'بابەتی پێشنیارکراو'), 'بابەتی پێشنیارکراو')}
+                    tr('recommended subject', 'بابەتی پێشنیارکراو')}
                 </button>
               )}
-          </section>
+          </details>
 
-          <section className="glass-panel focus-intent-card">
-            <div className="focus-card-title">
-              <Headphones
-                size={16}
-              />
-              <span>
-                {tr('Session intent', 'مەبەستی سێشن')}
+          <details className="glass-panel focus-intent-card focus-intent-v4">
+            <summary className="focus-card-title focus-intent-summary">
+              <span className="focus-intent-summary-title">
+                <Headphones
+                  size={16}
+                />
+                <span>
+                  {tr('Session notes & steps', 'تێبینی و هەنگاوەکانی سێشن')}
+                </span>
               </span>
-            </div>
+              <small>
+                {tr('Optional', 'ئارەزوومەندانە')}
+              </small>
+            </summary>
 
             <p className="focus-intent-helper">
-              {tr('Define what success looks like before you start.', 'پێش دەستپێکردن دیاری بکە سەرکەوتن بۆ ئەم سێشنە چییە.')}
+              {tr('Add a note or a few small steps only when they help you focus.', 'تەنها کاتێک یارمەتیت دەدات بۆ سەرنج، تێبینی یان چەند هەنگاوێکی بچووک زیاد بکە.')}
             </p>
 
             <textarea
@@ -646,9 +708,10 @@ export default function FocusPage({
                 </button>
               )}
             </div>
-          </section>
+          </details>
         </aside>
       </div>
+      )}
     </PageContainer>
   )
 }

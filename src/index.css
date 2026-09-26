@@ -12785,3 +12785,1027 @@ textarea::placeholder {
   }
 
 }
+
+
+/* V4 — calm Today surface */
+.dashboard-v4 {
+  gap: 18px;
+}
+
+.dashboard-v4-header {
+  min-height: 88px;
+}
+
+.dashboard-v4 .focus-pulse-v4 {
+  min-height: 220px;
+  grid-template-columns: minmax(0, 1.55fr) minmax(240px, 0.65fr);
+}
+
+.focus-pulse-v4 .focus-pulse-headline {
+  max-width: 640px;
+}
+
+.focus-pulse-v4 .focus-pulse-side {
+  align-content: center;
+  gap: 18px;
+}
+
+.dashboard-v4-section {
+  padding: 20px;
+}
+
+.dashboard-v4 .dashboard-route {
+  width: 100%;
+}
+
+.dashboard-v4 .dashboard-route-footer {
+  display: none;
+}
+
+.dashboard-v4 .dashboard-routine-state {
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+@media (max-width: 900px) {
+  .dashboard-v4 .focus-pulse-v4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-v4 {
+    gap: 14px;
+  }
+
+  .dashboard-v4 .focus-pulse-v4 {
+    min-height: 0;
+    padding: 20px;
+  }
+
+  .focus-pulse-v4 .focus-pulse-week {
+    opacity: 0.8;
+  }
+
+  .dashboard-v4-section {
+    padding: 17px;
+  }
+}
+
+
+/* V4 — unified Plan workspace */
+.plan-v4-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -4px 0 18px;
+  padding: 5px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 14px;
+  background: color-mix(
+    in srgb,
+    var(--void-surface-hover) 72%,
+    transparent
+  );
+}
+
+.plan-v4-tab {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 13px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.plan-v4-tab:hover {
+  color: var(--text-primary);
+  background: var(--void-surface-hover);
+}
+
+.plan-v4-tab.active {
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+  color: var(--text-primary);
+}
+
+.plan-v4-tab.active svg {
+  color: var(--primary-glow);
+}
+
+.plan-v4-body > .page-container {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.plan-v4-body > .page-container > .page-header {
+  display: none;
+}
+
+.plan-v4-body .subjects-grid,
+.plan-v4-body .routine-shell,
+.plan-v4-body .study-plan-shell {
+  margin-top: 0;
+}
+
+@media (max-width: 600px) {
+  .plan-v4-tabs {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 14px;
+  }
+
+  .plan-v4-tab {
+    justify-content: center;
+    padding-inline: 8px;
+    font-size: 11px;
+  }
+}
+
+
+/* V4 — unified Progress workspace */
+.progress-v4-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -4px 0 18px;
+  padding: 5px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 14px;
+  background: color-mix(
+    in srgb,
+    var(--void-surface-hover) 72%,
+    transparent
+  );
+}
+
+.progress-v4-tab {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 13px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.progress-v4-tab:hover {
+  color: var(--text-primary);
+  background: var(--void-surface-hover);
+}
+
+.progress-v4-tab.active {
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+  color: var(--text-primary);
+}
+
+.progress-v4-tab.active svg {
+  color: var(--primary-glow);
+}
+
+.progress-v4-body > .page-container {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.progress-v4-body > .page-container > .page-header {
+  display: none;
+}
+
+.progress-v4-loading {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+@media (max-width: 600px) {
+  .progress-v4-tabs {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 14px;
+  }
+
+  .progress-v4-tab {
+    justify-content: center;
+    padding-inline: 8px;
+    font-size: 11px;
+  }
+}
+
+
+/* V4 — guidance and settings simplification */
+.plan-v4-body .advisor-shell {
+  margin-top: 0;
+}
+
+.plan-v4-body .advisor-shell > .advisor-hero {
+  grid-column: 1 / -1;
+}
+
+.advisor-v4-details {
+  grid-column: 1 / -1;
+  padding: 0;
+  overflow: hidden;
+}
+
+.advisor-v4-details > summary {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--text-secondary);
+}
+
+.advisor-v4-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.advisor-v4-details > summary span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.advisor-v4-details > summary small {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.advisor-v4-details .advisor-v5-facts-card {
+  border: 0;
+  border-top: 1px solid var(--focus-hairline);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.settings-v4-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding: 5px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 14px;
+  background: color-mix(
+    in srgb,
+    var(--void-surface-hover) 72%,
+    transparent
+  );
+}
+
+.settings-v4-tab {
+  min-height: 40px;
+  padding: 9px 13px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.settings-v4-tab:hover {
+  color: var(--text-primary);
+  background: var(--void-surface-hover);
+}
+
+.settings-v4-tab.active {
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+  color: var(--text-primary);
+}
+
+@media (max-width: 600px) {
+  .plan-v4-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .settings-v4-tabs {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .settings-v4-tab {
+    justify-content: center;
+  }
+
+  .advisor-v4-details > summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+
+/* V4 — progressive disclosure for creation flows */
+.v4-advanced-toggle {
+  min-height: 40px;
+  padding: 9px 12px;
+  border: 1px dashed var(--focus-hairline);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.v4-advanced-toggle:hover {
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+  color: var(--text-primary);
+}
+
+.v4-advanced-panel {
+  margin-top: 10px;
+  padding: 14px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 12px;
+  background: color-mix(
+    in srgb,
+    var(--void-surface-hover) 66%,
+    transparent
+  );
+}
+
+.goal-create-v4 {
+  align-items: start;
+}
+
+.goal-advanced-panel {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.goal-advanced-panel label,
+.routine-advanced-selects label {
+  display: grid;
+  gap: 7px;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.routine-advanced-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.routine-advanced-selects {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 700px) {
+  .goal-advanced-panel,
+  .routine-advanced-selects {
+    grid-template-columns: 1fr;
+  }
+
+  .v4-advanced-toggle {
+    width: 100%;
+  }
+}
+
+
+/* V4 — keep subject creation close to subject fields */
+.v4-subject-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.v4-subject-field > select {
+  min-width: 0;
+  width: 100%;
+}
+
+.v4-add-subject {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 11px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.v4-add-subject:hover {
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+  color: var(--text-primary);
+}
+
+@media (max-width: 600px) {
+  .v4-subject-field {
+    grid-template-columns: 1fr;
+  }
+
+  .v4-add-subject {
+    width: 100%;
+  }
+}
+
+
+/* V4.5 — quieter Today layout and mobile rhythm */
+.dashboard-v4-lower {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 0.92fr)
+    minmax(0, 1.08fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.dashboard-v4-lower > .dashboard-v4-section {
+  min-width: 0;
+}
+
+.dashboard-v4 .dashboard-routine-preview,
+.dashboard-v4 .dashboard-route {
+  height: 100%;
+}
+
+@media (max-width: 980px) {
+  .dashboard-v4-lower {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-v4-header {
+    gap: 10px;
+    padding-bottom: 16px;
+  }
+
+  .dashboard-v4-header h1 {
+    font-size: 30px;
+  }
+
+  .dashboard-v4-header p {
+    max-width: 34rem;
+  }
+
+  .dashboard-v4 .dashboard-date {
+    width: fit-content;
+    align-self: flex-start;
+  }
+
+  .dashboard-v4-lower {
+    gap: 14px;
+  }
+
+  .dashboard-v4 .dashboard-routine-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-v4 .dashboard-route-item {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .dashboard-v4 .dashboard-route-action {
+    min-height: 38px;
+  }
+
+  .mobile-dock {
+    gap: 2px;
+  }
+
+  .mobile-dock-item {
+    min-width: 0;
+    padding-inline: 4px;
+  }
+
+  .mobile-dock-item span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+
+/* V4.6 — progressive League entry */
+.league-v4-join-intro {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 14px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 12px;
+  background: color-mix(
+    in srgb,
+    var(--void-surface-hover) 70%,
+    transparent
+  );
+}
+
+.league-v4-join-intro > svg {
+  margin-top: 2px;
+  color: var(--primary-glow);
+}
+
+.league-v4-join-intro > div {
+  display: grid;
+  gap: 5px;
+}
+
+.league-v4-join-intro strong {
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.league-v4-join-intro span {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+@media (max-width: 600px) {
+  .league-v4-command {
+    gap: 13px;
+  }
+
+  .league-v4-join-intro {
+    padding: 12px;
+  }
+}
+
+
+/* V4.6 — direct first-use action */
+.study-plan-empty-v4 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  text-align: start;
+}
+
+.study-plan-empty-v4 > span {
+  max-width: 620px;
+}
+
+.study-plan-empty-v4 .cyber-btn {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 600px) {
+  .study-plan-empty-v4 {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .study-plan-empty-v4 .cyber-btn {
+    width: 100%;
+  }
+}
+
+
+/* V4.7 — safe first-use Focus state */
+.focus-first-subject {
+  min-height: 300px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 28px;
+}
+
+.focus-first-subject-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--primary-border);
+  border-radius: 14px;
+  background: var(--primary-soft);
+  color: var(--primary-glow);
+}
+
+.focus-first-subject > div:nth-child(2) {
+  display: grid;
+  gap: 7px;
+}
+
+.focus-first-subject h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(24px, 3vw, 34px);
+}
+
+.focus-first-subject p {
+  max-width: 650px;
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.focus-first-subject .cyber-btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .focus-first-subject {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .focus-first-subject .cyber-btn {
+    width: 100%;
+  }
+}
+
+
+/* V4.7 — keep optional session planning out of the way */
+.focus-intent-v4 {
+  padding: 0;
+  overflow: hidden;
+}
+
+.focus-intent-v4 > summary {
+  min-height: 54px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.focus-intent-v4 > summary::-webkit-details-marker {
+  display: none;
+}
+
+.focus-intent-summary {
+  justify-content: space-between;
+}
+
+.focus-intent-summary-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.focus-intent-summary small {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.focus-intent-v4[open] > summary {
+  border-bottom: 1px solid var(--focus-hairline);
+}
+
+.focus-intent-v4 > :not(summary) {
+  margin-inline: 16px;
+}
+
+.focus-intent-v4 > .focus-intent-helper {
+  margin-top: 14px;
+}
+
+.focus-intent-v4 > .focus-intent-meta {
+  margin-bottom: 16px;
+}
+
+@media (max-width: 600px) {
+  .focus-intent-v4 > summary {
+    min-height: 50px;
+    padding: 12px 14px;
+  }
+
+  .focus-intent-v4 > :not(summary) {
+    margin-inline: 14px;
+  }
+}
+
+
+/* V4.9 — clear first-use Today state */
+.dashboard-first-subject {
+  min-height: 280px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 28px;
+}
+
+.dashboard-first-subject-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--primary-border);
+  border-radius: 14px;
+  background: var(--primary-soft);
+  color: var(--primary-glow);
+}
+
+.dashboard-first-subject-copy {
+  display: grid;
+  gap: 7px;
+}
+
+.dashboard-first-subject-copy h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(24px, 3vw, 34px);
+}
+
+.dashboard-first-subject-copy p {
+  max-width: 680px;
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.dashboard-first-subject .cyber-btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .dashboard-first-subject {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .dashboard-first-subject .cyber-btn {
+    width: 100%;
+  }
+}
+
+
+/* V4.10 — optional ambient audio */
+.focus-audio-v4 {
+  padding: 0;
+  overflow: hidden;
+}
+
+.focus-audio-v4 > summary {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.focus-audio-v4 > summary::-webkit-details-marker {
+  display: none;
+}
+
+.focus-audio-summary-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.focus-audio-v4 > summary small {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.focus-audio-v4[open] > summary {
+  border-bottom: 1px solid var(--focus-hairline);
+}
+
+.focus-audio-v4 > .focus-audio-options {
+  padding: 10px 12px 12px;
+}
+
+@media (max-width: 600px) {
+  .focus-audio-v4 > summary {
+    min-height: 46px;
+  }
+}
+
+
+/* V4.11 — flat primary navigation */
+.sidebar-nav-v4 {
+  display: grid;
+  gap: 6px;
+}
+
+.sidebar-nav-v4 .sidebar-nav-item {
+  margin: 0;
+}
+
+.app-sidebar:not(.is-collapsed) .sidebar-nav-v4 {
+  padding-top: 4px;
+}
+
+@media (max-width: 900px) {
+  .sidebar-nav-v4 {
+    gap: 7px;
+  }
+}
+
+
+/* V4.12 — timer-first smart cue */
+.focus-advisor-v4 {
+  padding: 0;
+  overflow: hidden;
+}
+
+.focus-advisor-v4 > summary {
+  min-height: 54px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.focus-advisor-v4 > summary::-webkit-details-marker {
+  display: none;
+}
+
+.focus-advisor-summary {
+  justify-content: space-between;
+}
+
+.focus-advisor-summary-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.focus-advisor-summary small {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.focus-advisor-v4[open] > summary {
+  border-bottom: 1px solid var(--focus-hairline);
+}
+
+.focus-advisor-v4 > :not(summary) {
+  margin-inline: 16px;
+}
+
+.focus-advisor-v4 > p {
+  margin-top: 14px;
+}
+
+.focus-advisor-v4 > .focus-switch-subject {
+  margin-bottom: 16px;
+}
+
+@media (max-width: 600px) {
+  .focus-advisor-v4 > summary {
+    min-height: 50px;
+    padding: 12px 14px;
+  }
+
+  .focus-advisor-v4 > :not(summary) {
+    margin-inline: 14px;
+  }
+}
+
+
+/* V4.13 — clear first-use Progress state */
+.progress-first-session {
+  min-height: 280px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 28px;
+}
+
+.progress-first-session-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--primary-border);
+  border-radius: 14px;
+  background: var(--primary-soft);
+  color: var(--primary-glow);
+}
+
+.progress-first-session-copy {
+  display: grid;
+  gap: 7px;
+}
+
+.progress-first-session-copy h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(24px, 3vw, 34px);
+}
+
+.progress-first-session-copy p {
+  max-width: 650px;
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.progress-first-session .cyber-btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .progress-first-session {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .progress-first-session .cyber-btn {
+    width: 100%;
+  }
+}
+
+
+/* V4.13 — compact workspace headers */
+.page-header-compact {
+  min-height: 0;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+}
+
+.page-header-compact::after {
+  opacity: 0.5;
+}
+
+.page-header-compact .page-header-kicker {
+  margin-bottom: 5px;
+  font-size: 9px;
+}
+
+.page-header-compact h1 {
+  font-size: clamp(30px, 4vw, 42px);
+}
+
+.page-header-compact p {
+  max-width: 720px;
+  margin-top: 7px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.page-header-compact + .plan-v4-tabs,
+.page-header-compact + .progress-v4-tabs {
+  margin-top: 0;
+}
+
+@media (max-width: 600px) {
+  .page-header-compact {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+  }
+
+  .page-header-compact h1 {
+    font-size: 28px;
+  }
+
+  .page-header-compact p {
+    font-size: 12px;
+  }
+}

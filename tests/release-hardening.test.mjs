@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 
 import {
   getAdvancedGoalProgress,
@@ -325,3 +326,83 @@ test('mutation merge preserves unrelated newer cloud fields', () => {
   )
 })
 
+
+
+test('V4 exposes only the six primary top-level destinations', () => {
+  const navigationSource = readFileSync(
+    new URL(
+      '../src/app/navigation.ts',
+      import.meta.url,
+    ),
+    'utf8',
+  )
+  const appSource = readFileSync(
+    new URL(
+      '../src/App.tsx',
+      import.meta.url,
+    ),
+    'utf8',
+  )
+  const sidebarSource = readFileSync(
+    new URL(
+      '../src/components/layout/Sidebar.tsx',
+      import.meta.url,
+    ),
+    'utf8',
+  )
+
+  const primaryPages = [
+    'dashboard',
+    'focus',
+    'plan',
+    'progress',
+    'league',
+    'settings',
+  ]
+
+  for (const page of primaryPages) {
+    assert.match(
+      navigationSource,
+      new RegExp(
+        "\\| '" + page + "'",
+      ),
+    )
+    assert.match(
+      appSource,
+      new RegExp(
+        "page === '" + page + "'",
+      ),
+    )
+    assert.match(
+      sidebarSource,
+      new RegExp(
+        "page: '" + page + "' as const",
+      ),
+    )
+  }
+
+  const legacyTopLevelPages = [
+    'subjects',
+    'study-plan',
+    'routine',
+    'statistics',
+    'records',
+    'history',
+    'advisor',
+  ]
+
+  for (const page of legacyTopLevelPages) {
+    assert.doesNotMatch(
+      navigationSource,
+      new RegExp(
+        "\\| '" + page + "'",
+      ),
+    )
+    assert.doesNotMatch(
+      appSource,
+      new RegExp(
+        "page === '" + page + "'",
+      ),
+    )
+  }
+})

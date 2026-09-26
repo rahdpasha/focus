@@ -1,22 +1,17 @@
 import {
   BarChart3,
-  BookOpen,
-  BrainCircuit,
   Check,
   CalendarRange,
-  Repeat2,
   ChevronLeft,
   ChevronRight,
   Clock3,
   Gauge,
   Hexagon,
-  History,
   Menu,
   Plus,
   Settings,
   Swords,
   Archive,
-  Trophy,
   X,
 } from 'lucide-react'
 import {
@@ -56,79 +51,42 @@ interface SidebarProps {
   ) => void
 }
 
-const navGroups = [
+const navItems = [
   {
-    label: 'Workspace',
-    labelKu: 'شوێنی کار',
-    items: [
-      {
-        page: 'dashboard' as const,
-        labelKey: 'dashboard' as const,
-        icon: Gauge,
-      },
-      {
-        page: 'focus' as const,
-        labelKey: 'focus' as const,
-        icon: Clock3,
-      },
-      {
-        page: 'subjects' as const,
-        labelKey: 'subjects' as const,
-        icon: BookOpen,
-      },
-      {
-        page: 'study-plan' as const,
-        labelKey: 'studyPlan' as const,
-        icon: CalendarRange,
-      },
-      {
-        page: 'routine' as const,
-        labelKey: 'routine' as const,
-        icon: Repeat2,
-      },
-      {
-        page: 'advisor' as const,
-        labelKey: 'advisor' as const,
-        icon: BrainCircuit,
-      },
-    ],
+    page: 'dashboard' as const,
+    label: 'Today',
+    labelKu: 'ئەمڕۆ',
+    icon: Gauge,
   },
   {
+    page: 'focus' as const,
+    label: 'Focus',
+    labelKu: 'سەرنج',
+    icon: Clock3,
+  },
+  {
+    page: 'plan' as const,
+    label: 'Plan',
+    labelKu: 'پلان',
+    icon: CalendarRange,
+  },
+  {
+    page: 'progress' as const,
     label: 'Progress',
     labelKu: 'پێشکەوتن',
-    items: [
-      {
-        page: 'statistics' as const,
-        labelKey: 'statistics' as const,
-        icon: BarChart3,
-      },
-      {
-        page: 'records' as const,
-        labelKey: 'records' as const,
-        icon: Trophy,
-      },
-      {
-        page: 'history' as const,
-        labelKey: 'history' as const,
-        icon: History,
-      },
-      {
-        page: 'league' as const,
-        labelKey: 'league' as const,
-        icon: Swords,
-      },
-    ],
+    icon: BarChart3,
   },
   {
-    label: 'Preferences',
-    labelKu: 'هەڵبژاردەکان',
-    items: [
-      {
-        page: 'settings' as const,
-        labelKey: 'settings' as const,
-        icon: Settings,
-      },
-    ],
+    page: 'league' as const,
+    label: 'League',
+    labelKu: 'پێشبڕکێ',
+    icon: Swords,
+  },
+  {
+    page: 'settings' as const,
+    label: 'Settings',
+    labelKu: 'ڕێکخستنەکان',
+    icon: Settings,
   },
 ]
 
@@ -272,78 +230,59 @@ export default function Sidebar({
         </div>
 
         <nav
-          className="sidebar-nav"
+          className="sidebar-nav sidebar-nav-v4"
           aria-label={tr('Application navigation', 'ڕێنوێنی بەرنامە')}
         >
-          {navGroups.map(
-            (group) => (
-              <div
-                key={group.label}
-                className="sidebar-nav-group"
-              >
-                {showLabels && (
-                  <div className="sidebar-nav-group-label">
-                    {tr(group.label, group.labelKu)}
-                  </div>
-                )}
+          {navItems.map(
+            (item) => {
+              const Icon = item.icon
+              const active =
+                page === item.page
 
-                {group.items.map(
-                  (item) => {
-                    const Icon =
-                      item.icon
-                    const active =
-                      page ===
-                      item.page
-
-                    return (
-                      <button
-                        key={
-                          item.page
-                        }
-                        type="button"
-                        className={
-                          active
-                            ? 'sidebar-nav-item active'
-                            : 'sidebar-nav-item'
-                        }
-                        onClick={() =>
-                          changePage(
-                            item.page,
-                          )
-                        }
-                        title={
-                          collapsed
-                            ? t(
-                                item.labelKey,
-                              )
-                            : undefined
-                        }
-                        aria-current={
-                          active
-                            ? 'page'
-                            : undefined
-                        }
-                      >
-                        <Icon
-                          size={17}
-                          strokeWidth={
-                            1.8
-                          }
-                        />
-
-                        {showLabels && (
-                          <span>
-                            {t(
-                              item.labelKey,
-                            )}
-                          </span>
-                        )}
-                      </button>
+              return (
+                <button
+                  key={item.page}
+                  type="button"
+                  className={
+                    active
+                      ? 'sidebar-nav-item active'
+                      : 'sidebar-nav-item'
+                  }
+                  onClick={() =>
+                    changePage(
+                      item.page,
                     )
-                  },
-                )}
-              </div>
-            ),
+                  }
+                  title={
+                    collapsed
+                      ? tr(
+                          item.label,
+                          item.labelKu,
+                        )
+                      : undefined
+                  }
+                  aria-current={
+                    active
+                      ? 'page'
+                      : undefined
+                  }
+                >
+                  <Icon
+                    size={17}
+                    strokeWidth={1.8}
+                  />
+
+                  {showLabels && (
+                    <span>
+                      {tr(
+                        item.label,
+                        item.labelKu,
+                      )}
+                    </span>
+                  )}
+                </button>
+              )
+            },
           )}
         </nav>
 

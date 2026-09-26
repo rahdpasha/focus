@@ -1,7 +1,7 @@
 import {
   CalendarRange,
   Gauge,
-  Repeat2,
+  BarChart3,
   Swords,
   TimerReset,
 } from 'lucide-react'
@@ -16,27 +16,32 @@ interface MobileDockProps {
 const items = [
   {
     page: 'dashboard' as const,
-    labelKey: 'dashboard' as const,
+    label: 'Today',
+    labelKu: 'ئەمڕۆ',
     icon: Gauge,
   },
   {
     page: 'focus' as const,
-    labelKey: 'focus' as const,
+    label: 'Focus',
+    labelKu: 'سەرنج',
     icon: TimerReset,
   },
   {
-    page: 'study-plan' as const,
-    labelKey: 'studyPlan' as const,
+    page: 'plan' as const,
+    label: 'Plan',
+    labelKu: 'پلان',
     icon: CalendarRange,
   },
   {
-    page: 'routine' as const,
-    labelKey: 'routine' as const,
-    icon: Repeat2,
+    page: 'progress' as const,
+    label: 'Progress',
+    labelKu: 'پێشکەوتن',
+    icon: BarChart3,
   },
   {
     page: 'league' as const,
-    labelKey: 'league' as const,
+    label: 'League',
+    labelKu: 'پێشبڕکێ',
     icon: Swords,
   },
 ]
@@ -45,7 +50,7 @@ export default function MobileDock({
   page,
   onPageChange,
 }: MobileDockProps) {
-  const { t, tr } = useI18n()
+  const { tr } = useI18n()
 
   return (
     <nav
@@ -73,7 +78,7 @@ export default function MobileDock({
             }
           >
             <Icon size={18} />
-            <span>{t(item.labelKey)}</span>
+            <span>{tr(item.label, item.labelKu)}</span>
           </button>
         )
       })}
