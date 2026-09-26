@@ -2,6 +2,7 @@ export type Page =
   | 'dashboard'
   | 'focus'
   | 'plan'
+  | 'progress'
   | 'subjects'
   | 'study-plan'
   | 'routine'
