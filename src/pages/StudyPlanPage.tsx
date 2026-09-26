@@ -1,3 +1,4 @@
+import { Plus } from 'lucide-react'
 import {
   useMemo,
   useState,
@@ -43,6 +44,7 @@ interface StudyPlanPageProps {
     subjectId?: string,
     minutes?: number,
   ) => void
+  onAddSubjectRequest?: () => void
 }
 
 export default function StudyPlanPage({
@@ -57,6 +59,7 @@ export default function StudyPlanPage({
   onUpdateAdvancedGoal,
   onDeleteAdvancedGoal,
   onStartSession,
+  onAddSubjectRequest,
 }: StudyPlanPageProps) {
   const { language, t, tr } = useI18n()
   const [goalTitle, setGoalTitle] = useState('')
@@ -554,29 +557,42 @@ export default function StudyPlanPage({
                   <span>
                     {tr('Subject', 'بابەت')}
                   </span>
-                  <select
-                    aria-label={tr('Goal subject', 'بابەتی ئامانج')}
-                    value={goalSubjectId}
-                    onChange={(event) =>
-                      setGoalSubjectId(
-                        event.target.value,
-                      )
-                    }
-                  >
-                    <option value="">
-                      {tr('All focus sessions', 'هەموو سێشنەکانی سەرنج')}
-                    </option>
-                    {subjects.map(
-                      (subject) => (
-                        <option
-                          key={subject.id}
-                          value={subject.id}
-                        >
-                          {subject.name}
-                        </option>
-                      ),
+                  <div className="v4-subject-field">
+                    <select
+                      aria-label={tr('Goal subject', 'بابەتی ئامانج')}
+                      value={goalSubjectId}
+                      onChange={(event) =>
+                        setGoalSubjectId(
+                          event.target.value,
+                        )
+                      }
+                    >
+                      <option value="">
+                        {tr('All focus sessions', 'هەموو سێشنەکانی سەرنج')}
+                      </option>
+                      {subjects.map(
+                        (subject) => (
+                          <option
+                            key={subject.id}
+                            value={subject.id}
+                          >
+                            {subject.name}
+                          </option>
+                        ),
+                      )}
+                    </select>
+
+                    {onAddSubjectRequest && (
+                      <button
+                        type="button"
+                        className="v4-add-subject"
+                        onClick={onAddSubjectRequest}
+                      >
+                        <Plus size={14} />
+                        {tr('Add subject', 'زیادکردنی بابەت')}
+                      </button>
                     )}
-                  </select>
+                  </div>
                 </label>
 
                 <label>
