@@ -426,11 +426,6 @@ export default function Settings({
 
       {settingsSection === 'focus' && (
         <>
-      <div className="settings-group-label settings-section-wide">
-        <span>{tr('Focus', 'سەرنج')}</span>
-        <small>{tr('Goals and timer behavior', 'ئامانجەکان و هەڵسوکەوتی کاتژمێر')}</small>
-      </div>
-
       <section className="glass-panel settings-section">
         <div className="settings-section-head">
           <div className="settings-section-icon">
@@ -662,11 +657,6 @@ export default function Settings({
 
       {settingsSection === 'alerts' && (
         <>
-      <div className="settings-group-label settings-section-wide">
-        <span>{t('notifications')}</span>
-        <small>{tr('Sound and alerts', 'دەنگ و ئاگادارکردنەوەکان')}</small>
-      </div>
-
       <section className="glass-panel settings-section">
         <div className="settings-section-head">
           <div className="settings-section-icon">
@@ -798,11 +788,6 @@ export default function Settings({
 
       {settingsSection === 'account' && (
         <>
-      <div className="settings-group-label settings-section-wide">
-        <span>{tr('Data / Account', 'داتا / هەژمار')}</span>
-        <small>{tr('Sync, backups and account actions', 'هاوکاتکردن، باکاپ و کردارەکانی هەژمار')}</small>
-      </div>
-
       <section className="glass-panel settings-section settings-section-wide">
         <div className="settings-section-head">
           <div className="settings-section-icon">
