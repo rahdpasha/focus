@@ -12853,3 +12853,82 @@ textarea::placeholder {
     padding: 17px;
   }
 }
+
+
+/* V4 — unified Plan workspace */
+.plan-v4-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -4px 0 18px;
+  padding: 5px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 14px;
+  background: color-mix(
+    in srgb,
+    var(--void-surface-hover) 72%,
+    transparent
+  );
+}
+
+.plan-v4-tab {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 13px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.plan-v4-tab:hover {
+  color: var(--text-primary);
+  background: var(--void-surface-hover);
+}
+
+.plan-v4-tab.active {
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+  color: var(--text-primary);
+}
+
+.plan-v4-tab.active svg {
+  color: var(--primary-glow);
+}
+
+.plan-v4-body > .page-container {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.plan-v4-body > .page-container > .page-header {
+  display: none;
+}
+
+.plan-v4-body .subjects-grid,
+.plan-v4-body .routine-shell,
+.plan-v4-body .study-plan-shell {
+  margin-top: 0;
+}
+
+@media (max-width: 600px) {
+  .plan-v4-tabs {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 14px;
+  }
+
+  .plan-v4-tab {
+    justify-content: center;
+    padding-inline: 8px;
+    font-size: 11px;
+  }
+}
