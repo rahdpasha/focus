@@ -12009,17 +12009,37 @@ small {
 
 
 /* Soft Light refinement */
+[data-theme='light'] body {
+  background:
+    radial-gradient(
+      ellipse 64% 44% at 88% -10%,
+      rgba(105, 89, 217, 0.065),
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 44% 34% at -4% 84%,
+      rgba(66, 124, 146, 0.025),
+      transparent 80%
+    ),
+    linear-gradient(
+      180deg,
+      #fffefa 0%,
+      #faf8f3 48%,
+      #f3f0e9 100%
+    );
+}
+
 [data-theme='light'] .focus-atmosphere-grid {
-  opacity: 0.095;
+  opacity: 0.055;
 }
 
 [data-theme='light'] .focus-atmosphere-glow.glow-one {
-  opacity: 0.12;
-  filter: blur(110px);
+  opacity: 0.085;
+  filter: blur(120px);
 }
 
 [data-theme='light'] .focus-atmosphere-glow.glow-two {
-  opacity: 0.035;
+  opacity: 0.025;
 }
 
 [data-theme='light'] .glass-panel,
@@ -12033,27 +12053,27 @@ small {
 [data-theme='light'] .stats-v4-records {
   background:
     linear-gradient(
-      150deg,
-      rgba(255, 255, 255, 0.74),
-      rgba(255, 255, 255, 0.38)
+      155deg,
+      rgba(255, 255, 255, 0.88),
+      rgba(255, 255, 255, 0.54)
     ),
     var(--void-surface);
-  border-color: rgba(57, 54, 72, 0.09);
+  border-color: rgba(57, 54, 72, 0.075);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.82) inset,
-    var(--shadow-sm);
+    0 1px 0 rgba(255, 255, 255, 0.92) inset,
+    0 10px 30px rgba(54, 49, 70, 0.045);
 }
 
 [data-theme='light'] .app-sidebar {
   background:
     linear-gradient(
       180deg,
-      rgba(252, 251, 249, 0.94),
-      rgba(245, 243, 239, 0.91)
+      rgba(255, 255, 253, 0.94),
+      rgba(248, 246, 241, 0.92)
     );
-  border-right-color: rgba(57, 54, 72, 0.08);
+  border-right-color: rgba(57, 54, 72, 0.065);
   box-shadow:
-    10px 0 36px rgba(54, 49, 70, 0.035);
+    10px 0 34px rgba(54, 49, 70, 0.028);
 }
 
 [data-theme='light'] .sidebar-nav-item.active,
@@ -12061,26 +12081,60 @@ small {
   background:
     linear-gradient(
       90deg,
-      rgba(105, 89, 217, 0.10),
-      rgba(105, 89, 217, 0.035)
+      rgba(105, 89, 217, 0.085),
+      rgba(105, 89, 217, 0.025)
     );
+  color: #584ac9;
 }
 
 [data-theme='light'] input,
 [data-theme='light'] select,
 [data-theme='light'] textarea {
-  background: rgba(255, 255, 255, 0.72);
-  border-color: rgba(57, 54, 72, 0.10);
+  background: rgba(255, 255, 255, 0.90);
+  border-color: rgba(57, 54, 72, 0.085);
 }
 
 [data-theme='light'] .cyber-btn {
+  border-color: rgba(105, 89, 217, 0.22);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(105, 89, 217, 0.105),
+      rgba(105, 89, 217, 0.055)
+    );
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.82) inset,
-    0 9px 22px rgba(105, 89, 217, 0.075);
+    0 1px 0 rgba(255, 255, 255, 0.88) inset,
+    0 8px 20px rgba(105, 89, 217, 0.055);
+}
+
+[data-theme='light'] .cyber-btn:hover:not(:disabled) {
+  border-color: rgba(105, 89, 217, 0.34);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(105, 89, 217, 0.14),
+      rgba(105, 89, 217, 0.075)
+    );
+  color: #5144bb;
+  box-shadow:
+    0 10px 24px rgba(105, 89, 217, 0.075);
 }
 
 [data-theme='light'] .page-header::after {
-  opacity: 0.72;
+  opacity: 0.48;
+}
+
+[data-theme='light'] .focus-timer-stage {
+  background:
+    radial-gradient(
+      circle at 50% 34%,
+      rgba(105, 89, 217, 0.045),
+      transparent 42%
+    ),
+    rgba(255, 255, 255, 0.72);
+  border-color: rgba(57, 54, 72, 0.065);
+  box-shadow:
+    0 18px 52px rgba(54, 49, 70, 0.045);
 }
 
 
@@ -12143,9 +12197,9 @@ small {
     transparent
   );
   stroke-width: 1;
-  stroke-dasharray: 1.2 12;
+  stroke-dasharray: 1.2 14;
   stroke-linecap: round;
-  opacity: 0.72;
+  opacity: 0.46;
 }
 
 .timer-v5-ring-inner {
@@ -12155,6 +12209,7 @@ small {
     var(--focus-hairline)
   );
   stroke-width: 1;
+  opacity: 0.48;
 }
 
 .timer-v5-ring-track {
@@ -12163,19 +12218,40 @@ small {
     var(--text-primary) 10%,
     var(--focus-hairline)
   );
-  stroke-width: 5;
+  stroke-width: 6;
+}
+
+.timer-v5-ring-progress-glow,
+.timer-v5-ring-progress {
+  fill: none;
+  stroke: var(--timer-color);
+  stroke-linecap: round;
+  transition:
+    stroke-dashoffset 0.8s linear,
+    stroke 0.3s ease;
+}
+
+.timer-v5-ring-progress-glow {
+  stroke-width: 11;
+  opacity: 0.11;
+  filter:
+    blur(1.5px)
+    drop-shadow(
+      0 0 18px
+      color-mix(in srgb, var(--timer-color) 24%, transparent)
+    );
 }
 
 .timer-v5-ring-progress {
-  stroke-width: 5;
+  stroke-width: 6;
   filter:
     drop-shadow(
-      0 0 5px
-      color-mix(in srgb, var(--timer-color) 42%, transparent)
+      0 0 4px
+      color-mix(in srgb, var(--timer-color) 38%, transparent)
     )
     drop-shadow(
-      0 0 16px
-      color-mix(in srgb, var(--timer-color) 18%, transparent)
+      0 0 14px
+      color-mix(in srgb, var(--timer-color) 16%, transparent)
     );
 }
 
