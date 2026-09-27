@@ -675,7 +675,7 @@ export default function FocusPage({
                     !subtaskDraft.trim()
                   }
                 >
-                  {tr('ADD', 'زیادکردن')}
+                  {tr('Add', 'زیادکردن')}
                 </button>
               </div>
             </div>
@@ -692,7 +692,7 @@ export default function FocusPage({
                 {
                   subtasks.length
                 }{' '}
-                {tr('steps complete', 'هەنگاو تەواو')}
+                {tr('completed', 'تەواوکراو')}
               </span>
 
               {(sessionNotes ||
