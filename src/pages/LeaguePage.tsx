@@ -398,7 +398,7 @@ export default function LeaguePage({
       (entry) => entry.isCurrentUser,
     )
 
-  const championStreak = useMemo(() => {
+  const championStreak = (() => {
     if (lastWeekWinners.length === 0) return 0
 
     const priorTwoNames = new Set(
@@ -435,11 +435,7 @@ export default function LeaguePage({
       },
       1,
     )
-  }, [
-    lastWeekWinners,
-    threeWeeksAgoWinners,
-    twoWeeksAgoWinners,
-  ])
+  })()
 
   const championTitle =
     championStreak >= 3
@@ -457,7 +453,7 @@ export default function LeaguePage({
             'پاڵەوانی هەفتە',
           )
 
-  const championMotivation = useMemo(() => {
+  const championMotivation = (() => {
     const winnerQuotes = [
       tr(
         'Consistency made the crown possible. Now make it repeatable.',
@@ -498,11 +494,7 @@ export default function LeaguePage({
     return source[
       seed % source.length
     ]
-  }, [
-    currentUserWonLastWeek,
-    lastWeekWinnerNames,
-    tr,
-  ])
+  })()
 
   const lastWeekWinningPoints =
     lastWeekWinners[0]?.points ?? 0
