@@ -507,6 +507,25 @@ export default function LeaguePage({
       )
     })
 
+  const championHallRows = titleLeaders
+    .map((leader, index) => {
+      const latestTitle =
+        championHistory.find(
+          (winner) =>
+            championKey(
+              winner.publicName,
+              winner.avatarSeed,
+            ) === leader.key,
+        ) ?? null
+
+      return {
+        ...leader,
+        rank: index + 1,
+        latestTitle,
+      }
+    })
+    .slice(0, 8)
+
   const recordTitleCount =
     titleLeaders[0]?.count ?? 0
 
@@ -1513,6 +1532,81 @@ export default function LeaguePage({
               </div>
             )}
           </section>
+
+          {championHallRows.length > 0 && (
+            <section className="league-v4-hall-of-champions">
+              <div className="league-v4-section-head compact">
+                <div>
+                  <span>
+                    {tr(
+                      'Legacy table',
+                      'خشتەی مێژوویی',
+                    )}
+                  </span>
+                  <h3>
+                    {tr(
+                      'Hall of Champions',
+                      'هۆڵی پاڵەوانان',
+                    )}
+                  </h3>
+                </div>
+                <Trophy size={18} />
+              </div>
+
+              <div className="league-v4-hall-list">
+                {championHallRows.map((champion) => (
+                  <div
+                    key={champion.key}
+                    className={`league-v4-hall-row ${
+                      champion.rank === 1
+                        ? 'is-record'
+                        : ''
+                    }`}
+                  >
+                    <span className="league-v4-hall-rank">
+                      #{champion.rank}
+                    </span>
+
+                    <div className="league-v4-hall-person">
+                      <strong>
+                        {champion.publicName}
+                      </strong>
+                      <small>
+                        {champion.latestTitle
+                          ? tr(
+                              `Latest crown ${formatChampionWeek(
+                                champion.latestTitle.weekStart,
+                                language,
+                              )}`,
+                              `دوا تاج ${formatChampionWeek(
+                                champion.latestTitle.weekStart,
+                                language,
+                              )}`,
+                            )
+                          : tr(
+                              'Champion history',
+                              'مێژووی پاڵەوانی',
+                            )}
+                      </small>
+                    </div>
+
+                    <span
+                      className={`league-v4-hall-crowns tier-${championTier(
+                        champion.count,
+                      )}`}
+                      title={championTierLabel(
+                        champion.count,
+                        tr,
+                      )}
+                    >
+                      <Crown size={13} />
+                      <b>×{champion.count}</b>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {message && (
             <div className="league-v4-message">{message}</div>
