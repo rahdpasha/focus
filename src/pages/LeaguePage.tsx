@@ -160,7 +160,9 @@ function championKey(
   publicName: string,
   avatarSeed: string,
 ): string {
-  return `${publicName}\u0000${avatarSeed}`
+  const stableSeed = avatarSeed.trim()
+
+  return stableSeed || publicName.trim()
 }
 
 function championEntries(
