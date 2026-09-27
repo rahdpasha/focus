@@ -399,7 +399,7 @@ export default function LeaguePage({
     : '0'
 
 
-  const championTitleCounts = useMemo(() => {
+  const championTitleCounts = (() => {
     const counts = new Map<string, number>()
 
     championHistory.forEach((winner) => {
@@ -411,7 +411,7 @@ export default function LeaguePage({
     })
 
     return counts
-  }, [championHistory])
+  })()
 
   const championCountFor = (
     entry: Pick<LeagueEntry, 'publicName' | 'avatarSeed'>,
