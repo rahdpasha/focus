@@ -43,6 +43,7 @@ interface SubjectsPageProps {
     subjectId?: string,
     minutes?: number,
   ) => void
+  createRequestKey?: number
 }
 
 interface SubjectMetrics {
@@ -105,12 +106,15 @@ export default function SubjectsPage({
   onAddSubject,
   onDeleteSubject,
   onStartSession,
+  createRequestKey = 0,
 }: SubjectsPageProps) {
   const { language, t, tr } = useI18n()
   const [
     showCreate,
     setShowCreate,
-  ] = useState(false)
+  ] = useState(
+    createRequestKey > 0,
+  )
   const [name, setName] =
     useState('')
   const [

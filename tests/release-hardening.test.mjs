@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 
 import {
   getAdvancedGoalProgress,
@@ -325,3 +326,161 @@ test('mutation merge preserves unrelated newer cloud fields', () => {
   )
 })
 
+
+
+test('V4 exposes only the six primary top-level destinations', () => {
+  const navigationSource = readFileSync(
+    new URL(
+      '../src/app/navigation.ts',
+      import.meta.url,
+    ),
+    'utf8',
+  )
+  const appSource = readFileSync(
+    new URL(
+      '../src/App.tsx',
+      import.meta.url,
+    ),
+    'utf8',
+  )
+  const sidebarSource = readFileSync(
+    new URL(
+      '../src/components/layout/Sidebar.tsx',
+      import.meta.url,
+    ),
+    'utf8',
+  )
+
+  const primaryPages = [
+    'dashboard',
+    'focus',
+    'plan',
+    'progress',
+    'league',
+    'settings',
+  ]
+
+  for (const page of primaryPages) {
+    assert.match(
+      navigationSource,
+      new RegExp(
+        "\\| '" + page + "'",
+      ),
+    )
+    assert.match(
+      appSource,
+      new RegExp(
+        "page === '" + page + "'",
+      ),
+    )
+    assert.match(
+      sidebarSource,
+      new RegExp(
+        "page: '" + page + "' as const",
+      ),
+    )
+  }
+
+  const legacyTopLevelPages = [
+    'subjects',
+    'study-plan',
+    'routine',
+    'statistics',
+    'records',
+    'history',
+    'advisor',
+  ]
+
+  for (const page of legacyTopLevelPages) {
+    assert.doesNotMatch(
+      navigationSource,
+      new RegExp(
+        "\\| '" + page + "'",
+      ),
+    )
+    assert.doesNotMatch(
+      appSource,
+      new RegExp(
+        "page === '" + page + "'",
+      ),
+    )
+  }
+})
+
+
+test('V4 first-use and progressive disclosure structure stays intact', () => {
+  const dashboardSource = readFileSync(
+    new URL(
+      '../src/components/dashboard/Dashboard.tsx',
+      import.meta.url,
+    ),
+    'utf8',
+  )
+  const focusSource = readFileSync(
+    new URL(
+      '../src/pages/FocusPage.tsx',
+      import.meta.url,
+    ),
+    'utf8',
+  )
+  const planSource = readFileSync(
+    new URL(
+      '../src/pages/PlanPage.tsx',
+      import.meta.url,
+    ),
+    'utf8',
+  )
+  const progressSource = readFileSync(
+    new URL(
+      '../src/pages/ProgressPage.tsx',
+      import.meta.url,
+    ),
+    'utf8',
+  )
+  const settingsSource = readFileSync(
+    new URL(
+      '../src/components/settings/Settings.tsx',
+      import.meta.url,
+    ),
+    'utf8',
+  )
+
+  assert.match(dashboardSource, /subjects\.length === 0/)
+  assert.match(dashboardSource, /dashboard-first-subject/)
+
+  assert.match(focusSource, /subjects\.length === 0/)
+  assert.match(focusSource, /focus-first-subject/)
+  assert.match(focusSource, /focus-advisor-v4/)
+  assert.match(focusSource, /focus-audio-v4/)
+  assert.match(focusSource, /focus-intent-v4/)
+  assert.match(focusSource, /Session notes & steps/)
+  assert.match(focusSource, /Ambient audio/)
+  assert.match(focusSource, /Smart cue/)
+
+  for (const section of [
+    "'plan'",
+    "'subjects'",
+    "'routine'",
+    "'advisor'",
+  ]) {
+    assert.match(planSource, new RegExp(section))
+  }
+
+  assert.match(progressSource, /progress-first-session/)
+  for (const section of [
+    "'overview'",
+    "'records'",
+    "'history'",
+  ]) {
+    assert.match(progressSource, new RegExp(section))
+  }
+
+  for (const section of [
+    "'general'",
+    "'focus'",
+    "'alerts'",
+    "'account'",
+  ]) {
+    assert.match(settingsSource, new RegExp(section))
+  }
+})

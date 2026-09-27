@@ -616,68 +616,84 @@ export default function LeaguePage({
               <ShieldCheck size={21} />
             </div>
 
-            <div className="league-v4-personal-stats">
-              <div>
-                <span>{tr('Rank', 'پلە')}</span>
-                <strong>{rankText}</strong>
-              </div>
-              <div>
-                <span>{tr('Score', 'خاڵ')}</span>
-                <strong>{scoreText}</strong>
-              </div>
-              <div>
-                <span>{tr('Focus', 'سەرنج')}</span>
-                <strong>{totalTimeText}</strong>
-              </div>
-              <div>
-                <span>{tr('Scored days', 'ڕۆژە خاڵدارەکان')}</span>
-                <strong>{scoredDaysText}</strong>
-              </div>
-            </div>
+            {profile.optIn ? (
+              <>
+                <div className="league-v4-personal-stats">
+                  <div>
+                    <span>{tr('Rank', 'پلە')}</span>
+                    <strong>{rankText}</strong>
+                  </div>
+                  <div>
+                    <span>{tr('Score', 'خاڵ')}</span>
+                    <strong>{scoreText}</strong>
+                  </div>
+                  <div>
+                    <span>{tr('Focus', 'سەرنج')}</span>
+                    <strong>{totalTimeText}</strong>
+                  </div>
+                  <div>
+                    <span>{tr('Scored days', 'ڕۆژە خاڵدارەکان')}</span>
+                    <strong>{scoredDaysText}</strong>
+                  </div>
+                </div>
 
-            <div className="league-v4-next-move">
-              <div>
-                <Zap size={16} />
-                {tr('Next step', 'هەنگاوی داهاتوو')}
-              </div>
-              <strong>
-                {currentUser?.rank === 1
-                  ? tr('Protect #1. Another deep day keeps pressure on everyone below.', 'پلەی #1 بپارێزە. ڕۆژێکی قووڵی تر فشار لەسەر هەمووانی خوارەوە دەهێڵێت.')
-                  : nextRank?.label ??
-                    tr('Join public standings to start climbing.', 'بە ڕیزبەندی گشتی پەیوەست بە بۆ دەستپێکردنی بەرزبوونەوە.')}
-              </strong>
-            </div>
+                <div className="league-v4-next-move">
+                  <div>
+                    <Zap size={16} />
+                    {tr('Next step', 'هەنگاوی داهاتوو')}
+                  </div>
+                  <strong>
+                    {currentUser?.rank === 1
+                      ? tr('Protect #1. Another deep day keeps pressure on everyone below.', 'پلەی #1 بپارێزە. ڕۆژێکی قووڵی تر فشار لەسەر هەمووانی خوارەوە دەهێڵێت.')
+                      : nextRank?.label ??
+                        tr('Keep studying to enter the rankings.', 'بەردەوام بە لە خوێندن بۆ چوونە ناو ڕیزبەندی.')}
+                  </strong>
+                </div>
 
-            <div className="league-v4-status">
-              <div>
-                <span>{tr('Competition status', 'دۆخی پێشبڕکێ')}</span>
-                <strong>{leagueStatus}</strong>
-              </div>
-              <p>{leagueStatusCopy}</p>
-            </div>
+                <div className="league-v4-status">
+                  <div>
+                    <span>{tr('Competition status', 'دۆخی پێشبڕکێ')}</span>
+                    <strong>{leagueStatus}</strong>
+                  </div>
+                  <p>{leagueStatusCopy}</p>
+                </div>
 
-            <div className="league-v4-milestones">
-              <div className={profile.optIn ? 'complete' : ''}>
-                <i />
-                <span>{tr('Joined', 'بەشدار')}</span>
+                <div className="league-v4-milestones">
+                  <div className="complete">
+                    <i />
+                    <span>{tr('Joined', 'بەشدار')}</span>
+                  </div>
+                  <div
+                    className={
+                      currentUser && currentUser.points > 0 ? 'complete' : ''
+                    }
+                  >
+                    <i />
+                    <span>{tr('Scored', 'خاڵدار')}</span>
+                  </div>
+                  <div
+                    className={
+                      currentUser && currentUser.rank <= 3 ? 'complete' : ''
+                    }
+                  >
+                    <i />
+                    <span>{tr('Podium', 'سەکۆ')}</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="league-v4-join-intro">
+                <Trophy size={18} />
+                <div>
+                  <strong>
+                    {tr('Join when you want competition.', 'کاتێک پێشبڕکێت دەوێت بەشدار بە.')}
+                  </strong>
+                  <span>
+                    {tr('Your study data stays private. Only your public name and League totals appear in the standings.', 'داتای خوێندنت تایبەت دەمێنێتەوە. تەنها ناوی گشتی و کۆی داتای پێشبڕکێ لە ڕیزبەندیدا دەردەکەوێت.')}
+                  </span>
+                </div>
               </div>
-              <div
-                className={
-                  currentUser && currentUser.points > 0 ? 'complete' : ''
-                }
-              >
-                <i />
-                <span>{tr('Scored', 'خاڵدار')}</span>
-              </div>
-              <div
-                className={
-                  currentUser && currentUser.rank <= 3 ? 'complete' : ''
-                }
-              >
-                <i />
-                <span>{tr('Podium', 'سەکۆ')}</span>
-              </div>
-            </div>
+            )}
 
             <label className="league-v4-field">
               <span>{tr('Public name', 'ناوی گشتی')}</span>
@@ -720,7 +736,9 @@ export default function LeaguePage({
                   {profile.optIn ? tr('Visible in standings', 'لە ڕیزبەندی دیارە') : tr('Join League', 'بەشداری پێشبڕکێ بکە')}
                 </strong>
                 <small>
-                  {tr('Leaving only hides your profile. Your League progress stays saved.', 'دەرچوون تەنها پڕۆفایلەکەت دەشارێتەوە. پێشکەوتنی پێشبڕکێت پاشەکەوت دەمێنێتەوە.')}
+                  {profile.optIn
+                    ? tr('Leaving only hides your profile. Your League progress stays saved.', 'دەرچوون تەنها پڕۆفایلەکەت دەشارێتەوە. پێشکەوتنی پێشبڕکێت پاشەکەوت دەمێنێتەوە.')
+                    : tr('You can leave later without losing your saved League progress.', 'دواتر دەتوانیت دەرچیت بەبێ لەدەستدانی پێشکەوتنی پاشەکەوتکراوی پێشبڕکێ.')}
                 </small>
               </span>
             </label>
