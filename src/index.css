@@ -13862,3 +13862,129 @@ textarea::placeholder {
     line-height: 1.1;
   }
 }
+
+
+/* League champion spotlight */
+.league-v4-champion-spotlight {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 18px;
+  padding: 16px 18px;
+  border: 1px solid color-mix(
+    in srgb,
+    var(--primary-glow) 24%,
+    var(--focus-hairline)
+  );
+  border-radius: 18px;
+  background:
+    radial-gradient(
+      circle at 8% 15%,
+      color-mix(in srgb, var(--primary-glow) 14%, transparent),
+      transparent 36%
+    ),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--void-surface-hover) 92%, transparent),
+      color-mix(in srgb, var(--void-surface) 96%, transparent)
+    );
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--text-primary) 7%, transparent) inset,
+    0 16px 34px color-mix(in srgb, var(--void-bg) 22%, transparent);
+}
+
+.league-v4-champion-spotlight.is-winner {
+  border-color: color-mix(
+    in srgb,
+    var(--primary-glow) 45%,
+    var(--focus-hairline)
+  );
+}
+
+.league-v4-champion-badge {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  color: var(--primary-glow);
+  background: color-mix(
+    in srgb,
+    var(--primary-glow) 12%,
+    var(--void-surface)
+  );
+  border: 1px solid color-mix(
+    in srgb,
+    var(--primary-glow) 22%,
+    transparent
+  );
+}
+
+.league-v4-champion-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.league-v4-champion-copy > span {
+  color: var(--primary-glow);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.league-v4-champion-copy h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(17px, 2vw, 22px);
+  line-height: 1.15;
+}
+
+.league-v4-champion-copy p {
+  margin: 0;
+  max-width: 760px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.league-v4-champion-result {
+  min-width: 96px;
+  display: grid;
+  gap: 3px;
+  justify-items: end;
+  text-align: end;
+}
+
+.league-v4-champion-result strong {
+  color: var(--text-primary);
+  font-size: 18px;
+}
+
+.league-v4-champion-result span {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+@media (max-width: 680px) {
+  .league-v4-champion-spotlight {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 14px;
+    border-radius: 15px;
+  }
+
+  .league-v4-champion-badge {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+  }
+
+  .league-v4-champion-result {
+    grid-column: 2;
+    min-width: 0;
+    justify-items: start;
+    text-align: start;
+  }
+}
