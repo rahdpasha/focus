@@ -809,7 +809,9 @@ export default function Settings({
         <div className="settings-data-row">
           <div className="settings-account-copy">
             <span>
-              {tr('Account', 'هەژمار')}
+              {accountEmail
+                ? tr('Signed in as', 'چوویتە ژوورەوە وەک')
+                : tr('Storage mode', 'دۆخی پاشەکەوتکردن')}
             </span>
             <strong>
               {accountEmail ??
