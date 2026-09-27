@@ -17,9 +17,11 @@ import { supabase } from '../api/supabaseClient'
 import { useI18n } from '../useI18n'
 import {
   getLeaderboard,
+  getLeagueChampionHistory,
   loadLeagueProfile,
   refreshLeagueHistory,
   saveLeagueProfile,
+  type LeagueChampionWeek,
   type LeagueEntry,
   type LeaguePeriod,
   type LeagueProfile,
@@ -61,6 +63,13 @@ function formatFocusedTime(
   if (remainingMinutes === 0) return `${hours}${hourUnit}`
 
   return `${hours}${hourUnit} ${remainingMinutes}${minuteUnit}`
+}
+
+function championKey(
+  publicName: string,
+  avatarSeed: string,
+): string {
+  return `${publicName}\u0000${avatarSeed}`
 }
 
 function championEntries(
@@ -111,6 +120,8 @@ export default function LeaguePage({
       ),
   )
   const [entries, setEntries] = useState<LeagueEntry[]>([])
+  const [championHistory, setChampionHistory] =
+    useState<LeagueChampionWeek[]>([])
   const [lastWeekChampion, setLastWeekChampion] =
     useState<string | null>(null)
   const [lastWeekWinners, setLastWeekWinners] =
@@ -133,15 +144,18 @@ export default function LeaguePage({
         twoWeeksAgo,
         threeWeeksAgo,
         lastMonth,
+        championWeeks,
       ] = await Promise.all([
         getLeaderboard(nextPeriod),
         getLeaderboard('week', previousWeekDate()),
         getLeaderboard('week', previousWeekDate(2)),
         getLeaderboard('week', previousWeekDate(3)),
         getLeaderboard('month', previousMonthDate()),
+        getLeagueChampionHistory(),
       ])
 
       setEntries(current)
+      setChampionHistory(championWeeks)
       setLastWeekWinners(
         championEntries(lastWeek),
       )
@@ -384,6 +398,36 @@ export default function LeaguePage({
     ? String(currentUser.scoredDays)
     : '0'
 
+
+  const championTitleCounts = useMemo(() => {
+    const counts = new Map<string, number>()
+
+    championHistory.forEach((winner) => {
+      const key = championKey(
+        winner.publicName,
+        winner.avatarSeed,
+      )
+      counts.set(key, (counts.get(key) ?? 0) + 1)
+    })
+
+    return counts
+  }, [championHistory])
+
+  const championCountFor = (
+    entry: Pick<LeagueEntry, 'publicName' | 'avatarSeed'>,
+  ) =>
+    championTitleCounts.get(
+      championKey(
+        entry.publicName,
+        entry.avatarSeed,
+      ),
+    ) ?? 0
+
+  const lastWeekTitleCount =
+    lastWeekWinners.length === 1
+      ? championCountFor(lastWeekWinners[0])
+      : 0
+
   const lastWeekWinnerNames =
     lastWeekWinners.length === 0
       ? null
@@ -550,6 +594,9 @@ export default function LeaguePage({
         >
           <div className="league-v4-champion-badge">
             <Crown size={24} />
+            {lastWeekTitleCount > 0 && (
+              <strong>×{lastWeekTitleCount}</strong>
+            )}
           </div>
 
           <div className="league-v4-champion-copy">
@@ -742,6 +789,12 @@ export default function LeaguePage({
                   {entry ? entry.publicName : tr('Open position', 'شوێنی بەتاڵ')}
                 </strong>
                 {entry?.isCurrentUser && <span>{tr('You', 'تۆ')}</span>}
+                {entry && championCountFor(entry) > 0 && (
+                  <span className="league-v4-title-badge">
+                    <Crown size={11} />
+                    ×{championCountFor(entry)}
+                  </span>
+                )}
               </div>
 
               <div className="league-v4-podium-score">
@@ -806,6 +859,15 @@ export default function LeaguePage({
                       {entry.publicName}
                       {entry.isCurrentUser ? ` · ${tr('You', 'تۆ')}` : ''}
                     </strong>
+                    {championCountFor(entry) > 0 && (
+                      <span className="league-v4-title-badge">
+                        <Crown size={11} />
+                        {tr(
+                          `×${championCountFor(entry)} champion`,
+                          `×${championCountFor(entry)} پاڵەوان`,
+                        )}
+                      </span>
+                    )}
                     <span>
                       {entry.scoredDays} {tr('scored days', 'ڕۆژی خاڵدار')} ·{' '}
                       {formatFocusedTime(entry.totalSeconds, language)} {tr('focused', 'سەرنج')}
@@ -995,6 +1057,24 @@ export default function LeaguePage({
                 <strong>{lastMonthChampion ?? tr('No winner yet', 'هێشتا براوە نییە')}</strong>
               </div>
             </div>
+
+            {championTitleCounts.size > 0 && (
+              <div className="league-v4-title-ledger">
+                {Array.from(championTitleCounts.entries())
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 5)
+                  .map(([key, count]) => {
+                    const [name] = key.split('\u0000')
+                    return (
+                      <span key={key}>
+                        <Crown size={12} />
+                        {name}
+                        <b>×{count}</b>
+                      </span>
+                    )
+                  })}
+              </div>
+            )}
           </section>
 
           {message && (
