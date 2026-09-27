@@ -542,13 +542,21 @@ export default function LeaguePage({
     championTitleCounts.entries(),
   )
     .map(([key, count]) => {
-      const [publicName, avatarSeed] =
-        key.split('\u0000')
+      const representative =
+        championHistory.find(
+          (winner) =>
+            championKey(
+              winner.publicName,
+              winner.avatarSeed,
+            ) === key,
+        )
 
       return {
         key,
-        publicName,
-        avatarSeed,
+        publicName:
+          representative?.publicName ?? key,
+        avatarSeed:
+          representative?.avatarSeed ?? key,
         count,
       }
     })
