@@ -406,3 +406,81 @@ test('V4 exposes only the six primary top-level destinations', () => {
     )
   }
 })
+
+
+test('V4 first-use and progressive disclosure structure stays intact', () => {
+  const dashboardSource = readFileSync(
+    new URL(
+      '../src/components/dashboard/Dashboard.tsx',
+      import.meta.url,
+    ),
+    'utf8',
+  )
+  const focusSource = readFileSync(
+    new URL(
+      '../src/pages/FocusPage.tsx',
+      import.meta.url,
+    ),
+    'utf8',
+  )
+  const planSource = readFileSync(
+    new URL(
+      '../src/pages/PlanPage.tsx',
+      import.meta.url,
+    ),
+    'utf8',
+  )
+  const progressSource = readFileSync(
+    new URL(
+      '../src/pages/ProgressPage.tsx',
+      import.meta.url,
+    ),
+    'utf8',
+  )
+  const settingsSource = readFileSync(
+    new URL(
+      '../src/components/settings/Settings.tsx',
+      import.meta.url,
+    ),
+    'utf8',
+  )
+
+  assert.match(dashboardSource, /subjects\.length === 0/)
+  assert.match(dashboardSource, /dashboard-first-subject/)
+
+  assert.match(focusSource, /subjects\.length === 0/)
+  assert.match(focusSource, /focus-first-subject/)
+  assert.match(focusSource, /focus-advisor-v4/)
+  assert.match(focusSource, /focus-audio-v4/)
+  assert.match(focusSource, /focus-intent-v4/)
+  assert.match(focusSource, /Session notes & steps/)
+  assert.match(focusSource, /Ambient audio/)
+  assert.match(focusSource, /Smart cue/)
+
+  for (const section of [
+    "'plan'",
+    "'subjects'",
+    "'routine'",
+    "'advisor'",
+  ]) {
+    assert.match(planSource, new RegExp(section))
+  }
+
+  assert.match(progressSource, /progress-first-session/)
+  for (const section of [
+    "'overview'",
+    "'records'",
+    "'history'",
+  ]) {
+    assert.match(progressSource, new RegExp(section))
+  }
+
+  for (const section of [
+    "'general'",
+    "'focus'",
+    "'alerts'",
+    "'account'",
+  ]) {
+    assert.match(settingsSource, new RegExp(section))
+  }
+})
