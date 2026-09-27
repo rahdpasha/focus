@@ -14344,3 +14344,237 @@ textarea::placeholder {
 .league-v4-title-record > b.tier-legend svg {
   transform: translateY(-0.5px);
 }
+
+
+.league-v4-title-race {
+  margin-bottom: 18px;
+  padding: 16px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 18px;
+  background: color-mix(
+    in srgb,
+    var(--void-surface) 96%,
+    transparent
+  );
+}
+
+.league-v4-title-race-head,
+.league-v4-champion-profile-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.league-v4-title-race-head {
+  margin-bottom: 12px;
+}
+
+.league-v4-title-race-head > div,
+.league-v4-champion-profile-head > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.league-v4-title-race-head span,
+.league-v4-champion-profile-head span {
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.league-v4-title-race-head h3,
+.league-v4-champion-profile-head h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.league-v4-title-race-list {
+  display: grid;
+  gap: 7px;
+}
+
+.league-v4-title-race-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 10px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 11px;
+  background: color-mix(
+    in srgb,
+    var(--void-surface-hover) 58%,
+    transparent
+  );
+}
+
+.league-v4-title-race-row.is-leading {
+  border-color: color-mix(
+    in srgb,
+    var(--primary-glow) 32%,
+    var(--focus-hairline)
+  );
+}
+
+.league-v4-title-race-row.is-you {
+  box-shadow: 0 0 0 1px color-mix(
+    in srgb,
+    var(--primary-glow) 12%,
+    transparent
+  ) inset;
+}
+
+.league-v4-title-race-rank {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.league-v4-title-race-person {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.league-v4-title-race-person strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.league-v4-title-race-person small,
+.league-v4-title-race-gap,
+.league-v4-title-race-score span {
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.league-v4-title-race-score {
+  min-width: 42px;
+  display: grid;
+  justify-items: end;
+  line-height: 1;
+}
+
+.league-v4-title-race-score strong {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.league-v4-title-race-gap {
+  min-width: 58px;
+  text-align: end;
+  font-weight: 700;
+}
+
+.league-v4-champion-profile {
+  display: grid;
+  gap: 13px;
+  padding: 14px;
+  border: 1px solid color-mix(
+    in srgb,
+    var(--primary-glow) 20%,
+    var(--focus-hairline)
+  );
+  border-radius: 16px;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      color-mix(in srgb, var(--primary-glow) 10%, transparent),
+      transparent 36%
+    ),
+    color-mix(
+      in srgb,
+      var(--void-surface) 96%,
+      transparent
+    );
+}
+
+.league-v4-profile-crown {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 9px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 11px;
+  color: var(--primary-glow);
+}
+
+.league-v4-profile-crown strong {
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.league-v4-champion-profile-stats {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.league-v4-champion-profile-stats > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  padding: 9px 10px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 10px;
+  background: color-mix(
+    in srgb,
+    var(--void-surface-hover) 54%,
+    transparent
+  );
+}
+
+.league-v4-champion-profile-stats span {
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.league-v4-champion-profile-stats strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.league-v4-champion-profile-foot {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.league-v4-champion-profile-foot svg {
+  flex: 0 0 auto;
+  color: var(--primary-glow);
+}
+
+@media (max-width: 620px) {
+  .league-v4-title-race {
+    padding: 14px;
+    border-radius: 15px;
+  }
+
+  .league-v4-title-race-row {
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+  }
+
+  .league-v4-title-race-gap {
+    grid-column: 2 / 4;
+    min-width: 0;
+    text-align: start;
+  }
+
+  .league-v4-champion-profile-stats {
+    grid-template-columns: 1fr;
+  }
+}
