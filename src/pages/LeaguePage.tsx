@@ -96,6 +96,16 @@ function championTier(
   return 'rookie'
 }
 
+function nextChampionMilestone(
+  count: number,
+): number {
+  if (count < 1) return 1
+  if (count < 3) return 3
+  if (count < 5) return 5
+  if (count < 10) return 10
+  return Math.ceil((count + 1) / 5) * 5
+}
+
 function championTierLabel(
   count: number,
   tr: (en: string, ku: string) => string,
@@ -511,6 +521,18 @@ export default function LeaguePage({
   const currentUserLastTitle =
     currentUserChampionships[0] ?? null
 
+  const currentUserNextMilestone =
+    nextChampionMilestone(
+      currentUserTitleCount,
+    )
+
+  const currentUserTitlesToMilestone =
+    Math.max(
+      0,
+      currentUserNextMilestone -
+        currentUserTitleCount,
+    )
+
   const recordHolders = titleLeaders.filter(
     (entry) =>
       entry.count === recordTitleCount,
@@ -529,6 +551,25 @@ export default function LeaguePage({
         : language === 'ku'
           ? `${lastWeekWinners[0].publicName} + ${lastWeekWinners.length - 1} هاوپلە`
           : `${lastWeekWinners[0].publicName} + ${lastWeekWinners.length - 1} tied`
+
+  const defendingChampionKeys = new Set(
+    lastWeekWinners.map((entry) =>
+      championKey(
+        entry.publicName,
+        entry.avatarSeed,
+      ),
+    ),
+  )
+
+  const isDefendingChampion = (
+    entry: Pick<LeagueEntry, 'publicName' | 'avatarSeed'>,
+  ) =>
+    defendingChampionKeys.has(
+      championKey(
+        entry.publicName,
+        entry.avatarSeed,
+      ),
+    )
 
   const currentUserWonLastWeek =
     lastWeekWinners.some(
@@ -882,6 +923,15 @@ export default function LeaguePage({
                   {entry ? entry.publicName : tr('Open position', 'شوێنی بەتاڵ')}
                 </strong>
                 {entry?.isCurrentUser && <span>{tr('You', 'تۆ')}</span>}
+                {entry && isDefendingChampion(entry) && (
+                  <span className="league-v4-defending-badge">
+                    <ShieldCheck size={11} />
+                    {tr(
+                      'Defending champion',
+                      'پاڵەوانی بەرگریکار',
+                    )}
+                  </span>
+                )}
                 {entry && championCountFor(entry) > 0 && (
                   <span
                     className={`league-v4-title-badge tier-${championTier(
@@ -1030,6 +1080,15 @@ export default function LeaguePage({
                       {entry.publicName}
                       {entry.isCurrentUser ? ` · ${tr('You', 'تۆ')}` : ''}
                     </strong>
+                    {isDefendingChampion(entry) && (
+                      <span className="league-v4-defending-badge">
+                        <ShieldCheck size={11} />
+                        {tr(
+                          'Defending champion',
+                          'پاڵەوانی بەرگریکار',
+                        )}
+                      </span>
+                    )}
                     {championCountFor(entry) > 0 && (
                       <span
                         className={`league-v4-title-badge tier-${championTier(
@@ -1100,6 +1159,31 @@ export default function LeaguePage({
                         )}
                   </strong>
                 </div>
+              </div>
+
+              <div className="league-v4-champion-next">
+                <div>
+                  <span>
+                    {tr(
+                      'Next crown milestone',
+                      'ئامانجی داهاتووی تاج',
+                    )}
+                  </span>
+                  <strong>
+                    ×{currentUserNextMilestone}
+                  </strong>
+                </div>
+                <p>
+                  {currentUserTitlesToMilestone === 1
+                    ? tr(
+                        'One more weekly title unlocks the next milestone.',
+                        'یەک ناونیشانی هەفتانەی تر ئاستی داهاتوو دەکاتەوە.',
+                      )
+                    : tr(
+                        `${currentUserTitlesToMilestone} more weekly titles to the next milestone.`,
+                        `${currentUserTitlesToMilestone} ناونیشانی هەفتانەی تر بۆ ئاستی داهاتوو.`,
+                      )}
+                </p>
               </div>
 
               <div className="league-v4-champion-profile-foot">
