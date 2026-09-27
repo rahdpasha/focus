@@ -13988,3 +13988,54 @@ textarea::placeholder {
     text-align: start;
   }
 }
+
+
+.league-v4-champion-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.league-v4-champion-kicker b {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: var(--text-primary);
+  background: color-mix(
+    in srgb,
+    var(--primary-glow) 12%,
+    transparent
+  );
+  border: 1px solid color-mix(
+    in srgb,
+    var(--primary-glow) 24%,
+    transparent
+  );
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+  text-transform: none;
+}
+
+.league-v4-champion-copy blockquote {
+  margin: 5px 0 0;
+  padding: 8px 10px;
+  border-inline-start: 2px solid color-mix(
+    in srgb,
+    var(--primary-glow) 58%,
+    transparent
+  );
+  border-radius: 0 8px 8px 0;
+  color: var(--text-secondary);
+  background: color-mix(
+    in srgb,
+    var(--void-surface-hover) 62%,
+    transparent
+  );
+  font-size: 11px;
+  line-height: 1.5;
+  font-style: normal;
+}
