@@ -18,6 +18,7 @@ import { useI18n } from '../useI18n'
 import {
   getLeaderboard,
   getLeagueChampionHistory,
+  getLeagueSeasonLeaderboard,
   loadLeagueProfile,
   refreshLeagueHistory,
   saveLeagueProfile,
@@ -43,6 +44,36 @@ function previousMonthDate(): Date {
   date.setDate(1)
   date.setMonth(date.getMonth() - 1)
   return date
+}
+
+function currentSeasonLabel(
+  language: 'en' | 'ku',
+): string {
+  const now = new Date()
+  const quarter =
+    Math.floor(now.getMonth() / 3)
+  const start = new Date(
+    now.getFullYear(),
+    quarter * 3,
+    1,
+  )
+  const end = new Date(
+    now.getFullYear(),
+    quarter * 3 + 3,
+    0,
+  )
+  const locale =
+    language === 'ku' ? 'ckb-IQ' : 'en-US'
+  const startLabel = start.toLocaleDateString(
+    locale,
+    { month: 'short' },
+  )
+  const endLabel = end.toLocaleDateString(
+    locale,
+    { month: 'short', year: 'numeric' },
+  )
+
+  return `${startLabel} – ${endLabel}`
 }
 
 function formatChampionWeek(
@@ -180,6 +211,8 @@ export default function LeaguePage({
       ),
   )
   const [entries, setEntries] = useState<LeagueEntry[]>([])
+  const [seasonEntries, setSeasonEntries] =
+    useState<LeagueEntry[]>([])
   const [championHistory, setChampionHistory] =
     useState<LeagueChampionWeek[]>([])
   const [lastWeekChampion, setLastWeekChampion] =
@@ -205,6 +238,7 @@ export default function LeaguePage({
         threeWeeksAgo,
         lastMonth,
         championWeeks,
+        seasonStandings,
       ] = await Promise.all([
         getLeaderboard(nextPeriod),
         getLeaderboard('week', previousWeekDate()),
@@ -212,9 +246,11 @@ export default function LeaguePage({
         getLeaderboard('week', previousWeekDate(3)),
         getLeaderboard('month', previousMonthDate()),
         getLeagueChampionHistory(),
+        getLeagueSeasonLeaderboard(),
       ])
 
       setEntries(current)
+      setSeasonEntries(seasonStandings)
       setChampionHistory(championWeeks)
       setLastWeekWinners(
         championEntries(lastWeek),
@@ -439,6 +475,23 @@ export default function LeaguePage({
     place: index + 1,
     entry: entries[index] ?? null,
   }))
+
+  const seasonCurrentUser =
+    seasonEntries.find(
+      (entry) => entry.isCurrentUser,
+    ) ?? null
+
+  const seasonLeader =
+    seasonEntries[0] ?? null
+
+  const seasonGap =
+    seasonCurrentUser && seasonLeader
+      ? Math.max(
+          0,
+          seasonLeader.points -
+            seasonCurrentUser.points,
+        )
+      : null
 
   const rankText = currentUser
     ? `#${currentUser.rank}`
@@ -1055,6 +1108,107 @@ export default function LeaguePage({
                 </div>
               )
             })}
+          </div>
+        </section>
+      )}
+
+      {seasonEntries.length > 0 && (
+        <section className="league-v4-season-race">
+          <div className="league-v4-season-head">
+            <div>
+              <span>
+                {tr(
+                  'FOCUS season',
+                  'وەرزی FOCUS',
+                )}
+              </span>
+              <h3>
+                {tr(
+                  'Season leaderboard',
+                  'ڕیزبەندی وەرز',
+                )}
+              </h3>
+              <small>
+                {currentSeasonLabel(language)}
+              </small>
+            </div>
+            <div className="league-v4-season-user">
+              <span>
+                {tr(
+                  'Your season rank',
+                  'پلەی وەرزی تۆ',
+                )}
+              </span>
+              <strong>
+                {seasonCurrentUser
+                  ? `#${seasonCurrentUser.rank}`
+                  : '—'}
+              </strong>
+            </div>
+          </div>
+
+          <div className="league-v4-season-list">
+            {seasonEntries
+              .slice(0, 5)
+              .map((entry) => (
+                <div
+                  key={`season-${entry.publicName}-${entry.rank}`}
+                  className={`league-v4-season-row ${
+                    entry.rank === 1
+                      ? 'is-leading'
+                      : ''
+                  } ${
+                    entry.isCurrentUser
+                      ? 'is-you'
+                      : ''
+                  }`}
+                >
+                  <span>#{entry.rank}</span>
+                  <div>
+                    <strong>
+                      {entry.publicName}
+                      {entry.isCurrentUser
+                        ? ` · ${tr('You', 'تۆ')}`
+                        : ''}
+                    </strong>
+                    <small>
+                      {entry.scoredDays}{' '}
+                      {tr(
+                        'scored days',
+                        'ڕۆژی خاڵدار',
+                      )}{' '}
+                      ·{' '}
+                      {formatFocusedTime(
+                        entry.totalSeconds,
+                        language,
+                      )}
+                    </small>
+                  </div>
+                  <b>{entry.points}</b>
+                  <small>{tr('pts', 'خاڵ')}</small>
+                </div>
+              ))}
+          </div>
+
+          <div className="league-v4-season-foot">
+            <Trophy size={13} />
+            <span>
+              {seasonCurrentUser &&
+              seasonLeader
+                ? seasonCurrentUser.rank === 1
+                  ? tr(
+                      'You are leading the season. Protect the standard.',
+                      'لە وەرزەکەدا سەرپێشیت. ئاستەکە بپارێزە.',
+                    )
+                  : tr(
+                      `${seasonGap} pts separate you from the season lead.`,
+                      `${seasonGap} خاڵ لە نێوان تۆ و سەرپێشی وەرزەکەدایە.`,
+                    )
+                : tr(
+                    'Build scored days to enter the season race.',
+                    'ڕۆژی خاڵدار دروست بکە بۆ چوونە ناو پێشبڕکێی وەرز.',
+                  )}
+            </span>
           </div>
         </section>
       )}
