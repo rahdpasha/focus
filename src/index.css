@@ -13809,3 +13809,56 @@ textarea::placeholder {
     font-size: 12px;
   }
 }
+
+
+/* V4.14 — mobile workspace rhythm */
+@media (max-width: 768px) {
+  .sidebar-collapse {
+    display: none;
+  }
+
+  .app-sidebar {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 600px) {
+  .plan-v4-tabs,
+  .progress-v4-tabs,
+  .settings-v4-tabs {
+    gap: 4px;
+    padding: 4px;
+    border-radius: 12px;
+  }
+
+  .plan-v4-tab,
+  .progress-v4-tab,
+  .settings-v4-tab {
+    min-width: 0;
+    min-height: 44px;
+    gap: 6px;
+    padding: 8px 6px;
+    line-height: 1.2;
+  }
+
+  .plan-v4-tab svg,
+  .progress-v4-tab svg {
+    flex: 0 0 auto;
+  }
+
+  .plan-v4-tab span,
+  .progress-v4-tab span,
+  .settings-v4-tab {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-dock-item {
+    gap: 3px;
+  }
+
+  .mobile-dock-item span {
+    font-size: 9.5px;
+    line-height: 1.1;
+  }
+}
