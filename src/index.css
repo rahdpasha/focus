@@ -14257,3 +14257,90 @@ textarea::placeholder {
     gap: 2px;
   }
 }
+
+
+.league-v4-crown-tier-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.league-v4-crown-tier-key > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--focus-hairline);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.league-v4-title-badge.tier-rookie,
+.league-v4-title-ledger > .tier-rookie,
+.league-v4-crown-tier-key > .tier-rookie,
+.league-v4-title-record > b.tier-rookie {
+  opacity: 0.88;
+}
+
+.league-v4-title-badge.tier-proven,
+.league-v4-title-ledger > .tier-proven,
+.league-v4-crown-tier-key > .tier-proven,
+.league-v4-title-record > b.tier-proven {
+  box-shadow: 0 0 0 1px color-mix(
+    in srgb,
+    var(--primary-glow) 16%,
+    transparent
+  ) inset;
+}
+
+.league-v4-title-badge.tier-elite,
+.league-v4-title-ledger > .tier-elite,
+.league-v4-crown-tier-key > .tier-elite,
+.league-v4-title-record > b.tier-elite {
+  border-color: color-mix(
+    in srgb,
+    var(--primary-glow) 40%,
+    var(--focus-hairline)
+  );
+  background: color-mix(
+    in srgb,
+    var(--primary-glow) 13%,
+    var(--void-surface)
+  );
+}
+
+.league-v4-title-badge.tier-legend,
+.league-v4-title-ledger > .tier-legend,
+.league-v4-crown-tier-key > .tier-legend,
+.league-v4-title-record > b.tier-legend {
+  border-color: color-mix(
+    in srgb,
+    var(--text-primary) 48%,
+    var(--focus-hairline)
+  );
+  background: color-mix(
+    in srgb,
+    var(--text-primary) 9%,
+    var(--void-surface)
+  );
+  box-shadow:
+    0 0 0 1px color-mix(
+      in srgb,
+      var(--text-primary) 8%,
+      transparent
+    ) inset,
+    0 0 18px color-mix(
+      in srgb,
+      var(--primary-glow) 10%,
+      transparent
+    );
+}
+
+.league-v4-title-badge.tier-legend svg,
+.league-v4-title-ledger > .tier-legend svg,
+.league-v4-crown-tier-key > .tier-legend svg,
+.league-v4-title-record > b.tier-legend svg {
+  transform: translateY(-0.5px);
+}
