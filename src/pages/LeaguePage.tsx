@@ -63,13 +63,19 @@ function formatFocusedTime(
   return `${hours}${hourUnit} ${remainingMinutes}${minuteUnit}`
 }
 
+function championEntries(
+  entries: LeagueEntry[],
+): LeagueEntry[] {
+  return entries.filter(
+    (entry) => entry.rank === 1 && entry.points > 0,
+  )
+}
+
 function championLabel(
   entries: LeagueEntry[],
   language: 'en' | 'ku',
 ): string | null {
-  const winners = entries.filter(
-    (entry) => entry.rank === 1 && entry.points > 0,
-  )
+  const winners = championEntries(entries)
 
   if (winners.length === 0) return null
   if (winners.length === 1) return winners[0].publicName
@@ -107,6 +113,8 @@ export default function LeaguePage({
   const [entries, setEntries] = useState<LeagueEntry[]>([])
   const [lastWeekChampion, setLastWeekChampion] =
     useState<string | null>(null)
+  const [lastWeekWinners, setLastWeekWinners] =
+    useState<LeagueEntry[]>([])
   const [lastMonthChampion, setLastMonthChampion] =
     useState<string | null>(null)
   const [loading, setLoading] = useState(() => Boolean(userId))
@@ -122,6 +130,9 @@ export default function LeaguePage({
       ])
 
       setEntries(current)
+      setLastWeekWinners(
+        championEntries(lastWeek),
+      )
       setLastWeekChampion(
         championLabel(
           lastWeek,
@@ -355,6 +366,31 @@ export default function LeaguePage({
     ? String(currentUser.scoredDays)
     : '0'
 
+  const lastWeekWinnerNames =
+    lastWeekWinners.length === 0
+      ? null
+      : lastWeekWinners.length === 1
+        ? lastWeekWinners[0].publicName
+        : language === 'ku'
+          ? `${lastWeekWinners[0].publicName} + ${lastWeekWinners.length - 1} هاوپلە`
+          : `${lastWeekWinners[0].publicName} + ${lastWeekWinners.length - 1} tied`
+
+  const currentUserWonLastWeek =
+    lastWeekWinners.some(
+      (entry) => entry.isCurrentUser,
+    )
+
+  const lastWeekWinningPoints =
+    lastWeekWinners[0]?.points ?? 0
+
+  const lastWeekWinningTime =
+    lastWeekWinners[0]
+      ? formatFocusedTime(
+          lastWeekWinners[0].totalSeconds,
+          language,
+        )
+      : null
+
   const leagueStatus =
     !profile.optIn
       ? tr('Not public', 'گشتی نییە')
@@ -387,6 +423,66 @@ export default function LeaguePage({
         title={tr('FOCUS League', 'پێشبڕکێی FOCUS')}
         description={tr('A competitive layer for consistency. Build points, climb the board, and protect your momentum.', 'پێشبڕکێیەک بۆ بەردەوامی. خاڵ کۆبکەرەوە، لە ڕیزبەندی بەرزببەوە و ڕێتمەکەت بپارێزە.')}
       />
+
+      {lastWeekWinnerNames && (
+        <section
+          className={`league-v4-champion-spotlight ${
+            currentUserWonLastWeek
+              ? 'is-winner'
+              : ''
+          }`}
+        >
+          <div className="league-v4-champion-badge">
+            <Crown size={24} />
+          </div>
+
+          <div className="league-v4-champion-copy">
+            <span>
+              {tr(
+                "Last week's champion",
+                'پاڵەوانی هەفتەی ڕابردوو',
+              )}
+            </span>
+            <h3>
+              {currentUserWonLastWeek
+                ? tr(
+                    `Congratulations, ${lastWeekWinnerNames}!`,
+                    `پیرۆزە، ${lastWeekWinnerNames}!`,
+                  )
+                : tr(
+                    `Congratulations to ${lastWeekWinnerNames}!`,
+                    `پیرۆزە بۆ ${lastWeekWinnerNames}!`,
+                  )}
+            </h3>
+            <p>
+              {currentUserWonLastWeek
+                ? tr(
+                    'You earned the crown. Enjoy the win, then raise the standard again this week.',
+                    'تاجەکەت بەدەستهێنا. چێژ لە بردنەکە ببینە، پاشان ئەم هەفتەیە ئاستەکە بەرزتر بکە.',
+                  )
+                : tr(
+                    'The board has reset. A new week means a new chance to make the next champion announcement yours.',
+                    'ڕیزبەندی دووبارە لە سفرەوە دەست پێ دەکات. هەفتەی نوێ هەلێکی نوێیە بۆ ئەوەی ئاگادارکردنەوەی پاڵەوانی داهاتوو بە ناوی تۆ بێت.',
+                  )}
+            </p>
+          </div>
+
+          <div className="league-v4-champion-result">
+            <strong>
+              {tr(
+                `${lastWeekWinningPoints} pts`,
+                `${lastWeekWinningPoints} خاڵ`,
+              )}
+            </strong>
+            {lastWeekWinningTime && (
+              <span>
+                {lastWeekWinningTime}{' '}
+                {tr('focused', 'سەرنج')}
+              </span>
+            )}
+          </div>
+        </section>
+      )}
 
       <section className="league-v4-hero">
         <div className="league-v4-orbit league-v4-orbit-a" />
