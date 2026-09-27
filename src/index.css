@@ -14900,3 +14900,55 @@ textarea::placeholder {
     display: none;
   }
 }
+
+
+/* League celebration final density pass */
+@media (max-width: 760px) {
+  .league-v4-champion-spotlight,
+  .league-v4-title-race,
+  .league-v4-season-race,
+  .league-v4-hall-of-champions,
+  .league-v4-champion-profile {
+    box-shadow: none;
+  }
+
+  .league-v4-champion-spotlight,
+  .league-v4-title-race,
+  .league-v4-season-race {
+    margin-bottom: 14px;
+  }
+
+  .league-v4-title-history-row:nth-child(n + 6),
+  .league-v4-hall-row:nth-child(n + 7),
+  .league-v4-season-row:nth-child(n + 6) {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .league-v4-champion-spotlight {
+    gap: 11px;
+  }
+
+  .league-v4-champion-copy h3 {
+    font-size: 16px;
+  }
+
+  .league-v4-champion-copy p,
+  .league-v4-champion-copy blockquote {
+    font-size: 10px;
+    line-height: 1.5;
+  }
+
+  .league-v4-title-race-head,
+  .league-v4-season-head,
+  .league-v4-champion-profile-head {
+    gap: 9px;
+  }
+
+  .league-v4-title-history-row:nth-child(n + 5),
+  .league-v4-hall-row:nth-child(n + 6),
+  .league-v4-season-row:nth-child(n + 5) {
+    display: none;
+  }
+}
