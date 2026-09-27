@@ -20,6 +20,15 @@ export interface LeagueEntry {
   isCurrentUser: boolean
 }
 
+export interface LeagueChampionWeek {
+  weekStart: string
+  publicName: string
+  avatarSeed: string
+  points: number
+  totalSeconds: number
+  isCurrentUser: boolean
+}
+
 type LeagueRow = {
   rank: number | string
   public_name: string
@@ -28,6 +37,15 @@ type LeagueRow = {
   scored_days?: number | string
   completed_days?: number | string
   total_minutes: number | string
+  total_seconds: number | string
+  is_current_user: boolean
+}
+
+type LeagueChampionRow = {
+  week_start: string
+  public_name: string
+  avatar_seed: string | null
+  points: number | string
   total_seconds: number | string
   is_current_user: boolean
 }
@@ -144,6 +162,62 @@ export async function getLeaderboard(
       0,
     ),
     totalMinutes: Number(row.total_minutes),
+    totalSeconds: Number(row.total_seconds),
+    isCurrentUser: Boolean(row.is_current_user),
+  }))
+}
+
+
+export async function getLeagueChampionHistory(
+  referenceDate = new Date(),
+): Promise<LeagueChampionWeek[]> {
+  const client = requireSupabase()
+
+  const { data, error } = await client.rpc(
+    'get_league_champion_history',
+    {
+      p_reference_date: dateOnly(referenceDate),
+    },
+  )
+
+  if (error) throw error
+
+  return ((data ?? []) as LeagueChampionRow[]).map((row) => ({
+    weekStart: row.week_start,
+    publicName: row.public_name,
+    avatarSeed: row.avatar_seed ?? row.public_name,
+    points: Number(row.points),
+    totalSeconds: Number(row.total_seconds),
+    isCurrentUser: Boolean(row.is_current_user),
+  }))
+}
+
+
+export async function getLeagueSeasonLeaderboard(
+  referenceDate = new Date(),
+): Promise<LeagueEntry[]> {
+  const client = requireSupabase()
+
+  const { data, error } = await client.rpc(
+    'get_league_season_leaderboard',
+    {
+      p_reference_date: dateOnly(referenceDate),
+    },
+  )
+
+  if (error) throw error
+
+  return ((data ?? []) as LeagueRow[]).map((row) => ({
+    rank: Number(row.rank),
+    publicName: row.public_name,
+    avatarSeed: row.avatar_seed ?? row.public_name,
+    points: Number(row.points),
+    scoredDays: Number(
+      row.scored_days ??
+      row.completed_days ??
+      0,
+    ),
+    totalMinutes: Math.floor(Number(row.total_seconds) / 60),
     totalSeconds: Number(row.total_seconds),
     isCurrentUser: Boolean(row.is_current_user),
   }))

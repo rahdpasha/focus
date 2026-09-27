@@ -17,9 +17,12 @@ import { supabase } from '../api/supabaseClient'
 import { useI18n } from '../useI18n'
 import {
   getLeaderboard,
+  getLeagueChampionHistory,
+  getLeagueSeasonLeaderboard,
   loadLeagueProfile,
   refreshLeagueHistory,
   saveLeagueProfile,
+  type LeagueChampionWeek,
   type LeagueEntry,
   type LeaguePeriod,
   type LeagueProfile,
@@ -30,9 +33,9 @@ interface LeaguePageProps {
   displayName?: string
 }
 
-function previousWeekDate(): Date {
+function previousWeekDate(weeksAgo = 1): Date {
   const date = new Date()
-  date.setDate(date.getDate() - 7)
+  date.setDate(date.getDate() - 7 * weeksAgo)
   return date
 }
 
@@ -41,6 +44,58 @@ function previousMonthDate(): Date {
   date.setDate(1)
   date.setMonth(date.getMonth() - 1)
   return date
+}
+
+function currentSeasonLabel(
+  language: 'en' | 'ku',
+): string {
+  const now = new Date()
+  const quarter =
+    Math.floor(now.getMonth() / 3)
+  const start = new Date(
+    now.getFullYear(),
+    quarter * 3,
+    1,
+  )
+  const end = new Date(
+    now.getFullYear(),
+    quarter * 3 + 3,
+    0,
+  )
+  const locale =
+    language === 'ku' ? 'ckb-IQ' : 'en-US'
+  const startLabel = start.toLocaleDateString(
+    locale,
+    { month: 'short' },
+  )
+  const endLabel = end.toLocaleDateString(
+    locale,
+    { month: 'short', year: 'numeric' },
+  )
+
+  return `${startLabel} – ${endLabel}`
+}
+
+function formatChampionWeek(
+  weekStart: string,
+  language: 'en' | 'ku',
+): string {
+  const start = new Date(`${weekStart}T12:00:00`)
+  const end = new Date(start)
+  end.setDate(end.getDate() + 6)
+
+  const locale =
+    language === 'ku' ? 'ckb-IQ' : 'en-US'
+  const startLabel = start.toLocaleDateString(locale, {
+    month: 'short',
+    day: 'numeric',
+  })
+  const endLabel = end.toLocaleDateString(locale, {
+    month: 'short',
+    day: 'numeric',
+  })
+
+  return `${startLabel} – ${endLabel}`
 }
 
 function formatFocusedTime(
@@ -63,13 +118,66 @@ function formatFocusedTime(
   return `${hours}${hourUnit} ${remainingMinutes}${minuteUnit}`
 }
 
+function championTier(
+  count: number,
+): 'rookie' | 'proven' | 'elite' | 'legend' {
+  if (count >= 10) return 'legend'
+  if (count >= 5) return 'elite'
+  if (count >= 3) return 'proven'
+  return 'rookie'
+}
+
+function nextChampionMilestone(
+  count: number,
+): number {
+  if (count < 1) return 1
+  if (count < 3) return 3
+  if (count < 5) return 5
+  if (count < 10) return 10
+  return Math.ceil((count + 1) / 5) * 5
+}
+
+function championTierLabel(
+  count: number,
+  tr: (en: string, ku: string) => string,
+): string {
+  if (count >= 10) {
+    return tr('Legendary Champion', 'پاڵەوانی ئەفسانەیی')
+  }
+
+  if (count >= 5) {
+    return tr('Elite Champion', 'پاڵەوانی هەڵبژاردە')
+  }
+
+  if (count >= 3) {
+    return tr('Proven Champion', 'پاڵەوانی سەلمێنراو')
+  }
+
+  return tr('League Champion', 'پاڵەوانی پێشبڕکێ')
+}
+
+function championKey(
+  publicName: string,
+  avatarSeed: string,
+): string {
+  const stableSeed = avatarSeed.trim()
+
+  return stableSeed || publicName.trim()
+}
+
+function championEntries(
+  entries: LeagueEntry[],
+): LeagueEntry[] {
+  return entries.filter(
+    (entry) => entry.rank === 1 && entry.points > 0,
+  )
+}
+
 function championLabel(
   entries: LeagueEntry[],
   language: 'en' | 'ku',
 ): string | null {
-  const winners = entries.filter(
-    (entry) => entry.rank === 1 && entry.points > 0,
-  )
+  const winners = championEntries(entries)
 
   if (winners.length === 0) return null
   if (winners.length === 1) return winners[0].publicName
@@ -105,8 +213,18 @@ export default function LeaguePage({
       ),
   )
   const [entries, setEntries] = useState<LeagueEntry[]>([])
+  const [seasonEntries, setSeasonEntries] =
+    useState<LeagueEntry[]>([])
+  const [championHistory, setChampionHistory] =
+    useState<LeagueChampionWeek[]>([])
   const [lastWeekChampion, setLastWeekChampion] =
     useState<string | null>(null)
+  const [lastWeekWinners, setLastWeekWinners] =
+    useState<LeagueEntry[]>([])
+  const [twoWeeksAgoWinners, setTwoWeeksAgoWinners] =
+    useState<LeagueEntry[]>([])
+  const [threeWeeksAgoWinners, setThreeWeeksAgoWinners] =
+    useState<LeagueEntry[]>([])
   const [lastMonthChampion, setLastMonthChampion] =
     useState<string | null>(null)
   const [loading, setLoading] = useState(() => Boolean(userId))
@@ -115,13 +233,36 @@ export default function LeaguePage({
 
   const loadStandings = useCallback(
     async (nextPeriod: LeaguePeriod) => {
-      const [current, lastWeek, lastMonth] = await Promise.all([
+      const [
+        current,
+        lastWeek,
+        twoWeeksAgo,
+        threeWeeksAgo,
+        lastMonth,
+        championWeeks,
+        seasonStandings,
+      ] = await Promise.all([
         getLeaderboard(nextPeriod),
         getLeaderboard('week', previousWeekDate()),
+        getLeaderboard('week', previousWeekDate(2)),
+        getLeaderboard('week', previousWeekDate(3)),
         getLeaderboard('month', previousMonthDate()),
+        getLeagueChampionHistory(),
+        getLeagueSeasonLeaderboard(),
       ])
 
       setEntries(current)
+      setSeasonEntries(seasonStandings)
+      setChampionHistory(championWeeks)
+      setLastWeekWinners(
+        championEntries(lastWeek),
+      )
+      setTwoWeeksAgoWinners(
+        championEntries(twoWeeksAgo),
+      )
+      setThreeWeeksAgoWinners(
+        championEntries(threeWeeksAgo),
+      )
       setLastWeekChampion(
         championLabel(
           lastWeek,
@@ -337,6 +478,23 @@ export default function LeaguePage({
     entry: entries[index] ?? null,
   }))
 
+  const seasonCurrentUser =
+    seasonEntries.find(
+      (entry) => entry.isCurrentUser,
+    ) ?? null
+
+  const seasonLeader =
+    seasonEntries[0] ?? null
+
+  const seasonGap =
+    seasonCurrentUser && seasonLeader
+      ? Math.max(
+          0,
+          seasonLeader.points -
+            seasonCurrentUser.points,
+        )
+      : null
+
   const rankText = currentUser
     ? `#${currentUser.rank}`
     : profile.optIn
@@ -354,6 +512,260 @@ export default function LeaguePage({
   const scoredDaysText = currentUser
     ? String(currentUser.scoredDays)
     : '0'
+
+
+  const championTitleCounts = (() => {
+    const counts = new Map<string, number>()
+
+    championHistory.forEach((winner) => {
+      const key = championKey(
+        winner.publicName,
+        winner.avatarSeed,
+      )
+      counts.set(key, (counts.get(key) ?? 0) + 1)
+    })
+
+    return counts
+  })()
+
+  const championCountFor = (
+    entry: Pick<LeagueEntry, 'publicName' | 'avatarSeed'>,
+  ) =>
+    championTitleCounts.get(
+      championKey(
+        entry.publicName,
+        entry.avatarSeed,
+      ),
+    ) ?? 0
+
+  const titleLeaders = Array.from(
+    championTitleCounts.entries(),
+  )
+    .map(([key, count]) => {
+      const representative =
+        championHistory.find(
+          (winner) =>
+            championKey(
+              winner.publicName,
+              winner.avatarSeed,
+            ) === key,
+        )
+
+      return {
+        key,
+        publicName:
+          representative?.publicName ?? key,
+        avatarSeed:
+          representative?.avatarSeed ?? key,
+        count,
+      }
+    })
+    .sort((a, b) => {
+      if (b.count !== a.count) {
+        return b.count - a.count
+      }
+
+      return a.publicName.localeCompare(
+        b.publicName,
+      )
+    })
+
+  const championHallRows = titleLeaders
+    .map((leader, index) => {
+      const latestTitle =
+        championHistory.find(
+          (winner) =>
+            championKey(
+              winner.publicName,
+              winner.avatarSeed,
+            ) === leader.key,
+        ) ?? null
+
+      return {
+        ...leader,
+        rank: index + 1,
+        latestTitle,
+      }
+    })
+    .slice(0, 8)
+
+  const recordTitleCount =
+    titleLeaders[0]?.count ?? 0
+
+  const currentUserChampionships =
+    championHistory.filter(
+      (winner) => winner.isCurrentUser,
+    )
+
+  const currentUserTitleCount =
+    currentUserChampionships.length
+
+  const currentUserLastTitle =
+    currentUserChampionships[0] ?? null
+
+  const currentUserNextMilestone =
+    nextChampionMilestone(
+      currentUserTitleCount,
+    )
+
+  const currentUserTitlesToMilestone =
+    Math.max(
+      0,
+      currentUserNextMilestone -
+        currentUserTitleCount,
+    )
+
+  const recordHolders = titleLeaders.filter(
+    (entry) =>
+      entry.count === recordTitleCount,
+  )
+
+  const lastWeekTitleCount =
+    lastWeekWinners.length === 1
+      ? championCountFor(lastWeekWinners[0])
+      : 0
+
+  const lastWeekWinnerNames =
+    lastWeekWinners.length === 0
+      ? null
+      : lastWeekWinners.length === 1
+        ? lastWeekWinners[0].publicName
+        : language === 'ku'
+          ? `${lastWeekWinners[0].publicName} + ${lastWeekWinners.length - 1} هاوپلە`
+          : `${lastWeekWinners[0].publicName} + ${lastWeekWinners.length - 1} tied`
+
+  const defendingChampionKeys = new Set(
+    lastWeekWinners.map((entry) =>
+      championKey(
+        entry.publicName,
+        entry.avatarSeed,
+      ),
+    ),
+  )
+
+  const isDefendingChampion = (
+    entry: Pick<LeagueEntry, 'publicName' | 'avatarSeed'>,
+  ) =>
+    defendingChampionKeys.has(
+      championKey(
+        entry.publicName,
+        entry.avatarSeed,
+      ),
+    )
+
+  const currentUserWonLastWeek =
+    lastWeekWinners.some(
+      (entry) => entry.isCurrentUser,
+    )
+
+  const championStreak = (() => {
+    if (lastWeekWinners.length === 0) return 0
+
+    const priorTwoNames = new Set(
+      twoWeeksAgoWinners.map(
+        (entry) => entry.publicName,
+      ),
+    )
+    const priorThreeNames = new Set(
+      threeWeeksAgoWinners.map(
+        (entry) => entry.publicName,
+      ),
+    )
+
+    return lastWeekWinners.reduce(
+      (best, winner) => {
+        const wonTwoWeeksAgo =
+          priorTwoNames.has(
+            winner.publicName,
+          )
+
+        if (!wonTwoWeeksAgo) {
+          return Math.max(best, 1)
+        }
+
+        const wonThreeWeeksAgo =
+          priorThreeNames.has(
+            winner.publicName,
+          )
+
+        return Math.max(
+          best,
+          wonThreeWeeksAgo ? 3 : 2,
+        )
+      },
+      1,
+    )
+  })()
+
+  const championTitle =
+    championStreak >= 3
+      ? tr(
+          '3× League Champion',
+          '٣ جار پاڵەوانی پێشبڕکێ',
+        )
+      : championStreak === 2
+        ? tr(
+            'Back-to-back Champion',
+            'دوو هەفتە بەردەوام پاڵەوان',
+          )
+        : tr(
+            'Weekly Champion',
+            'پاڵەوانی هەفتە',
+          )
+
+  const championMotivation = (() => {
+    const winnerQuotes = [
+      tr(
+        'Consistency made the crown possible. Now make it repeatable.',
+        'بەردەوامی تاجەکەی بەدەست هێنا. ئێستا دووبارەی بکەرەوە.',
+      ),
+      tr(
+        'Winning is a result. The habit that produced it is the real advantage.',
+        'بردن ئەنجامە. ئەو عادەتەی دروستی کردووە سوودی ڕاستەقینەیە.',
+      ),
+      tr(
+        'Keep the crown light: celebrate it, then get back to the work.',
+        'تاجەکە سووک بگرە: پیرۆزی بکە، پاشان بگەڕێوە بۆ کار.',
+      ),
+    ]
+
+    const challengerQuotes = [
+      tr(
+        'The crown is visible. The work to earn it starts quietly.',
+        'تاجەکە دیارە. بەڵام کار بۆ بەدەستهێنانی بە بێدەنگی دەست پێ دەکات.',
+      ),
+      tr(
+        'A fresh week is a clean scoreboard. One focused session starts the climb.',
+        'هەفتەی نوێ ڕیزبەندییەکی پاکە. یەک سێشنی سەرنجدار دەستپێکی بەرزبوونەوەیە.',
+      ),
+      tr(
+        'Do not chase the person above you. Chase a stronger version of your own week.',
+        'بەدوای کەسی سەرەوەت مەکەوە. بەدوای هەفتەیەکی بەهێزتری خۆت بکەوە.',
+      ),
+    ]
+
+    const source =
+      currentUserWonLastWeek
+        ? winnerQuotes
+        : challengerQuotes
+    const seed =
+      lastWeekWinnerNames?.length ?? 0
+
+    return source[
+      seed % source.length
+    ]
+  })()
+
+  const lastWeekWinningPoints =
+    lastWeekWinners[0]?.points ?? 0
+
+  const lastWeekWinningTime =
+    lastWeekWinners[0]
+      ? formatFocusedTime(
+          lastWeekWinners[0].totalSeconds,
+          language,
+        )
+      : null
 
   const leagueStatus =
     !profile.optIn
@@ -387,6 +799,73 @@ export default function LeaguePage({
         title={tr('FOCUS League', 'پێشبڕکێی FOCUS')}
         description={tr('A competitive layer for consistency. Build points, climb the board, and protect your momentum.', 'پێشبڕکێیەک بۆ بەردەوامی. خاڵ کۆبکەرەوە، لە ڕیزبەندی بەرزببەوە و ڕێتمەکەت بپارێزە.')}
       />
+
+      {lastWeekWinnerNames && (
+        <section
+          className={`league-v4-champion-spotlight ${
+            currentUserWonLastWeek
+              ? 'is-winner'
+              : ''
+          }`}
+        >
+          <div className="league-v4-champion-badge">
+            <Crown size={24} />
+            {lastWeekTitleCount > 0 && (
+              <strong>×{lastWeekTitleCount}</strong>
+            )}
+          </div>
+
+          <div className="league-v4-champion-copy">
+            <span className="league-v4-champion-kicker">
+              {tr(
+                "Last week's champion",
+                'پاڵەوانی هەفتەی ڕابردوو',
+              )}
+              <b>{championTitle}</b>
+            </span>
+            <h3>
+              {currentUserWonLastWeek
+                ? tr(
+                    `Congratulations, ${lastWeekWinnerNames}!`,
+                    `پیرۆزە، ${lastWeekWinnerNames}!`,
+                  )
+                : tr(
+                    `Congratulations to ${lastWeekWinnerNames}!`,
+                    `پیرۆزە بۆ ${lastWeekWinnerNames}!`,
+                  )}
+            </h3>
+            <p>
+              {currentUserWonLastWeek
+                ? tr(
+                    'You earned the crown. Enjoy the win, then raise the standard again this week.',
+                    'تاجەکەت بەدەستهێنا. چێژ لە بردنەکە ببینە، پاشان ئەم هەفتەیە ئاستەکە بەرزتر بکە.',
+                  )
+                : tr(
+                    'The board has reset. A new week means a new chance to make the next champion announcement yours.',
+                    'ڕیزبەندی دووبارە لە سفرەوە دەست پێ دەکات. هەفتەی نوێ هەلێکی نوێیە بۆ ئەوەی ئاگادارکردنەوەی پاڵەوانی داهاتوو بە ناوی تۆ بێت.',
+                  )}
+            </p>
+            <blockquote>
+              “{championMotivation}”
+            </blockquote>
+          </div>
+
+          <div className="league-v4-champion-result">
+            <strong>
+              {tr(
+                `${lastWeekWinningPoints} pts`,
+                `${lastWeekWinningPoints} خاڵ`,
+              )}
+            </strong>
+            {lastWeekWinningTime && (
+              <span>
+                {lastWeekWinningTime}{' '}
+                {tr('focused', 'سەرنج')}
+              </span>
+            )}
+          </div>
+        </section>
+      )}
 
       <section className="league-v4-hero">
         <div className="league-v4-orbit league-v4-orbit-a" />
@@ -526,6 +1005,29 @@ export default function LeaguePage({
                   {entry ? entry.publicName : tr('Open position', 'شوێنی بەتاڵ')}
                 </strong>
                 {entry?.isCurrentUser && <span>{tr('You', 'تۆ')}</span>}
+                {entry && isDefendingChampion(entry) && (
+                  <span className="league-v4-defending-badge">
+                    <ShieldCheck size={11} />
+                    {tr(
+                      'Defending champion',
+                      'پاڵەوانی بەرگریکار',
+                    )}
+                  </span>
+                )}
+                {entry && championCountFor(entry) > 0 && (
+                  <span
+                    className={`league-v4-title-badge tier-${championTier(
+                      championCountFor(entry),
+                    )}`}
+                    title={championTierLabel(
+                      championCountFor(entry),
+                      tr,
+                    )}
+                  >
+                    <Crown size={11} />
+                    ×{championCountFor(entry)}
+                  </span>
+                )}
               </div>
 
               <div className="league-v4-podium-score">
@@ -549,6 +1051,177 @@ export default function LeaguePage({
           ))}
         </div>
       </section>
+
+      {period === 'week' && entries.length > 0 && (
+        <section className="league-v4-title-race">
+          <div className="league-v4-title-race-head">
+            <div>
+              <span>{tr('Live title race', 'پێشبڕکێی ڕاستەوخۆی ناونیشان')}</span>
+              <h3>{tr('If the week ended now', 'ئەگەر هەفتەکە ئێستا کۆتایی بێت')}</h3>
+            </div>
+            <Trophy size={19} />
+          </div>
+
+          <div className="league-v4-title-race-list">
+            {entries.slice(0, 3).map((entry) => {
+              const leaderPoints =
+                entries[0]?.points ?? 0
+              const pointsBehind =
+                Math.max(
+                  0,
+                  leaderPoints - entry.points,
+                )
+
+              return (
+                <div
+                  key={`title-race-${entry.publicName}-${entry.rank}`}
+                  className={`league-v4-title-race-row ${
+                    entry.rank === 1 ? 'is-leading' : ''
+                  } ${
+                    entry.isCurrentUser ? 'is-you' : ''
+                  }`}
+                >
+                  <span className="league-v4-title-race-rank">
+                    #{entry.rank}
+                  </span>
+                  <div className="league-v4-title-race-person">
+                    <strong>
+                      {entry.publicName}
+                      {entry.isCurrentUser
+                        ? ` · ${tr('You', 'تۆ')}`
+                        : ''}
+                    </strong>
+                    <small>
+                      {championCountFor(entry) > 0
+                        ? tr(
+                            `${championCountFor(entry)} career titles`,
+                            `${championCountFor(entry)} ناونیشانی هەمیشەیی`,
+                          )
+                        : tr(
+                            'Chasing a first title',
+                            'بەدوای یەکەم ناونیشان',
+                          )}
+                    </small>
+                  </div>
+                  <div className="league-v4-title-race-score">
+                    <strong>{entry.points}</strong>
+                    <span>{tr('pts', 'خاڵ')}</span>
+                  </div>
+                  <span className="league-v4-title-race-gap">
+                    {entry.rank === 1
+                      ? tr('Leading', 'سەرپێش')
+                      : tr(
+                          `${pointsBehind} pts back`,
+                          `${pointsBehind} خاڵ دواوە`,
+                        )}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
+
+      {seasonEntries.length > 0 && (
+        <section className="league-v4-season-race">
+          <div className="league-v4-season-head">
+            <div>
+              <span>
+                {tr(
+                  'FOCUS season',
+                  'وەرزی FOCUS',
+                )}
+              </span>
+              <h3>
+                {tr(
+                  'Season leaderboard',
+                  'ڕیزبەندی وەرز',
+                )}
+              </h3>
+              <small>
+                {currentSeasonLabel(language)}
+              </small>
+            </div>
+            <div className="league-v4-season-user">
+              <span>
+                {tr(
+                  'Your season rank',
+                  'پلەی وەرزی تۆ',
+                )}
+              </span>
+              <strong>
+                {seasonCurrentUser
+                  ? `#${seasonCurrentUser.rank}`
+                  : '—'}
+              </strong>
+            </div>
+          </div>
+
+          <div className="league-v4-season-list">
+            {seasonEntries
+              .slice(0, 5)
+              .map((entry) => (
+                <div
+                  key={`season-${entry.publicName}-${entry.rank}`}
+                  className={`league-v4-season-row ${
+                    entry.rank === 1
+                      ? 'is-leading'
+                      : ''
+                  } ${
+                    entry.isCurrentUser
+                      ? 'is-you'
+                      : ''
+                  }`}
+                >
+                  <span>#{entry.rank}</span>
+                  <div>
+                    <strong>
+                      {entry.publicName}
+                      {entry.isCurrentUser
+                        ? ` · ${tr('You', 'تۆ')}`
+                        : ''}
+                    </strong>
+                    <small>
+                      {entry.scoredDays}{' '}
+                      {tr(
+                        'scored days',
+                        'ڕۆژی خاڵدار',
+                      )}{' '}
+                      ·{' '}
+                      {formatFocusedTime(
+                        entry.totalSeconds,
+                        language,
+                      )}
+                    </small>
+                  </div>
+                  <b>{entry.points}</b>
+                  <small>{tr('pts', 'خاڵ')}</small>
+                </div>
+              ))}
+          </div>
+
+          <div className="league-v4-season-foot">
+            <Trophy size={13} />
+            <span>
+              {seasonCurrentUser &&
+              seasonLeader
+                ? seasonCurrentUser.rank === 1
+                  ? tr(
+                      'You are leading the season. Protect the standard.',
+                      'لە وەرزەکەدا سەرپێشیت. ئاستەکە بپارێزە.',
+                    )
+                  : tr(
+                      `${seasonGap} pts separate you from the season lead.`,
+                      `${seasonGap} خاڵ لە نێوان تۆ و سەرپێشی وەرزەکەدایە.`,
+                    )
+                : tr(
+                    'Build scored days to enter the season race.',
+                    'ڕۆژی خاڵدار دروست بکە بۆ چوونە ناو پێشبڕکێی وەرز.',
+                  )}
+            </span>
+          </div>
+        </section>
+      )}
 
       <div className="league-v4-grid">
         <section className="league-v4-board">
@@ -590,6 +1263,32 @@ export default function LeaguePage({
                       {entry.publicName}
                       {entry.isCurrentUser ? ` · ${tr('You', 'تۆ')}` : ''}
                     </strong>
+                    {isDefendingChampion(entry) && (
+                      <span className="league-v4-defending-badge">
+                        <ShieldCheck size={11} />
+                        {tr(
+                          'Defending champion',
+                          'پاڵەوانی بەرگریکار',
+                        )}
+                      </span>
+                    )}
+                    {championCountFor(entry) > 0 && (
+                      <span
+                        className={`league-v4-title-badge tier-${championTier(
+                          championCountFor(entry),
+                        )}`}
+                        title={championTierLabel(
+                          championCountFor(entry),
+                          tr,
+                        )}
+                      >
+                        <Crown size={11} />
+                        {tr(
+                          `×${championCountFor(entry)} champion`,
+                          `×${championCountFor(entry)} پاڵەوان`,
+                        )}
+                      </span>
+                    )}
                     <span>
                       {entry.scoredDays} {tr('scored days', 'ڕۆژی خاڵدار')} ·{' '}
                       {formatFocusedTime(entry.totalSeconds, language)} {tr('focused', 'سەرنج')}
@@ -607,6 +1306,101 @@ export default function LeaguePage({
         </section>
 
         <aside className="league-v4-side">
+          {profile.optIn && (
+            <section className="league-v4-champion-profile">
+              <div className="league-v4-champion-profile-head">
+                <div>
+                  <span>{tr('Champion profile', 'پڕۆفایلی پاڵەوان')}</span>
+                  <h3>{profile.publicName || tr('Focused learner', 'خوێنەری سەرنجدار')}</h3>
+                </div>
+                <div
+                  className={`league-v4-profile-crown tier-${championTier(
+                    currentUserTitleCount,
+                  )}`}
+                >
+                  <Crown size={18} />
+                  <strong>×{currentUserTitleCount}</strong>
+                </div>
+              </div>
+
+              <div className="league-v4-champion-profile-stats">
+                <div>
+                  <span>{tr('Titles', 'ناونیشانەکان')}</span>
+                  <strong>{currentUserTitleCount}</strong>
+                </div>
+                <div>
+                  <span>{tr('Level', 'ئاست')}</span>
+                  <strong>
+                    {currentUserTitleCount > 0
+                      ? championTierLabel(
+                          currentUserTitleCount,
+                          tr,
+                        )
+                      : tr(
+                          'First title waiting',
+                          'چاوەڕوانی یەکەم ناونیشان',
+                        )}
+                  </strong>
+                </div>
+              </div>
+
+              <div className="league-v4-champion-next">
+                <div>
+                  <span>
+                    {tr(
+                      'Next crown milestone',
+                      'ئامانجی داهاتووی تاج',
+                    )}
+                  </span>
+                  <strong>
+                    ×{currentUserNextMilestone}
+                  </strong>
+                </div>
+                <p>
+                  {currentUserTitlesToMilestone === 1
+                    ? tr(
+                        'One more weekly title unlocks the next milestone.',
+                        'یەک ناونیشانی هەفتانەی تر ئاستی داهاتوو دەکاتەوە.',
+                      )
+                    : tr(
+                        `${currentUserTitlesToMilestone} more weekly titles to the next milestone.`,
+                        `${currentUserTitlesToMilestone} ناونیشانی هەفتانەی تر بۆ ئاستی داهاتوو.`,
+                      )}
+                </p>
+              </div>
+
+              <div className="league-v4-champion-profile-foot">
+                {currentUserLastTitle ? (
+                  <>
+                    <Trophy size={13} />
+                    <span>
+                      {tr(
+                        `Last title: ${formatChampionWeek(
+                          currentUserLastTitle.weekStart,
+                          language,
+                        )}`,
+                        `دوا ناونیشان: ${formatChampionWeek(
+                          currentUserLastTitle.weekStart,
+                          language,
+                        )}`,
+                      )}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Target size={13} />
+                    <span>
+                      {tr(
+                        'Your first crown is still available.',
+                        'یەکەم تاجەکەت هێشتا بەردەستە.',
+                      )}
+                    </span>
+                  </>
+                )}
+              </div>
+            </section>
+          )}
+
           <section className="league-v4-command">
             <div className="league-v4-command-head">
               <div>
@@ -779,7 +1573,204 @@ export default function LeaguePage({
                 <strong>{lastMonthChampion ?? tr('No winner yet', 'هێشتا براوە نییە')}</strong>
               </div>
             </div>
+
+            {championTitleCounts.size > 0 && (
+              <>
+                <div className="league-v4-title-record">
+                  <div>
+                    <span>
+                      {tr(
+                        'All-time title leader',
+                        'سەرپێشی هەمیشەیی ناونیشان',
+                      )}
+                    </span>
+                    <strong>
+                      {recordHolders
+                        .map(
+                          (entry) =>
+                            entry.publicName,
+                        )
+                        .join(' · ')}
+                    </strong>
+                  </div>
+                  <b
+                    className={`tier-${championTier(
+                      recordTitleCount,
+                    )}`}
+                    title={championTierLabel(
+                      recordTitleCount,
+                      tr,
+                    )}
+                  >
+                    <Crown size={14} />
+                    ×{recordTitleCount}
+                  </b>
+                </div>
+
+                <div className="league-v4-crown-tier-key">
+                  <span className="tier-rookie">
+                    <Crown size={11} />
+                    {tr('1–2 titles', '١–٢ ناونیشان')}
+                  </span>
+                  <span className="tier-proven">
+                    <Crown size={11} />
+                    {tr('3–4 Proven', '٣–٤ سەلمێنراو')}
+                  </span>
+                  <span className="tier-elite">
+                    <Crown size={11} />
+                    {tr('5–9 Elite', '٥–٩ هەڵبژاردە')}
+                  </span>
+                  <span className="tier-legend">
+                    <Crown size={11} />
+                    {tr('10+ Legendary', '١٠+ ئەفسانەیی')}
+                  </span>
+                </div>
+
+                <div className="league-v4-title-ledger">
+                  {titleLeaders
+                    .slice(0, 5)
+                    .map((entry) => (
+                      <span
+                        key={entry.key}
+                        className={`tier-${championTier(
+                          entry.count,
+                        )}`}
+                        title={championTierLabel(
+                          entry.count,
+                          tr,
+                        )}
+                      >
+                        <Crown size={12} />
+                        {entry.publicName}
+                        <b>×{entry.count}</b>
+                      </span>
+                    ))}
+                </div>
+              </>
+            )}
+
+            {championHistory.length > 0 && (
+              <div className="league-v4-title-history">
+                <div className="league-v4-title-history-head">
+                  <span>
+                    {tr(
+                      'Title history',
+                      'مێژووی پاڵەوانی',
+                    )}
+                  </span>
+                  <small>
+                    {tr(
+                      'Recent weekly crowns',
+                      'تاجە هەفتانە نوێیەکان',
+                    )}
+                  </small>
+                </div>
+
+                {championHistory
+                  .slice(0, 6)
+                  .map((winner) => (
+                    <div
+                      className="league-v4-title-history-row"
+                      key={`${winner.weekStart}-${winner.publicName}-${winner.avatarSeed}`}
+                    >
+                      <span className="league-v4-history-crown">
+                        <Crown size={12} />
+                      </span>
+                      <div>
+                        <strong>
+                          {winner.publicName}
+                        </strong>
+                        <small>
+                          {formatChampionWeek(
+                            winner.weekStart,
+                            language,
+                          )}
+                        </small>
+                      </div>
+                      <span>
+                        {winner.points}{' '}
+                        {tr('pts', 'خاڵ')}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            )}
           </section>
+
+          {championHallRows.length > 0 && (
+            <section className="league-v4-hall-of-champions">
+              <div className="league-v4-section-head compact">
+                <div>
+                  <span>
+                    {tr(
+                      'Legacy table',
+                      'خشتەی مێژوویی',
+                    )}
+                  </span>
+                  <h3>
+                    {tr(
+                      'Hall of Champions',
+                      'هۆڵی پاڵەوانان',
+                    )}
+                  </h3>
+                </div>
+                <Trophy size={18} />
+              </div>
+
+              <div className="league-v4-hall-list">
+                {championHallRows.map((champion) => (
+                  <div
+                    key={champion.key}
+                    className={`league-v4-hall-row ${
+                      champion.rank === 1
+                        ? 'is-record'
+                        : ''
+                    }`}
+                  >
+                    <span className="league-v4-hall-rank">
+                      #{champion.rank}
+                    </span>
+
+                    <div className="league-v4-hall-person">
+                      <strong>
+                        {champion.publicName}
+                      </strong>
+                      <small>
+                        {champion.latestTitle
+                          ? tr(
+                              `Latest crown ${formatChampionWeek(
+                                champion.latestTitle.weekStart,
+                                language,
+                              )}`,
+                              `دوا تاج ${formatChampionWeek(
+                                champion.latestTitle.weekStart,
+                                language,
+                              )}`,
+                            )
+                          : tr(
+                              'Champion history',
+                              'مێژووی پاڵەوانی',
+                            )}
+                      </small>
+                    </div>
+
+                    <span
+                      className={`league-v4-hall-crowns tier-${championTier(
+                        champion.count,
+                      )}`}
+                      title={championTierLabel(
+                        champion.count,
+                        tr,
+                      )}
+                    >
+                      <Crown size={13} />
+                      <b>×{champion.count}</b>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {message && (
             <div className="league-v4-message">{message}</div>
