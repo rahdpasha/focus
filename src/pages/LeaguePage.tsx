@@ -45,6 +45,28 @@ function previousMonthDate(): Date {
   return date
 }
 
+function formatChampionWeek(
+  weekStart: string,
+  language: 'en' | 'ku',
+): string {
+  const start = new Date(`${weekStart}T12:00:00`)
+  const end = new Date(start)
+  end.setDate(end.getDate() + 6)
+
+  const locale =
+    language === 'ku' ? 'ckb-IQ' : 'en-US'
+  const startLabel = start.toLocaleDateString(locale, {
+    month: 'short',
+    day: 'numeric',
+  })
+  const endLabel = end.toLocaleDateString(locale, {
+    month: 'short',
+    day: 'numeric',
+  })
+
+  return `${startLabel} – ${endLabel}`
+}
+
 function formatFocusedTime(
   totalSeconds: number,
   language: 'en' | 'ku',
@@ -422,6 +444,38 @@ export default function LeaguePage({
         entry.avatarSeed,
       ),
     ) ?? 0
+
+  const titleLeaders = Array.from(
+    championTitleCounts.entries(),
+  )
+    .map(([key, count]) => {
+      const [publicName, avatarSeed] =
+        key.split('\u0000')
+
+      return {
+        key,
+        publicName,
+        avatarSeed,
+        count,
+      }
+    })
+    .sort((a, b) => {
+      if (b.count !== a.count) {
+        return b.count - a.count
+      }
+
+      return a.publicName.localeCompare(
+        b.publicName,
+      )
+    })
+
+  const recordTitleCount =
+    titleLeaders[0]?.count ?? 0
+
+  const recordHolders = titleLeaders.filter(
+    (entry) =>
+      entry.count === recordTitleCount,
+  )
 
   const lastWeekTitleCount =
     lastWeekWinners.length === 1
@@ -1059,20 +1113,88 @@ export default function LeaguePage({
             </div>
 
             {championTitleCounts.size > 0 && (
-              <div className="league-v4-title-ledger">
-                {Array.from(championTitleCounts.entries())
-                  .sort((a, b) => b[1] - a[1])
-                  .slice(0, 5)
-                  .map(([key, count]) => {
-                    const [name] = key.split('\u0000')
-                    return (
-                      <span key={key}>
+              <>
+                <div className="league-v4-title-record">
+                  <div>
+                    <span>
+                      {tr(
+                        'All-time title leader',
+                        'سەرپێشی هەمیشەیی ناونیشان',
+                      )}
+                    </span>
+                    <strong>
+                      {recordHolders
+                        .map(
+                          (entry) =>
+                            entry.publicName,
+                        )
+                        .join(' · ')}
+                    </strong>
+                  </div>
+                  <b>
+                    <Crown size={14} />
+                    ×{recordTitleCount}
+                  </b>
+                </div>
+
+                <div className="league-v4-title-ledger">
+                  {titleLeaders
+                    .slice(0, 5)
+                    .map((entry) => (
+                      <span key={entry.key}>
                         <Crown size={12} />
-                        {name}
-                        <b>×{count}</b>
+                        {entry.publicName}
+                        <b>×{entry.count}</b>
                       </span>
-                    )
-                  })}
+                    ))}
+                </div>
+              </>
+            )}
+
+            {championHistory.length > 0 && (
+              <div className="league-v4-title-history">
+                <div className="league-v4-title-history-head">
+                  <span>
+                    {tr(
+                      'Title history',
+                      'مێژووی پاڵەوانی',
+                    )}
+                  </span>
+                  <small>
+                    {tr(
+                      'Recent weekly crowns',
+                      'تاجە هەفتانە نوێیەکان',
+                    )}
+                  </small>
+                </div>
+
+                {championHistory
+                  .slice(0, 6)
+                  .map((winner) => (
+                    <div
+                      className="league-v4-title-history-row"
+                      key={`${winner.weekStart}-${winner.publicName}-${winner.avatarSeed}`}
+                    >
+                      <span className="league-v4-history-crown">
+                        <Crown size={12} />
+                      </span>
+                      <div>
+                        <strong>
+                          {winner.publicName}
+                        </strong>
+                        <small>
+                          {formatChampionWeek(
+                            winner.weekStart,
+                            language,
+                          )}
+                        </small>
+                      </div>
+                      <span>
+                        {winner.points}{' '}
+                        {tr('pts', 'خاڵ')}
+                      </span>
+                    </div>
+                  ))}
               </div>
             )}
           </section>
