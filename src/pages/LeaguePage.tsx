@@ -30,9 +30,9 @@ interface LeaguePageProps {
   displayName?: string
 }
 
-function previousWeekDate(): Date {
+function previousWeekDate(weeksAgo = 1): Date {
   const date = new Date()
-  date.setDate(date.getDate() - 7)
+  date.setDate(date.getDate() - 7 * weeksAgo)
   return date
 }
 
@@ -115,6 +115,10 @@ export default function LeaguePage({
     useState<string | null>(null)
   const [lastWeekWinners, setLastWeekWinners] =
     useState<LeagueEntry[]>([])
+  const [twoWeeksAgoWinners, setTwoWeeksAgoWinners] =
+    useState<LeagueEntry[]>([])
+  const [threeWeeksAgoWinners, setThreeWeeksAgoWinners] =
+    useState<LeagueEntry[]>([])
   const [lastMonthChampion, setLastMonthChampion] =
     useState<string | null>(null)
   const [loading, setLoading] = useState(() => Boolean(userId))
@@ -123,15 +127,29 @@ export default function LeaguePage({
 
   const loadStandings = useCallback(
     async (nextPeriod: LeaguePeriod) => {
-      const [current, lastWeek, lastMonth] = await Promise.all([
+      const [
+        current,
+        lastWeek,
+        twoWeeksAgo,
+        threeWeeksAgo,
+        lastMonth,
+      ] = await Promise.all([
         getLeaderboard(nextPeriod),
         getLeaderboard('week', previousWeekDate()),
+        getLeaderboard('week', previousWeekDate(2)),
+        getLeaderboard('week', previousWeekDate(3)),
         getLeaderboard('month', previousMonthDate()),
       ])
 
       setEntries(current)
       setLastWeekWinners(
         championEntries(lastWeek),
+      )
+      setTwoWeeksAgoWinners(
+        championEntries(twoWeeksAgo),
+      )
+      setThreeWeeksAgoWinners(
+        championEntries(threeWeeksAgo),
       )
       setLastWeekChampion(
         championLabel(
@@ -380,6 +398,112 @@ export default function LeaguePage({
       (entry) => entry.isCurrentUser,
     )
 
+  const championStreak = useMemo(() => {
+    if (lastWeekWinners.length === 0) return 0
+
+    const priorTwoNames = new Set(
+      twoWeeksAgoWinners.map(
+        (entry) => entry.publicName,
+      ),
+    )
+    const priorThreeNames = new Set(
+      threeWeeksAgoWinners.map(
+        (entry) => entry.publicName,
+      ),
+    )
+
+    return lastWeekWinners.reduce(
+      (best, winner) => {
+        const wonTwoWeeksAgo =
+          priorTwoNames.has(
+            winner.publicName,
+          )
+
+        if (!wonTwoWeeksAgo) {
+          return Math.max(best, 1)
+        }
+
+        const wonThreeWeeksAgo =
+          priorThreeNames.has(
+            winner.publicName,
+          )
+
+        return Math.max(
+          best,
+          wonThreeWeeksAgo ? 3 : 2,
+        )
+      },
+      1,
+    )
+  }, [
+    lastWeekWinners,
+    threeWeeksAgoWinners,
+    twoWeeksAgoWinners,
+  ])
+
+  const championTitle =
+    championStreak >= 3
+      ? tr(
+          '3× League Champion',
+          '٣ جار پاڵەوانی پێشبڕکێ',
+        )
+      : championStreak === 2
+        ? tr(
+            'Back-to-back Champion',
+            'دوو هەفتە بەردەوام پاڵەوان',
+          )
+        : tr(
+            'Weekly Champion',
+            'پاڵەوانی هەفتە',
+          )
+
+  const championMotivation = useMemo(() => {
+    const winnerQuotes = [
+      tr(
+        'Consistency made the crown possible. Now make it repeatable.',
+        'بەردەوامی تاجەکەی بەدەست هێنا. ئێستا دووبارەی بکەرەوە.',
+      ),
+      tr(
+        'Winning is a result. The habit that produced it is the real advantage.',
+        'بردن ئەنجامە. ئەو عادەتەی دروستی کردووە سوودی ڕاستەقینەیە.',
+      ),
+      tr(
+        'Keep the crown light: celebrate it, then get back to the work.',
+        'تاجەکە سووک بگرە: پیرۆزی بکە، پاشان بگەڕێوە بۆ کار.',
+      ),
+    ]
+
+    const challengerQuotes = [
+      tr(
+        'The crown is visible. The work to earn it starts quietly.',
+        'تاجەکە دیارە. بەڵام کار بۆ بەدەستهێنانی بە بێدەنگی دەست پێ دەکات.',
+      ),
+      tr(
+        'A fresh week is a clean scoreboard. One focused session starts the climb.',
+        'هەفتەی نوێ ڕیزبەندییەکی پاکە. یەک سێشنی سەرنجدار دەستپێکی بەرزبوونەوەیە.',
+      ),
+      tr(
+        'Do not chase the person above you. Chase a stronger version of your own week.',
+        'بەدوای کەسی سەرەوەت مەکەوە. بەدوای هەفتەیەکی بەهێزتری خۆت بکەوە.',
+      ),
+    ]
+
+    const source =
+      currentUserWonLastWeek
+        ? winnerQuotes
+        : challengerQuotes
+    const seed =
+      lastWeekWinnerNames?.length ?? 0
+
+    return source[
+      seed % source.length
+    ]
+  }, [
+    currentUserWonLastWeek,
+    lastWeekWinnerNames,
+    tr,
+  ])
+
   const lastWeekWinningPoints =
     lastWeekWinners[0]?.points ?? 0
 
@@ -437,11 +561,12 @@ export default function LeaguePage({
           </div>
 
           <div className="league-v4-champion-copy">
-            <span>
+            <span className="league-v4-champion-kicker">
               {tr(
                 "Last week's champion",
                 'پاڵەوانی هەفتەی ڕابردوو',
               )}
+              <b>{championTitle}</b>
             </span>
             <h3>
               {currentUserWonLastWeek
@@ -465,6 +590,9 @@ export default function LeaguePage({
                     'ڕیزبەندی دووبارە لە سفرەوە دەست پێ دەکات. هەفتەی نوێ هەلێکی نوێیە بۆ ئەوەی ئاگادارکردنەوەی پاڵەوانی داهاتوو بە ناوی تۆ بێت.',
                   )}
             </p>
+            <blockquote>
+              “{championMotivation}”
+            </blockquote>
           </div>
 
           <div className="league-v4-champion-result">
