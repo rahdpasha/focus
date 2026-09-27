@@ -191,3 +191,34 @@ export async function getLeagueChampionHistory(
     isCurrentUser: Boolean(row.is_current_user),
   }))
 }
+
+
+export async function getLeagueSeasonLeaderboard(
+  referenceDate = new Date(),
+): Promise<LeagueEntry[]> {
+  const client = requireSupabase()
+
+  const { data, error } = await client.rpc(
+    'get_league_season_leaderboard',
+    {
+      p_reference_date: dateOnly(referenceDate),
+    },
+  )
+
+  if (error) throw error
+
+  return ((data ?? []) as LeagueRow[]).map((row) => ({
+    rank: Number(row.rank),
+    publicName: row.public_name,
+    avatarSeed: row.avatar_seed ?? row.public_name,
+    points: Number(row.points),
+    scoredDays: Number(
+      row.scored_days ??
+      row.completed_days ??
+      0,
+    ),
+    totalMinutes: Math.floor(Number(row.total_seconds) / 60),
+    totalSeconds: Number(row.total_seconds),
+    isCurrentUser: Boolean(row.is_current_user),
+  }))
+}
