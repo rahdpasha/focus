@@ -500,6 +500,17 @@ export default function LeaguePage({
   const recordTitleCount =
     titleLeaders[0]?.count ?? 0
 
+  const currentUserChampionships =
+    championHistory.filter(
+      (winner) => winner.isCurrentUser,
+    )
+
+  const currentUserTitleCount =
+    currentUserChampionships.length
+
+  const currentUserLastTitle =
+    currentUserChampionships[0] ?? null
+
   const recordHolders = titleLeaders.filter(
     (entry) =>
       entry.count === recordTitleCount,
@@ -909,6 +920,76 @@ export default function LeaguePage({
         </div>
       </section>
 
+      {period === 'week' && entries.length > 0 && (
+        <section className="league-v4-title-race">
+          <div className="league-v4-title-race-head">
+            <div>
+              <span>{tr('Live title race', 'پێشبڕکێی ڕاستەوخۆی ناونیشان')}</span>
+              <h3>{tr('If the week ended now', 'ئەگەر هەفتەکە ئێستا کۆتایی بێت')}</h3>
+            </div>
+            <Trophy size={19} />
+          </div>
+
+          <div className="league-v4-title-race-list">
+            {entries.slice(0, 3).map((entry) => {
+              const leaderPoints =
+                entries[0]?.points ?? 0
+              const pointsBehind =
+                Math.max(
+                  0,
+                  leaderPoints - entry.points,
+                )
+
+              return (
+                <div
+                  key={`title-race-${entry.publicName}-${entry.rank}`}
+                  className={`league-v4-title-race-row ${
+                    entry.rank === 1 ? 'is-leading' : ''
+                  } ${
+                    entry.isCurrentUser ? 'is-you' : ''
+                  }`}
+                >
+                  <span className="league-v4-title-race-rank">
+                    #{entry.rank}
+                  </span>
+                  <div className="league-v4-title-race-person">
+                    <strong>
+                      {entry.publicName}
+                      {entry.isCurrentUser
+                        ? ` · ${tr('You', 'تۆ')}`
+                        : ''}
+                    </strong>
+                    <small>
+                      {championCountFor(entry) > 0
+                        ? tr(
+                            `${championCountFor(entry)} career titles`,
+                            `${championCountFor(entry)} ناونیشانی هەمیشەیی`,
+                          )
+                        : tr(
+                            'Chasing a first title',
+                            'بەدوای یەکەم ناونیشان',
+                          )}
+                    </small>
+                  </div>
+                  <div className="league-v4-title-race-score">
+                    <strong>{entry.points}</strong>
+                    <span>{tr('pts', 'خاڵ')}</span>
+                  </div>
+                  <span className="league-v4-title-race-gap">
+                    {entry.rank === 1
+                      ? tr('Leading', 'سەرپێش')
+                      : tr(
+                          `${pointsBehind} pts back`,
+                          `${pointsBehind} خاڵ دواوە`,
+                        )}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
+
       <div className="league-v4-grid">
         <section className="league-v4-board">
           <div className="league-v4-section-head">
@@ -983,6 +1064,76 @@ export default function LeaguePage({
         </section>
 
         <aside className="league-v4-side">
+          {profile.optIn && (
+            <section className="league-v4-champion-profile">
+              <div className="league-v4-champion-profile-head">
+                <div>
+                  <span>{tr('Champion profile', 'پڕۆفایلی پاڵەوان')}</span>
+                  <h3>{profile.publicName || tr('Focused learner', 'خوێنەری سەرنجدار')}</h3>
+                </div>
+                <div
+                  className={`league-v4-profile-crown tier-${championTier(
+                    currentUserTitleCount,
+                  )}`}
+                >
+                  <Crown size={18} />
+                  <strong>×{currentUserTitleCount}</strong>
+                </div>
+              </div>
+
+              <div className="league-v4-champion-profile-stats">
+                <div>
+                  <span>{tr('Titles', 'ناونیشانەکان')}</span>
+                  <strong>{currentUserTitleCount}</strong>
+                </div>
+                <div>
+                  <span>{tr('Level', 'ئاست')}</span>
+                  <strong>
+                    {currentUserTitleCount > 0
+                      ? championTierLabel(
+                          currentUserTitleCount,
+                          tr,
+                        )
+                      : tr(
+                          'First title waiting',
+                          'چاوەڕوانی یەکەم ناونیشان',
+                        )}
+                  </strong>
+                </div>
+              </div>
+
+              <div className="league-v4-champion-profile-foot">
+                {currentUserLastTitle ? (
+                  <>
+                    <Trophy size={13} />
+                    <span>
+                      {tr(
+                        `Last title: ${formatChampionWeek(
+                          currentUserLastTitle.weekStart,
+                          language,
+                        )}`,
+                        `دوا ناونیشان: ${formatChampionWeek(
+                          currentUserLastTitle.weekStart,
+                          language,
+                        )}`,
+                      )}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Target size={13} />
+                    <span>
+                      {tr(
+                        'Your first crown is still available.',
+                        'یەکەم تاجەکەت هێشتا بەردەستە.',
+                      )}
+                    </span>
+                  </>
+                )}
+              </div>
+            </section>
+          )}
+
           <section className="league-v4-command">
             <div className="league-v4-command-head">
               <div>
