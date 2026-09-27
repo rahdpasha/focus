@@ -87,6 +87,34 @@ function formatFocusedTime(
   return `${hours}${hourUnit} ${remainingMinutes}${minuteUnit}`
 }
 
+function championTier(
+  count: number,
+): 'rookie' | 'proven' | 'elite' | 'legend' {
+  if (count >= 10) return 'legend'
+  if (count >= 5) return 'elite'
+  if (count >= 3) return 'proven'
+  return 'rookie'
+}
+
+function championTierLabel(
+  count: number,
+  tr: (en: string, ku: string) => string,
+): string {
+  if (count >= 10) {
+    return tr('Legendary Champion', 'پاڵەوانی ئەفسانەیی')
+  }
+
+  if (count >= 5) {
+    return tr('Elite Champion', 'پاڵەوانی هەڵبژاردە')
+  }
+
+  if (count >= 3) {
+    return tr('Proven Champion', 'پاڵەوانی سەلمێنراو')
+  }
+
+  return tr('League Champion', 'پاڵەوانی پێشبڕکێ')
+}
+
 function championKey(
   publicName: string,
   avatarSeed: string,
@@ -844,7 +872,15 @@ export default function LeaguePage({
                 </strong>
                 {entry?.isCurrentUser && <span>{tr('You', 'تۆ')}</span>}
                 {entry && championCountFor(entry) > 0 && (
-                  <span className="league-v4-title-badge">
+                  <span
+                    className={`league-v4-title-badge tier-${championTier(
+                      championCountFor(entry),
+                    )}`}
+                    title={championTierLabel(
+                      championCountFor(entry),
+                      tr,
+                    )}
+                  >
                     <Crown size={11} />
                     ×{championCountFor(entry)}
                   </span>
@@ -914,7 +950,15 @@ export default function LeaguePage({
                       {entry.isCurrentUser ? ` · ${tr('You', 'تۆ')}` : ''}
                     </strong>
                     {championCountFor(entry) > 0 && (
-                      <span className="league-v4-title-badge">
+                      <span
+                        className={`league-v4-title-badge tier-${championTier(
+                          championCountFor(entry),
+                        )}`}
+                        title={championTierLabel(
+                          championCountFor(entry),
+                          tr,
+                        )}
+                      >
                         <Crown size={11} />
                         {tr(
                           `×${championCountFor(entry)} champion`,
@@ -1131,17 +1175,53 @@ export default function LeaguePage({
                         .join(' · ')}
                     </strong>
                   </div>
-                  <b>
+                  <b
+                    className={`tier-${championTier(
+                      recordTitleCount,
+                    )}`}
+                    title={championTierLabel(
+                      recordTitleCount,
+                      tr,
+                    )}
+                  >
                     <Crown size={14} />
                     ×{recordTitleCount}
                   </b>
+                </div>
+
+                <div className="league-v4-crown-tier-key">
+                  <span className="tier-rookie">
+                    <Crown size={11} />
+                    {tr('1–2 titles', '١–٢ ناونیشان')}
+                  </span>
+                  <span className="tier-proven">
+                    <Crown size={11} />
+                    {tr('3–4 Proven', '٣–٤ سەلمێنراو')}
+                  </span>
+                  <span className="tier-elite">
+                    <Crown size={11} />
+                    {tr('5–9 Elite', '٥–٩ هەڵبژاردە')}
+                  </span>
+                  <span className="tier-legend">
+                    <Crown size={11} />
+                    {tr('10+ Legendary', '١٠+ ئەفسانەیی')}
+                  </span>
                 </div>
 
                 <div className="league-v4-title-ledger">
                   {titleLeaders
                     .slice(0, 5)
                     .map((entry) => (
-                      <span key={entry.key}>
+                      <span
+                        key={entry.key}
+                        className={`tier-${championTier(
+                          entry.count,
+                        )}`}
+                        title={championTierLabel(
+                          entry.count,
+                          tr,
+                        )}
+                      >
                         <Crown size={12} />
                         {entry.publicName}
                         <b>×{entry.count}</b>
