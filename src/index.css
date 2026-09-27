@@ -14652,3 +14652,90 @@ textarea::placeholder {
     gap: 6px;
   }
 }
+
+
+.league-v4-hall-of-champions {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 16px;
+  background: color-mix(
+    in srgb,
+    var(--void-surface) 96%,
+    transparent
+  );
+}
+
+.league-v4-hall-list {
+  display: grid;
+  gap: 7px;
+}
+
+.league-v4-hall-row {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: center;
+  padding: 8px 9px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 10px;
+  background: color-mix(
+    in srgb,
+    var(--void-surface-hover) 54%,
+    transparent
+  );
+}
+
+.league-v4-hall-row.is-record {
+  border-color: color-mix(
+    in srgb,
+    var(--primary-glow) 34%,
+    var(--focus-hairline)
+  );
+}
+
+.league-v4-hall-rank {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.league-v4-hall-person {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.league-v4-hall-person strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.league-v4-hall-person small {
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.league-v4-hall-crowns {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 7px;
+  border: 1px solid var(--focus-hairline);
+  border-radius: 999px;
+  color: var(--primary-glow);
+  background: color-mix(
+    in srgb,
+    var(--void-surface-hover) 65%,
+    transparent
+  );
+}
+
+.league-v4-hall-crowns b {
+  color: var(--text-primary);
+  font-size: 10px;
+}
