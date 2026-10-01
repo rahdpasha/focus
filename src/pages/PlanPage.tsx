@@ -240,6 +240,9 @@ export default function PlanPage({
             advancedGoals={
               advancedGoals
             }
+            routineItems={
+              routineItems
+            }
             onDailyGoalChange={
               onDailyGoalChange
             }
