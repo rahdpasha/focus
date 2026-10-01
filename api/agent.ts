@@ -81,11 +81,11 @@ function parseJsonObject(
   const withoutFence =
     trimmed
       .replace(
-        /^\`\`\`(?:json)?\s*/i,
+        /^```(?:json)?\s*/i,
         '',
       )
       .replace(
-        /\s*\`\`\`$/,
+        /\s*```$/,
         '',
       )
 
