@@ -264,6 +264,15 @@ export default function AdvisorPage({
                     : tr('Smart local fallback', 'جێگرەوەی زیرەکی ناوخۆیی')}
                 </div>
 
+                {response.source === 'local' && (
+                  <p className="advisor-v5-provider-note">
+                    {tr(
+                      'AI is not connected yet. FOCUS is using the deterministic planner so your recommendation still comes from your real study data.',
+                      'AI هێشتا پەیوەست نەکراوە. FOCUS پلەنەری دیاریکراو بەکاردەهێنێت، بۆیە پێشنیارەکەت هەر لە داتای ڕاستەقینەی خوێندنتەوە دێت.',
+                    )}
+                  </p>
+                )}
+
                 <h3>
                   {
                     localizeUiText(language, response.headline)
