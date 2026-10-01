@@ -2,6 +2,10 @@ import { supabase } from '../api/supabaseClient'
 import type {
   AdvisorContext,
 } from './advisorContext'
+import {
+  parseAgentProposal,
+  type AgentProposal,
+} from './agentProposal.ts'
 
 export interface AiAdvisorResponse {
   source: 'ai' | 'local'
@@ -18,6 +22,7 @@ export interface AiAdvisorResponse {
     subjectName?: string
     minutes: number
   }
+  proposal?: AgentProposal
 }
 
 function getUrgentGoal(
@@ -187,6 +192,7 @@ function localFallback(
 
 function parseCandidate(
   data: unknown,
+  context: AdvisorContext,
 ): AiAdvisorResponse | null {
   if (
     !data ||
@@ -209,6 +215,16 @@ function parseCandidate(
   ) {
     return null
   }
+
+  const proposal =
+    parseAgentProposal(
+      (
+        candidate as {
+          proposal?: unknown
+        }
+      ).proposal,
+      context.subjects,
+    )
 
   return {
     source: 'ai',
@@ -239,7 +255,13 @@ function parseCandidate(
     action: {
       subjectId:
         typeof candidate.action
-          .subjectId === 'string'
+          .subjectId === 'string' &&
+        context.subjects.some(
+          (subject) =>
+            subject.id ===
+            candidate.action
+              ?.subjectId,
+        )
           ? candidate.action
               .subjectId
           : undefined,
@@ -261,6 +283,7 @@ function parseCandidate(
           ),
         ),
     },
+    proposal,
   }
 }
 
@@ -313,6 +336,7 @@ export async function askStudyAdvisor(
       const parsed =
         parseCandidate(
           data,
+          context,
         )
 
       if (parsed) {
@@ -354,6 +378,7 @@ export async function askStudyAdvisor(
       const parsed =
         parseCandidate(
           await response.json(),
+          context,
         )
 
       if (parsed) {
