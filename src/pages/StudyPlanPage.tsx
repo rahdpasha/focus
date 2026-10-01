@@ -10,6 +10,7 @@ import type {
 } from '../types'
 import type {
   AdvancedGoal,
+  RoutineItem,
 } from '../storage/types'
 import {
   getAdvancedGoalProgress,
@@ -26,6 +27,7 @@ interface StudyPlanPageProps {
   weeklyGoal: number
   dailyGoal: number
   advancedGoals: AdvancedGoal[]
+  routineItems: RoutineItem[]
   onDailyGoalChange: (value: number) => void
   onWeeklyGoalChange: (value: number) => void
   onAddAdvancedGoal: (
@@ -53,6 +55,7 @@ export default function StudyPlanPage({
   weeklyGoal,
   dailyGoal,
   advancedGoals,
+  routineItems,
   onDailyGoalChange,
   onWeeklyGoalChange,
   onAddAdvancedGoal,
@@ -132,12 +135,14 @@ export default function StudyPlanPage({
   }
 
   const plan =
-    getStudyPlan(
+    getStudyPlan({
       sessions,
       subjects,
       weeklyGoal,
       dailyGoal,
-    )
+      routineItems,
+      advancedGoals,
+    })
 
   const dailyPercent =
     Math.min(
