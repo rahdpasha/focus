@@ -5,6 +5,7 @@ import type {
 
 export interface AiAdvisorResponse {
   source: 'ai' | 'local'
+  providerStatus?: 'ready' | 'unavailable'
   headline: string
   answer: string
   reasons: string[]
@@ -163,6 +164,7 @@ function localFallback(
 
   return {
     source: 'local',
+    providerStatus: 'unavailable',
     headline,
     answer,
     reasons,
@@ -274,6 +276,7 @@ export async function askStudyAdvisor(
 
     return {
       source: 'ai',
+      providerStatus: 'ready',
       headline:
         candidate.headline,
       answer:
