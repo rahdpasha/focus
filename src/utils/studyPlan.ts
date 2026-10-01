@@ -422,11 +422,6 @@ function mergeCandidates(
 
   return Array.from(
     bySubject.values(),
-  ).map(
-    ({
-      reasons: _reasons,
-      ...candidate
-    }) => candidate,
   )
 }
 
