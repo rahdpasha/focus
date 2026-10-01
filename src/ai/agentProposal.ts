@@ -1,8 +1,12 @@
-import type { Subject } from '../types'
 import type {
   AdvancedGoal,
   RoutineItem,
 } from '../storage/types'
+
+export interface AgentProposalSubject {
+  id: string
+  name: string
+}
 
 export type AgentProposal =
   | {
@@ -89,7 +93,7 @@ function cleanText(
 
 function safeSubjectId(
   value: unknown,
-  subjects: Subject[],
+  subjects: AgentProposalSubject[],
 ): string | undefined {
   if (
     typeof value !== 'string'
@@ -109,7 +113,7 @@ function safeSubjectId(
 
 export function parseAgentProposal(
   value: unknown,
-  subjects: Subject[],
+  subjects: AgentProposalSubject[],
 ): AgentProposal | undefined {
   if (
     !value ||
