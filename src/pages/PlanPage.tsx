@@ -351,6 +351,15 @@ export default function PlanPage({
             onStartSession={
               onStartSession
             }
+            onDailyGoalChange={
+              onDailyGoalChange
+            }
+            onAddAdvancedGoal={
+              onAddAdvancedGoal
+            }
+            onAddRoutineItem={
+              onAddRoutineItem
+            }
           />
         )}
       </div>
