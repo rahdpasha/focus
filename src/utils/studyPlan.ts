@@ -71,6 +71,7 @@ export interface StudyPlanInput {
   dailyGoal?: number
   routineItems?: RoutineItem[]
   advancedGoals?: AdvancedGoal[]
+  availableMinutes?: number
   now?: Date
 }
 
@@ -435,6 +436,7 @@ function createPlan(
     dailyGoal = 60,
     routineItems = [],
     advancedGoals = [],
+    availableMinutes,
     now = new Date(),
   } = input
 
@@ -843,7 +845,25 @@ function createPlan(
         ),
     )
 
+  const explicitBudget =
+    typeof availableMinutes ===
+      "number" &&
+    Number.isFinite(
+      availableMinutes,
+    )
+      ? Math.max(
+          10,
+          Math.min(
+            240,
+            Math.round(
+              availableMinutes,
+            ),
+          ),
+        )
+      : null
+
   const planBudget =
+    explicitBudget ??
     Math.min(
       240,
       Math.max(
