@@ -297,6 +297,41 @@ export async function askStudyAdvisor(
   }
 
   try {
+    const {
+      data,
+      error,
+    } =
+      await supabase
+        .functions.invoke(
+          'study-advisor',
+          {
+            body: payload,
+          },
+        )
+
+    if (!error) {
+      const parsed =
+        parseCandidate(
+          data,
+        )
+
+      if (parsed) {
+        return parsed
+      }
+    } else {
+      console.warn(
+        'Supabase FOCUS advisor unavailable:',
+        error.message,
+      )
+    }
+  } catch (error) {
+    console.warn(
+      'Supabase FOCUS advisor request failed:',
+      error,
+    )
+  }
+
+  try {
     const response =
       await fetch(
         '/api/agent',
@@ -333,41 +368,6 @@ export async function askStudyAdvisor(
   } catch (error) {
     console.warn(
       'Vercel FOCUS agent request failed:',
-      error,
-    )
-  }
-
-  try {
-    const {
-      data,
-      error,
-    } =
-      await supabase
-        .functions.invoke(
-          'study-advisor',
-          {
-            body: payload,
-          },
-        )
-
-    if (!error) {
-      const parsed =
-        parseCandidate(
-          data,
-        )
-
-      if (parsed) {
-        return parsed
-      }
-    } else {
-      console.warn(
-        'Supabase FOCUS advisor unavailable:',
-        error.message,
-      )
-    }
-  } catch (error) {
-    console.warn(
-      'Supabase FOCUS advisor request failed:',
       error,
     )
   }
