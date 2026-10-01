@@ -3,7 +3,7 @@ import {
   getStartOfDay,
   getStartOfWeek,
   getWeeklyMinutes,
-} from './goalHistory'
+} from './goalHistory.ts'
 
 export interface SubjectInsight {
   subjectId: string
