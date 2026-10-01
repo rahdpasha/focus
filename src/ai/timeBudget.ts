@@ -63,12 +63,12 @@ export function extractStudyTimeBudget(
 
   const hourMatch =
     normalized.match(
-      /(\d+(?:\.\d+)?)\s*(?:hours?|hrs?|hr|h|کاتژمێر)/,
+      /(\d+(?:\.\d+)?)\s*(?:hours?\b|hrs?\b|hr\b|h\b|کاتژمێر)/,
     )
 
   const minuteMatch =
     normalized.match(
-      /(\d+)\s*(?:minutes?|mins?|min|m|خولەک)/,
+      /(\d+)\s*(?:minutes?\b|mins?\b|min\b|m\b|خولەک)/,
     )
 
   if (
