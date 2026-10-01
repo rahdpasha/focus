@@ -333,6 +333,7 @@ export function buildAdvisorContext(
   weeklyGoal: number,
   advancedGoals: AdvancedGoal[] = [],
   routineItems: RoutineItem[] = [],
+  availableMinutes?: number,
 ): AdvisorContext {
   const productivity =
     getProductivityInsights(
@@ -356,6 +357,7 @@ export function buildAdvisorContext(
     weeklyGoal,
     advancedGoals,
     routineItems,
+    availableMinutes,
   }
   const plan =
     getAgentTodayPlan(
