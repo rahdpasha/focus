@@ -36,6 +36,7 @@ export interface AgentToolContext {
   weeklyGoal: number
   advancedGoals: AdvancedGoal[]
   routineItems: RoutineItem[]
+  availableMinutes?: number
   now?: Date
 }
 
@@ -62,6 +63,8 @@ export function getAgentTodayPlan(
       context.advancedGoals,
     routineItems:
       context.routineItems,
+    availableMinutes:
+      context.availableMinutes,
     now: context.now,
   })
 }
