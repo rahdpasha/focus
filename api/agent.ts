@@ -263,6 +263,9 @@ export async function POST(
   const gatewayToken =
     process.env
       .AI_GATEWAY_API_KEY ||
+    request.headers.get(
+      'x-vercel-oidc-token',
+    ) ||
     process.env
       .VERCEL_OIDC_TOKEN
 
