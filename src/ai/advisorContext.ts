@@ -4,6 +4,7 @@ import type {
 } from '../types'
 import type {
   AdvancedGoal,
+  RoutineItem,
 } from '../storage/types'
 import {
   getAdvancedGoalProgress,
@@ -17,6 +18,11 @@ import {
 import {
   getStudyAdvisor,
 } from '../utils/studyAdvisor'
+import {
+  getAgentRecoverableRoutines,
+  getAgentRoutines,
+  getAgentTodayPlan,
+} from './agentTools.ts'
 
 export interface AdvisorPeriodSummary {
   days: number
@@ -50,6 +56,37 @@ export interface AdvisorContext {
     averageWeeklyMinutes: number
   }
   bestStudyTime: string | null
+  plan: {
+    totalPlannedTodayMinutes: number
+    mainPrioritySubjectId?: string
+    items: Array<{
+      subjectId: string
+      subjectName: string
+      minutes: number
+      reason: string
+      reasonCode: string
+      priority:
+        | 'high'
+        | 'medium'
+        | 'low'
+    }>
+  }
+  routines: {
+    dueToday: Array<{
+      id: string
+      title: string
+      subjectId: string
+      targetMinutes: number
+      completedMinutesToday: number
+    }>
+    recoverable: Array<{
+      itemId: string
+      title: string
+      subjectId: string
+      originalDate: string
+      remainingMinutes: number
+    }>
+  }
   periods: {
     last7: AdvisorPeriodSummary
     last30: AdvisorPeriodSummary
@@ -295,6 +332,7 @@ export function buildAdvisorContext(
   dailyGoal: number,
   weeklyGoal: number,
   advancedGoals: AdvancedGoal[] = [],
+  routineItems: RoutineItem[] = [],
 ): AdvisorContext {
   const productivity =
     getProductivityInsights(
@@ -311,6 +349,42 @@ export function buildAdvisorContext(
       subjects,
       weeklyGoal,
     )
+  const agentToolContext = {
+    sessions,
+    subjects,
+    dailyGoal,
+    weeklyGoal,
+    advancedGoals,
+    routineItems,
+  }
+  const plan =
+    getAgentTodayPlan(
+      agentToolContext,
+    )
+  const dueRoutines =
+    getAgentRoutines(
+      agentToolContext,
+    )
+      .filter(
+        (item) =>
+          item.dueToday,
+      )
+      .map((item) => ({
+        id: item.id,
+        title: item.title,
+        subjectId:
+          item.subjectId,
+        targetMinutes:
+          item.targetMinutes,
+        completedMinutesToday:
+          item.completedMinutesToday,
+      }))
+  const recoverableRoutines =
+    getAgentRecoverableRoutines(
+      agentToolContext,
+    )
+  const nextPlanItem =
+    plan.items[0]
   const todayMinutes =
     getTodayMinutes(
       sessions,
@@ -364,6 +438,35 @@ export function buildAdvisorContext(
       productivity
         .bestStudyTime?.label ??
       null,
+    plan: {
+      totalPlannedTodayMinutes:
+        plan.totalPlannedTodayMinutes,
+      mainPrioritySubjectId:
+        plan.mainPrioritySubjectId,
+      items:
+        plan.items.map(
+          (item) => ({
+            subjectId:
+              item.subjectId,
+            subjectName:
+              item.subjectName,
+            minutes:
+              item.minutes,
+            reason:
+              item.reason,
+            reasonCode:
+              item.reasonCode,
+            priority:
+              item.priority,
+          }),
+        ),
+    },
+    routines: {
+      dueToday:
+        dueRoutines,
+      recoverable:
+        recoverableRoutines,
+    },
     periods: {
       last7:
         buildPeriodSummary(
@@ -468,16 +571,26 @@ export function buildAdvisorContext(
         })),
     deterministicRecommendation: {
       subjectId:
+        nextPlanItem
+          ?.subjectId ??
         advisor.action
           .subjectId,
       subjectName:
+        nextPlanItem
+          ?.subjectName ??
         advisor.action
           .subjectName,
       minutes:
+        nextPlanItem
+          ?.minutes ??
         advisor.action.minutes,
       summary:
+        nextPlanItem
+          ?.reason ??
         advisor.summary,
       priority:
+        nextPlanItem
+          ?.priority ??
         advisor.priority,
     },
   }
