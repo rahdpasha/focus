@@ -4,15 +4,15 @@ import type {
   RoutineItem,
   RoutineSessionContext,
 } from "../storage/types"
-import { getProductivityInsights } from "./productivityInsights"
-import { getConsistencyInsights } from "./consistencyInsights"
-import { getAdvancedGoalProgress } from "./advancedGoals"
+import { getProductivityInsights } from "./productivityInsights.ts"
+import { getConsistencyInsights } from "./consistencyInsights.ts"
+import { getAdvancedGoalProgress } from "./advancedGoals.ts"
 import {
   getRecoverableRoutineOccurrences,
   getRoutineItemsForDate,
   getRoutineMinutesForDate,
   toRoutineDateKey,
-} from "./routine"
+} from "./routine.ts"
 
 export type StudyPlanReason =
   | "routine_due"
