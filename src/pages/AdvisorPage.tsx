@@ -27,6 +27,9 @@ import {
   askStudyAdvisor,
   type AiAdvisorResponse,
 } from '../ai/advisorClient'
+import {
+  extractStudyTimeBudget,
+} from '../ai/timeBudget.ts'
 
 interface AdvisorPageProps {
   sessions: StudySession[]
@@ -71,6 +74,15 @@ export default function AdvisorPage({
   const [error, setError] =
     useState('')
 
+  const availableMinutes =
+    useMemo(
+      () =>
+        extractStudyTimeBudget(
+          question,
+        ),
+      [question],
+    )
+
   const context = useMemo(
     () =>
       buildAdvisorContext(
@@ -80,9 +92,11 @@ export default function AdvisorPage({
         weeklyGoal,
         advancedGoals,
         routineItems,
+        availableMinutes,
       ),
     [
       advancedGoals,
+      availableMinutes,
       dailyGoal,
       routineItems,
       sessions,
