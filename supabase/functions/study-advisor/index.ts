@@ -288,61 +288,65 @@ Deno.serve(async (request) => {
               },
             ],
             generationConfig: {
-              responseMimeType:
-                'application/json',
-              responseSchema: {
-                type: 'OBJECT',
-                required: [
-                  'headline',
-                  'answer',
-                  'reasons',
-                  'confidence',
-                  'action',
-                ],
-                properties: {
-                  headline: {
-                    type: 'STRING',
-                  },
-                  answer: {
-                    type: 'STRING',
-                  },
-                  reasons: {
-                    type: 'ARRAY',
-                    items: {
-                      type: 'STRING',
-                    },
-                  },
-                  confidence: {
-                    type: 'STRING',
-                    enum: [
-                      'high',
-                      'medium',
-                      'low',
-                    ],
-                  },
-                  action: {
-                    type: 'OBJECT',
+              responseFormat: {
+                text: {
+                  mimeType:
+                    'application/json',
+                  schema: {
+                    type: 'object',
                     required: [
-                      'subjectId',
-                      'subjectName',
-                      'minutes',
+                      'headline',
+                      'answer',
+                      'reasons',
+                      'confidence',
+                      'action',
                     ],
                     properties: {
-                      subjectId: {
-                        type: [
-                          'STRING',
-                          'NULL',
+                      headline: {
+                        type: 'string',
+                      },
+                      answer: {
+                        type: 'string',
+                      },
+                      reasons: {
+                        type: 'array',
+                        items: {
+                          type: 'string',
+                        },
+                      },
+                      confidence: {
+                        type: 'string',
+                        enum: [
+                          'high',
+                          'medium',
+                          'low',
                         ],
                       },
-                      subjectName: {
-                        type: [
-                          'STRING',
-                          'NULL',
+                      action: {
+                        type: 'object',
+                        required: [
+                          'subjectId',
+                          'subjectName',
+                          'minutes',
                         ],
-                      },
-                      minutes: {
-                        type:
-                          'INTEGER',
+                        properties: {
+                          subjectId: {
+                            type: [
+                              'string',
+                              'null',
+                            ],
+                          },
+                          subjectName: {
+                            type: [
+                              'string',
+                              'null',
+                            ],
+                          },
+                          minutes: {
+                            type:
+                              'integer',
+                          },
+                        },
                       },
                     },
                   },
