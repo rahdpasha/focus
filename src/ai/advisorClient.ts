@@ -193,94 +193,146 @@ export async function askStudyAdvisor(
     )
   }
 
-  const { data, error } =
-    await supabase.functions.invoke(
-      'study-advisor',
-      {
-        body: {
-          question:
-            question.trim(),
-          context,
+  const {
+    data: sessionData,
+  } =
+    await supabase.auth
+      .getSession()
+
+  const accessToken =
+    sessionData.session
+      ?.access_token
+
+  if (!accessToken) {
+    return localFallback(
+      context,
+    )
+  }
+
+  try {
+    const response =
+      await fetch(
+        '/api/agent',
+        {
+          method: 'POST',
+          headers: {
+            Authorization:
+              `Bearer ${accessToken}`,
+            'Content-Type':
+              'application/json',
+          },
+          body: JSON.stringify(
+            {
+              question:
+                question.trim(),
+              context,
+            },
+          ),
         },
-      },
-    )
-
-  if (
-    error ||
-    !data ||
-    typeof data !== 'object'
-  ) {
-    return localFallback(
-      context,
-    )
-  }
-
-  const candidate =
-    data as Partial<AiAdvisorResponse>
-
-  if (
-    typeof candidate.headline !==
-      'string' ||
-    typeof candidate.answer !==
-      'string' ||
-    !candidate.action ||
-    typeof candidate.action
-      .minutes !== 'number'
-  ) {
-    return localFallback(
-      context,
-    )
-  }
-
-  return {
-    source: 'ai',
-    headline:
-      candidate.headline,
-    answer:
-      candidate.answer,
-    reasons:
-      Array.isArray(
-        candidate.reasons,
       )
-        ? candidate.reasons.filter(
-            (
-              reason,
-            ): reason is string =>
-              typeof reason ===
-              'string',
-          )
-        : [],
-    confidence:
-      candidate.confidence ===
-        'high' ||
-      candidate.confidence ===
-        'low'
-        ? candidate.confidence
-        : 'medium',
-    action: {
-      subjectId:
-        typeof candidate.action
-          .subjectId === 'string'
-          ? candidate.action
-              .subjectId
-          : undefined,
-      subjectName:
-        typeof candidate.action
-          .subjectName === 'string'
-          ? candidate.action
-              .subjectName
-          : undefined,
-      minutes:
-        Math.max(
-          10,
-          Math.min(
-            120,
-            Math.round(
-              candidate.action
-                .minutes,
+
+    if (!response.ok) {
+      console.warn(
+        'FOCUS agent request failed:',
+        response.status,
+      )
+
+      return localFallback(
+        context,
+      )
+    }
+
+    const data =
+      await response.json()
+
+    if (
+      !data ||
+      typeof data !==
+        'object'
+    ) {
+      return localFallback(
+        context,
+      )
+    }
+
+    const candidate =
+      data as Partial<AiAdvisorResponse>
+
+    if (
+      typeof candidate.headline !==
+        'string' ||
+      typeof candidate.answer !==
+        'string' ||
+      !candidate.action ||
+      typeof candidate.action
+        .minutes !== 'number'
+    ) {
+      return localFallback(
+        context,
+      )
+    }
+
+    return {
+      source: 'ai',
+      headline:
+        candidate.headline,
+      answer:
+        candidate.answer,
+      reasons:
+        Array.isArray(
+          candidate.reasons,
+        )
+          ? candidate.reasons.filter(
+              (
+                reason,
+              ): reason is string =>
+                typeof reason ===
+                'string',
+            )
+          : [],
+      confidence:
+        candidate.confidence ===
+          'high' ||
+        candidate.confidence ===
+          'low'
+          ? candidate.confidence
+          : 'medium',
+      action: {
+        subjectId:
+          typeof candidate.action
+            .subjectId ===
+            'string'
+            ? candidate.action
+                .subjectId
+            : undefined,
+        subjectName:
+          typeof candidate.action
+            .subjectName ===
+            'string'
+            ? candidate.action
+                .subjectName
+            : undefined,
+        minutes:
+          Math.max(
+            10,
+            Math.min(
+              120,
+              Math.round(
+                candidate.action
+                  .minutes,
+              ),
             ),
           ),
-        ),
-    },
+      },
+    }
+  } catch (error) {
+    console.warn(
+      'FOCUS agent unavailable:',
+      error,
+    )
+
+    return localFallback(
+      context,
+    )
   }
 }
