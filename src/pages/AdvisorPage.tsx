@@ -14,6 +14,7 @@ import type {
 } from '../types'
 import type {
   AdvancedGoal,
+  RoutineItem,
 } from '../storage/types'
 import PageContainer from './PageContainer'
 import PageHeader from '../components/layout/PageHeader'
@@ -33,6 +34,7 @@ interface AdvisorPageProps {
   dailyGoal: number
   weeklyGoal: number
   advancedGoals: AdvancedGoal[]
+  routineItems: RoutineItem[]
   onStartSession: (
     subjectId?: string,
     minutes?: number,
@@ -45,6 +47,7 @@ export default function AdvisorPage({
   dailyGoal,
   weeklyGoal,
   advancedGoals,
+  routineItems,
   onStartSession,
 }: AdvisorPageProps) {
   const { language, tr } = useI18n()
@@ -76,10 +79,12 @@ export default function AdvisorPage({
         dailyGoal,
         weeklyGoal,
         advancedGoals,
+        routineItems,
       ),
     [
       advancedGoals,
       dailyGoal,
+      routineItems,
       sessions,
       subjects,
       weeklyGoal,
