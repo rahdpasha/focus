@@ -185,6 +185,85 @@ function localFallback(
   }
 }
 
+function parseCandidate(
+  data: unknown,
+): AiAdvisorResponse | null {
+  if (
+    !data ||
+    typeof data !== 'object'
+  ) {
+    return null
+  }
+
+  const candidate =
+    data as Partial<AiAdvisorResponse>
+
+  if (
+    typeof candidate.headline !==
+      'string' ||
+    typeof candidate.answer !==
+      'string' ||
+    !candidate.action ||
+    typeof candidate.action
+      .minutes !== 'number'
+  ) {
+    return null
+  }
+
+  return {
+    source: 'ai',
+    providerStatus: 'ready',
+    headline:
+      candidate.headline,
+    answer:
+      candidate.answer,
+    reasons:
+      Array.isArray(
+        candidate.reasons,
+      )
+        ? candidate.reasons.filter(
+            (
+              reason,
+            ): reason is string =>
+              typeof reason ===
+              'string',
+          )
+        : [],
+    confidence:
+      candidate.confidence ===
+        'high' ||
+      candidate.confidence ===
+        'low'
+        ? candidate.confidence
+        : 'medium',
+    action: {
+      subjectId:
+        typeof candidate.action
+          .subjectId === 'string'
+          ? candidate.action
+              .subjectId
+          : undefined,
+      subjectName:
+        typeof candidate.action
+          .subjectName === 'string'
+          ? candidate.action
+              .subjectName
+          : undefined,
+      minutes:
+        Math.max(
+          10,
+          Math.min(
+            120,
+            Math.round(
+              candidate.action
+                .minutes,
+            ),
+          ),
+        ),
+    },
+  }
+}
+
 export async function askStudyAdvisor(
   question: string,
   context: AdvisorContext,
@@ -211,6 +290,12 @@ export async function askStudyAdvisor(
     )
   }
 
+  const payload = {
+    question:
+      question.trim(),
+    context,
+  }
+
   try {
     const response =
       await fetch(
@@ -223,119 +308,71 @@ export async function askStudyAdvisor(
             'Content-Type':
               'application/json',
           },
-          body: JSON.stringify(
-            {
-              question:
-                question.trim(),
-              context,
-            },
-          ),
+          body:
+            JSON.stringify(
+              payload,
+            ),
         },
       )
 
-    if (!response.ok) {
+    if (response.ok) {
+      const parsed =
+        parseCandidate(
+          await response.json(),
+        )
+
+      if (parsed) {
+        return parsed
+      }
+    } else {
       console.warn(
-        'FOCUS agent request failed:',
+        'Vercel FOCUS agent unavailable:',
         response.status,
       )
-
-      return localFallback(
-        context,
-      )
-    }
-
-    const data =
-      await response.json()
-
-    if (
-      !data ||
-      typeof data !==
-        'object'
-    ) {
-      return localFallback(
-        context,
-      )
-    }
-
-    const candidate =
-      data as Partial<AiAdvisorResponse>
-
-    if (
-      typeof candidate.headline !==
-        'string' ||
-      typeof candidate.answer !==
-        'string' ||
-      !candidate.action ||
-      typeof candidate.action
-        .minutes !== 'number'
-    ) {
-      return localFallback(
-        context,
-      )
-    }
-
-    return {
-      source: 'ai',
-      providerStatus: 'ready',
-      headline:
-        candidate.headline,
-      answer:
-        candidate.answer,
-      reasons:
-        Array.isArray(
-          candidate.reasons,
-        )
-          ? candidate.reasons.filter(
-              (
-                reason,
-              ): reason is string =>
-                typeof reason ===
-                'string',
-            )
-          : [],
-      confidence:
-        candidate.confidence ===
-          'high' ||
-        candidate.confidence ===
-          'low'
-          ? candidate.confidence
-          : 'medium',
-      action: {
-        subjectId:
-          typeof candidate.action
-            .subjectId ===
-            'string'
-            ? candidate.action
-                .subjectId
-            : undefined,
-        subjectName:
-          typeof candidate.action
-            .subjectName ===
-            'string'
-            ? candidate.action
-                .subjectName
-            : undefined,
-        minutes:
-          Math.max(
-            10,
-            Math.min(
-              120,
-              Math.round(
-                candidate.action
-                  .minutes,
-              ),
-            ),
-          ),
-      },
     }
   } catch (error) {
     console.warn(
-      'FOCUS agent unavailable:',
+      'Vercel FOCUS agent request failed:',
       error,
     )
+  }
 
-    return localFallback(
-      context,
+  try {
+    const {
+      data,
+      error,
+    } =
+      await supabase
+        .functions.invoke(
+          'study-advisor',
+          {
+            body: payload,
+          },
+        )
+
+    if (!error) {
+      const parsed =
+        parseCandidate(
+          data,
+        )
+
+      if (parsed) {
+        return parsed
+      }
+    } else {
+      console.warn(
+        'Supabase FOCUS advisor unavailable:',
+        error.message,
+      )
+    }
+  } catch (error) {
+    console.warn(
+      'Supabase FOCUS advisor request failed:',
+      error,
     )
   }
+
+  return localFallback(
+    context,
+  )
 }
