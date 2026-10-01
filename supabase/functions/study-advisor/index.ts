@@ -244,6 +244,9 @@ Deno.serve(async (request) => {
       'Return proposal.tool as none unless the user explicitly asks for a change or asks FOCUS to prepare a focus session.',
       'Allowed proposal tools are none, prepare_focus_session, change_daily_goal, create_goal, and create_routine.',
       'A proposal is only a draft. Never say it was applied or saved; the client requires explicit confirmation.',
+      'For change_daily_goal, put the requested daily target in proposal.minutes. targetMinutes may also mirror it.',
+      'For prepare_focus_session, put the duration in proposal.minutes and use a supplied subject ID.',
+      'For create_goal and create_routine, use proposal.targetMinutes for the target duration.',
       'For proposal fields that are not used, return empty strings or zero values while keeping the required schema shape.',
       'Recommend one next action only.',
       'Action subjectId must be one of the supplied subject IDs, or an empty string.',
@@ -583,20 +586,29 @@ Deno.serve(async (request) => {
         120,
       )
 
-    const proposalMinutes =
+    const rawProposalMinutes =
       typeof proposal
         ?.minutes ===
-      'number'
-        ? Math.min(
-            720,
-            Math.max(
-              10,
-              Math.round(
-                proposal.minutes,
-              ),
-            ),
-          )
-        : 25
+      'number' &&
+      proposal.minutes > 0
+        ? proposal.minutes
+        : typeof proposal
+              ?.targetMinutes ===
+            'number' &&
+          proposal.targetMinutes > 0
+          ? proposal.targetMinutes
+          : 25
+
+    const proposalMinutes =
+      Math.min(
+        720,
+        Math.max(
+          10,
+          Math.round(
+            rawProposalMinutes,
+          ),
+        ),
+      )
 
     const proposalTargetMinutes =
       typeof proposal
