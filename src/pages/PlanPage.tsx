@@ -345,6 +345,9 @@ export default function PlanPage({
             advancedGoals={
               advancedGoals
             }
+            routineItems={
+              routineItems
+            }
             onStartSession={
               onStartSession
             }
