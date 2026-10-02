@@ -6,6 +6,9 @@ import {
   parseAgentProposal,
   type AgentProposal,
 } from './agentProposal.ts'
+import {
+  recoverExplicitGoalUpdateProposal,
+} from './agentRecovery.ts'
 
 export interface AiAdvisorResponse {
   source: 'ai' | 'local'
@@ -193,6 +196,7 @@ function localFallback(
 function parseCandidate(
   data: unknown,
   context: AdvisorContext,
+  question = '',
 ): AiAdvisorResponse | null {
   if (
     !data ||
@@ -216,7 +220,7 @@ function parseCandidate(
     return null
   }
 
-  const proposal =
+  const parsedProposal =
     parseAgentProposal(
       (
         candidate as {
@@ -263,6 +267,13 @@ function parseCandidate(
             context.generatedAt,
         }),
       ),
+    )
+
+  const proposal =
+    parsedProposal ??
+    recoverExplicitGoalUpdateProposal(
+      question,
+      context,
     )
 
   return {
@@ -376,6 +387,7 @@ export async function askStudyAdvisor(
         parseCandidate(
           data,
           context,
+          question,
         )
 
       if (parsed) {
@@ -418,6 +430,7 @@ export async function askStudyAdvisor(
         parseCandidate(
           await response.json(),
           context,
+          question,
         )
 
       if (parsed) {
