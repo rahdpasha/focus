@@ -62,6 +62,14 @@ interface AdvisorPageProps {
     daysOfWeek?: number[],
     recoveryDays?: number,
   ) => void
+  onUpdateAdvancedGoal: (
+    id: string,
+    patch: Partial<Omit<AdvancedGoal, 'id' | 'createdAt'>>,
+  ) => void
+  onUpdateRoutineItem: (
+    id: string,
+    patch: Partial<Omit<RoutineItem, 'id' | 'createdAt'>>,
+  ) => void
 }
 
 export default function AdvisorPage({
@@ -75,6 +83,8 @@ export default function AdvisorPage({
   onDailyGoalChange,
   onAddAdvancedGoal,
   onAddRoutineItem,
+  onUpdateAdvancedGoal,
+  onUpdateRoutineItem,
 }: AdvisorPageProps) {
   const { language, tr } = useI18n()
   const quickPrompts = [
@@ -222,9 +232,29 @@ export default function AdvisorPage({
       )
     }
 
+    if (
+      proposal.tool ===
+      'create_routine'
+    ) {
+      return tr(
+        `Create routine “${proposal.title}” for ${proposal.targetMinutes} minutes.`,
+        `ڕوتینی “${proposal.title}” دروست بکە بۆ ${proposal.targetMinutes} خولەک.`,
+      )
+    }
+
+    if (
+      proposal.tool ===
+      'update_goal'
+    ) {
+      return tr(
+        `Update goal “${proposal.title}”.`,
+        `ئامانجی “${proposal.title}” نوێ بکەرەوە.`,
+      )
+    }
+
     return tr(
-      `Create routine “${proposal.title}” for ${proposal.targetMinutes} minutes.`,
-      `ڕوتینی “${proposal.title}” دروست بکە بۆ ${proposal.targetMinutes} خولەک.`,
+      `Update routine “${proposal.title}”.`,
+      `ڕوتینی “${proposal.title}” نوێ بکەرەوە.`,
     )
   }
 
@@ -243,6 +273,8 @@ export default function AdvisorPage({
         onDailyGoalChange,
         onAddAdvancedGoal,
         onAddRoutineItem,
+        onUpdateAdvancedGoal,
+        onUpdateRoutineItem,
       },
     )
 
