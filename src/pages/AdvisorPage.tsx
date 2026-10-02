@@ -14,6 +14,7 @@ import type {
 } from '../types'
 import type {
   AdvancedGoal,
+  RoutineItem,
 } from '../storage/types'
 import PageContainer from './PageContainer'
 import PageHeader from '../components/layout/PageHeader'
@@ -26,6 +27,13 @@ import {
   askStudyAdvisor,
   type AiAdvisorResponse,
 } from '../ai/advisorClient'
+import {
+  executeAgentProposal,
+  type AgentProposal,
+} from '../ai/agentProposal.ts'
+import {
+  extractStudyTimeBudget,
+} from '../ai/timeBudget.ts'
 
 interface AdvisorPageProps {
   sessions: StudySession[]
@@ -33,9 +41,34 @@ interface AdvisorPageProps {
   dailyGoal: number
   weeklyGoal: number
   advancedGoals: AdvancedGoal[]
+  routineItems: RoutineItem[]
   onStartSession: (
     subjectId?: string,
     minutes?: number,
+  ) => void
+  onDailyGoalChange: (value: number) => void
+  onAddAdvancedGoal: (
+    title: string,
+    targetMinutes: number,
+    deadline: string,
+    priority: AdvancedGoal['priority'],
+    subjectId?: string,
+  ) => void
+  onAddRoutineItem: (
+    title: string,
+    subjectId: string,
+    targetMinutes: number,
+    mode: RoutineItem['mode'],
+    daysOfWeek?: number[],
+    recoveryDays?: number,
+  ) => void
+  onUpdateAdvancedGoal: (
+    id: string,
+    patch: Partial<Omit<AdvancedGoal, 'id' | 'createdAt'>>,
+  ) => void
+  onUpdateRoutineItem: (
+    id: string,
+    patch: Partial<Omit<RoutineItem, 'id' | 'createdAt'>>,
   ) => void
 }
 
@@ -45,7 +78,13 @@ export default function AdvisorPage({
   dailyGoal,
   weeklyGoal,
   advancedGoals,
+  routineItems,
   onStartSession,
+  onDailyGoalChange,
+  onAddAdvancedGoal,
+  onAddRoutineItem,
+  onUpdateAdvancedGoal,
+  onUpdateRoutineItem,
 }: AdvisorPageProps) {
   const { language, tr } = useI18n()
   const quickPrompts = [
@@ -67,6 +106,19 @@ export default function AdvisorPage({
     useState(false)
   const [error, setError] =
     useState('')
+  const [
+    proposalNotice,
+    setProposalNotice,
+  ] = useState('')
+
+  const availableMinutes =
+    useMemo(
+      () =>
+        extractStudyTimeBudget(
+          question,
+        ),
+      [question],
+    )
 
   const context = useMemo(
     () =>
@@ -76,10 +128,14 @@ export default function AdvisorPage({
         dailyGoal,
         weeklyGoal,
         advancedGoals,
+        routineItems,
+        availableMinutes,
       ),
     [
       advancedGoals,
+      availableMinutes,
       dailyGoal,
+      routineItems,
       sessions,
       subjects,
       weeklyGoal,
@@ -91,6 +147,7 @@ export default function AdvisorPage({
 
     setLoading(true)
     setError('')
+    setProposalNotice('')
 
     try {
       const next =
@@ -132,6 +189,126 @@ export default function AdvisorPage({
     onStartSession(
       validSubjectId,
       response.action.minutes,
+    )
+  }
+
+  const proposalDescription = (
+    proposal: AgentProposal,
+  ) => {
+    if (
+      proposal.tool ===
+      'prepare_focus_session'
+    ) {
+      const subject =
+        subjects.find(
+          (item) =>
+            item.id ===
+            proposal.subjectId,
+        )
+
+      return tr(
+        `Prepare a ${proposal.minutes}-minute focus session${subject ? ` for ${subject.name}` : ''}.`,
+        `${proposal.minutes} خولەک سێشنی فوکەس ئامادە بکە${subject ? ` بۆ ${subject.name}` : ''}.`,
+      )
+    }
+
+    if (
+      proposal.tool ===
+      'change_daily_goal'
+    ) {
+      return tr(
+        `Change your daily goal to ${proposal.minutes} minutes.`,
+        `ئامانجی ڕۆژانەت بگۆڕە بۆ ${proposal.minutes} خولەک.`,
+      )
+    }
+
+    if (
+      proposal.tool ===
+      'create_goal'
+    ) {
+      return tr(
+        `Create goal “${proposal.title}” for ${proposal.targetMinutes} minutes.`,
+        `ئامانجی “${proposal.title}” دروست بکە بۆ ${proposal.targetMinutes} خولەک.`,
+      )
+    }
+
+    if (
+      proposal.tool ===
+      'create_routine'
+    ) {
+      return tr(
+        `Create routine “${proposal.title}” for ${proposal.targetMinutes} minutes.`,
+        `ڕوتینی “${proposal.title}” دروست بکە بۆ ${proposal.targetMinutes} خولەک.`,
+      )
+    }
+
+    if (
+      proposal.tool ===
+      'update_goal'
+    ) {
+      return tr(
+        `Update goal “${proposal.title}”.`,
+        `ئامانجی “${proposal.title}” نوێ بکەرەوە.`,
+      )
+    }
+
+    return tr(
+      `Update routine “${proposal.title}”.`,
+      `ڕوتینی “${proposal.title}” نوێ بکەرەوە.`,
+    )
+  }
+
+  const confirmProposal = () => {
+    if (!response?.proposal) {
+      return
+    }
+
+    const proposal =
+      response.proposal
+
+    executeAgentProposal(
+      proposal,
+      {
+        onStartSession,
+        onDailyGoalChange,
+        onAddAdvancedGoal,
+        onAddRoutineItem,
+        onUpdateAdvancedGoal,
+        onUpdateRoutineItem,
+      },
+    )
+
+    if (
+      proposal.tool !==
+      'prepare_focus_session'
+    ) {
+      setResponse({
+        ...response,
+        proposal: undefined,
+      })
+      setProposalNotice(
+        tr(
+          'Applied in FOCUS. Normal sync rules will handle cloud saving.',
+          'لە FOCUS جێبەجێ کرا. یاساکانی ئاسایی هاوکاتکردن پاشەکەوتکردنی کلاود بەڕێوە دەبەن.',
+        ),
+      )
+    }
+  }
+
+  const cancelProposal = () => {
+    if (!response?.proposal) {
+      return
+    }
+
+    setResponse({
+      ...response,
+      proposal: undefined,
+    })
+    setProposalNotice(
+      tr(
+        'Proposal cancelled. Nothing was changed.',
+        'پێشنیارەکە هەڵوەشایەوە. هیچ شتێک نەگۆڕدرا.',
+      ),
     )
   }
 
@@ -245,6 +422,15 @@ export default function AdvisorPage({
                     : tr('Smart local fallback', 'جێگرەوەی زیرەکی ناوخۆیی')}
                 </div>
 
+                {response.source === 'local' && (
+                  <p className="advisor-v5-provider-note">
+                    {tr(
+                      'AI is not connected yet. FOCUS is using the deterministic planner so your recommendation still comes from your real study data.',
+                      'AI هێشتا پەیوەست نەکراوە. FOCUS پلەنەری دیاریکراو بەکاردەهێنێت، بۆیە پێشنیارەکەت هەر لە داتای ڕاستەقینەی خوێندنتەوە دێت.',
+                    )}
+                  </p>
+                )}
+
                 <h3>
                   {
                     localizeUiText(language, response.headline)
@@ -294,6 +480,63 @@ export default function AdvisorPage({
                     size={16}
                   />
                 </button>
+
+                {response.proposal && (
+                  <div className="advisor-proposal-card">
+                    <div className="advisor-proposal-kicker">
+                      {tr(
+                        'FOCUS proposes a change',
+                        'FOCUS پێشنیاری گۆڕانکارییەک دەکات',
+                      )}
+                    </div>
+
+                    <strong>
+                      {proposalDescription(
+                        response.proposal,
+                      )}
+                    </strong>
+
+                    <p>
+                      {tr(
+                        'Nothing changes until you confirm.',
+                        'هیچ شتێک ناگۆڕێت تا خۆت پشتڕاستی نەکەیتەوە.',
+                      )}
+                    </p>
+
+                    <div className="advisor-proposal-actions">
+                      <button
+                        type="button"
+                        className="cyber-btn"
+                        onClick={
+                          confirmProposal
+                        }
+                      >
+                        {tr(
+                          'Confirm',
+                          'پشتڕاستکردنەوە',
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={
+                          cancelProposal
+                        }
+                      >
+                        {tr(
+                          'Cancel',
+                          'هەڵوەشاندنەوە',
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {proposalNotice && (
+                  <p className="advisor-proposal-notice">
+                    {proposalNotice}
+                  </p>
+                )}
               </div>
             )}
           </div>

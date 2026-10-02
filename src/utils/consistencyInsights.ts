@@ -2,7 +2,7 @@ import type { StudySession } from '../types'
 import {
   getStartOfWeek,
   getWeeklyMinutes,
-} from './goalHistory'
+} from './goalHistory.ts'
 
 export type ConsistencyTrend =
   | 'improving'

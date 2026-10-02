@@ -2,9 +2,18 @@ import { supabase } from '../api/supabaseClient'
 import type {
   AdvisorContext,
 } from './advisorContext'
+import {
+  parseAgentProposal,
+  type AgentProposal,
+} from './agentProposal.ts'
+import {
+  recoverExplicitGoalUpdateProposal,
+  recoverExplicitRoutineUpdateProposal,
+} from './agentRecovery.ts'
 
 export interface AiAdvisorResponse {
   source: 'ai' | 'local'
+  providerStatus?: 'ready' | 'unavailable'
   headline: string
   answer: string
   reasons: string[]
@@ -17,6 +26,7 @@ export interface AiAdvisorResponse {
     subjectName?: string
     minutes: number
   }
+  proposal?: AgentProposal
 }
 
 function getUrgentGoal(
@@ -163,6 +173,7 @@ function localFallback(
 
   return {
     source: 'local',
+    providerStatus: 'unavailable',
     headline,
     answer,
     reasons,
@@ -183,36 +194,16 @@ function localFallback(
   }
 }
 
-export async function askStudyAdvisor(
-  question: string,
+function parseCandidate(
+  data: unknown,
   context: AdvisorContext,
-): Promise<AiAdvisorResponse> {
-  if (!supabase) {
-    return localFallback(
-      context,
-    )
-  }
-
-  const { data, error } =
-    await supabase.functions.invoke(
-      'study-advisor',
-      {
-        body: {
-          question:
-            question.trim(),
-          context,
-        },
-      },
-    )
-
+  question = '',
+): AiAdvisorResponse | null {
   if (
-    error ||
     !data ||
     typeof data !== 'object'
   ) {
-    return localFallback(
-      context,
-    )
+    return null
   }
 
   const candidate =
@@ -227,13 +218,72 @@ export async function askStudyAdvisor(
     typeof candidate.action
       .minutes !== 'number'
   ) {
-    return localFallback(
+    return null
+  }
+
+  const parsedProposal =
+    parseAgentProposal(
+      (
+        candidate as {
+          proposal?: unknown
+        }
+      ).proposal,
+      context.subjects,
+      context.advancedGoals.map(
+        (goal) => ({
+          id: goal.id,
+          title: goal.title,
+          subjectId:
+            goal.subjectId,
+          targetMinutes:
+            goal.targetMinutes,
+          deadline:
+            goal.deadline,
+          priority:
+            goal.priority,
+          status:
+            goal.status,
+          createdAt:
+            context.generatedAt,
+        }),
+      ),
+      context.routines.all.map(
+        (routine) => ({
+          id: routine.id,
+          title:
+            routine.title,
+          subjectId:
+            routine.subjectId,
+          targetMinutes:
+            routine.targetMinutes,
+          mode: routine.mode,
+          rotationOrder: 0,
+          daysOfWeek:
+            routine.daysOfWeek,
+          recoveryDays:
+            routine.recoveryDays,
+          enabled:
+            routine.enabled,
+          createdAt:
+            context.generatedAt,
+        }),
+      ),
+    )
+
+  const proposal =
+    parsedProposal ??
+    recoverExplicitGoalUpdateProposal(
+      question,
+      context,
+    ) ??
+    recoverExplicitRoutineUpdateProposal(
+      question,
       context,
     )
-  }
 
   return {
     source: 'ai',
+    providerStatus: 'ready',
     headline:
       candidate.headline,
     answer:
@@ -260,7 +310,13 @@ export async function askStudyAdvisor(
     action: {
       subjectId:
         typeof candidate.action
-          .subjectId === 'string'
+          .subjectId === 'string' &&
+        context.subjects.some(
+          (subject) =>
+            subject.id ===
+            candidate.action
+              ?.subjectId,
+        )
           ? candidate.action
               .subjectId
           : undefined,
@@ -282,5 +338,123 @@ export async function askStudyAdvisor(
           ),
         ),
     },
+    proposal,
   }
+}
+
+export async function askStudyAdvisor(
+  question: string,
+  context: AdvisorContext,
+): Promise<AiAdvisorResponse> {
+  if (!supabase) {
+    return localFallback(
+      context,
+    )
+  }
+
+  const {
+    data: sessionData,
+  } =
+    await supabase.auth
+      .getSession()
+
+  const accessToken =
+    sessionData.session
+      ?.access_token
+
+  if (!accessToken) {
+    return localFallback(
+      context,
+    )
+  }
+
+  const payload = {
+    question:
+      question.trim(),
+    context,
+  }
+
+  try {
+    const {
+      data,
+      error,
+    } =
+      await supabase
+        .functions.invoke(
+          'study-advisor',
+          {
+            body: payload,
+          },
+        )
+
+    if (!error) {
+      const parsed =
+        parseCandidate(
+          data,
+          context,
+          question,
+        )
+
+      if (parsed) {
+        return parsed
+      }
+    } else {
+      console.warn(
+        'Supabase FOCUS advisor unavailable:',
+        error.message,
+      )
+    }
+  } catch (error) {
+    console.warn(
+      'Supabase FOCUS advisor request failed:',
+      error,
+    )
+  }
+
+  try {
+    const response =
+      await fetch(
+        '/api/agent',
+        {
+          method: 'POST',
+          headers: {
+            Authorization:
+              `Bearer ${accessToken}`,
+            'Content-Type':
+              'application/json',
+          },
+          body:
+            JSON.stringify(
+              payload,
+            ),
+        },
+      )
+
+    if (response.ok) {
+      const parsed =
+        parseCandidate(
+          await response.json(),
+          context,
+          question,
+        )
+
+      if (parsed) {
+        return parsed
+      }
+    } else {
+      console.warn(
+        'Vercel FOCUS agent unavailable:',
+        response.status,
+      )
+    }
+  } catch (error) {
+    console.warn(
+      'Vercel FOCUS agent request failed:',
+      error,
+    )
+  }
+
+  return localFallback(
+    context,
+  )
 }
