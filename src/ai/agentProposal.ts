@@ -35,6 +35,27 @@ export type AgentProposal =
       daysOfWeek: number[]
       recoveryDays: number
     }
+  | {
+      tool: 'update_goal'
+      targetId: string
+      title: string
+      subjectId?: string
+      targetMinutes: number
+      deadline: string
+      priority: AdvancedGoal['priority']
+      status: AdvancedGoal['status']
+    }
+  | {
+      tool: 'update_routine'
+      targetId: string
+      title: string
+      subjectId: string
+      targetMinutes: number
+      mode: RoutineItem['mode']
+      daysOfWeek: number[]
+      recoveryDays: number
+      enabled: boolean
+    }
 
 export interface AgentProposalHandlers {
   onStartSession: (
@@ -58,6 +79,14 @@ export interface AgentProposalHandlers {
     mode: RoutineItem['mode'],
     daysOfWeek?: number[],
     recoveryDays?: number,
+  ) => void
+  onUpdateAdvancedGoal: (
+    id: string,
+    patch: Partial<Omit<AdvancedGoal, 'id' | 'createdAt'>>,
+  ) => void
+  onUpdateRoutineItem: (
+    id: string,
+    patch: Partial<Omit<RoutineItem, 'id' | 'createdAt'>>,
   ) => void
 }
 
@@ -114,6 +143,8 @@ function safeSubjectId(
 export function parseAgentProposal(
   value: unknown,
   subjects: AgentProposalSubject[],
+  goals: AdvancedGoal[] = [],
+  routines: RoutineItem[] = [],
 ): AgentProposal | undefined {
   if (
     !value ||
@@ -252,6 +283,205 @@ export function parseAgentProposal(
 
   if (
     tool ===
+    'update_goal'
+  ) {
+    const targetId =
+      cleanText(
+        candidate.targetId,
+        120,
+      )
+    const existing =
+      goals.find(
+        (goal) =>
+          goal.id === targetId,
+      )
+
+    if (!existing) {
+      return undefined
+    }
+
+    const title =
+      cleanText(
+        candidate.title,
+        120,
+      ) || existing.title
+    const targetMinutes =
+      clampMinutes(
+        candidate.targetMinutes,
+        10,
+        10_080,
+      ) ??
+      existing.targetMinutes
+    const deadlineText =
+      cleanText(
+        candidate.deadline,
+        80,
+      ) || existing.deadline
+    const deadline =
+      new Date(
+        deadlineText,
+      )
+    const priority =
+      candidate.priority ===
+        'high' ||
+      candidate.priority ===
+        'low'
+        ? candidate.priority
+        : candidate.priority ===
+            'medium'
+          ? 'medium'
+          : existing.priority
+    const requestedSubject =
+      cleanText(
+        candidate.subjectId,
+        120,
+      )
+    const subjectId =
+      requestedSubject
+        ? safeSubjectId(
+            requestedSubject,
+            subjects,
+          )
+        : undefined
+    const status =
+      candidate.status ===
+      'completed'
+        ? 'completed'
+        : candidate.status ===
+            'active'
+          ? 'active'
+          : existing.status
+
+    if (
+      Number.isNaN(
+        deadline.getTime(),
+      ) ||
+      (
+        requestedSubject &&
+        !subjectId
+      )
+    ) {
+      return undefined
+    }
+
+    return {
+      tool,
+      targetId,
+      title,
+      subjectId,
+      targetMinutes,
+      deadline:
+        deadline.toISOString(),
+      priority,
+      status,
+    }
+  }
+
+  if (
+    tool ===
+    'update_routine'
+  ) {
+    const targetId =
+      cleanText(
+        candidate.targetId,
+        120,
+      )
+    const existing =
+      routines.find(
+        (routine) =>
+          routine.id === targetId,
+      )
+
+    if (!existing) {
+      return undefined
+    }
+
+    const title =
+      cleanText(
+        candidate.title,
+        120,
+      ) || existing.title
+    const requestedSubject =
+      cleanText(
+        candidate.subjectId,
+        120,
+      ) || existing.subjectId
+    const subjectId =
+      safeSubjectId(
+        requestedSubject,
+        subjects,
+      )
+    const targetMinutes =
+      clampMinutes(
+        candidate.targetMinutes,
+        10,
+        720,
+      ) ??
+      existing.targetMinutes
+    const mode =
+      candidate.mode ===
+      'rotation'
+        ? 'rotation'
+        : candidate.mode ===
+            'fixed'
+          ? 'fixed'
+          : existing.mode
+    const daysOfWeek =
+      Array.isArray(
+        candidate.daysOfWeek,
+      )
+        ? Array.from(
+            new Set(
+              candidate.daysOfWeek.filter(
+                (
+                  day,
+                ): day is number =>
+                  typeof day ===
+                    'number' &&
+                  Number.isInteger(
+                    day,
+                  ) &&
+                  day >= 0 &&
+                  day <= 6,
+              ),
+            ),
+          )
+        : [...existing.daysOfWeek]
+    const recoveryDays =
+      clampMinutes(
+        candidate.recoveryDays,
+        0,
+        3,
+      ) ??
+      existing.recoveryDays
+    const enabled =
+      typeof candidate.enabled ===
+      'boolean'
+        ? candidate.enabled
+        : existing.enabled
+
+    if (!subjectId) {
+      return undefined
+    }
+
+    return {
+      tool,
+      targetId,
+      title,
+      subjectId,
+      targetMinutes,
+      mode,
+      daysOfWeek:
+        daysOfWeek.length > 0
+          ? daysOfWeek
+          : [...existing.daysOfWeek],
+      recoveryDays,
+      enabled,
+    }
+  }
+
+  if (
+    tool ===
     'create_routine'
   ) {
     const title =
@@ -378,12 +608,59 @@ export function executeAgentProposal(
     return
   }
 
-  handlers.onAddRoutineItem(
-    proposal.title,
-    proposal.subjectId,
-    proposal.targetMinutes,
-    proposal.mode,
-    proposal.daysOfWeek,
-    proposal.recoveryDays,
+  if (
+    proposal.tool ===
+    'create_routine'
+  ) {
+    handlers.onAddRoutineItem(
+      proposal.title,
+      proposal.subjectId,
+      proposal.targetMinutes,
+      proposal.mode,
+      proposal.daysOfWeek,
+      proposal.recoveryDays,
+    )
+    return
+  }
+
+  if (
+    proposal.tool ===
+    'update_goal'
+  ) {
+    handlers.onUpdateAdvancedGoal(
+      proposal.targetId,
+      {
+        title: proposal.title,
+        subjectId:
+          proposal.subjectId,
+        targetMinutes:
+          proposal.targetMinutes,
+        deadline:
+          proposal.deadline,
+        priority:
+          proposal.priority,
+        status:
+          proposal.status,
+      },
+    )
+    return
+  }
+
+  handlers.onUpdateRoutineItem(
+    proposal.targetId,
+    {
+      title: proposal.title,
+      subjectId:
+        proposal.subjectId,
+      targetMinutes:
+        proposal.targetMinutes,
+      mode: proposal.mode,
+      daysOfWeek:
+        proposal.daysOfWeek,
+      recoveryDays:
+        proposal.recoveryDays,
+      enabled:
+        proposal.enabled,
+    },
   )
 }
