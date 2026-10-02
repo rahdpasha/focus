@@ -330,6 +330,7 @@ Deno.serve(async (request) => {
       'Return proposal.tool as none unless the user explicitly asks for a change or asks FOCUS to prepare a focus session.',
       'Allowed proposal tools are none, prepare_focus_session, change_daily_goal, create_goal, create_routine, update_goal, and update_routine.',
       'A proposal is only a draft. Never say it was applied or saved; the client requires explicit confirmation.',
+      'For update_goal and update_routine, targetId must exactly match an existing ID in the supplied facts and the proposal must contain the complete desired editable state.',
       'For change_daily_goal, put the requested daily target in proposal.minutes. targetMinutes may also mirror it.',
       'For prepare_focus_session, put the duration in proposal.minutes and use a supplied subject ID.',
       'For create_goal and create_routine, use proposal.targetMinutes for the target duration.',
