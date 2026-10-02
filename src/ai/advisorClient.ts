@@ -8,6 +8,7 @@ import {
 } from './agentProposal.ts'
 import {
   recoverExplicitGoalUpdateProposal,
+  recoverExplicitRoutineUpdateProposal,
 } from './agentRecovery.ts'
 
 export interface AiAdvisorResponse {
@@ -272,6 +273,10 @@ function parseCandidate(
   const proposal =
     parsedProposal ??
     recoverExplicitGoalUpdateProposal(
+      question,
+      context,
+    ) ??
+    recoverExplicitRoutineUpdateProposal(
       question,
       context,
     )
