@@ -220,45 +220,66 @@ Deno.serve(async (request) => {
       ),
     )
 
+  const contextGoals =
+    Array.isArray(
+      (
+        body.context as {
+          advancedGoals?: unknown
+        }
+      ).advancedGoals,
+    )
+      ? (
+          (
+            body.context as {
+              advancedGoals: unknown[]
+            }
+          ).advancedGoals
+        )
+          .filter(
+            (
+              goal,
+            ): goal is {
+              id: string
+              title: string
+              subjectId?: string
+            } =>
+              Boolean(
+                goal &&
+                  typeof goal ===
+                    'object' &&
+                  typeof (
+                    goal as {
+                      id?: unknown
+                    }
+                  ).id ===
+                    'string' &&
+                  typeof (
+                    goal as {
+                      title?: unknown
+                    }
+                  ).title ===
+                    'string',
+              ),
+          )
+          .map((goal) => ({
+            id:
+              goal.id,
+            title:
+              goal.title,
+            subjectId:
+              typeof goal.subjectId ===
+                'string'
+                ? goal.subjectId
+                : '',
+          }))
+      : []
+
   const goalIds =
     new Set(
-      Array.isArray(
-        (
-          body.context as {
-            advancedGoals?: unknown
-          }
-        ).advancedGoals,
-      )
-        ? (
-            (
-              body.context as {
-                advancedGoals: unknown[]
-              }
-            ).advancedGoals
-          )
-            .filter(
-              (goal) =>
-                Boolean(
-                  goal &&
-                    typeof goal ===
-                      'object' &&
-                    typeof (
-                      goal as {
-                        id?: unknown
-                      }
-                    ).id ===
-                      'string',
-                ),
-            )
-            .map(
-              (goal) =>
-                (
-                  goal as {
-                    id: string
-                  }
-                ).id,
-            )
-        : [],
+      contextGoals.map(
+        (goal) =>
+          goal.id,
+      ),
     )
 
   const routineIds =
@@ -694,11 +715,44 @@ Deno.serve(async (request) => {
         120,
       )
 
-    const proposalTargetId =
+    const requestedProposalTargetId =
       cleanText(
         proposal?.targetId,
         120,
       )
+
+    const titleMatch =
+      proposalTitle
+        ? contextGoals.filter(
+            (goal) =>
+              goal.title
+                .trim()
+                .toLowerCase() ===
+              proposalTitle
+                .trim()
+                .toLowerCase(),
+          )
+        : []
+
+    const subjectGoalMatches =
+      safeProposalSubjectId
+        ? contextGoals.filter(
+            (goal) =>
+              goal.subjectId ===
+              safeProposalSubjectId,
+          )
+        : []
+
+    const proposalTargetId =
+      goalIds.has(
+        requestedProposalTargetId,
+      )
+        ? requestedProposalTargetId
+        : titleMatch.length === 1
+          ? titleMatch[0].id
+          : subjectGoalMatches.length === 1
+            ? subjectGoalMatches[0].id
+            : requestedProposalTargetId
 
     const proposalStatus =
       proposal?.status ===
