@@ -693,6 +693,25 @@ Deno.serve(async (request) => {
         120,
       )
 
+    const proposalTargetId =
+      cleanText(
+        proposal?.targetId,
+        120,
+      )
+
+    const proposalStatus =
+      proposal?.status ===
+      'completed'
+        ? 'completed'
+        : 'active'
+
+    const proposalEnabled =
+      typeof proposal
+        ?.enabled ===
+      'boolean'
+        ? proposal.enabled
+        : true
+
     const rawProposalMinutes =
       typeof proposal
         ?.minutes ===
@@ -826,7 +845,29 @@ Deno.serve(async (request) => {
                 proposalTitle &&
                 safeProposalSubjectId
               ? requestedProposalTool
-              : 'none'
+              : requestedProposalTool ===
+                    'update_goal' &&
+                  proposalTargetId &&
+                  goalIds.has(
+                    proposalTargetId,
+                  ) &&
+                  proposalTitle &&
+                  proposalDeadlineValid &&
+                  (
+                    !requestedProposalSubjectId ||
+                    safeProposalSubjectId
+                  )
+                ? requestedProposalTool
+                : requestedProposalTool ===
+                      'update_routine' &&
+                    proposalTargetId &&
+                    routineIds.has(
+                      proposalTargetId,
+                    ) &&
+                    proposalTitle &&
+                    safeProposalSubjectId
+                  ? requestedProposalTool
+                  : 'none'
 
     return json({
       headline:
@@ -858,6 +899,8 @@ Deno.serve(async (request) => {
       proposal: {
         tool:
           proposalTool,
+        targetId:
+          proposalTargetId,
         title:
           proposalTitle,
         subjectId:
@@ -887,6 +930,10 @@ Deno.serve(async (request) => {
               ],
         recoveryDays:
           proposalRecoveryDays,
+        status:
+          proposalStatus,
+        enabled:
+          proposalEnabled,
       },
     })
   } catch {
