@@ -352,6 +352,7 @@ Deno.serve(async (request) => {
                     type: 'OBJECT',
                     required: [
                       'tool',
+                      'targetId',
                       'title',
                       'subjectId',
                       'minutes',
@@ -361,6 +362,8 @@ Deno.serve(async (request) => {
                       'mode',
                       'daysOfWeek',
                       'recoveryDays',
+                      'status',
+                      'enabled',
                     ],
                     properties: {
                       tool: {
@@ -374,6 +377,9 @@ Deno.serve(async (request) => {
                           'update_goal',
                           'update_routine',
                         ],
+                      },
+                      targetId: {
+                        type: 'STRING',
                       },
                       title: {
                         type: 'STRING',
@@ -413,6 +419,16 @@ Deno.serve(async (request) => {
                       },
                       recoveryDays: {
                         type: 'INTEGER',
+                      },
+                      status: {
+                        type: 'STRING',
+                        enum: [
+                          'active',
+                          'completed',
+                        ],
+                      },
+                      enabled: {
+                        type: 'BOOLEAN',
                       },
                     },
                   },
