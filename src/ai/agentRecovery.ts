@@ -143,3 +143,129 @@ export function recoverExplicitGoalUpdateProposal(
     ),
   )
 }
+
+
+export function recoverExplicitRoutineUpdateProposal(
+  question: string,
+  context: AdvisorContext,
+): AgentProposal | undefined {
+  const normalizedQuestion =
+    normalize(question)
+
+  if (
+    !/\b(change|update|set)\b/.test(
+      normalizedQuestion,
+    )
+  ) {
+    return undefined
+  }
+
+  const requestedMinutes =
+    extractMinutes(question)
+
+  if (requestedMinutes === null) {
+    return undefined
+  }
+
+  const matches =
+    context.routines.all.filter(
+      (routine) => {
+        const title =
+          normalize(
+            routine.title,
+          )
+
+        const subjectName =
+          normalize(
+            context.subjects.find(
+              (subject) =>
+                subject.id ===
+                routine.subjectId,
+            )?.name ?? '',
+          )
+
+        return Boolean(
+          (
+            title &&
+            normalizedQuestion.includes(
+              title,
+            )
+          ) ||
+          (
+            subjectName &&
+            normalizedQuestion.includes(
+              subjectName,
+            )
+          ),
+        )
+      },
+    )
+
+  if (matches.length !== 1) {
+    return undefined
+  }
+
+  const routine =
+    matches[0]
+
+  return parseAgentProposal(
+    {
+      tool: 'update_routine',
+      targetId:
+        routine.id,
+      title:
+        routine.title,
+      subjectId:
+        routine.subjectId,
+      targetMinutes:
+        requestedMinutes,
+      mode:
+        routine.mode,
+      daysOfWeek:
+        routine.daysOfWeek,
+      recoveryDays:
+        routine.recoveryDays,
+      enabled:
+        routine.enabled,
+    },
+    context.subjects,
+    context.advancedGoals.map(
+      (item) => ({
+        id: item.id,
+        title: item.title,
+        subjectId:
+          item.subjectId,
+        targetMinutes:
+          item.targetMinutes,
+        deadline:
+          item.deadline,
+        priority:
+          item.priority,
+        status:
+          item.status,
+        createdAt:
+          context.generatedAt,
+      }),
+    ),
+    context.routines.all.map(
+      (item) => ({
+        id: item.id,
+        title: item.title,
+        subjectId:
+          item.subjectId,
+        targetMinutes:
+          item.targetMinutes,
+        mode: item.mode,
+        rotationOrder: 0,
+        daysOfWeek:
+          item.daysOfWeek,
+        recoveryDays:
+          item.recoveryDays,
+        enabled:
+          item.enabled,
+        createdAt:
+          context.generatedAt,
+      }),
+    ),
+  )
+}
