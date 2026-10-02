@@ -220,6 +220,92 @@ Deno.serve(async (request) => {
       ),
     )
 
+  const goalIds =
+    new Set(
+      Array.isArray(
+        (
+          body.context as {
+            advancedGoals?: unknown
+          }
+        ).advancedGoals,
+      )
+        ? (
+            (
+              body.context as {
+                advancedGoals: unknown[]
+              }
+            ).advancedGoals
+          )
+            .filter(
+              (goal) =>
+                Boolean(
+                  goal &&
+                    typeof goal ===
+                      'object' &&
+                    typeof (
+                      goal as {
+                        id?: unknown
+                      }
+                    ).id ===
+                      'string',
+                ),
+            )
+            .map(
+              (goal) =>
+                (
+                  goal as {
+                    id: string
+                  }
+                ).id,
+            )
+        : [],
+    )
+
+  const routineIds =
+    new Set(
+      Array.isArray(
+        (
+          body.context as {
+            routines?: {
+              all?: unknown
+            }
+          }
+        ).routines?.all,
+      )
+        ? (
+            (
+              body.context as {
+                routines: {
+                  all: unknown[]
+                }
+              }
+            ).routines.all
+          )
+            .filter(
+              (routine) =>
+                Boolean(
+                  routine &&
+                    typeof routine ===
+                      'object' &&
+                    typeof (
+                      routine as {
+                        id?: unknown
+                      }
+                    ).id ===
+                      'string',
+                ),
+            )
+            .map(
+              (routine) =>
+                (
+                  routine as {
+                    id: string
+                  }
+                ).id,
+            )
+        : [],
+    )
+
   const model =
     Deno.env.get(
       'GEMINI_MODEL',
