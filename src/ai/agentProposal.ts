@@ -342,7 +342,7 @@ export function parseAgentProposal(
             requestedSubject,
             subjects,
           )
-        : undefined
+        : existing.subjectId
     const status =
       candidate.status ===
       'completed'
