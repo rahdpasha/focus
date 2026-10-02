@@ -360,6 +360,12 @@ export default function PlanPage({
             onAddRoutineItem={
               onAddRoutineItem
             }
+            onUpdateAdvancedGoal={
+              onUpdateAdvancedGoal
+            }
+            onUpdateRoutineItem={
+              onUpdateRoutineItem
+            }
           />
         )}
       </div>
