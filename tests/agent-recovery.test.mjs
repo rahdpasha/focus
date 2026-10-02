@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 
 import {
   recoverExplicitGoalUpdateProposal,
+  recoverExplicitRoutineUpdateProposal,
 } from '../src/ai/agentRecovery.ts'
 
 const context = {
@@ -31,7 +32,18 @@ const context = {
     items: [],
   },
   routines: {
-    all: [],
+    all: [
+      {
+        id: 'routine-history',
+        title: 'History',
+        subjectId: 'history',
+        targetMinutes: 30,
+        mode: 'fixed',
+        daysOfWeek: [1, 3, 5],
+        recoveryDays: 1,
+        enabled: true,
+      },
+    ],
     dueToday: [],
     recoverable: [],
   },
@@ -74,6 +86,13 @@ const context = {
       minutesThisWeek: 200,
       percentageThisWeek: 59,
       sessionsThisWeek: 3,
+    },
+    {
+      id: 'history',
+      name: 'History',
+      minutesThisWeek: 140,
+      percentageThisWeek: 41,
+      sessionsThisWeek: 2,
     },
   ],
   advancedGoals: [
@@ -169,6 +188,70 @@ test('does not guess when more than one goal matches', () => {
   assert.equal(
     recoverExplicitGoalUpdateProposal(
       'Update Software Engineering to 300 minutes.',
+      duplicateContext,
+    ),
+    undefined,
+  )
+})
+
+
+test('recovers one exact explicit routine update', () => {
+  const proposal =
+    recoverExplicitRoutineUpdateProposal(
+      'Change my History routine to 45 minutes.',
+      context,
+    )
+
+  assert.equal(
+    proposal?.tool,
+    'update_routine',
+  )
+
+  if (
+    proposal?.tool !==
+    'update_routine'
+  ) {
+    assert.fail(
+      'Expected update_routine',
+    )
+  }
+
+  assert.equal(
+    proposal.targetId,
+    'routine-history',
+  )
+  assert.equal(
+    proposal.targetMinutes,
+    45,
+  )
+  assert.deepEqual(
+    proposal.daysOfWeek,
+    [1, 3, 5],
+  )
+  assert.equal(
+    proposal.enabled,
+    true,
+  )
+})
+
+test('routine recovery refuses ambiguous matches', () => {
+  const duplicateContext = {
+    ...context,
+    routines: {
+      ...context.routines,
+      all: [
+        ...context.routines.all,
+        {
+          ...context.routines.all[0],
+          id: 'routine-history-2',
+        },
+      ],
+    },
+  }
+
+  assert.equal(
+    recoverExplicitRoutineUpdateProposal(
+      'Update History routine to 45 minutes.',
       duplicateContext,
     ),
     undefined,
