@@ -72,6 +72,16 @@ export interface AdvisorContext {
     }>
   }
   routines: {
+    all: Array<{
+      id: string
+      title: string
+      subjectId: string
+      targetMinutes: number
+      mode: 'fixed' | 'rotation'
+      daysOfWeek: number[]
+      recoveryDays: number
+      enabled: boolean
+    }>
     dueToday: Array<{
       id: string
       title: string
@@ -464,6 +474,24 @@ export function buildAdvisorContext(
         ),
     },
     routines: {
+      all:
+        routineItems.map(
+          (item) => ({
+            id: item.id,
+            title: item.title,
+            subjectId:
+              item.subjectId,
+            targetMinutes:
+              item.targetMinutes,
+            mode: item.mode,
+            daysOfWeek:
+              [...item.daysOfWeek],
+            recoveryDays:
+              item.recoveryDays,
+            enabled:
+              item.enabled,
+          }),
+        ),
       dueToday:
         dueRoutines,
       recoverable:
