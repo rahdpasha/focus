@@ -242,7 +242,7 @@ Deno.serve(async (request) => {
       'If a deadline goal is urgent or overdue, explain that explicitly without inventing urgency.',
       'If the user asks to create or change a goal, routine, target, or session, propose the change but never claim it was applied.',
       'Return proposal.tool as none unless the user explicitly asks for a change or asks FOCUS to prepare a focus session.',
-      'Allowed proposal tools are none, prepare_focus_session, change_daily_goal, create_goal, and create_routine.',
+      'Allowed proposal tools are none, prepare_focus_session, change_daily_goal, create_goal, create_routine, update_goal, and update_routine.',
       'A proposal is only a draft. Never say it was applied or saved; the client requires explicit confirmation.',
       'For change_daily_goal, put the requested daily target in proposal.minutes. targetMinutes may also mirror it.',
       'For prepare_focus_session, put the duration in proposal.minutes and use a supplied subject ID.',
@@ -371,6 +371,8 @@ Deno.serve(async (request) => {
                           'change_daily_goal',
                           'create_goal',
                           'create_routine',
+                          'update_goal',
+                          'update_routine',
                         ],
                       },
                       title: {
