@@ -224,6 +224,45 @@ function parseCandidate(
         }
       ).proposal,
       context.subjects,
+      context.advancedGoals.map(
+        (goal) => ({
+          id: goal.id,
+          title: goal.title,
+          subjectId:
+            goal.subjectId,
+          targetMinutes:
+            goal.targetMinutes,
+          deadline:
+            goal.deadline,
+          priority:
+            goal.priority,
+          status:
+            goal.status,
+          createdAt:
+            context.generatedAt,
+        }),
+      ),
+      context.routines.all.map(
+        (routine) => ({
+          id: routine.id,
+          title:
+            routine.title,
+          subjectId:
+            routine.subjectId,
+          targetMinutes:
+            routine.targetMinutes,
+          mode: routine.mode,
+          rotationOrder: 0,
+          daysOfWeek:
+            routine.daysOfWeek,
+          recoveryDays:
+            routine.recoveryDays,
+          enabled:
+            routine.enabled,
+          createdAt:
+            context.generatedAt,
+        }),
+      ),
     )
 
   return {
