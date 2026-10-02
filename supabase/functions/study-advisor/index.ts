@@ -496,6 +496,7 @@ Deno.serve(async (request) => {
         } | null
         proposal?: {
           tool?: unknown
+          targetId?: unknown
           title?: unknown
           subjectId?: unknown
           minutes?: unknown
@@ -505,6 +506,8 @@ Deno.serve(async (request) => {
           mode?: unknown
           daysOfWeek?: unknown
           recoveryDays?: unknown
+          status?: unknown
+          enabled?: unknown
         } | null
       }
 
