@@ -9,6 +9,7 @@ import {
 import {
   recoverExplicitGoalUpdateProposal,
   recoverExplicitRoutineUpdateProposal,
+  recoverExplicitGoalCreateProposal,
 } from './agentRecovery.ts'
 
 export interface AiAdvisorResponse {
@@ -306,6 +307,11 @@ function parseCandidate(
     recoverExplicitRoutineUpdateProposal(
       question,
       context,
+    ) ??
+    recoverExplicitGoalCreateProposal(
+      question,
+      context,
+      verifiedSubjectId,
     )
 
   return {
