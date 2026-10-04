@@ -281,7 +281,20 @@ function parseCandidate(
     )
       ? candidate.action
           .subjectId
-      : undefined
+      : typeof candidate.action
+            .subjectName ===
+          'string'
+        ? context.subjects.find(
+            (subject) =>
+              subject.name
+                .trim()
+                .toLowerCase() ===
+              candidate.action
+                ?.subjectName
+                ?.trim()
+                .toLowerCase(),
+          )?.id
+        : undefined
 
   const proposal =
     parsedProposal ??
