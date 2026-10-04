@@ -257,3 +257,46 @@ test('routine recovery refuses ambiguous matches', () => {
     undefined,
   )
 })
+
+
+test('verified subject hint recovers the one matching goal', () => {
+  const renamedContext = {
+    ...context,
+    advancedGoals: [
+      {
+        ...context.advancedGoals[0],
+        title: 'Finish Stage 3 SE',
+      },
+    ],
+  }
+
+  const proposal =
+    recoverExplicitGoalUpdateProposal(
+      'Change my existing Software Engineering goal to 300 minutes.',
+      renamedContext,
+      'se',
+    )
+
+  assert.equal(
+    proposal?.tool,
+    'update_goal',
+  )
+
+  if (
+    proposal?.tool !==
+    'update_goal'
+  ) {
+    assert.fail(
+      'Expected update_goal',
+    )
+  }
+
+  assert.equal(
+    proposal.targetId,
+    'goal-se',
+  )
+  assert.equal(
+    proposal.targetMinutes,
+    300,
+  )
+})
