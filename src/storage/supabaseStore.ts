@@ -1158,6 +1158,7 @@ export async function saveSupabaseMutations(
           goal.priority,
         status:
           goal.status,
+        deleted_at: null,
         created_at:
           goal.createdAt,
         updated_at: now,
