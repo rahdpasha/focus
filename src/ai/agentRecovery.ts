@@ -26,6 +26,7 @@ function extractMinutes(question: string): number | null {
 export function recoverExplicitGoalUpdateProposal(
   question: string,
   context: AdvisorContext,
+  subjectIdHint?: string,
 ): AgentProposal | undefined {
   const normalizedQuestion =
     normalize(question)
@@ -74,6 +75,11 @@ export function recoverExplicitGoalUpdateProposal(
             normalizedQuestion.includes(
               subjectName,
             )
+          ) ||
+          (
+            subjectIdHint &&
+            goal.subjectId ===
+              subjectIdHint
           ),
         )
       },
