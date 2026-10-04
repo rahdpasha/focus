@@ -275,3 +275,82 @@ export function recoverExplicitRoutineUpdateProposal(
     ),
   )
 }
+
+
+export function recoverExplicitGoalCreateProposal(
+  question: string,
+  context: AdvisorContext,
+  subjectIdHint?: string,
+): AgentProposal | undefined {
+  const normalizedQuestion =
+    normalize(question)
+
+  if (
+    !/\b(change|update|set|create|add)\b/.test(
+      normalizedQuestion,
+    )
+  ) {
+    return undefined
+  }
+
+  const requestedMinutes =
+    extractMinutes(question)
+
+  if (requestedMinutes === null) {
+    return undefined
+  }
+
+  const subject =
+    subjectIdHint
+      ? context.subjects.find(
+          (item) =>
+            item.id ===
+            subjectIdHint,
+        )
+      : context.subjects.find(
+          (item) =>
+            normalizedQuestion.includes(
+              normalize(item.name),
+            ),
+        )
+
+  if (!subject) {
+    return undefined
+  }
+
+  const existingMatches =
+    context.advancedGoals.filter(
+      (goal) =>
+        goal.subjectId ===
+        subject.id,
+    )
+
+  if (existingMatches.length > 0) {
+    return undefined
+  }
+
+  const deadline =
+    new Date(
+      new Date(
+        context.generatedAt,
+      ).getTime() +
+        30 *
+          24 *
+          60 *
+          60 *
+          1000,
+    ).toISOString()
+
+  return parseAgentProposal(
+    {
+      tool: 'create_goal',
+      title: subject.name,
+      subjectId: subject.id,
+      targetMinutes:
+        requestedMinutes,
+      deadline,
+      priority: 'medium',
+    },
+    context.subjects,
+  )
+}
