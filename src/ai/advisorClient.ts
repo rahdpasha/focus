@@ -270,11 +270,25 @@ function parseCandidate(
       ),
     )
 
+  const verifiedSubjectId =
+    typeof candidate.action
+      .subjectId === 'string' &&
+    context.subjects.some(
+      (subject) =>
+        subject.id ===
+        candidate.action
+          ?.subjectId,
+    )
+      ? candidate.action
+          .subjectId
+      : undefined
+
   const proposal =
     parsedProposal ??
     recoverExplicitGoalUpdateProposal(
       question,
       context,
+      verifiedSubjectId,
     ) ??
     recoverExplicitRoutineUpdateProposal(
       question,
