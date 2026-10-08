@@ -218,6 +218,7 @@ function AuthenticatedApp({
           dailyGoal={data.dailyGoal}
           weeklyGoal={data.weeklyGoal}
           routineItems={data.routineItems}
+          advancedGoals={data.advancedGoals}
           onStartRecommendedSession={
             startRecommendedSession
           }

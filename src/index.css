@@ -1307,6 +1307,57 @@ select option {
   color: var(--primary-glow);
 }
 
+.advisor-proposal-card {
+  display: grid;
+  gap: 9px;
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--primary-border);
+  border-radius: 12px;
+  background: var(--void-surface-hover);
+}
+
+.advisor-proposal-kicker {
+  color: var(--primary-glow);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.advisor-proposal-card strong {
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.advisor-proposal-card p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.advisor-proposal-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.advisor-proposal-actions > button:not(.cyber-btn) {
+  padding: 9px 12px;
+  border: 1px solid var(--void-border);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.advisor-proposal-notice {
+  margin-top: 12px !important;
+  color: var(--text-muted) !important;
+  font-size: 10px !important;
+}
+
 .advisor-facts {
   display: grid;
   gap: 10px;
