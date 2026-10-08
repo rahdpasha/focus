@@ -296,16 +296,33 @@ function parseCandidate(
           )?.id
         : undefined
 
+  // An explicit routine request must never be interpreted as a goal write
+  // (or vice versa), even if the model supplies the wrong tool.
+  const requestedRoutine = /\broutines?\b/i.test(question)
+  const requestedGoal = /\bgoals?\b/i.test(question)
+  const parsedToolAllowed =
+    !parsedProposal ||
+    (
+      (!requestedRoutine || (
+        parsedProposal.tool === 'update_routine' ||
+        parsedProposal.tool === 'create_routine'
+      )) &&
+      (!requestedGoal || (
+        parsedProposal.tool === 'update_goal' ||
+        parsedProposal.tool === 'create_goal' ||
+        parsedProposal.tool === 'change_daily_goal'
+      ))
+    )
+  const compatibleProposal = parsedToolAllowed ? parsedProposal : undefined
+
   const proposal =
-    parsedProposal ??
-    recoverExplicitGoalUpdateProposal(
-      question,
-      context,
-      verifiedSubjectId,
-    ) ??
-    recoverExplicitRoutineUpdateProposal(
-      question,
-      context,
+    compatibleProposal ??
+    (
+      requestedRoutine && !requestedGoal
+        ? recoverExplicitRoutineUpdateProposal(question, context)
+        : requestedGoal && !requestedRoutine
+          ? recoverExplicitGoalUpdateProposal(question, context, verifiedSubjectId)
+          : undefined
     )
 
   const normalizedQuestion =
