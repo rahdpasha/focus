@@ -300,3 +300,25 @@ test('verified subject hint recovers the one matching goal', () => {
     300,
   )
 })
+
+
+test('a routine edit cannot produce a goal update', () => {
+  assert.equal(
+    recoverExplicitGoalUpdateProposal(
+      'Change my Software Engineering routine to 45 minutes.',
+      context,
+      'se',
+    ),
+    undefined,
+  )
+})
+
+test('a goal edit cannot produce a routine update', () => {
+  assert.equal(
+    recoverExplicitRoutineUpdateProposal(
+      'Change my History goal to 45 minutes.',
+      context,
+    ),
+    undefined,
+  )
+})
