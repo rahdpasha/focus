@@ -308,6 +308,69 @@ function parseCandidate(
       context,
     )
 
+  const normalizedQuestion =
+    question
+      .trim()
+      .toLowerCase()
+
+  const explicitGoalUpdateRequest =
+    /\b(change|update|set)\b/.test(
+      normalizedQuestion,
+    ) &&
+    normalizedQuestion.includes(
+      'goal',
+    )
+
+  const verifiedGoalMatches =
+    verifiedSubjectId
+      ? context.advancedGoals.filter(
+          (goal) =>
+            goal.subjectId ===
+            verifiedSubjectId,
+        )
+      : []
+
+  if (
+    explicitGoalUpdateRequest &&
+    !proposal &&
+    verifiedGoalMatches.length === 0
+  ) {
+    return {
+      source: 'ai',
+      providerStatus: 'ready',
+      headline:
+        'No existing goal found',
+      answer:
+        'FOCUS could not find an existing goal for this subject, so nothing was changed. Create the goal first, then ask FOCUS to update it.',
+      reasons: [
+        'The requested subject exists, but no matching advanced goal is currently available in FOCUS.',
+      ],
+      confidence: 'high',
+      action: {
+        subjectId:
+          verifiedSubjectId,
+        subjectName:
+          typeof candidate.action
+            .subjectName ===
+            'string'
+            ? candidate.action
+                .subjectName
+            : undefined,
+        minutes:
+          Math.max(
+            10,
+            Math.min(
+              120,
+              Math.round(
+                candidate.action
+                  .minutes,
+              ),
+            ),
+          ),
+      },
+    }
+  }
+
   return {
     source: 'ai',
     providerStatus: 'ready',
