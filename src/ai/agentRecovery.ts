@@ -31,8 +31,7 @@ export function recoverExplicitGoalUpdateProposal(
   const normalizedQuestion =
     normalize(question)
 
-  if (
-    !/\b(change|update|set)\b/.test(
+  if (\n    /\\broutines?\\b/.test(normalizedQuestion) ||\n    !/\b(change|update|set)\b/.test(
       normalizedQuestion,
     )
   ) {
@@ -158,8 +157,7 @@ export function recoverExplicitRoutineUpdateProposal(
   const normalizedQuestion =
     normalize(question)
 
-  if (
-    !/\b(change|update|set)\b/.test(
+  if (\n    /\\bgoals?\\b/.test(normalizedQuestion) ||\n    !/\b(change|update|set)\b/.test(
       normalizedQuestion,
     )
   ) {
