@@ -247,15 +247,95 @@ export default function AdvisorPage({
       'update_goal'
     ) {
       return tr(
-        `Update goal “${proposal.title}”.`,
-        `ئامانجی “${proposal.title}” نوێ بکەرەوە.`,
+        `Update goal “${proposal.title}” to ${proposal.targetMinutes} minutes.`,
+        `ئامانجی “${proposal.title}” نوێ بکەرەوە بۆ ${proposal.targetMinutes} خولەک.`,
       )
     }
 
     return tr(
-      `Update routine “${proposal.title}”.`,
-      `ڕوتینی “${proposal.title}” نوێ بکەرەوە.`,
+      `Update routine “${proposal.title}” to ${proposal.targetMinutes} minutes.`,
+      `ڕوتینی “${proposal.title}” نوێ بکەرەوە بۆ ${proposal.targetMinutes} خولەک.`,
     )
+  }
+
+  const proposalChanges = (
+    proposal: AgentProposal,
+  ): string[] => {
+    if (proposal.tool === 'update_goal') {
+      const existing = advancedGoals.find(
+        (goal) => goal.id === proposal.targetId,
+      )
+      if (!existing) {
+        return ['This goal no longer exists. Do not confirm.']
+      }
+      const changes: string[] = []
+      if (existing.targetMinutes !== proposal.targetMinutes) {
+        changes.push(
+          `Target: ${existing.targetMinutes} → ${proposal.targetMinutes} minutes`,
+        )
+      }
+      if (existing.title !== proposal.title) {
+        changes.push(`Title: ${existing.title} → ${proposal.title}`)
+      }
+      if (existing.priority !== proposal.priority) {
+        changes.push(`Priority: ${existing.priority} → ${proposal.priority}`)
+      }
+      if (existing.status !== proposal.status) {
+        changes.push(`Status: ${existing.status} → ${proposal.status}`)
+      }
+      if (existing.deadline !== proposal.deadline) {
+        changes.push(`Deadline: ${existing.deadline} → ${proposal.deadline}`)
+      }
+      if (existing.subjectId !== proposal.subjectId) {
+        changes.push('Subject assignment changes')
+      }
+      return changes.length ? changes : ['No changes to apply']
+    }
+
+    if (proposal.tool === 'update_routine') {
+      const existing = routineItems.find(
+        (routine) => routine.id === proposal.targetId,
+      )
+      if (!existing) {
+        return ['This routine no longer exists. Do not confirm.']
+      }
+      const changes: string[] = []
+      if (existing.targetMinutes !== proposal.targetMinutes) {
+        changes.push(
+          `Target: ${existing.targetMinutes} → ${proposal.targetMinutes} minutes`,
+        )
+      }
+      if (existing.title !== proposal.title) {
+        changes.push(`Title: ${existing.title} → ${proposal.title}`)
+      }
+      if (existing.mode !== proposal.mode) {
+        changes.push(`Mode: ${existing.mode} → ${proposal.mode}`)
+      }
+      if (
+        [...existing.daysOfWeek].sort().join(',') !==
+        [...proposal.daysOfWeek].sort().join(',')
+      ) {
+        changes.push(
+          `Days: ${existing.daysOfWeek.join(', ')} → ${proposal.daysOfWeek.join(', ')} (0=Sun)`,
+        )
+      }
+      if (existing.recoveryDays !== proposal.recoveryDays) {
+        changes.push(
+          `Recovery days: ${existing.recoveryDays} → ${proposal.recoveryDays}`,
+        )
+      }
+      if (existing.enabled !== proposal.enabled) {
+        changes.push(
+          `Enabled: ${existing.enabled ? 'yes' : 'no'} → ${proposal.enabled ? 'yes' : 'no'}`,
+        )
+      }
+      if (existing.subjectId !== proposal.subjectId) {
+        changes.push('Subject assignment changes')
+      }
+      return changes.length ? changes : ['No changes to apply']
+    }
+
+    return []
   }
 
   const confirmProposal = () => {
@@ -265,6 +345,22 @@ export default function AdvisorPage({
 
     const proposal =
       response.proposal
+
+    if (
+      (proposal.tool === 'update_goal' &&
+        !advancedGoals.some((goal) => goal.id === proposal.targetId)) ||
+      (proposal.tool === 'update_routine' &&
+        !routineItems.some((routine) => routine.id === proposal.targetId))
+    ) {
+      setProposalNotice(
+        tr(
+          'The original item no longer exists. Ask FOCUS again before confirming.',
+          'ئەم بەشە چیتر بوونی نییە. دووبارە لە FOCUS بپرسە.',
+        ),
+      )
+      setResponse({ ...response, proposal: undefined })
+      return
+    }
 
     executeAgentProposal(
       proposal,
@@ -495,6 +591,14 @@ export default function AdvisorPage({
                         response.proposal,
                       )}
                     </strong>
+
+                    {proposalChanges(response.proposal).length > 0 && (
+                      <ul className="advisor-reasons">
+                        {proposalChanges(response.proposal).map((change) => (
+                          <li key={change}>{change}</li>
+                        ))}
+                      </ul>
+                    )}
 
                     <p>
                       {tr(
