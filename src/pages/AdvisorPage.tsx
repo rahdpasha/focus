@@ -374,6 +374,26 @@ export default function AdvisorPage({
 
     if (
       proposal.tool === 'create_goal' &&
+      advancedGoals.some(
+        (goal) =>
+          goal.title.trim().toLowerCase() ===
+            proposal.title.trim().toLowerCase() &&
+          goal.subjectId === proposal.subjectId &&
+          goal.status === 'active',
+      )
+    ) {
+      setProposalNotice(
+        tr(
+          'An active goal with that title and subject already exists. No duplicate was created.',
+          'ئامانجێکی چالاک بە هەمان ناو و بابەت هەیە. دووبارە دروست نەکرا.',
+        ),
+      )
+      setResponse({ ...response, proposal: undefined })
+      return
+    }
+
+    if (
+      proposal.tool === 'create_goal' &&
       (
         new Date(proposal.deadline).getTime() <= Date.now() ||
         (proposal.subjectId && !subjects.some((subject) => subject.id === proposal.subjectId))
@@ -582,10 +602,9 @@ export default function AdvisorPage({
                   )}
                 </ul>
 
-                {!(
-                  response.proposal?.tool === 'prepare_focus_session' ||
-                  (/\b(prepare|set up|setup)\b/i.test(question) &&
-                    /\b(focus|study)\s+sessions?\b/i.test(question))
+                {!response.proposal && !(
+                  /\b(prepare|set up|setup)\b/i.test(question) &&
+                  /\b(focus|study)\s+sessions?\b/i.test(question)
                 ) && (
                 <button
                   type="button"
