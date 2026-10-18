@@ -339,9 +339,8 @@ function parseCandidate(
 
   const proposal =
     compatibleProposal ??
-    (focusSessionIntent &&
-      verifiedSubjectId &&
-      (() => {
+    (focusSessionIntent && verifiedSubjectId
+      ? (() => {
         const minutesMatch =
           question.match(/\b(\d{2,3})\s*(?:m|min|minutes?)\b/i)
         return minutesMatch
@@ -354,7 +353,8 @@ function parseCandidate(
               context.subjects,
             )
           : undefined
-      })()) ??
+      })()
+      : undefined) ??
     (
       requestedRoutine && !requestedGoal
         ? recoverExplicitRoutineUpdateProposal(question, context)
