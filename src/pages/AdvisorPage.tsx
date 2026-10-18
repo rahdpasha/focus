@@ -261,6 +261,16 @@ export default function AdvisorPage({
   const proposalChanges = (
     proposal: AgentProposal,
   ): string[] => {
+    if (proposal.tool === 'create_goal') {
+      const subject = subjects.find((item) => item.id === proposal.subjectId)
+      return [
+        `Subject: ${subject?.name ?? 'General goal'}`,
+        `Target: ${proposal.targetMinutes} minutes`,
+        `Deadline: ${new Date(proposal.deadline).toLocaleString()}`,
+        `Priority: ${proposal.priority}`,
+      ]
+    }
+
     if (proposal.tool === 'update_goal') {
       const existing = advancedGoals.find(
         (goal) => goal.id === proposal.targetId,
@@ -356,6 +366,23 @@ export default function AdvisorPage({
         tr(
           'The original item no longer exists. Ask FOCUS again before confirming.',
           'ئەم بەشە چیتر بوونی نییە. دووبارە لە FOCUS بپرسە.',
+        ),
+      )
+      setResponse({ ...response, proposal: undefined })
+      return
+    }
+
+    if (
+      proposal.tool === 'create_goal' &&
+      (
+        new Date(proposal.deadline).getTime() <= Date.now() ||
+        (proposal.subjectId && !subjects.some((subject) => subject.id === proposal.subjectId))
+      )
+    ) {
+      setProposalNotice(
+        tr(
+          'This goal has an expired deadline or unavailable subject. Ask FOCUS again.',
+          'کاتی ئامانجەکە بەسەرچووە یان بابەتەکە بەردەست نییە. دووبارە لە FOCUS بپرسە.',
         ),
       )
       setResponse({ ...response, proposal: undefined })
