@@ -204,3 +204,49 @@ test('proposal executes only through the supplied confirmation handler', () => {
   assert.equal(calls, 1)
   assert.equal(received, 180)
 })
+
+
+test('goal creation rejects a supplied unknown subject', () => {
+  assert.equal(
+    parseAgentProposal({
+      tool: 'create_goal',
+      title: 'Review',
+      subjectId: 'not-real',
+      targetMinutes: 90,
+      deadline: '2027-01-05T09:00:00.000Z',
+      priority: 'medium',
+    }, subjects),
+    undefined,
+  )
+})
+
+test('goal creation waits for confirmation and forwards exact details', () => {
+  const proposal = parseAgentProposal({
+    tool: 'create_goal',
+    title: 'New history goal',
+    subjectId: 'history',
+    targetMinutes: 90,
+    deadline: '2027-01-05T09:00:00.000Z',
+    priority: 'high',
+  }, subjects)
+  assert.ok(proposal)
+  let created = null
+  assert.equal(created, null)
+  executeAgentProposal(proposal, {
+    onStartSession() { assert.fail('Unexpected session') },
+    onDailyGoalChange() { assert.fail('Unexpected daily goal') },
+    onAddAdvancedGoal(title, minutes, deadline, priority, subjectId) {
+      created = { title, minutes, deadline, priority, subjectId }
+    },
+    onAddRoutineItem() { assert.fail('Unexpected routine') },
+    onUpdateAdvancedGoal() { assert.fail('Unexpected goal update') },
+    onUpdateRoutineItem() { assert.fail('Unexpected routine update') },
+  })
+  assert.deepEqual(created, {
+    title: 'New history goal',
+    minutes: 90,
+    deadline: '2027-01-05T09:00:00.000Z',
+    priority: 'high',
+    subjectId: 'history',
+  })
+})
