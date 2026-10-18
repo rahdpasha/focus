@@ -401,21 +401,21 @@ export default function AdvisorPage({
       },
     )
 
-    if (
-      proposal.tool !==
-      'prepare_focus_session'
-    ) {
-      setResponse({
-        ...response,
-        proposal: undefined,
-      })
-      setProposalNotice(
-        tr(
-          'Applied in FOCUS. Normal sync rules will handle cloud saving.',
-          'لە FOCUS جێبەجێ کرا. یاساکانی ئاسایی هاوکاتکردن پاشەکەوتکردنی کلاود بەڕێوە دەبەن.',
-        ),
-      )
-    }
+    setResponse({
+      ...response,
+      proposal: undefined,
+    })
+    setProposalNotice(
+      proposal.tool === 'prepare_focus_session'
+        ? tr(
+            'Focus session prepared. The session is not logged as completed.',
+            'سێشنی فوکەس ئامادە کرا. وەک تەواوبوو تۆمار نەکراوە.',
+          )
+        : tr(
+            'Applied in FOCUS. Normal sync rules will handle cloud saving.',
+            'لە FOCUS جێبەجێ کرا. یاساکانی ئاسایی هاوکاتکردن پاشەکەوتکردنی کلاود بەڕێوە دەبەن.',
+          ),
+    )
   }
 
   const cancelProposal = () => {
@@ -582,6 +582,11 @@ export default function AdvisorPage({
                   )}
                 </ul>
 
+                {!(
+                  response.proposal?.tool === 'prepare_focus_session' ||
+                  (/\b(prepare|set up|setup)\b/i.test(question) &&
+                    /\b(focus|study)\s+sessions?\b/i.test(question))
+                ) && (
                 <button
                   type="button"
                   className="focus-pulse-action"
@@ -603,6 +608,7 @@ export default function AdvisorPage({
                     size={16}
                   />
                 </button>
+                )}
 
                 {response.proposal && (
                   <div className="advisor-proposal-card">
