@@ -265,6 +265,11 @@ export function parseAgentProposal(
       !deadlineText ||
       Number.isNaN(
         deadline.getTime(),
+      ) ||
+      (
+        candidate.subjectId !== undefined &&
+        candidate.subjectId !== null &&
+        !subjectId
       )
     ) {
       return undefined
