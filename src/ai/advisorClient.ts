@@ -325,13 +325,36 @@ function parseCandidate(
         parsedProposal.tool !== 'create_goal' &&
         parsedProposal.tool !== 'create_routine')
     )
+  const focusSessionIntent =
+    /\b(prepare|set up|setup)\b/i.test(question) &&
+    /\b(focus|study)\s+sessions?\b/i.test(question)
+  const focusToolAllowed =
+    !focusSessionIntent ||
+    !parsedProposal ||
+    parsedProposal.tool === 'prepare_focus_session'
   const compatibleProposal =
-    parsedToolAllowed && intentToolAllowed
+    parsedToolAllowed && intentToolAllowed && focusToolAllowed
       ? parsedProposal
       : undefined
 
   const proposal =
     compatibleProposal ??
+    (focusSessionIntent &&
+      verifiedSubjectId &&
+      (() => {
+        const minutesMatch =
+          question.match(/\b(\d{2,3})\s*(?:m|min|minutes?)\b/i)
+        return minutesMatch
+          ? parseAgentProposal(
+              {
+                tool: 'prepare_focus_session',
+                subjectId: verifiedSubjectId,
+                minutes: Number(minutesMatch[1]),
+              },
+              context.subjects,
+            )
+          : undefined
+      })()) ??
     (
       requestedRoutine && !requestedGoal
         ? recoverExplicitRoutineUpdateProposal(question, context)
