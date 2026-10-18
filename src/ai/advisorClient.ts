@@ -313,7 +313,22 @@ function parseCandidate(
         parsedProposal.tool === 'change_daily_goal'
       ))
     )
-  const compatibleProposal = parsedToolAllowed ? parsedProposal : undefined
+  const createIntent = /\b(create|add|make|new)\b/i.test(question)
+  const updateIntent = /\b(change|update|set|modify|edit)\b/i.test(question)
+  const intentToolAllowed =
+    !parsedProposal ||
+    (
+      (!createIntent || updateIntent ||
+        parsedProposal.tool === 'create_goal' ||
+        parsedProposal.tool === 'create_routine') &&
+      (!updateIntent || createIntent ||
+        parsedProposal.tool !== 'create_goal' &&
+        parsedProposal.tool !== 'create_routine')
+    )
+  const compatibleProposal =
+    parsedToolAllowed && intentToolAllowed
+      ? parsedProposal
+      : undefined
 
   const proposal =
     compatibleProposal ??
