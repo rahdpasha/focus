@@ -79,7 +79,7 @@ async function sendWebPush(delivery: Delivery): Promise<{ ok: boolean; permanent
     headers: {
       Authorization: 'vapid t=' + vapidToken + ', k=' + delivery.public_key,
       TTL: '3600',
-      Urgency: 'normal',
+      Urgency: 'high',
     },
   })
   return {
