@@ -482,6 +482,38 @@ export default function FocusPage({
             />
           </div>
 
+          {userId && notificationsEnabled && (
+            <div role="status" style={{
+              display: 'flex',
+              gap: 10,
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              margin: '12px 0',
+            }}>
+              {pushStatus === 'enabled' ? (
+                <span>✓ {tr('Background alerts enabled', 'ئاگادارکردنەوەی پاشبنەما چالاکە')}</span>
+              ) : (
+                <button
+                  type="button"
+                  className="timer-v5-secondary"
+                  disabled={pushStatus === 'loading' || pushStatus === 'checking' || !supportsBackgroundPush()}
+                  onClick={() => { void handleEnableBackgroundAlerts() }}
+                >
+                  {pushStatus === 'loading'
+                    ? tr('Enabling alerts…', 'چالاککردنی ئاگادارکردنەوە…')
+                    : tr('Enable background alerts', 'چالاککردنی ئاگادارکردنەوەی پاشبنەما')}
+                </button>
+              )}
+              <small style={{ opacity: 0.75, textAlign: 'center' }}>
+                {!supportsBackgroundPush()
+                  ? tr('On iPhone, open FOCUS from your Home Screen to allow notifications.', 'لە ئایفۆن FOCUS لە شاشەی سەرەکی بکەرەوە.')
+                  : tr('Alerts require internet and permission; delivery may be delayed.', 'پێویستی بە ئینتەرنێت و ڕێگەپێدانە.')}
+              </small>
+              {pushMessage && <small>{pushMessage}</small>}
+            </div>
+          )}
+
           <details className="focus-audio focus-audio-v4">
             <summary className="focus-audio-label">
               <span className="focus-audio-summary-title">
