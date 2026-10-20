@@ -16037,3 +16037,37 @@ textarea::placeholder {
     padding-bottom: calc(132px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
+
+
+/* Critical nested-route fix: Plan/Progress child pages render their own
+   <main> beneath the parent <main>. A legacy global mobile main rule
+   uses !important; without this stronger rule every tab receives another
+   68px top gutter and loses its content behind the dock. */
+@media (max-width: 760px) {
+  .plan-v4-body > main.page-container,
+  .progress-v4-body > main.page-container {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 0;
+    height: auto;
+    margin: 0;
+    padding: 0 !important;
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+
+  .plan-v4-body > main.page-container > .page-header,
+  .progress-v4-body > main.page-container > .page-header {
+    display: none;
+  }
+
+  /* A small extra margin makes the first field/CTA usable under the
+     parent tabs, rather than buried in a second navigation header. */
+  .plan-v4-body,
+  .progress-v4-body {
+    min-width: 0;
+    margin-top: 8px;
+  }
+}
