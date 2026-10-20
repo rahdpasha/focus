@@ -14952,3 +14952,191 @@ textarea::placeholder {
     display: none;
   }
 }
+
+
+/* Mobile accessibility: six direct destinations, unobstructed Focus controls.
+   Mobile Safari / installed iPhone PWAs have dynamic bottom safe areas; the
+   fixed dock must NEVER become the last scrollable content's hit target. */
+@media (max-width: 760px) {
+  .mobile-dock {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    left: 10px;
+    right: 10px;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    gap: 1px;
+    padding: 5px;
+  }
+
+  .mobile-dock-item {
+    min-width: 0;
+    min-height: 52px;
+    padding: 7px 1px;
+    gap: 4px;
+    touch-action: manipulation;
+  }
+
+  .mobile-dock-item span {
+    max-width: 100%;
+    font-size: 9px;
+    line-height: 1.15;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Prior generic main { padding: ... !important } overrode the shared
+     page's bottom padding, leaving Start/inputs behind the fixed dock. */
+  .app-content > main.page-container {
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 100dvh;
+    height: auto;
+    overflow-x: clip;
+    overflow-y: visible;
+    padding: 72px 16px calc(136px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .focus-workspace {
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .focus-timer-stage {
+    min-width: 0;
+    min-height: 0;
+    padding: 18px 16px 16px;
+  }
+
+  .focus-stage-head {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 9px 12px;
+  }
+
+  .focus-stage-head > div {
+    flex: 1 1 170px;
+    min-width: 0;
+  }
+
+  .focus-stage-head h2 {
+    margin-top: 5px;
+    font-size: clamp(20px, 5.8vw, 27px);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  .focus-subject-pill {
+    flex: 0 0 auto;
+    align-self: flex-start;
+    white-space: nowrap;
+  }
+
+  .focus-timer-wrap {
+    flex: none;
+    display: block;
+    min-height: 0;
+    min-width: 0;
+    margin-top: 14px;
+  }
+
+  .timer-v5 {
+    min-width: 0;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .timer-v5-ring {
+    width: min(258px, 68vw);
+    max-width: 100%;
+  }
+
+  .timer-v5-center {
+    width: 68%;
+  }
+
+  .timer-v5-time {
+    font-size: clamp(35px, 10vw, 52px);
+  }
+
+  .timer-v5-mode {
+    margin-top: 5px;
+    font-size: 10px;
+  }
+
+  .timer-v5-actions {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .timer-v5-actions > button {
+    min-height: 48px;
+    min-width: 0;
+    flex: 1 1 140px;
+    touch-action: manipulation;
+  }
+
+  .duration-v5-presets {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .duration-v5-presets > button {
+    grid-column: span 2;
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 8px 4px;
+    white-space: nowrap;
+    font-size: 11px;
+  }
+
+  .duration-v5-presets > button:nth-child(n + 4) {
+    grid-column: span 3;
+  }
+
+  .focus-side-stack {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 390px) {
+  .app-content > main.page-container {
+    padding: 68px 11px calc(134px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .focus-timer-stage {
+    padding: 15px 12px;
+  }
+
+  .timer-v5-ring {
+    width: min(232px, 65vw);
+  }
+
+  .mobile-dock {
+    left: 7px;
+    right: 7px;
+    padding: 4px;
+  }
+
+  .mobile-dock-item {
+    padding-inline: 0;
+  }
+
+  .mobile-dock-item span {
+    font-size: 8px;
+  }
+}
+
+/* Phone landscape must remain scrollable even with very little viewport height. */
+@media (max-height: 500px) and (max-width: 900px) {
+  .app-content > main.page-container {
+    min-height: 0;
+    padding-bottom: calc(112px + env(safe-area-inset-bottom)) !important;
+  }
+}
