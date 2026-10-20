@@ -28,6 +28,7 @@ import { supabase } from '../api/supabaseClient'
 import {
   enableFocusBackgroundPush,
   hasFocusBackgroundPush,
+  prepareFocusBackgroundPush,
   supportsBackgroundPush,
 } from '../utils/backgroundPush'
 import {
@@ -122,8 +123,8 @@ export default function FocusPage({
 
   useEffect(() => {
     let cancelled = false
-    void hasFocusBackgroundPush().then((enabled) => {
-      if (!cancelled) setPushStatus(enabled ? 'enabled' : 'ready')
+    void prepareFocusBackgroundPush().then(() => {
+      if (!cancelled) setPushStatus(hasFocusBackgroundPush() ? 'enabled' : 'ready')
     })
     return () => { cancelled = true }
   }, [userId])
