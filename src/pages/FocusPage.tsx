@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import {
   useEffect,
+  useRef,
   useState,
 } from 'react'
 import Timer from '../components/timer/Timer'
@@ -23,6 +24,12 @@ import {
 } from '../useI18n'
 import PageContainer from './PageContainer'
 import PageHeader from '../components/layout/PageHeader'
+import { supabase } from '../api/supabaseClient'
+import {
+  enableFocusBackgroundPush,
+  hasFocusBackgroundPush,
+  supportsBackgroundPush,
+} from '../utils/backgroundPush'
 import {
   getStudyAdvisor,
 } from '../utils/studyAdvisor'
@@ -32,6 +39,7 @@ import {
 } from '../utils/ambientAudio'
 
 interface FocusPageProps {
+  userId?: string | null
   activeSubject:
     | Subject
     | undefined
@@ -89,6 +97,7 @@ const ambientOptions: Array<{
 ]
 
 export default function FocusPage({
+  userId,
   activeSubject,
   subjects = [],
   sessions = [],
@@ -107,6 +116,68 @@ export default function FocusPage({
   onAddSubjectRequest,
 }: FocusPageProps) {
   const { t, tr } = useI18n()
+  const [pushStatus, setPushStatus] = useState<'checking' | 'enabled' | 'ready' | 'loading'>('checking')
+  const [pushMessage, setPushMessage] = useState('')
+  const pushJobQueue = useRef<Promise<unknown>>(Promise.resolve())
+
+  useEffect(() => {
+    let cancelled = false
+    void hasFocusBackgroundPush().then((enabled) => {
+      if (!cancelled) setPushStatus(enabled ? 'enabled' : 'ready')
+    })
+    return () => { cancelled = true }
+  }, [userId])
+
+  function queueTimerJob(run: () => Promise<unknown>) {
+    pushJobQueue.current = pushJobQueue.current.then(run).catch((error: unknown) => {
+      console.warn('[FOCUS] Background completion unavailable:', error)
+    })
+  }
+
+  function changeTimerJob(sessionClientId: string, values: Record<string, unknown>) {
+    if (!supabase || !userId) return
+    queueTimerJob(async () => {
+      const { error } = await supabase
+        .from('focus_timer_jobs')
+        .update(values)
+        .eq('user_id', userId)
+        .eq('session_client_id', sessionClientId)
+      if (error) throw error
+    })
+  }
+
+  function scheduleTimerJob(startedAt: Date, sessionClientId: string, seconds: number, endAt: number) {
+    if (!supabase || !userId || !targetSubject) return
+    const subjectId = targetSubject.id
+    const subjectName = targetSubject.name
+    queueTimerJob(async () => {
+      const { error } = await supabase.from('focus_timer_jobs').upsert({
+        user_id: userId,
+        session_client_id: sessionClientId,
+        subject_client_id: subjectId,
+        subject_name: subjectName,
+        duration_seconds: seconds,
+        started_at: startedAt.toISOString(),
+        due_at: new Date(endAt).toISOString(),
+        status: 'active',
+      }, { onConflict: 'user_id,session_client_id' })
+      if (error) throw error
+    })
+  }
+
+  async function handleEnableBackgroundAlerts() {
+    if (!userId) return
+    setPushStatus('loading')
+    setPushMessage('')
+    try {
+      await enableFocusBackgroundPush(userId)
+      setPushStatus('enabled')
+      setPushMessage(tr('Background alerts enabled. Test a short focus session.', 'ئاگادارکردنەوەی پاشبنەما چالاک کرا.'))
+    } catch (error) {
+      setPushStatus('ready')
+      setPushMessage(error instanceof Error ? error.message : 'Could not enable notifications.')
+    }
+  }
 
   const [
     ambientSound,
@@ -345,6 +416,15 @@ export default function FocusPage({
               onComplete={() =>
                 ambientAudio.stop()
               }
+              onSessionStart={scheduleTimerJob}
+              onSessionPause={(id, paused, interruptions) =>
+                changeTimerJob(id, { status: 'paused', total_paused_seconds: paused, interruptions })
+              }
+              onSessionResume={(id, endAt, paused) =>
+                changeTimerJob(id, { status: 'active', due_at: new Date(endAt).toISOString(), total_paused_seconds: paused })
+              }
+              onSessionCancel={(id) => changeTimerJob(id, { status: 'cancelled' })}
+              onSessionCompleted={(id) => changeTimerJob(id, { status: 'completed', completed_at: new Date().toISOString() })}
               onSessionEnd={(
                 duration,
                 actualDuration,
@@ -352,6 +432,7 @@ export default function FocusPage({
                 interruptions,
                 totalPausedSeconds,
                 startedAt,
+                sessionClientId,
               ) => {
                 ambientAudio.stop()
 
@@ -365,9 +446,7 @@ export default function FocusPage({
                 }
 
                 onAddSession({
-                  id:
-                    's' +
-                    Date.now(),
+                  id: sessionClientId,
                   subjectId:
                     targetSubject.id,
                   subjectName:
