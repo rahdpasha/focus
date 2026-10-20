@@ -21,5 +21,5 @@ test('mobile Focus content clears the fixed dock and safe area', () => {
 })
 
 test('service worker version changes to refresh installed mobile styles', () => {
-  assert.match(serviceWorker, /CACHE_NAME = 'focus-pwa-v5'/)
+  assert.match(serviceWorker, /CACHE_NAME = 'focus-pwa-v6'/)
 })
