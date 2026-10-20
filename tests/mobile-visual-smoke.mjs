@@ -127,6 +127,16 @@ for (const device of devices) {
   const customInput = page.locator('.duration-v5-custom input')
   await customInput.waitFor()
   await customInput.focus()
+  await page.waitForTimeout(120)
+  const focusDebug = await page.evaluate(() => ({
+    active: document.activeElement?.tagName,
+    activeClass: document.activeElement?.className,
+    shellClass: document.querySelector('.app-shell')?.className,
+    inputFocused: document.querySelector('.duration-v5-custom input')?.matches(':focus'),
+    hasFocusedInput: document.querySelector('.app-shell')?.matches(':has(input:focus)'),
+    dockVisibility: getComputedStyle(document.querySelector('.mobile-dock')).visibility,
+  }))
+  console.log('FOCUS INPUT DEBUG', JSON.stringify(focusDebug))
   assert.equal(
     await page.locator('.mobile-dock').evaluate((dock) => getComputedStyle(dock).visibility),
     'hidden',
