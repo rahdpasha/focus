@@ -135,9 +135,10 @@ export default function FocusPage({
   }
 
   function changeTimerJob(sessionClientId: string, values: Record<string, unknown>) {
-    if (!supabase || !userId) return
+    const client = supabase
+    if (!client || !userId) return
     queueTimerJob(async () => {
-      const { error } = await supabase
+      const { error } = await client
         .from('focus_timer_jobs')
         .update(values)
         .eq('user_id', userId)
@@ -147,11 +148,12 @@ export default function FocusPage({
   }
 
   function scheduleTimerJob(startedAt: Date, sessionClientId: string, seconds: number, endAt: number) {
-    if (!supabase || !userId || !targetSubject) return
+    const client = supabase
+    if (!client || !userId || !targetSubject) return
     const subjectId = targetSubject.id
     const subjectName = targetSubject.name
     queueTimerJob(async () => {
-      const { error } = await supabase.from('focus_timer_jobs').upsert({
+      const { error } = await client.from('focus_timer_jobs').upsert({
         user_id: userId,
         session_client_id: sessionClientId,
         subject_client_id: subjectId,
