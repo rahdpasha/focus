@@ -11,6 +11,7 @@ const browser = await chromium.launch({ headless: true })
 const devices = [
   { name: 'iphone', width: 390, height: 844 },
   { name: 'iphone-dark', width: 390, height: 844, dark: true },
+  { name: 'iphone-ku', width: 390, height: 844, dark: true, lang: 'ku' },
   { name: 'small', width: 320, height: 700 },
   { name: 'large', width: 430, height: 932 },
   { name: 'landscape', width: 700, height: 390 },
@@ -43,10 +44,15 @@ for (const device of devices) {
       localStorage.setItem('focus-sessions', JSON.stringify([seed.session]))
       if (seed.dark) {
         localStorage.setItem('focus-theme', 'dark')
-        localStorage.setItem('focus-settings', JSON.stringify({ theme: 'dark' }))
+        localStorage.setItem('focus-settings', JSON.stringify({
+          theme: 'dark', language: seed.lang === 'ku' ? 'ku' : 'en',
+        }))
+      }
+      if (seed.lang === 'ku') {
+        localStorage.setItem('focus-language', 'ku')
       }
     } catch { /* Test scaffold only */ }
-  }, { session: sampleSession, dark: Boolean(device.dark) })
+  }, { session: sampleSession, dark: Boolean(device.dark), lang: device.lang ?? 'en' })
 
   await page.goto(base, { waitUntil: 'networkidle' })
   await page.locator('.mobile-dock').waitFor({ timeout: 15000 })
@@ -115,12 +121,53 @@ for (const device of devices) {
       ': ' + JSON.stringify(buttonPosition),
   )
 
+  // Focus duration input: accessible keyboard with navigation hidden.
+  const customButton = page.locator('.duration-v5-presets > button').last()
+  await customButton.click()
+  const customInput = page.locator('.duration-v5-custom input')
+  await customInput.waitFor()
+  await customInput.focus()
+  assert.equal(
+    await page.locator('.mobile-dock').evaluate((dock) => getComputedStyle(dock).visibility),
+    'hidden',
+    'The dock should not obscure the mobile input keyboard',
+  )
+  await customInput.fill('30')
+  await capture('focus-custom-duration')
+  await customInput.press('Escape')
+
   await openTab('plan')
   const planTabs = page.locator('.plan-v4-tab')
   assert.equal(await planTabs.count(), 4)
   for (let i = 0; i < 4; i++) {
     await planTabs.nth(i).click()
     await capture('plan-' + ['goals', 'subjects', 'routine', 'advisor'][i])
+    if (i === 0) {
+      const advance = page.locator('.goal-create-v4 .v4-advanced-toggle')
+      if (await advance.count()) {
+        await advance.click()
+        await capture('plan-goals-advanced')
+        await advance.click()
+      }
+    }
+    if (i === 1) {
+      const addSubject = page.locator('.subjects-inline-actions button')
+      assert.ok(await addSubject.isVisible(), 'Add Subject must be visible in Plan')
+      await addSubject.click()
+      const dialog = page.locator('.subject-dialog[role="dialog"]')
+      await dialog.waitFor()
+      await dialog.locator('input.subject-dialog-input').fill('Mobile subject test')
+      await capture('plan-subject-dialog')
+      await dialog.locator('.subject-dialog-head button').click()
+    }
+    if (i === 2) {
+      const advance = page.locator('.routine-builder .v4-advanced-toggle')
+      if (await advance.count()) {
+        await advance.click()
+        await capture('plan-routine-advanced')
+        await advance.click()
+      }
+    }
   }
 
   await openTab('progress')
@@ -129,6 +176,13 @@ for (const device of devices) {
   for (let i = 0; i < 3; i++) {
     await progressTabs.nth(i).click()
     await capture('progress-' + ['overview', 'records', 'history'][i])
+    if (i === 2) {
+      const monthButton = page.locator('.history-month-controls button').first()
+      if (await monthButton.count()) {
+        await monthButton.click()
+        await capture('progress-history-month')
+      }
+    }
   }
 
   await openTab('league')
