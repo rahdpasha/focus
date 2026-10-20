@@ -169,10 +169,7 @@ export default function Settings({
   // iOS requires the actual subscription to begin in the button gesture.
   useEffect(() => {
     if (settingsSection !== 'alerts') return
-    if (!userId || !supportsBackgroundPush()) {
-      setPushStatus('unavailable')
-      return
-    }
+    if (!userId || !supportsBackgroundPush()) return
     let active = true
     void prepareFocusBackgroundPush().then((ready) => {
       if (!active) return
@@ -219,6 +216,9 @@ export default function Settings({
       void handlePushDisable()
     }
   }
+
+  const effectivePushStatus =
+    !userId || !supportsBackgroundPush() ? 'unavailable' : pushStatus
 
   const selectedThemePack =
     theme === 'black'
@@ -863,17 +863,17 @@ export default function Settings({
           <div className="settings-account-copy">
             <span>{tr('Background notifications', 'ئاگادارکردنەوە لە پاشبنەما')}</span>
             <strong role="status" aria-live="polite">
-              {pushStatus === 'on'
+              {effectivePushStatus === 'on'
                 ? tr('Enabled on this device', 'لەسەر ئەم ئامێرە چالاکە')
-                : pushStatus === 'off'
+                : effectivePushStatus === 'off'
                   ? tr('Not enabled', 'چالاک نەکراوە')
-                  : pushStatus === 'busy' || pushStatus === 'checking'
+                  : effectivePushStatus === 'busy' || effectivePushStatus === 'checking'
                     ? tr('Checking…', 'پشکنین…')
                     : tr('Not available here', 'لێرە بەردەست نییە')}
             </strong>
           </div>
           <div className="settings-data-actions">
-            {pushStatus === 'on' ? (
+            {effectivePushStatus === 'on' ? (
               <button
                 type="button"
                 className="settings-secondary-action"
@@ -888,8 +888,8 @@ export default function Settings({
                 className="settings-secondary-action"
                 onClick={() => { void handlePushEnable() }}
                 disabled={!userId || !settings.notificationsEnabled ||
-                  pushStatus === 'checking' || pushStatus === 'busy' ||
-                  pushStatus === 'unavailable'}
+                  effectivePushStatus === 'checking' || effectivePushStatus === 'busy' ||
+                  effectivePushStatus === 'unavailable'}
               >
                 <Bell size={15} />
                 {tr('Enable background alerts', 'چالاککردنی ئاگادارکردنەوەی پاشبنەما')}
@@ -903,7 +903,7 @@ export default function Settings({
                 'First switch on Notifications above to enable background alerts.',
                 'سەرەتا ئاگادارکردنەوەکان لە سەرەوە چالاک بکە.',
               )
-            : pushStatus === 'unavailable'
+            : effectivePushStatus === 'unavailable'
               ? tr(
                   'On iPhone, install FOCUS to your Home Screen and open it from its icon. Then allow notifications.',
                   'لە ئایفۆن FOCUS زیاد بکە بۆ شاشەی سەرەکی و لە ڕێگەی ئایکۆنەکە بکەرەوە.',
