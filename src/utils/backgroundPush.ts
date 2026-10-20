@@ -1,5 +1,12 @@
 import { supabase } from '../api/supabaseClient'
 
+// This public signing key identifies the server. The private key is kept in
+// Supabase Vault and never reaches a browser.
+const VAPID_PUBLIC_KEY = 'BPDIOUyrqErY3Bz4RaqGyAVOh2ihZdj7kLeKw1I5da08KIBZpS3cUK6Nr2aCUjqYSyt2qy2pZRWSZZBfkgUivP4'
+
+let readyRegistration: ServiceWorkerRegistration | null = null
+let existingSubscription: PushSubscription | null = null
+
 export function supportsBackgroundPush(): boolean {
   return Boolean(
     supabase &&
@@ -19,49 +26,48 @@ function decodeVapidKey(value: string): Uint8Array<ArrayBuffer> {
   return bytes
 }
 
-/**
- * Must be invoked directly from a user-tapped button.
- * iOS only offers this permission in installed Home Screen PWAs.
- */
+// Prepare BEFORE the user taps. On iOS, subscribe() must be called directly
+// from the tap event, without awaiting a network request or SW registration.
+export async function prepareFocusBackgroundPush(): Promise<boolean> {
+  if (!supportsBackgroundPush()) return false
+  try {
+    readyRegistration = await navigator.serviceWorker.ready
+    existingSubscription = await readyRegistration.pushManager.getSubscription()
+    return true
+  } catch {
+    return false
+  }
+}
+
 export async function enableFocusBackgroundPush(userId: string): Promise<void> {
   if (!supportsBackgroundPush() || !supabase) {
     throw new Error('Install FOCUS on your Home Screen to enable background alerts.')
   }
-
-  // Request permission before the first await loses the user gesture on iOS.
-  const permissionRequest = Notification.permission === 'default'
-    ? Notification.requestPermission()
-    : Promise.resolve(Notification.permission)
-  const permission = await permissionRequest
-  if (permission !== 'granted') {
+  if (Notification.permission === 'denied') {
     throw new Error('Notifications are blocked. Allow FOCUS notifications in iPhone Settings.')
   }
-
-  const registration = await navigator.serviceWorker.ready
-  const { data, error } = await supabase.rpc('focus_vapid_public_key')
-  if (error || typeof data !== 'string') {
-    throw new Error('Background notifications are not configured yet.')
+  if (!readyRegistration) {
+    throw new Error('Preparing notifications. Open the Focus page again and retry.')
   }
 
-  const previous = await registration.pushManager.getSubscription()
-  const subscription = previous ?? await registration.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: decodeVapidKey(data),
-  })
+  // This subscribe() call must occur synchronously inside the user's click
+  // handler. If permission is unset, the browser shows the permission prompt.
+  const promise = existingSubscription
+    ? Promise.resolve(existingSubscription)
+    : readyRegistration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: decodeVapidKey(VAPID_PUBLIC_KEY),
+      })
+  const subscription = await promise
 
-  const { error: saveError } = await supabase
-    .from('focus_push_subscriptions')
-    .upsert({ user_id: userId, endpoint: subscription.endpoint }, { onConflict: 'endpoint' })
-
-  if (saveError) throw new Error('Could not save your device for background alerts.')
+  const { error } = await supabase.from('focus_push_subscriptions').upsert({
+    user_id: userId,
+    endpoint: subscription.endpoint,
+  }, { onConflict: 'endpoint' })
+  if (error) throw new Error('Could not save your device for background alerts.')
+  existingSubscription = subscription
 }
 
-export async function hasFocusBackgroundPush(): Promise<boolean> {
-  if (!supportsBackgroundPush() || Notification.permission !== 'granted') return false
-  try {
-    const registration = await navigator.serviceWorker.ready
-    return Boolean(await registration.pushManager.getSubscription())
-  } catch {
-    return false
-  }
+export function hasFocusBackgroundPush(): boolean {
+  return Boolean(existingSubscription && Notification.permission === 'granted')
 }
