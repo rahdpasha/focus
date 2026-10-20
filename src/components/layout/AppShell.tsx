@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import type { Subject } from '../../types'
 import type { Page } from '../../app/navigation'
 import Sidebar from './Sidebar'
@@ -26,6 +26,14 @@ export default function AppShell({
   onDeleteSubject,
   children,
 }: AppShellProps) {
+  // The app swaps route components without a full navigation. Otherwise
+  // switching from a long History/League page leaves a new page midway down.
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    const content = document.getElementById('focus-main')
+    if (content) content.scrollTop = 0
+  }, [page])
+
   return (
     <>
       <a
