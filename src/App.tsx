@@ -335,6 +335,7 @@ function AuthenticatedApp({
           />
 
           <Settings
+            userId={auth.session?.user.id ?? null}
             settings={data.settings}
             dailyGoal={data.dailyGoal}
             weeklyGoal={data.weeklyGoal}

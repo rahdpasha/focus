@@ -68,6 +68,37 @@ export async function enableFocusBackgroundPush(userId: string): Promise<void> {
   existingSubscription = subscription
 }
 
+/** Turn off server push for this device. iOS notification permission remains unchanged. */
+export async function disableFocusBackgroundPush(userId: string): Promise<void> {
+  if (!supabase) throw new Error('FOCUS is not connected.')
+
+  const registration = readyRegistration ??
+    ('serviceWorker' in navigator ? await navigator.serviceWorker.ready : null)
+  const subscription = existingSubscription ??
+    (registration ? await registration.pushManager.getSubscription() : null)
+
+  if (!subscription) {
+    existingSubscription = null
+    return
+  }
+
+  // First remove the endpoint from the delivery database so that an
+  // unsubscribe failure cannot leave active server push notifications.
+  const { error } = await supabase
+    .from('focus_push_subscriptions')
+    .delete()
+    .eq('user_id', userId)
+    .eq('endpoint', subscription.endpoint)
+  if (error) throw new Error('Could not disable background notifications. Try again.')
+
+  await subscription.unsubscribe()
+  existingSubscription = null
+}
+
 export function hasFocusBackgroundPush(): boolean {
-  return Boolean(existingSubscription && Notification.permission === 'granted')
+  return Boolean(
+    existingSubscription &&
+    'Notification' in window &&
+    Notification.permission === 'granted',
+  )
 }

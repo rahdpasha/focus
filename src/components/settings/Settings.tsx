@@ -17,6 +17,7 @@ import {
   VolumeX,
 } from 'lucide-react'
 import {
+  useEffect,
   useRef,
   useState,
 } from 'react'
@@ -39,8 +40,16 @@ import type {
 import type {
   CloudSyncStatus,
 } from '../../storage/types'
+import {
+  disableFocusBackgroundPush,
+  enableFocusBackgroundPush,
+  hasFocusBackgroundPush,
+  prepareFocusBackgroundPush,
+  supportsBackgroundPush,
+} from '../../utils/backgroundPush'
 
 interface SettingsProps {
+  userId?: string | null
   settings: AppSettings
   dailyGoal: number
   weeklyGoal: number
@@ -110,6 +119,7 @@ const themeOptions: Array<{
 ]
 
 export default function Settings({
+  userId,
   settings,
   dailyGoal,
   weeklyGoal,
@@ -132,6 +142,10 @@ export default function Settings({
     )
   const [settingsSection, setSettingsSection] =
     useState<'general' | 'focus' | 'alerts' | 'account'>('general')
+  const [pushStatus, setPushStatus] = useState<
+    'checking' | 'on' | 'off' | 'busy' | 'unavailable'
+  >('checking')
+  const [pushError, setPushError] = useState('')
   const [
     pendingImport,
     setPendingImport,
@@ -150,6 +164,61 @@ export default function Settings({
   const {
     theme,
   } = useTheme()
+
+  // Prepare the push manager before the user taps the permission button.
+  // iOS requires the actual subscription to begin in the button gesture.
+  useEffect(() => {
+    if (settingsSection !== 'alerts') return
+    if (!userId || !supportsBackgroundPush()) return
+    let active = true
+    void prepareFocusBackgroundPush().then((ready) => {
+      if (!active) return
+      setPushStatus(
+        ready ? (hasFocusBackgroundPush() ? 'on' : 'off') : 'unavailable',
+      )
+    })
+    return () => { active = false }
+  }, [settingsSection, userId])
+
+  async function handlePushEnable() {
+    if (!userId) return
+    setPushStatus('busy')
+    setPushError('')
+    try {
+      await enableFocusBackgroundPush(userId)
+      setPushStatus('on')
+    } catch (error) {
+      setPushStatus('off')
+      setPushError(error instanceof Error
+        ? error.message
+        : 'Could not enable background notifications.')
+    }
+  }
+
+  async function handlePushDisable() {
+    if (!userId) return
+    setPushStatus('busy')
+    setPushError('')
+    try {
+      await disableFocusBackgroundPush(userId)
+      setPushStatus('off')
+    } catch (error) {
+      setPushStatus('on')
+      setPushError(error instanceof Error
+        ? error.message
+        : 'Could not disable background notifications.')
+    }
+  }
+
+  function handleNotificationsEnabledChange(enabled: boolean) {
+    onSettingChange('notificationsEnabled', enabled)
+    if (!enabled && pushStatus === 'on' && userId) {
+      void handlePushDisable()
+    }
+  }
+
+  const effectivePushStatus =
+    !userId || !supportsBackgroundPush() ? 'unavailable' : pushStatus
 
   const selectedThemePack =
     theme === 'black'
@@ -772,15 +841,83 @@ export default function Settings({
           checked={
             settings.notificationsEnabled
           }
-          onChange={(
-            checked,
-          ) =>
-            onSettingChange(
-              'notificationsEnabled',
-              checked,
-            )
-          }
+          onChange={handleNotificationsEnabledChange}
         />
+      </section>
+
+      <section className="glass-panel settings-section settings-section-wide">
+        <div className="settings-section-head">
+          <div className="settings-section-icon">
+            <Bell size={17} />
+          </div>
+          <div>
+            <h2>{tr('Background alerts', 'ئاگادارکردنەوەی پاشبنەما')}</h2>
+            <p>{tr(
+              'Receive a study-session completion alert even when FOCUS is not open.',
+              'کاتێک FOCUS داخراوەشە ئاگادارکردنەوەی تەواوبوونی سێشنی خوێندن وەربگرە.',
+            )}</p>
+          </div>
+        </div>
+
+        <div className="settings-data-row">
+          <div className="settings-account-copy">
+            <span>{tr('Background notifications', 'ئاگادارکردنەوە لە پاشبنەما')}</span>
+            <strong role="status" aria-live="polite">
+              {effectivePushStatus === 'on'
+                ? tr('Enabled on this device', 'لەسەر ئەم ئامێرە چالاکە')
+                : effectivePushStatus === 'off'
+                  ? tr('Not enabled', 'چالاک نەکراوە')
+                  : effectivePushStatus === 'busy' || effectivePushStatus === 'checking'
+                    ? tr('Checking…', 'پشکنین…')
+                    : tr('Not available here', 'لێرە بەردەست نییە')}
+            </strong>
+          </div>
+          <div className="settings-data-actions">
+            {effectivePushStatus === 'on' ? (
+              <button
+                type="button"
+                className="settings-secondary-action"
+                onClick={() => { void handlePushDisable() }}
+              >
+                <BellOff size={15} />
+                {tr('Turn off', 'کوژاندنەوە')}
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="settings-secondary-action"
+                onClick={() => { void handlePushEnable() }}
+                disabled={!userId || !settings.notificationsEnabled ||
+                  effectivePushStatus === 'checking' || effectivePushStatus === 'busy' ||
+                  effectivePushStatus === 'unavailable'}
+              >
+                <Bell size={15} />
+                {tr('Enable background alerts', 'چالاککردنی ئاگادارکردنەوەی پاشبنەما')}
+              </button>
+            )}
+          </div>
+        </div>
+        <p style={{ color: 'var(--text-muted)', fontSize: 11, lineHeight: 1.6, marginTop: 12 }}>
+          {!settings.notificationsEnabled
+            ? tr(
+                'First switch on Notifications above to enable background alerts.',
+                'سەرەتا ئاگادارکردنەوەکان لە سەرەوە چالاک بکە.',
+              )
+            : effectivePushStatus === 'unavailable'
+              ? tr(
+                  'On iPhone, install FOCUS to your Home Screen and open it from its icon. Then allow notifications.',
+                  'لە ئایفۆن FOCUS زیاد بکە بۆ شاشەی سەرەکی و لە ڕێگەی ئایکۆنەکە بکەرەوە.',
+                )
+              : tr(
+                  'This setting remains here so you can check its status or turn it off. Alerts require internet and permission.',
+                  'ئەم ڕێکخستنە لێرە دەمێنێتەوە بۆ پشکنینی دۆخ یان کوژاندنەوە. ئاگادارکردنەوەکان پێویستیان بە ئینتەرنێت و مۆڵەت هەیە.',
+                )}
+        </p>
+        {pushError && (
+          <p role="alert" style={{ color: 'var(--danger)', fontSize: 11, marginTop: 8 }}>
+            {pushError}
+          </p>
+        )}
       </section>
 
         </>
