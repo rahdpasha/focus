@@ -180,8 +180,8 @@ $$;
 revoke all on function public.focus_ack_push_job(text,uuid,boolean,boolean) from public, authenticated;
 grant execute on function public.focus_ack_push_job(text,uuid,boolean,boolean) to anon;
 
-create extension if not exists pg_cron with schema pg_catalog;
-create extension if not exists pg_net with schema extensions;
+create extension if not exists pg_cron;
+create extension if not exists pg_net;
 select cron.schedule(
   'focus-background-completion-v1',
   '15 seconds',
