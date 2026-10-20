@@ -10,6 +10,7 @@ mkdirSync('mobile-qa-artifacts', { recursive: true })
 const browser = await chromium.launch({ headless: true })
 const devices = [
   { name: 'iphone', width: 390, height: 844 },
+  { name: 'iphone-dark', width: 390, height: 844, dark: true },
   { name: 'small', width: 320, height: 700 },
   { name: 'large', width: 430, height: 932 },
   { name: 'landscape', width: 700, height: 390 },
@@ -37,11 +38,15 @@ for (const device of devices) {
   const page = await ctx.newPage()
   page.on('pageerror', (error) => errors.push(device.name + ': ' + error.message))
 
-  await page.addInitScript((session) => {
+  await page.addInitScript((seed) => {
     try {
-      localStorage.setItem('focus-sessions', JSON.stringify([session]))
+      localStorage.setItem('focus-sessions', JSON.stringify([seed.session]))
+      if (seed.dark) {
+        localStorage.setItem('focus-theme', 'dark')
+        localStorage.setItem('focus-settings', JSON.stringify({ theme: 'dark' }))
+      }
     } catch { /* Test scaffold only */ }
-  }, sampleSession)
+  }, { session: sampleSession, dark: Boolean(device.dark) })
 
   await page.goto(base, { waitUntil: 'networkidle' })
   await page.locator('.mobile-dock').waitFor({ timeout: 15000 })
@@ -63,7 +68,7 @@ for (const device of devices) {
     )
     await page.screenshot({
       path: 'mobile-qa-artifacts/' + device.name + '-' + label + '.png',
-      fullPage: device.name === 'iphone',
+      fullPage: device.name.startsWith('iphone'),
       animations: 'disabled',
     })
     count++
