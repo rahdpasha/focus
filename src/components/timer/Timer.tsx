@@ -7,6 +7,13 @@ import {
 } from 'lucide-react'
 import DurationSelector from './DurationSelector'
 import { useI18n } from '../../useI18n'
+import {
+  pausedFromClock,
+  readTimerSnapshot,
+  remainingFromClock,
+  writeTimerSnapshot,
+  type TimerMode,
+} from '../../utils/timerPersistence'
 
 interface TimerProps {
   subjectName: string
@@ -34,11 +41,6 @@ interface TimerProps {
   ) => void
 }
 
-type TimerMode =
-  | 'focus'
-  | 'shortBreak'
-  | 'longBreak'
-
 export default function Timer({
   subjectName,
   subjectColor,
@@ -57,23 +59,30 @@ export default function Timer({
   const { language, t, tr } = useI18n()
 
   const initialSeconds = Math.max(1, initialFocusMinutes) * 60
-  const [focusDuration, setFocusDuration] = useState(initialSeconds)
-  const [duration, setDuration] = useState(initialSeconds)
-  const [timeRemaining, setTimeRemaining] = useState(initialSeconds)
+  // Restore a saved session when returning from another page, refreshing,
+  // or reopening the installed app. A deadline survives suspended JS timers.
+  const [restored] = useState(() => readTimerSnapshot(subjectName))
+  const [focusDuration, setFocusDuration] = useState(restored?.focusDuration ?? initialSeconds)
+  const [duration, setDuration] = useState(restored?.duration ?? initialSeconds)
+  const [timeRemaining, setTimeRemaining] = useState(() =>
+    restored?.isStudying
+      ? remainingFromClock(restored.timerEndAt, restored.timeRemaining)
+      : restored?.timeRemaining ?? initialSeconds
+  )
 
   const [mode, setMode] =
-    useState<TimerMode>('focus')
+    useState<TimerMode>(restored?.mode ?? 'focus')
 
   const [
     completedFocusSessions,
     setCompletedFocusSessions,
-  ] = useState(0)
+  ] = useState(restored?.completedFocusSessions ?? 0)
 
   const [isStudying, setIsStudying] =
-    useState(false)
+    useState(restored?.isStudying ?? false)
 
   const [isPaused, setIsPaused] =
-    useState(false)
+    useState(restored?.isPaused ?? false)
 
   const [isCompleted, setIsCompleted] =
     useState(false)
@@ -90,25 +99,33 @@ export default function Timer({
     useRef<number | null>(null)
 
   const [pausedSeconds, setPausedSeconds] =
-    useState(0)
+    useState(() => restored?.isPaused
+      ? pausedFromClock(restored.pauseStartedAt, restored.pauseBaseSeconds)
+      : restored?.pausedSeconds ?? 0
+    )
 
   const [interruptionCount, setInterruptionCount] =
-    useState(0)
+    useState(restored?.interruptionCount ?? 0)
 
   const intervalRef =
     useRef<number | null>(null)
 
-  const pauseIntervalRef =
-    useRef<number | null>(null)
-
   const timerEndRef =
-    useRef<number | null>(null)
+    useRef<number | null>(restored?.timerEndAt ?? null)
+
+  const pauseStartedAtRef =
+    useRef<number | null>(restored?.pauseStartedAt ?? null)
+  const pauseBaseSecondsRef =
+    useRef(restored?.pauseBaseSeconds ?? 0)
 
   const finishedRef =
     useRef(false)
 
   const sessionStartedAtRef =
-    useRef<Date | null>(null)
+    useRef<Date | null>(restored?.sessionStartedAt
+      ? new Date(restored.sessionStartedAt)
+      : null
+    )
 
   const isFocus = mode === 'focus'
 
@@ -157,16 +174,6 @@ export default function Timer({
       )
 
       intervalRef.current = null
-    }
-
-    if (
-      pauseIntervalRef.current !== null
-    ) {
-      clearInterval(
-        pauseIntervalRef.current
-      )
-
-      pauseIntervalRef.current = null
     }
 
     timerEndRef.current = null
@@ -272,9 +279,35 @@ export default function Timer({
   const resetTracking = useCallback(() => {
     setPausedSeconds(0)
     setInterruptionCount(0)
+    pauseStartedAtRef.current = null
+    pauseBaseSecondsRef.current = 0
     finishedRef.current = false
     sessionStartedAtRef.current = null
   }, [])
+
+  useEffect(() => {
+    writeTimerSnapshot({
+      version: 1,
+      subjectName,
+      focusDuration,
+      duration,
+      timeRemaining,
+      mode,
+      completedFocusSessions,
+      isStudying,
+      isPaused,
+      timerEndAt: timerEndRef.current,
+      sessionStartedAt: sessionStartedAtRef.current?.getTime() ?? null,
+      pausedSeconds,
+      pauseStartedAt: pauseStartedAtRef.current,
+      pauseBaseSeconds: pauseBaseSecondsRef.current,
+      interruptionCount,
+    })
+  }, [
+    subjectName, focusDuration, duration, timeRemaining, mode,
+    completedFocusSessions, isStudying, isPaused,
+    pausedSeconds, interruptionCount,
+  ])
 
   const handleDurationChange = (
     newDuration: number
@@ -357,16 +390,8 @@ export default function Timer({
       )
     }
 
-    if (
-      pauseIntervalRef.current === null
-    ) {
-      pauseIntervalRef.current =
-        window.setInterval(() => {
-          setPausedSeconds(
-            (value) => value + 1
-          )
-        }, 1000)
-    }
+    pauseBaseSecondsRef.current = pausedSeconds
+    pauseStartedAtRef.current = Date.now()
   }
 
   const resumeTimer = () => {
@@ -381,14 +406,14 @@ export default function Timer({
     setIsPaused(false)
     setIsStudying(true)
 
-    if (
-      pauseIntervalRef.current !== null
-    ) {
-      clearInterval(
-        pauseIntervalRef.current
+    const pausedUntil = pauseStartedAtRef.current
+    if (pausedUntil !== null) {
+      const total = pausedFromClock(
+        pausedUntil, pauseBaseSecondsRef.current
       )
-
-      pauseIntervalRef.current = null
+      pauseBaseSecondsRef.current = total
+      setPausedSeconds(total)
+      pauseStartedAtRef.current = null
     }
   }
 
@@ -633,7 +658,14 @@ export default function Timer({
         250
       )
 
+    // Catch up instantly when an iPhone unlocks, the tab becomes visible,
+    // or a suspended PWA returns to the foreground.
+    document.addEventListener('visibilitychange', updateRemaining)
+    window.addEventListener('pageshow', updateRemaining)
+
     return () => {
+      document.removeEventListener('visibilitychange', updateRemaining)
+      window.removeEventListener('pageshow', updateRemaining)
       if (
         intervalRef.current !==
         null
@@ -672,6 +704,26 @@ export default function Timer({
     timeRemaining,
     handleTimerFinished,
   ])
+
+  useEffect(() => {
+    if (!isPaused) return
+
+    const refreshPausedTime = () => {
+      setPausedSeconds(pausedFromClock(
+        pauseStartedAtRef.current,
+        pauseBaseSecondsRef.current,
+      ))
+    }
+    refreshPausedTime()
+    const id = window.setInterval(refreshPausedTime, 1000)
+    document.addEventListener('visibilitychange', refreshPausedTime)
+    window.addEventListener('pageshow', refreshPausedTime)
+    return () => {
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', refreshPausedTime)
+      window.removeEventListener('pageshow', refreshPausedTime)
+    }
+  }, [isPaused])
 
   useEffect(() => {
     if (!showComplete) {
@@ -718,7 +770,9 @@ export default function Timer({
 
   useEffect(() => {
     return () => {
-      clearTimer()
+      // Only cancel callbacks here: React StrictMode may replay effects,
+      // and clearing the saved deadline would restart a running session.
+      if (intervalRef.current !== null) clearInterval(intervalRef.current)
 
       if (
         completionTimeoutRef.current !== null
@@ -728,7 +782,7 @@ export default function Timer({
         )
       }
     }
-  }, [clearTimer])
+  }, [])
 
   const getTimerColor = () => {
     if (isCompleted) {
