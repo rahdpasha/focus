@@ -56,6 +56,11 @@ export default function DurationSelector({
         minutes * 60,
       ),
     )
+    // Closing a focused input by unmounting it does not reliably dispatch
+    // blur on iOS. Release keyboard focus before removing the field.
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+    }
     setShowCustom(false)
     setCustomMinutes('')
   }
@@ -166,6 +171,7 @@ export default function DurationSelector({
                 event.key ===
                 'Escape'
               ) {
+                event.currentTarget.blur()
                 setShowCustom(
                   false,
                 )
