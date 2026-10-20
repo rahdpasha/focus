@@ -1,4 +1,4 @@
-import { useEffect, useState, type FocusEvent, type ReactNode } from 'react'
+import { useEffect, useState, type FocusEvent, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react'
 import type { Subject } from '../../types'
 import type { Page } from '../../app/navigation'
 import Sidebar from './Sidebar'
@@ -41,6 +41,17 @@ export default function AppShell({
     }
   }
 
+  function handleMobileKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    // Escape often removes the active input before mobile Safari emits blur.
+    if (event.key === 'Escape') setEditingField(false)
+  }
+
+  function handleMobilePointerDown(event: PointerEvent<HTMLDivElement>) {
+    if (!(event.target instanceof Element) || !event.target.matches(editableSelector)) {
+      setEditingField(false)
+    }
+  }
+
   // The app swaps route components without a full navigation. Otherwise
   // switching from a long History/League page leaves a new page midway down.
   useEffect(() => {
@@ -62,6 +73,8 @@ export default function AppShell({
         className={editingField ? 'app-shell is-editing' : 'app-shell'}
         onFocusCapture={handleMobileFocus}
         onBlurCapture={handleMobileBlur}
+        onKeyDownCapture={handleMobileKeyDown}
+        onPointerDownCapture={handleMobilePointerDown}
       >
         <Sidebar
           page={page}
