@@ -1,4 +1,4 @@
-const CACHE_NAME = 'focus-pwa-v4'
+const CACHE_NAME = 'focus-pwa-v5'
 const STATIC_FILES = [
   '/manifest.webmanifest',
   '/favicon.svg',
