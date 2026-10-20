@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import {
   useEffect,
+  useRef,
   useState,
 } from 'react'
 import Timer from '../components/timer/Timer'
@@ -23,6 +24,13 @@ import {
 } from '../useI18n'
 import PageContainer from './PageContainer'
 import PageHeader from '../components/layout/PageHeader'
+import { supabase } from '../api/supabaseClient'
+import {
+  enableFocusBackgroundPush,
+  hasFocusBackgroundPush,
+  prepareFocusBackgroundPush,
+  supportsBackgroundPush,
+} from '../utils/backgroundPush'
 import {
   getStudyAdvisor,
 } from '../utils/studyAdvisor'
@@ -32,6 +40,7 @@ import {
 } from '../utils/ambientAudio'
 
 interface FocusPageProps {
+  userId?: string | null
   activeSubject:
     | Subject
     | undefined
@@ -89,6 +98,7 @@ const ambientOptions: Array<{
 ]
 
 export default function FocusPage({
+  userId,
   activeSubject,
   subjects = [],
   sessions = [],
@@ -107,6 +117,70 @@ export default function FocusPage({
   onAddSubjectRequest,
 }: FocusPageProps) {
   const { t, tr } = useI18n()
+  const [pushStatus, setPushStatus] = useState<'checking' | 'enabled' | 'ready' | 'loading'>('checking')
+  const [pushMessage, setPushMessage] = useState('')
+  const pushJobQueue = useRef<Promise<unknown>>(Promise.resolve())
+
+  useEffect(() => {
+    let cancelled = false
+    void prepareFocusBackgroundPush().then(() => {
+      if (!cancelled) setPushStatus(hasFocusBackgroundPush() ? 'enabled' : 'ready')
+    })
+    return () => { cancelled = true }
+  }, [userId])
+
+  function queueTimerJob(run: () => Promise<unknown>) {
+    pushJobQueue.current = pushJobQueue.current.then(run).catch((error: unknown) => {
+      console.warn('[FOCUS] Background completion unavailable:', error)
+    })
+  }
+
+  function changeTimerJob(sessionClientId: string, values: Record<string, unknown>) {
+    const client = supabase
+    if (!client || !userId) return
+    queueTimerJob(async () => {
+      const { error } = await client
+        .from('focus_timer_jobs')
+        .update(values)
+        .eq('user_id', userId)
+        .eq('session_client_id', sessionClientId)
+      if (error) throw error
+    })
+  }
+
+  function scheduleTimerJob(startedAt: Date, sessionClientId: string, seconds: number, endAt: number) {
+    const client = supabase
+    if (!client || !userId || !targetSubject) return
+    const subjectId = targetSubject.id
+    const subjectName = targetSubject.name
+    queueTimerJob(async () => {
+      const { error } = await client.from('focus_timer_jobs').upsert({
+        user_id: userId,
+        session_client_id: sessionClientId,
+        subject_client_id: subjectId,
+        subject_name: subjectName,
+        duration_seconds: seconds,
+        started_at: startedAt.toISOString(),
+        due_at: new Date(endAt).toISOString(),
+        status: 'active',
+      }, { onConflict: 'user_id,session_client_id' })
+      if (error) throw error
+    })
+  }
+
+  async function handleEnableBackgroundAlerts() {
+    if (!userId) return
+    setPushStatus('loading')
+    setPushMessage('')
+    try {
+      await enableFocusBackgroundPush(userId)
+      setPushStatus('enabled')
+      setPushMessage(tr('Background alerts enabled. Test a short focus session.', 'ئاگادارکردنەوەی پاشبنەما چالاک کرا.'))
+    } catch (error) {
+      setPushStatus('ready')
+      setPushMessage(error instanceof Error ? error.message : 'Could not enable notifications.')
+    }
+  }
 
   const [
     ambientSound,
@@ -345,6 +419,15 @@ export default function FocusPage({
               onComplete={() =>
                 ambientAudio.stop()
               }
+              onSessionStart={scheduleTimerJob}
+              onSessionPause={(id, paused, interruptions) =>
+                changeTimerJob(id, { status: 'paused', total_paused_seconds: paused, interruptions })
+              }
+              onSessionResume={(id, endAt, paused) =>
+                changeTimerJob(id, { status: 'active', due_at: new Date(endAt).toISOString(), total_paused_seconds: paused })
+              }
+              onSessionCancel={(id) => changeTimerJob(id, { status: 'cancelled' })}
+              onSessionCompleted={(id) => changeTimerJob(id, { status: 'completed', completed_at: new Date().toISOString() })}
               onSessionEnd={(
                 duration,
                 actualDuration,
@@ -352,6 +435,7 @@ export default function FocusPage({
                 interruptions,
                 totalPausedSeconds,
                 startedAt,
+                sessionClientId,
               ) => {
                 ambientAudio.stop()
 
@@ -365,9 +449,7 @@ export default function FocusPage({
                 }
 
                 onAddSession({
-                  id:
-                    's' +
-                    Date.now(),
+                  id: sessionClientId,
                   subjectId:
                     targetSubject.id,
                   subjectName:
@@ -402,6 +484,38 @@ export default function FocusPage({
               }}
             />
           </div>
+
+          {userId && notificationsEnabled && (
+            <div role="status" style={{
+              display: 'flex',
+              gap: 10,
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              margin: '12px 0',
+            }}>
+              {pushStatus === 'enabled' ? (
+                <span>✓ {tr('Background alerts enabled', 'ئاگادارکردنەوەی پاشبنەما چالاکە')}</span>
+              ) : (
+                <button
+                  type="button"
+                  className="timer-v5-secondary"
+                  disabled={pushStatus === 'loading' || pushStatus === 'checking' || !supportsBackgroundPush()}
+                  onClick={() => { void handleEnableBackgroundAlerts() }}
+                >
+                  {pushStatus === 'loading'
+                    ? tr('Enabling alerts…', 'چالاککردنی ئاگادارکردنەوە…')
+                    : tr('Enable background alerts', 'چالاککردنی ئاگادارکردنەوەی پاشبنەما')}
+                </button>
+              )}
+              <small style={{ opacity: 0.75, textAlign: 'center' }}>
+                {!supportsBackgroundPush()
+                  ? tr('On iPhone, open FOCUS from your Home Screen to allow notifications.', 'لە ئایفۆن FOCUS لە شاشەی سەرەکی بکەرەوە.')
+                  : tr('Alerts require internet and permission; delivery may be delayed.', 'پێویستی بە ئینتەرنێت و ڕێگەپێدانە.')}
+              </small>
+              {pushMessage && <small>{pushMessage}</small>}
+            </div>
+          )}
 
           <details className="focus-audio focus-audio-v4">
             <summary className="focus-audio-label">

@@ -1017,9 +1017,13 @@ export function useFocusData(
   }
 
   const addSession = (session: StudySession) => {
+    // A server-finished background session and a resumed local timer share
+    // the same client ID. Never count that completion twice.
     const nextSessions = [
       session,
-      ...latestLocalSnapshot.current.sessions,
+      ...latestLocalSnapshot.current.sessions.filter(
+        (existing) => existing.id !== session.id,
+      ),
     ]
     const nextSnapshot = {
       ...latestLocalSnapshot.current,

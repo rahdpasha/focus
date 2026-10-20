@@ -3,6 +3,7 @@ export type TimerMode = 'focus' | 'shortBreak' | 'longBreak'
 export interface TimerSnapshot {
   version: 1
   subjectName: string
+  sessionClientId?: string | null
   focusDuration: number
   duration: number
   timeRemaining: number
@@ -56,6 +57,7 @@ export function readTimerSnapshot(subjectName: string): TimerSnapshot | null {
     if (
       snapshot.version !== 1 ||
       snapshot.subjectName !== subjectName ||
+      (snapshot.sessionClientId != null && typeof snapshot.sessionClientId !== 'string') ||
       !['focus', 'shortBreak', 'longBreak'].includes(snapshot.mode ?? '') ||
       !validSeconds(snapshot.focusDuration) ||
       snapshot.focusDuration === 0 ||

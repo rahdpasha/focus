@@ -231,6 +231,7 @@ function AuthenticatedApp({
 
       {page === 'focus' && (
         <FocusPage
+          userId={auth.session?.user.id ?? null}
           activeSubject={activeSubject}
           subjects={data.subjects}
           sessions={data.sessions}

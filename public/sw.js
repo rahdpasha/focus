@@ -78,3 +78,33 @@ self.addEventListener('fetch', (event) => {
     return response
   })())
 })
+
+/**
+ * Real server-delivered Web Push. A backgrounded iPhone cannot run timers or
+ * schedule local notifications, but an installed PWA service worker can wake
+ * briefly on receipt of a remote push from APNs.
+ */
+self.addEventListener('push', (event) => {
+  event.waitUntil(
+    self.registration.showNotification('FOCUS · Session finished', {
+      body: 'Your focus session is complete. Great work! Time for a break.',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      tag: 'focus-session-complete',
+      data: { url: '/' },
+    })
+  )
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  event.waitUntil((async () => {
+    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+    for (const client of windows) {
+      if (client.url.startsWith(self.location.origin) && 'focus' in client) {
+        return client.focus()
+      }
+    }
+    return self.clients.openWindow('/')
+  })())
+})

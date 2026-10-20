@@ -28,7 +28,11 @@ interface TimerProps {
   notificationsEnabled: boolean
 
   onComplete: () => void
-  onSessionStart?: (startedAt: Date) => void
+  onSessionStart?: (startedAt: Date, sessionClientId: string, plannedSeconds: number, endAt: number) => void
+  onSessionPause?: (sessionClientId: string, pausedSeconds: number, interruptions: number) => void
+  onSessionResume?: (sessionClientId: string, endAt: number, pausedSeconds: number) => void
+  onSessionCancel?: (sessionClientId: string) => void
+  onSessionCompleted?: (sessionClientId: string) => void
   initialFocusMinutes?: number
 
   onSessionEnd: (
@@ -37,7 +41,8 @@ interface TimerProps {
     completed: boolean,
     interruptions: number,
     totalPausedSeconds: number,
-    startedAt: Date
+    startedAt: Date,
+    sessionClientId: string
   ) => void
 }
 
@@ -53,6 +58,10 @@ export default function Timer({
   notificationsEnabled,
   onComplete,
   onSessionStart,
+  onSessionPause,
+  onSessionResume,
+  onSessionCancel,
+  onSessionCompleted,
   onSessionEnd,
   initialFocusMinutes = 25,
 }: TimerProps) {
@@ -126,6 +135,10 @@ export default function Timer({
       ? new Date(restored.sessionStartedAt)
       : null
     )
+  const sessionClientIdRef = useRef<string | null>(
+    restored?.sessionClientId ??
+    (restored?.sessionStartedAt ? 's' + restored.sessionStartedAt : null)
+  )
 
   const isFocus = mode === 'focus'
 
@@ -301,12 +314,14 @@ export default function Timer({
     pauseBaseSecondsRef.current = 0
     finishedRef.current = false
     sessionStartedAtRef.current = null
+    sessionClientIdRef.current = null
   }, [])
 
   useEffect(() => {
     writeTimerSnapshot({
       version: 1,
       subjectName,
+      sessionClientId: sessionClientIdRef.current,
       focusDuration,
       duration,
       timeRemaining,
@@ -371,7 +386,13 @@ export default function Timer({
     if (isFocus && sessionStartedAtRef.current === null) {
       const startedAt = new Date()
       sessionStartedAtRef.current = startedAt
-      onSessionStart?.(startedAt)
+      sessionClientIdRef.current = 's' + startedAt.getTime() + '-' + crypto.randomUUID().slice(0, 8)
+      onSessionStart?.(
+        startedAt,
+        sessionClientIdRef.current,
+        focusDuration,
+        timerEndRef.current!,
+      )
     }
 
     setIsStudying(true)
@@ -402,6 +423,10 @@ export default function Timer({
     setIsStudying(false)
     setIsPaused(true)
 
+    if (isFocus && sessionClientIdRef.current) {
+      onSessionPause?.(sessionClientIdRef.current, pausedSeconds, interruptionCount + 1)
+    }
+
     if (isFocus) {
       setInterruptionCount(
         (count) => count + 1
@@ -424,6 +449,14 @@ export default function Timer({
     setIsPaused(false)
     setIsStudying(true)
 
+    if (isFocus && sessionClientIdRef.current) {
+      onSessionResume?.(
+        sessionClientIdRef.current,
+        timerEndRef.current!,
+        pausedFromClock(pauseStartedAtRef.current, pauseBaseSecondsRef.current),
+      )
+    }
+
     const pausedUntil = pauseStartedAtRef.current
     if (pausedUntil !== null) {
       const total = pausedFromClock(
@@ -436,6 +469,9 @@ export default function Timer({
   }
 
   const resetTimer = () => {
+    if (isFocus && sessionClientIdRef.current) {
+      onSessionCancel?.(sessionClientIdRef.current)
+    }
     clearTimer()
 
     setIsStudying(false)
@@ -514,8 +550,12 @@ export default function Timer({
         true,
         interruptionCount,
         pausedSeconds,
-        sessionStartedAtRef.current ?? new Date()
+        sessionStartedAtRef.current ?? new Date(),
+        sessionClientIdRef.current ?? ('s' + startedAt.getTime()),
       )
+      if (sessionClientIdRef.current) {
+        onSessionCompleted?.(sessionClientIdRef.current)
+      }
 
       setCompletedFocusSessions(
         (previous) => previous + 1
@@ -533,6 +573,7 @@ export default function Timer({
       sendCompletionNotification,
       onComplete,
       onSessionEnd,
+      onSessionCompleted,
     ])
 
   const finishBreak = useCallback(() => {
