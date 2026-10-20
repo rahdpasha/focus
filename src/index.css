@@ -16071,3 +16071,42 @@ textarea::placeholder {
     margin-top: 8px;
   }
 }
+
+
+/* Visual browser audit refinement: these columns were being treated as
+   vertical flex-basis on Plan cards by a legacy mobile rule. That made
+   compact recommendations render as tall blank rectangles on iPhone. */
+@media (max-width: 760px) {
+  .study-plan-item {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    min-height: 0;
+    gap: 10px;
+    padding: 13px;
+  }
+
+  .study-plan-item > div:first-child,
+  .study-plan-item-copy {
+    display: flex;
+    flex: 0 0 auto;
+    min-width: 0;
+    min-height: 0;
+    width: 100%;
+  }
+
+  .study-plan-item .study-plan-action {
+    display: flex;
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: 44px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .study-plan-duration {
+    min-width: 0;
+    text-align: start;
+  }
+}
