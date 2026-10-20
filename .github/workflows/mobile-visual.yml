@@ -1,0 +1,59 @@
+name: Mobile layout browser audit
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mobile-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install project and browser driver
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+
+      - name: Use disposable local-only app data
+        run: |
+          # This patch affects the temporary CI checkout only. It does NOT
+          # change the committed Supabase client or a production deployment.
+          sed -i 's/^const isConfigured =$/const isConfigured = false \&\&/' src/api/supabaseClient.ts
+
+      - name: Start test app
+        run: |
+          (npm run dev -- --host 127.0.0.1 --port 4175 > /tmp/focus-mobile-qa-vite.log 2>&1 &)
+          for attempt in $(seq 1 50); do
+            if curl -fsS http://127.0.0.1:4175/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/focus-mobile-qa-vite.log
+          exit 1
+
+      - name: Browse six pages and nested mobile screens
+        run: node tests/mobile-visual-smoke.mjs
+
+      - name: Upload screenshots for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-screenshots
+          path: mobile-qa-artifacts/
+          if-no-files-found: ignore
+          retention-days: 7
