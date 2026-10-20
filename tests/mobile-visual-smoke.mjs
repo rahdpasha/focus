@@ -12,7 +12,7 @@ const devices = [
   { name: 'iphone', width: 390, height: 844 },
   { name: 'small', width: 320, height: 700 },
   { name: 'large', width: 430, height: 932 },
-  { name: 'landscape', width: 844, height: 390 },
+  { name: 'landscape', width: 700, height: 390 },
 ]
 
 const sampleSession = {
