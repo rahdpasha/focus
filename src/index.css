@@ -15518,3 +15518,522 @@ textarea::placeholder {
     min-width: 0;
   }
 }
+
+
+/* Continue phone-level review: Advisor, Progress, League, Settings. */
+@media (max-width: 760px) {
+  /* Plan > Advisor: prompts and recommendations need breathing room. */
+  .advisor-shell,
+  .advisor-form,
+  .advisor-facts {
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .advisor-hero,
+  .advisor-v4-details,
+  .advisor-v5-facts-card {
+    min-width: 0;
+    padding: 15px;
+  }
+
+  .advisor-quick-prompts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .advisor-quick-prompts > button {
+    flex: 1 1 120px;
+    min-width: 0;
+    min-height: 44px;
+    white-space: normal;
+  }
+
+  .advisor-form :where(input, textarea),
+  .advisor-form .cyber-btn {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .advisor-answer,
+  .advisor-reasons {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  /* Progress > Overview: cards have legible text, the seven-day graphic
+     scrolls horizontally instead of squeezing seven columns into 360px. */
+  .stats-v4,
+  .stats-v4-hero,
+  .stats-v4-rhythm,
+  .stats-v4-weekly,
+  .stats-v4-subjects,
+  .stats-v4-records {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .stats-v4-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px 15px;
+  }
+
+  .stats-v4-hero-copy {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .stats-v4-hero h1 {
+    font-size: clamp(31px, 9vw, 42px);
+    overflow-wrap: anywhere;
+  }
+
+  .stats-v4-orb {
+    align-self: center;
+    width: min(184px, 55vw);
+    max-width: 100%;
+  }
+
+  .stats-v4-metrics,
+  .stats-v4-split,
+  .stats-v4-record-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  .stats-v4-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .stats-v4-metrics article {
+    min-width: 0;
+    min-height: 118px;
+    padding: 12px 10px;
+  }
+
+  .stats-v4-metrics article > strong {
+    font-size: clamp(17px, 5.3vw, 24px);
+  }
+
+  .stats-v4-rhythm {
+    overflow: hidden;
+  }
+
+  .stats-v4-day-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(108px, 1fr));
+    width: 100%;
+    max-width: 100%;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: x proximity;
+    padding-bottom: 8px;
+  }
+
+  .stats-v4-day-grid article {
+    min-width: 0;
+    min-height: 136px;
+    padding: 10px;
+    scroll-snap-align: start;
+  }
+
+  .stats-v4-weekly,
+  .stats-v4-subjects,
+  .stats-v4-records {
+    padding: 15px;
+  }
+
+  .stats-v4-subject-stack > *,
+  .stats-v4-week-stack > * {
+    min-width: 0;
+  }
+
+  /* Progress > Records: do not maintain desktop 3-column hero/cards. */
+  .records-hero-grid,
+  .records-grid,
+  .records-context-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .records-hero,
+  .records-story,
+  .records-context-card {
+    min-width: 0;
+    padding: 15px;
+  }
+
+  .records-metric-card {
+    min-width: 0;
+    padding: 13px;
+  }
+
+  .records-story-head {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Progress > History: accessible calendar, not a desktop heatmap. */
+  .history-overview {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .history-summary-card {
+    min-width: 0;
+    min-height: 82px;
+    padding: 11px 8px;
+  }
+
+  .history-summary-card strong {
+    font-size: clamp(15px, 4.4vw, 23px);
+  }
+
+  .history-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .history-calendar-panel,
+  .history-day-panel {
+    min-width: 0;
+    padding: 12px;
+  }
+
+  .history-calendar-head,
+  .history-day-head {
+    flex-wrap: wrap;
+    gap: 9px;
+  }
+
+  .history-month-controls {
+    min-width: 0;
+    flex: 0 0 auto;
+  }
+
+  .history-month-controls button {
+    min-width: 42px;
+    min-height: 42px;
+  }
+
+  .history-calendar {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 3px;
+    width: 100%;
+  }
+
+  .history-weekday {
+    font-size: 10px;
+    padding-inline: 0;
+  }
+
+  .history-day {
+    min-width: 0;
+    min-height: 50px;
+    padding: 5px 2px;
+  }
+
+  .history-day-top,
+  .history-day-data {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .history-day-data {
+    margin-top: 5px;
+    font-size: 9px;
+  }
+
+  .history-session-title {
+    grid-template-columns: 8px minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .history-session-title > :last-child {
+    grid-column: 2;
+  }
+
+  .history-session-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* League: podium, leaderboard rows, competitions and enrollment must
+     remain readable with long Kurdish names at 320px. */
+  .league-v4,
+  .league-v4-hero,
+  .league-v4-podium-shell,
+  .league-v4-board,
+  .league-v4-side,
+  .league-v4-command,
+  .league-v4-title-race,
+  .league-v4-season-race,
+  .league-v4-champions {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .league-v4-hero {
+    padding: 17px 15px;
+  }
+
+  .league-v4-hero h2 {
+    font-size: clamp(30px, 9vw, 42px);
+    line-height: 1.06;
+    overflow-wrap: anywhere;
+  }
+
+  .league-v4-rank-core {
+    width: min(188px, 56vw);
+  }
+
+  .league-v4-rule-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 7px;
+    margin-top: 15px;
+  }
+
+  .league-v4-rule {
+    min-width: 0;
+    min-height: 48px;
+    padding: 9px 12px;
+  }
+
+  .league-v4-period-bar {
+    display: block;
+    min-width: 0;
+  }
+
+  .league-v4-period-switch {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .league-v4-period-switch button {
+    min-width: 0;
+    min-height: 44px;
+    flex: 1 1 0;
+    padding-inline: 6px;
+    font-size: 11px;
+  }
+
+  .league-v4-podium {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .league-v4-podium-card {
+    min-width: 0;
+    min-height: 0;
+    padding: 15px;
+  }
+
+  .league-v4-podium-card.place-1 {
+    order: -1;
+  }
+
+  .league-v4-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .league-v4-row {
+    display: grid;
+    grid-template-columns: 24px 32px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 8px;
+  }
+
+  .league-v4-row-person,
+  .league-v4-row-person span,
+  .league-v4-podium-name {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .league-v4-row-points {
+    min-width: 0;
+    text-align: end;
+  }
+
+  .league-v4-title-race-row,
+  .league-v4-season-row {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .league-v4-join,
+  .league-v4-join-control,
+  .league-v4-field,
+  .league-v4-champion-profile {
+    min-width: 0;
+  }
+
+  .league-v4-join :where(input, button),
+  .league-v4-save {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  /* Settings: durable notification controls, readable descriptions,
+     single-column forms and easy-to-tap toggles. */
+  .settings-v3 {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .settings-section {
+    min-width: 0;
+    padding: 15px;
+  }
+
+  .settings-section-head {
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .settings-section-head > div:last-child {
+    min-width: 0;
+  }
+
+  .settings-section-head h2 {
+    font-size: 17px;
+  }
+
+  .settings-section-head p {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .settings-control-grid,
+  .settings-three-grid,
+  .settings-input-with-icon {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .settings-field,
+  .settings-field > select,
+  .settings-field > input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .settings-theme-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .settings-theme-grid button {
+    min-width: 0;
+    min-height: 64px;
+  }
+
+  .settings-toggle-row {
+    gap: 12px;
+    min-height: 64px;
+    align-items: center;
+  }
+
+  .settings-toggle-row > div {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .settings-toggle-row strong {
+    font-size: 13px;
+    line-height: 1.3;
+  }
+
+  .settings-toggle-row span:not(.settings-switch) {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .settings-data-row,
+  .settings-data-actions,
+  .settings-theme-actions {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .settings-data-actions,
+  .settings-theme-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .settings-data-actions > button,
+  .settings-theme-actions > button {
+    flex: 1 1 140px;
+    min-width: 0;
+    min-height: 44px;
+  }
+
+  /* While editing an input, hide the floating navigation so iOS's
+     keyboard and the bottom dock cannot both cover form actions. */
+  .app-shell:has(.app-content input:focus:not([type='checkbox']):not([type='radio']):not([type='range'])) .mobile-dock,
+  .app-shell:has(.app-content textarea:focus) .mobile-dock,
+  .app-shell:has(.app-content select:focus) .mobile-dock {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .app-content > main.page-container {
+    padding-inline: 10px !important;
+  }
+
+  .dashboard-v4-section,
+  .settings-section,
+  .study-plan-action-panel,
+  .advanced-goals-panel,
+  .history-day-panel,
+  .history-calendar-panel {
+    padding: 12px;
+  }
+
+  .plan-v4-tab,
+  .progress-v4-tab,
+  .settings-v4-tab {
+    padding-inline: 9px;
+  }
+
+  .history-calendar {
+    gap: 2px;
+  }
+
+  .history-day {
+    min-height: 46px;
+  }
+
+  .stats-v4-metrics article {
+    padding: 10px 8px;
+  }
+
+  .league-v4-row {
+    grid-template-columns: 21px 28px minmax(0, 1fr) auto;
+    gap: 5px;
+  }
+}
+
+/* Make app navigation stable across rotation and on reduced-motion phones. */
+@media (max-width: 900px) and (orientation: landscape) {
+  .app-content > main.page-container {
+    min-height: 0;
+    padding-bottom: calc(132px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
