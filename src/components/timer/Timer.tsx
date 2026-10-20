@@ -264,10 +264,28 @@ export default function Timer({
             `سێشنی ${subjectName} تەواو بوو. کاتی پشوودانە.`,
           )
 
-      new Notification(title, {
+      const options: NotificationOptions = {
         body,
-        icon: '/favicon.ico',
-      })
+        icon: '/icon-192.png',
+        tag: isBreakComplete ? 'focus-break-complete' : 'focus-session-complete',
+      }
+
+      // iOS Home Screen web apps use service-worker notifications;
+      // the Notification constructor itself is not available there.
+      if ('serviceWorker' in navigator) {
+        void navigator.serviceWorker.ready
+          .then((registration) => registration.showNotification(title, options))
+          .catch(() => {
+            // Browsers can deny display while suspended or in Focus mode.
+          })
+        return
+      }
+
+      try {
+        new Notification(title, options)
+      } catch {
+        // Do not let notification failures interrupt session saving.
+      }
     },
     [
       notificationsEnabled,
