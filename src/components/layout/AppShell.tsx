@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useState, type FocusEvent, type ReactNode } from 'react'
 import type { Subject } from '../../types'
 import type { Page } from '../../app/navigation'
 import Sidebar from './Sidebar'
@@ -26,6 +26,21 @@ export default function AppShell({
   onDeleteSubject,
   children,
 }: AppShellProps) {
+  const [editingField, setEditingField] = useState(false)
+  const editableSelector =
+    'input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select'
+
+  function handleMobileFocus(event: FocusEvent<HTMLDivElement>) {
+    if (event.target.matches(editableSelector)) setEditingField(true)
+  }
+
+  function handleMobileBlur(event: FocusEvent<HTMLDivElement>) {
+    const next = event.relatedTarget
+    if (!(next instanceof HTMLElement) || !next.matches(editableSelector)) {
+      setEditingField(false)
+    }
+  }
+
   // The app swaps route components without a full navigation. Otherwise
   // switching from a long History/League page leaves a new page midway down.
   useEffect(() => {
@@ -43,7 +58,11 @@ export default function AppShell({
         Skip to content
       </a>
       <BackgroundEffects />
-      <div className="app-shell">
+      <div
+        className={editingField ? 'app-shell is-editing' : 'app-shell'}
+        onFocusCapture={handleMobileFocus}
+        onBlurCapture={handleMobileBlur}
+      >
         <Sidebar
           page={page}
           onPageChange={onPageChange}
