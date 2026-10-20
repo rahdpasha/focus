@@ -15140,3 +15140,381 @@ textarea::placeholder {
     padding-bottom: calc(112px + env(safe-area-inset-bottom)) !important;
   }
 }
+
+
+/* ================================================================
+   FOCUS mobile-first audit: all six destinations and nested screens
+   October 2026. Keep desktop and RTL untouched by scoping to phones.
+   ================================================================ */
+@media (max-width: 760px) {
+  html,
+  body,
+  #root,
+  .app-shell,
+  .app-content {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  html,
+  body {
+    overflow-x: clip;
+  }
+
+  .app-shell,
+  .app-content {
+    width: 100%;
+  }
+
+  .app-content {
+    display: block;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .app-content > main.page-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding-top: calc(66px + env(safe-area-inset-top, 0px)) !important;
+    padding-inline: clamp(12px, 4vw, 20px) !important;
+    padding-bottom: calc(148px + env(safe-area-inset-bottom, 0px)) !important;
+    scroll-padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px));
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Layout primitives: children must shrink within an actual 320px phone. */
+  .app-content :where(
+    .glass-panel, .page-header, .dashboard-v4, .dashboard-v4-lower,
+    .plan-v4-body, .progress-v4-body, .settings-v3, .settings-section,
+    .league-v4, .league-v4-grid, .stats-v4, .stats-v4-split,
+    .focus-workspace, .study-plan-v5, .routine-v5, .history-layout,
+    .records-story, .advisor-shell, .subjects-grid
+  ) {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .app-content :where(
+    .page-header h1, .page-header p, h2, h3,
+    .dashboard-route-copy, .dashboard-routine-copy,
+    .study-plan-item-copy, .routine-item-title,
+    .history-session-title, .league-v4-row-person,
+    .settings-section-head, .settings-account-copy
+  ) {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .page-header,
+  .page-header-compact {
+    min-height: 0;
+    align-items: flex-start;
+    gap: 7px;
+    margin-bottom: 15px;
+    padding-bottom: 13px;
+  }
+
+  .page-header h1,
+  .page-header-compact h1 {
+    font-size: clamp(25px, 7vw, 32px);
+    line-height: 1.1;
+  }
+
+  .page-header p,
+  .page-header-compact p {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  /* Native-feeling tab strips: 4 Plan/Settings sections, 3 Progress views.
+     Do not turn four features into a tall, desktop-style multirow grid. */
+  .plan-v4-tabs,
+  .progress-v4-tabs,
+  .settings-v4-tabs {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 5px;
+    margin: 0 0 14px;
+    padding: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-padding-inline: 4px;
+  }
+
+  .plan-v4-tabs::-webkit-scrollbar,
+  .progress-v4-tabs::-webkit-scrollbar,
+  .settings-v4-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .plan-v4-tab,
+  .progress-v4-tab,
+  .settings-v4-tab {
+    flex: 1 0 auto;
+    min-width: max-content;
+    min-height: 44px;
+    gap: 5px;
+    padding: 9px 11px;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+
+  .plan-v4-tab svg,
+  .progress-v4-tab svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
+  }
+
+  /* iPhone's virtual keyboard must not zoom inputs or cover field buttons. */
+  .app-content :where(
+    input:not([type='range']):not([type='checkbox']):not([type='radio']),
+    select, textarea
+  ) {
+    max-width: 100%;
+    min-width: 0;
+    font-size: 16px;
+    scroll-margin-block: 104px 164px;
+  }
+
+  .app-content :where(button, a, select, input, textarea) {
+    touch-action: manipulation;
+  }
+
+  .app-content :where(
+    .cyber-btn, .settings-secondary-action,
+    .settings-danger-action, .study-plan-start,
+    .subject-start, .subject-select, .routine-primary-action
+  ) {
+    min-height: 44px;
+  }
+
+  /* Today: single readable cards and no horizontally clipped routes. */
+  .dashboard-v4 {
+    width: 100%;
+    gap: 14px;
+  }
+
+  .dashboard-v4-header {
+    min-height: 0;
+    gap: 9px;
+  }
+
+  .dashboard-v4-header h1 {
+    font-size: clamp(26px, 7vw, 33px);
+  }
+
+  .dashboard-v4-lower,
+  .dashboard-v4 .dashboard-routine-grid,
+  .dashboard-v4 .dashboard-route-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dashboard-v4-section,
+  .dashboard-v4 .focus-pulse-v4 {
+    padding: 15px;
+  }
+
+  .dashboard-v4 .dashboard-route-item {
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 9px;
+    padding: 12px;
+  }
+
+  .dashboard-v4 .dashboard-route-action {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 44px;
+  }
+
+  /* Focus: the timer, start/pause and ambience controls stay in the
+     normal document flow; don't stretch cards to a desktop height. */
+  .focus-timer-stage {
+    min-height: 0;
+  }
+
+  .focus-timer-wrap {
+    flex: 0 0 auto;
+  }
+
+  .focus-audio-v4 {
+    width: 100%;
+    min-width: 0;
+    margin-top: 12px;
+  }
+
+  .focus-audio-options {
+    max-width: 100%;
+  }
+
+  .focus-audio-options button {
+    min-height: 42px;
+    font-size: 12px;
+  }
+
+  /* Plan > Subjects: card actions, edit modals and the color picker. */
+  .subjects-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .subject-card {
+    min-height: 0;
+    padding: 15px;
+  }
+
+  .subject-card-identity h2 {
+    font-size: 17px;
+    overflow-wrap: anywhere;
+  }
+
+  .subject-card-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 12px;
+  }
+
+  .subject-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .subject-card-actions > * {
+    min-width: 0;
+    flex: 1 1 112px;
+  }
+
+  .subject-dialog-backdrop {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: max(14px, env(safe-area-inset-top)) 12px max(24px, env(safe-area-inset-bottom));
+  }
+
+  .subject-dialog {
+    width: 100%;
+    max-width: min(440px, 100%);
+    max-height: calc(100dvh - 42px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: auto;
+  }
+
+  .subject-color-grid {
+    grid-template-columns: repeat(auto-fit, minmax(34px, 1fr));
+  }
+
+  /* Plan > Plan & Goals: form is one column, never a five-field row. */
+  .study-plan-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  .study-plan-progress-card,
+  .study-plan-action-panel,
+  .study-plan-allocation-panel,
+  .advanced-goals-panel,
+  .planning-targets-panel {
+    min-width: 0;
+    padding: 15px;
+  }
+
+  .advanced-goal-create,
+  .goal-create-v4,
+  .planning-targets-grid,
+  .subject-allocation-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .advanced-goal-create > *,
+  .advanced-goal-create :where(input, select, button) {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .advanced-goal-create .cyber-btn,
+  .study-plan-start {
+    min-height: 46px;
+  }
+
+  .study-plan-item {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .study-plan-item-copy {
+    flex: 1 1 170px;
+    min-width: 0;
+  }
+
+  .study-plan-action {
+    flex: 1 1 100%;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .advanced-goal-card,
+  .advanced-goal-topline,
+  .advanced-goal-progress-row {
+    min-width: 0;
+  }
+
+  .advanced-goal-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .advanced-goal-actions > button {
+    min-height: 40px;
+  }
+
+  /* Plan > Routine: daily summary should stay scannable at 360px. */
+  .routine-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .routine-summary-stat {
+    min-width: 0;
+    min-height: 82px;
+    padding: 11px;
+  }
+
+  .routine-builder-grid,
+  .routine-advanced-selects {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .routine-item-card,
+  .routine-builder,
+  .routine-config-card,
+  .routine-recovery {
+    min-width: 0;
+    padding: 14px;
+  }
+
+  .routine-week-grid {
+    min-width: 0;
+    gap: 3px;
+  }
+
+  .routine-config-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .routine-config-card > *,
+  .routine-config-controls {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+}
