@@ -16110,3 +16110,25 @@ textarea::placeholder {
     text-align: start;
   }
 }
+
+
+/* Standalone action in Subjects: the unified Plan wrapper intentionally
+   suppresses nested PageHeaders, including their previous action slot. */
+.plan-v4-body .subjects-inline-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+.plan-v4-body .subjects-inline-actions > button {
+  min-height: 44px;
+  min-width: 132px;
+}
+
+@media (max-width: 520px) {
+  .plan-v4-body .subjects-inline-actions > button {
+    width: 100%;
+    justify-content: center;
+  }
+}
