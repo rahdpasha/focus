@@ -4,6 +4,7 @@ import {
   BarChart3,
   Swords,
   TimerReset,
+  Settings,
 } from 'lucide-react'
 import type { Page } from '../../app/navigation'
 import { useI18n } from '../../useI18n'
@@ -43,6 +44,12 @@ const items = [
     label: 'League',
     labelKu: 'پێشبڕکێ',
     icon: Swords,
+  },
+  {
+    page: 'settings' as const,
+    label: 'Settings',
+    labelKu: 'ڕێکخستنەکان',
+    icon: Settings,
   },
 ]
 
