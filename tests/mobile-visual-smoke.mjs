@@ -88,15 +88,27 @@ for (const device of devices) {
   const start = page.locator('.timer-v5-actions button').first()
   assert.ok(await start.count(), 'Focus timer primary action missing')
   await start.scrollIntoViewIfNeeded()
-  // The bottom dock is fixed, so an additional scroll must expose
-  // the timer action rather than leave it under navigation.
-  await page.evaluate(() => window.scrollBy(0, 210))
-  const visibleStart = await start.evaluate((button) => {
+  // A 390px-high landscape viewport needs a different scroll offset from
+  // portrait. Put the button in the available space above the fixed dock.
+  await start.evaluate((button) => {
     const rect = button.getBoundingClientRect()
     const dock = document.querySelector('.mobile-dock')?.getBoundingClientRect()
-    return rect.top >= 0 && rect.bottom < (dock?.top ?? window.innerHeight) - 3
+    const visibleBottom = dock?.top ?? window.innerHeight
+    const wantedTop = Math.max(12, Math.min(100, visibleBottom - rect.height - 24))
+    window.scrollBy(0, rect.top - wantedTop)
   })
-  assert.ok(visibleStart, 'Timer start action is covered by mobile navigation')
+  await page.waitForTimeout(90)
+  const buttonPosition = await start.evaluate((button) => {
+    const rect = button.getBoundingClientRect()
+    const dock = document.querySelector('.mobile-dock')?.getBoundingClientRect()
+    const visibleBottom = dock?.top ?? window.innerHeight
+    return { top: rect.top, bottom: rect.bottom, dockTop: visibleBottom }
+  })
+  assert.ok(
+    buttonPosition.top >= 0 && buttonPosition.bottom < buttonPosition.dockTop - 3,
+    'Timer start action is covered by mobile navigation on ' + device.name +
+      ': ' + JSON.stringify(buttonPosition),
+  )
 
   await openTab('plan')
   const planTabs = page.locator('.plan-v4-tab')
