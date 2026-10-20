@@ -16132,3 +16132,15 @@ textarea::placeholder {
     justify-content: center;
   }
 }
+
+
+/* iOS input focus is tracked by React as well as CSS :has(). This class
+   avoids platform-specific selector inconsistencies and keeps text fields
+   free from the six-item floating navigation during keyboard editing. */
+@media (max-width: 760px) {
+  .app-shell.is-editing .mobile-dock {
+    visibility: hidden;
+    pointer-events: none;
+    opacity: 0;
+  }
+}
