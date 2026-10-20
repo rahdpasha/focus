@@ -157,7 +157,7 @@ begin
 end;
 $$;
 revoke all on function public.focus_claim_push_jobs(text) from public, authenticated;
-grant execute on function public.focus_claim_push_jobs(text) to anon;
+grant execute on function public.focus_claim_push_jobs(text) to service_role;
 
 create or replace function public.focus_ack_push_job(
   p_token text, p_outbox_id uuid, p_delivered boolean, p_permanent_failure boolean default false
@@ -178,7 +178,7 @@ begin
 end;
 $$;
 revoke all on function public.focus_ack_push_job(text,uuid,boolean,boolean) from public, authenticated;
-grant execute on function public.focus_ack_push_job(text,uuid,boolean,boolean) to anon;
+grant execute on function public.focus_ack_push_job(text,uuid,boolean,boolean) to service_role;
 
 create extension if not exists pg_cron;
 create extension if not exists pg_net;
