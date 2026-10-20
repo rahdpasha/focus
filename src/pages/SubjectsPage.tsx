@@ -262,6 +262,19 @@ export default function SubjectsPage({
         }
       />
 
+      {/* Plan hides nested page headers to avoid duplicate titles, so the
+          creation action must live in the visible Subjects content too. */}
+      <div className="subjects-inline-actions">
+        <button
+          type="button"
+          className="cyber-btn"
+          onClick={() => setShowCreate(true)}
+        >
+          <Plus size={15} />
+          {t('addSubject')}
+        </button>
+      </div>
+
       {subjects.length === 0 ? (
         <section className="glass-panel subjects-empty">
           <div className="subjects-empty-icon">
