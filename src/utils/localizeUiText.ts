@@ -1,6 +1,15 @@
 import type { Language } from '../translations'
 
 const exactSorani: Record<string, string> = {
+  'Routine due today.': 'ڕوتینی ئەمڕۆ پێویستە تەواو بکرێت.',
+  'Recovery from a missed routine.': 'قەرەبووی ڕوتینێکی لەدەستچوو.',
+  'This goal is closest to its deadline.': 'ئەم ئامانجە نزیکترینە لە کۆتا مۆڵەتەکەی.',
+  "You're behind this goal's pace.": 'لە ڕێتمی پێویستی ئەم ئامانجە دوا کەوتوویت.',
+  'You studied this subject less this week.': 'ئەم هەفتەیە ئەم بابەتەت کەمتر خوێندووەتەوە.',
+  'Your weekly target needs more focused time.': 'ئامانجی هەفتانەت کاتی سەرنجی زیاتر پێویستە.',
+  'Start with one focused block.': 'بە یەک بڵۆکی سەرنج دەست پێ بکە.',
+  'Add a subject to build your first study plan.': 'بابەتێک زیاد بکە بۆ دروستکردنی یەکەم پلانی خوێندنت.',
+  'You are caught up for now.': 'بۆ ئێستا هەموو شتێکت لە ڕێگادایە.',
   'Not studied yet this week.': 'ئەم هەفتەیە هێشتا نەخوێندراوە.',
   'Highest priority based on weekly goal gap.': 'بەپێی کەمی ئامانجی هەفتانە، ئەمە زۆرترین گرنگی هەیە.',
   'Lowest weekly goal progress.': 'کەمترین پێشکەوتنی ئامانجی هەفتانە.',

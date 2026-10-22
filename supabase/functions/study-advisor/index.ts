@@ -220,6 +220,113 @@ Deno.serve(async (request) => {
       ),
     )
 
+  const contextGoals =
+    Array.isArray(
+      (
+        body.context as {
+          advancedGoals?: unknown
+        }
+      ).advancedGoals,
+    )
+      ? (
+          (
+            body.context as {
+              advancedGoals: unknown[]
+            }
+          ).advancedGoals
+        )
+          .filter(
+            (
+              goal,
+            ): goal is {
+              id: string
+              title: string
+              subjectId?: string
+            } =>
+              Boolean(
+                goal &&
+                  typeof goal ===
+                    'object' &&
+                  typeof (
+                    goal as {
+                      id?: unknown
+                    }
+                  ).id ===
+                    'string' &&
+                  typeof (
+                    goal as {
+                      title?: unknown
+                    }
+                  ).title ===
+                    'string',
+              ),
+          )
+          .map((goal) => ({
+            id:
+              goal.id,
+            title:
+              goal.title,
+            subjectId:
+              typeof goal.subjectId ===
+                'string'
+                ? goal.subjectId
+                : '',
+          }))
+      : []
+
+  const goalIds =
+    new Set(
+      contextGoals.map(
+        (goal) =>
+          goal.id,
+      ),
+    )
+
+  const routineIds =
+    new Set(
+      Array.isArray(
+        (
+          body.context as {
+            routines?: {
+              all?: unknown
+            }
+          }
+        ).routines?.all,
+      )
+        ? (
+            (
+              body.context as {
+                routines: {
+                  all: unknown[]
+                }
+              }
+            ).routines.all
+          )
+            .filter(
+              (routine) =>
+                Boolean(
+                  routine &&
+                    typeof routine ===
+                      'object' &&
+                    typeof (
+                      routine as {
+                        id?: unknown
+                      }
+                    ).id ===
+                      'string',
+                ),
+            )
+            .map(
+              (routine) =>
+                (
+                  routine as {
+                    id: string
+                  }
+                ).id,
+            )
+        : [],
+    )
+
   const model =
     Deno.env.get(
       'GEMINI_MODEL',
@@ -236,10 +343,21 @@ Deno.serve(async (request) => {
       'Separate observation from interpretation from recommendation.',
       'Be concise, calm, practical, and specific.',
       'Use the 7-day, 30-day, and 90-day summaries to distinguish a temporary dip from a longer pattern.',
+      'Treat facts.plan as the authoritative deterministic study plan when it is present.',
+      'Use facts.routines.dueToday and facts.routines.recoverable to explain routine and recovery pressure.',
       'Consider active deadline goals alongside daily and weekly balance.',
       'If a deadline goal is urgent or overdue, explain that explicitly without inventing urgency.',
+      'If the user asks to create or change a goal, routine, target, or session, propose the change but never claim it was applied.',
+      'Return proposal.tool as none unless the user explicitly asks for a change or asks FOCUS to prepare a focus session.',
+      'Allowed proposal tools are none, prepare_focus_session, change_daily_goal, create_goal, create_routine, update_goal, and update_routine.',
+      'A proposal is only a draft. Never say it was applied or saved; the client requires explicit confirmation.',
+      'For update_goal and update_routine, targetId must exactly match an existing ID in the supplied facts and the proposal must contain the complete desired editable state.',
+      'For change_daily_goal, put the requested daily target in proposal.minutes. targetMinutes may also mirror it.',
+      'For prepare_focus_session, put the duration in proposal.minutes and use a supplied subject ID.',
+      'For create_goal and create_routine, use proposal.targetMinutes for the target duration.',
+      'For proposal fields that are not used, return empty strings or zero values while keeping the required schema shape.',
       'Recommend one next action only.',
-      'Action subjectId must be one of the supplied subject IDs, or null.',
+      'Action subjectId must be one of the supplied subject IDs, or an empty string.',
       'Action duration must be between 10 and 120 minutes.',
       'Do not provide generic motivational filler.',
     ].join(' ')
@@ -295,6 +413,7 @@ Deno.serve(async (request) => {
                   'reasons',
                   'confidence',
                   'action',
+                  'proposal',
                 ],
                 properties: {
                   headline: {
@@ -326,20 +445,98 @@ Deno.serve(async (request) => {
                     ],
                     properties: {
                       subjectId: {
-                        type: [
-                          'STRING',
-                          'NULL',
-                        ],
+                        type: 'STRING',
                       },
                       subjectName: {
-                        type: [
-                          'STRING',
-                          'NULL',
-                        ],
+                        type: 'STRING',
                       },
                       minutes: {
                         type:
                           'INTEGER',
+                      },
+                    },
+                  },
+                  proposal: {
+                    type: 'OBJECT',
+                    required: [
+                      'tool',
+                      'targetId',
+                      'title',
+                      'subjectId',
+                      'minutes',
+                      'targetMinutes',
+                      'deadline',
+                      'priority',
+                      'mode',
+                      'daysOfWeek',
+                      'recoveryDays',
+                      'status',
+                      'enabled',
+                    ],
+                    properties: {
+                      tool: {
+                        type: 'STRING',
+                        enum: [
+                          'none',
+                          'prepare_focus_session',
+                          'change_daily_goal',
+                          'create_goal',
+                          'create_routine',
+                          'update_goal',
+                          'update_routine',
+                        ],
+                      },
+                      targetId: {
+                        type: 'STRING',
+                      },
+                      title: {
+                        type: 'STRING',
+                      },
+                      subjectId: {
+                        type: 'STRING',
+                      },
+                      minutes: {
+                        type: 'INTEGER',
+                      },
+                      targetMinutes: {
+                        type: 'INTEGER',
+                      },
+                      deadline: {
+                        type: 'STRING',
+                      },
+                      priority: {
+                        type: 'STRING',
+                        enum: [
+                          'low',
+                          'medium',
+                          'high',
+                        ],
+                      },
+                      mode: {
+                        type: 'STRING',
+                        enum: [
+                          'fixed',
+                          'rotation',
+                        ],
+                      },
+                      daysOfWeek: {
+                        type: 'ARRAY',
+                        items: {
+                          type: 'INTEGER',
+                        },
+                      },
+                      recoveryDays: {
+                        type: 'INTEGER',
+                      },
+                      status: {
+                        type: 'STRING',
+                        enum: [
+                          'active',
+                          'completed',
+                        ],
+                      },
+                      enabled: {
+                        type: 'BOOLEAN',
                       },
                     },
                   },
@@ -404,6 +601,21 @@ Deno.serve(async (request) => {
         action?: {
           subjectId?: unknown
           minutes?: unknown
+        } | null
+        proposal?: {
+          tool?: unknown
+          targetId?: unknown
+          title?: unknown
+          subjectId?: unknown
+          minutes?: unknown
+          targetMinutes?: unknown
+          deadline?: unknown
+          priority?: unknown
+          mode?: unknown
+          daysOfWeek?: unknown
+          recoveryDays?: unknown
+          status?: unknown
+          enabled?: unknown
         } | null
       }
 
@@ -474,6 +686,244 @@ Deno.serve(async (request) => {
             )
         : []
 
+    const proposal =
+      result.proposal &&
+      typeof result.proposal ===
+        'object'
+        ? result.proposal
+        : null
+
+    const requestedProposalSubjectId =
+      typeof proposal
+        ?.subjectId ===
+      'string'
+        ? proposal.subjectId
+            .trim()
+        : ''
+
+    const safeProposalSubjectId =
+      requestedProposalSubjectId &&
+      subjectNameById.has(
+        requestedProposalSubjectId,
+      )
+        ? requestedProposalSubjectId
+        : ''
+
+    const proposalTitle =
+      cleanText(
+        proposal?.title,
+        120,
+      )
+
+    const requestedProposalTargetId =
+      cleanText(
+        proposal?.targetId,
+        120,
+      )
+
+    const titleMatch =
+      proposalTitle
+        ? contextGoals.filter(
+            (goal) =>
+              goal.title
+                .trim()
+                .toLowerCase() ===
+              proposalTitle
+                .trim()
+                .toLowerCase(),
+          )
+        : []
+
+    const subjectGoalMatches =
+      safeProposalSubjectId
+        ? contextGoals.filter(
+            (goal) =>
+              goal.subjectId ===
+              safeProposalSubjectId,
+          )
+        : []
+
+    const proposalTargetId =
+      goalIds.has(
+        requestedProposalTargetId,
+      )
+        ? requestedProposalTargetId
+        : titleMatch.length === 1
+          ? titleMatch[0].id
+          : subjectGoalMatches.length === 1
+            ? subjectGoalMatches[0].id
+            : requestedProposalTargetId
+
+    const proposalStatus =
+      proposal?.status ===
+      'completed'
+        ? 'completed'
+        : 'active'
+
+    const proposalEnabled =
+      typeof proposal
+        ?.enabled ===
+      'boolean'
+        ? proposal.enabled
+        : true
+
+    const rawProposalMinutes =
+      typeof proposal
+        ?.minutes ===
+      'number' &&
+      proposal.minutes > 0
+        ? proposal.minutes
+        : typeof proposal
+              ?.targetMinutes ===
+            'number' &&
+          proposal.targetMinutes > 0
+          ? proposal.targetMinutes
+          : 25
+
+    const proposalMinutes =
+      Math.min(
+        720,
+        Math.max(
+          10,
+          Math.round(
+            rawProposalMinutes,
+          ),
+        ),
+      )
+
+    const proposalTargetMinutes =
+      typeof proposal
+        ?.targetMinutes ===
+      'number'
+        ? Math.min(
+            10_080,
+            Math.max(
+              10,
+              Math.round(
+                proposal.targetMinutes,
+              ),
+            ),
+          )
+        : 25
+
+    const proposalDeadline =
+      cleanText(
+        proposal?.deadline,
+        80,
+      )
+
+    const proposalDeadlineValid =
+      proposalDeadline &&
+      !Number.isNaN(
+        new Date(
+          proposalDeadline,
+        ).getTime(),
+      )
+
+    const proposalPriority =
+      proposal?.priority ===
+        'high' ||
+      proposal?.priority ===
+        'low'
+        ? proposal.priority
+        : 'medium'
+
+    const proposalMode =
+      proposal?.mode ===
+      'rotation'
+        ? 'rotation'
+        : 'fixed'
+
+    const proposalDaysOfWeek =
+      Array.isArray(
+        proposal?.daysOfWeek,
+      )
+        ? Array.from(
+            new Set(
+              proposal.daysOfWeek.filter(
+                (
+                  day,
+                ): day is number =>
+                  typeof day ===
+                    'number' &&
+                  Number.isInteger(
+                    day,
+                  ) &&
+                  day >= 0 &&
+                  day <= 6,
+              ),
+            ),
+          )
+        : []
+
+    const proposalRecoveryDays =
+      typeof proposal
+        ?.recoveryDays ===
+      'number'
+        ? Math.min(
+            3,
+            Math.max(
+              0,
+              Math.round(
+                proposal.recoveryDays,
+              ),
+            ),
+          )
+        : 1
+
+    const requestedProposalTool =
+      typeof proposal
+        ?.tool ===
+      'string'
+        ? proposal.tool
+        : 'none'
+
+    const proposalTool =
+      requestedProposalTool ===
+        'prepare_focus_session' &&
+      safeProposalSubjectId
+        ? requestedProposalTool
+        : requestedProposalTool ===
+            'change_daily_goal'
+          ? requestedProposalTool
+          : requestedProposalTool ===
+                'create_goal' &&
+              proposalTitle &&
+              proposalDeadlineValid &&
+              (
+                !requestedProposalSubjectId ||
+                safeProposalSubjectId
+              )
+            ? requestedProposalTool
+            : requestedProposalTool ===
+                  'create_routine' &&
+                proposalTitle &&
+                safeProposalSubjectId
+              ? requestedProposalTool
+              : requestedProposalTool ===
+                    'update_goal' &&
+                  proposalTargetId &&
+                  goalIds.has(
+                    proposalTargetId,
+                  ) &&
+                  proposalTitle &&
+                  proposalDeadlineValid &&
+                  (
+                    !requestedProposalSubjectId ||
+                    safeProposalSubjectId
+                  )
+                ? requestedProposalTool
+                : requestedProposalTool ===
+                      'update_routine' &&
+                    proposalTargetId &&
+                    routineIds.has(
+                      proposalTargetId,
+                    ) &&
+                    proposalTitle &&
+                    safeProposalSubjectId
+                  ? requestedProposalTool
+                  : 'none'
+
     return json({
       headline:
         cleanText(
@@ -500,6 +950,45 @@ Deno.serve(async (request) => {
             : null,
         minutes:
           safeMinutes,
+      },
+      proposal: {
+        tool:
+          proposalTool,
+        targetId:
+          proposalTargetId,
+        title:
+          proposalTitle,
+        subjectId:
+          safeProposalSubjectId,
+        minutes:
+          proposalMinutes,
+        targetMinutes:
+          proposalTargetMinutes,
+        deadline:
+          proposalDeadline,
+        priority:
+          proposalPriority,
+        mode:
+          proposalMode,
+        daysOfWeek:
+          proposalDaysOfWeek.length >
+          0
+            ? proposalDaysOfWeek
+            : [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+              ],
+        recoveryDays:
+          proposalRecoveryDays,
+        status:
+          proposalStatus,
+        enabled:
+          proposalEnabled,
       },
     })
   } catch {

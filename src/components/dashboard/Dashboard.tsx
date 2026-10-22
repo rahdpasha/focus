@@ -9,6 +9,7 @@ import type {
   StudySession,
 } from '../../types'
 import type {
+  AdvancedGoal,
   RoutineItem,
   RoutineSessionContext,
 } from '../../storage/types'
@@ -31,6 +32,7 @@ interface DashboardProps {
   dailyGoal: number
   weeklyGoal: number
   routineItems: RoutineItem[]
+  advancedGoals: AdvancedGoal[]
   onStartRecommendedSession: (
     subjectId?: string,
     minutes?: number,
@@ -45,6 +47,7 @@ export default function Dashboard({
   dailyGoal,
   weeklyGoal,
   routineItems,
+  advancedGoals,
   onStartRecommendedSession,
   onAddSubjectRequest,
 }: DashboardProps) {
@@ -52,12 +55,15 @@ export default function Dashboard({
   const now = new Date()
 
   const plan =
-    getStudyPlan(
+    getStudyPlan({
       sessions,
       subjects,
       weeklyGoal,
       dailyGoal,
-    )
+      routineItems,
+      advancedGoals,
+      now,
+    })
 
   const todaysRoutine =
     getRoutineItemsForDate(
@@ -384,6 +390,7 @@ export default function Dashboard({
                         onStartRecommendedSession(
                           item.subjectId,
                           item.minutes,
+                          item.routineContext,
                         )
                       }
                     >

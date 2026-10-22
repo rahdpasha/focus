@@ -240,6 +240,9 @@ export default function PlanPage({
             advancedGoals={
               advancedGoals
             }
+            routineItems={
+              routineItems
+            }
             onDailyGoalChange={
               onDailyGoalChange
             }
@@ -342,8 +345,26 @@ export default function PlanPage({
             advancedGoals={
               advancedGoals
             }
+            routineItems={
+              routineItems
+            }
             onStartSession={
               onStartSession
+            }
+            onDailyGoalChange={
+              onDailyGoalChange
+            }
+            onAddAdvancedGoal={
+              onAddAdvancedGoal
+            }
+            onAddRoutineItem={
+              onAddRoutineItem
+            }
+            onUpdateAdvancedGoal={
+              onUpdateAdvancedGoal
+            }
+            onUpdateRoutineItem={
+              onUpdateRoutineItem
             }
           />
         )}
