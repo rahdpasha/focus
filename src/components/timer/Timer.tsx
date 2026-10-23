@@ -8,7 +8,7 @@ import {
   Check,
 } from 'lucide-react'
 import DurationSelector from './DurationSelector'
-import { getEarlyFinishSeconds } from '../../utils/earlyFinish'
+import { getEarlyFinishSeconds, readFinishTimestamp } from '../../utils/earlyFinish'
 import { useI18n } from '../../useI18n'
 import {
   pausedFromClock,
@@ -605,7 +605,7 @@ export default function Timer({
       return
     }
 
-    const now = Date.now()
+    const now = readFinishTimestamp()
     // The countdown may have expired while the user was reading the prompt.
     // Let the normal timer completion handler own that case.
     if (isStudying && timerEndRef.current !== null && now >= timerEndRef.current) {
