@@ -172,9 +172,6 @@ export default function Timer({
   const pauseSecs =
     pausedSeconds % 60
 
-  const durationMinutes =
-    Math.floor(duration / 60)
-
   const circumference =
     2 * Math.PI * 135
 
