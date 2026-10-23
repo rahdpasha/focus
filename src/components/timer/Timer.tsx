@@ -591,7 +591,7 @@ export default function Timer({
 
   // Early completion is a completed *study log*, not a completed Pomodoro.
   // Only real elapsed focus seconds count toward goals, routines and League.
-  const finishEarly = () => {
+  const handleFinishEarly = () => {
     const startedAt = sessionStartedAtRef.current
     const sessionClientId = sessionClientIdRef.current
 
@@ -1232,7 +1232,7 @@ export default function Timer({
               {tr('Keep studying', 'بەردەوام بە لە خوێندن')}
             </button>
             <button type="button" className="cyber-btn"
-              onClick={finishEarly}
+              onClick={handleFinishEarly}
             >
               <Check size={16} />
               {tr('Finish & save', 'تەواوکردن و پاشەکەوتکردن')}
