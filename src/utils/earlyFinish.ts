@@ -22,3 +22,8 @@ export function getEarlyFinishSeconds(
   const focused = Math.max(0, elapsed - Math.max(0, Math.floor(pausedSeconds)))
   return Math.min(Math.floor(plannedSeconds), focused)
 }
+
+/** Read wall time only in the user-triggered finish handler, never during render. */
+export function readFinishTimestamp(): number {
+  return Date.now()
+}
