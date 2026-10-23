@@ -5,8 +5,10 @@ import {
   Pause,
   RotateCcw,
   Coffee,
+  Check,
 } from 'lucide-react'
 import DurationSelector from './DurationSelector'
+import { getEarlyFinishSeconds, readFinishTimestamp } from '../../utils/earlyFinish'
 import { useI18n } from '../../useI18n'
 import {
   pausedFromClock,
@@ -106,6 +108,12 @@ export default function Timer({
   const [showComplete, setShowComplete] =
     useState(false)
 
+  const [showEarlyFinishConfirm, setShowEarlyFinishConfirm] =
+    useState(false)
+  const [completedEarly, setCompletedEarly] = useState(false)
+  const [lastCompletedSeconds, setLastCompletedSeconds] =
+    useState<number | null>(null)
+
   const [pausedSeconds, setPausedSeconds] =
     useState(() => restored?.isPaused
       ? pausedFromClock(restored.pauseStartedAt, restored.pauseBaseSeconds)
@@ -163,9 +171,6 @@ export default function Timer({
 
   const pauseSecs =
     pausedSeconds % 60
-
-  const durationMinutes =
-    Math.floor(duration / 60)
 
   const circumference =
     2 * Math.PI * 135
@@ -364,6 +369,9 @@ export default function Timer({
     setMode('focus')
     setIsCompleted(false)
     setShowComplete(false)
+    setShowEarlyFinishConfirm(false)
+    setCompletedEarly(false)
+    setLastCompletedSeconds(null)
 
     resetTracking()
   }
@@ -393,6 +401,7 @@ export default function Timer({
     setIsPaused(false)
     setIsCompleted(false)
     setShowComplete(false)
+    setShowEarlyFinishConfirm(false)
   }
 
   const pauseTimer = () => {
@@ -463,7 +472,7 @@ export default function Timer({
   }
 
   const resetTimer = () => {
-    if (isFocus && sessionClientIdRef.current) {
+    if (isFocus && sessionClientIdRef.current && !isCompleted && !showComplete) {
       onSessionCancel?.(sessionClientIdRef.current)
     }
     clearTimer()
@@ -472,6 +481,9 @@ export default function Timer({
     setIsPaused(false)
     setIsCompleted(false)
     setShowComplete(false)
+    setShowEarlyFinishConfirm(false)
+    setCompletedEarly(false)
+    setLastCompletedSeconds(null)
 
     setMode('focus')
     setDuration(focusDuration)
@@ -502,6 +514,9 @@ export default function Timer({
       setIsPaused(false)
       setIsCompleted(false)
       setShowComplete(false)
+      setShowEarlyFinishConfirm(false)
+      setCompletedEarly(false)
+      setLastCompletedSeconds(null)
 
       resetTracking()
     },
@@ -533,6 +548,9 @@ export default function Timer({
 
       playCompletionSound(false)
       sendCompletionNotification(false)
+      setCompletedEarly(false)
+      setLastCompletedSeconds(actualDuration)
+      setShowEarlyFinishConfirm(false)
 
       onComplete()
 
@@ -570,6 +588,79 @@ export default function Timer({
       onSessionEnd,
       onSessionCompleted,
     ])
+
+  // Early completion is a completed *study log*, not a completed Pomodoro.
+  // Only real elapsed focus seconds count toward goals, routines and League.
+  const handleFinishEarly = () => {
+    const startedAt = sessionStartedAtRef.current
+    const sessionClientId = sessionClientIdRef.current
+
+    if (
+      !isFocus ||
+      (!isStudying && !isPaused) ||
+      !startedAt ||
+      !sessionClientId ||
+      finishedRef.current
+    ) {
+      return
+    }
+
+    const now = readFinishTimestamp()
+    // The countdown may have expired while the user was reading the prompt.
+    // Let the normal timer completion handler own that case.
+    if (isStudying && timerEndRef.current !== null && now >= timerEndRef.current) {
+      setShowEarlyFinishConfirm(false)
+      handleTimerFinished()
+      return
+    }
+
+    const totalPausedSeconds = pausedFromClock(
+      pauseStartedAtRef.current,
+      pauseBaseSecondsRef.current,
+      now,
+    )
+    const actualDuration = getEarlyFinishSeconds(
+      startedAt.getTime(),
+      now,
+      totalPausedSeconds,
+      focusDuration,
+    )
+
+    if (actualDuration <= 0) {
+      setShowEarlyFinishConfirm(false)
+      return
+    }
+
+    finishedRef.current = true
+    clearTimer()
+    onComplete() // Stop ambient sound.
+
+    onSessionEnd(
+      focusDuration,
+      actualDuration,
+      true,
+      interruptionCount,
+      totalPausedSeconds,
+      startedAt,
+      sessionClientId,
+      new Date(now),
+    )
+    // Mark the scheduled background completion as finished so it cannot
+    // alert again at the original planned end time.
+    onSessionCompleted?.(sessionClientId)
+
+    // The next timer is fresh. An early finish must not advance the
+    // Pomodoro counter or automatically begin a break.
+    setCompletedEarly(true)
+    setLastCompletedSeconds(actualDuration)
+    setShowEarlyFinishConfirm(false)
+    setIsStudying(false)
+    setIsPaused(false)
+    setIsCompleted(true)
+    setShowComplete(true)
+    setTimeRemaining(focusDuration)
+    resetTracking()
+  }
 
   const finishBreak = useCallback(() => {
     const wasLongBreak =
@@ -757,7 +848,7 @@ export default function Timer({
       return
     }
 
-    if (!autoStartBreak) {
+    if (!autoStartBreak || completedEarly) {
       return
     }
 
@@ -786,6 +877,7 @@ export default function Timer({
     showComplete,
     isFocus,
     autoStartBreak,
+    completedEarly,
     completedFocusSessions,
     sessionsBeforeLongBreak,
     startBreak,
@@ -845,7 +937,7 @@ export default function Timer({
   if (
     showComplete &&
     isFocus &&
-    !autoStartBreak
+    (!autoStartBreak || completedEarly)
   ) {
     return (
       <div className="timer-v5-complete">
@@ -855,7 +947,9 @@ export default function Timer({
 
         <div>
           <span className="eyebrow">
-            {tr('Session complete', 'سێشن تەواو بوو')}
+            {completedEarly
+              ? tr('Study saved', 'خوێندنەکەت پاشەکەوت کرا')
+              : tr('Session complete', 'سێشن تەواو بوو')}
           </span>
           <h2>
             {tr(`${subjectName} is done.`, `${subjectName} تەواو بوو.`)}
@@ -863,12 +957,20 @@ export default function Timer({
         </div>
 
         <strong className="mono timer-v5-complete-time">
-          {durationMinutes}:
-          {String(
-            duration % 60,
-          ).padStart(2, '0')}
+          {Math.floor((lastCompletedSeconds ?? focusDuration) / 60)}:
+          {String((lastCompletedSeconds ?? focusDuration) % 60).padStart(2, '0')}
         </strong>
 
+        {completedEarly && (
+          <p className="timer-v5-early-note">
+            {tr(
+              `You finished early. Only your actual study time was saved (out of ${Math.floor(focusDuration / 60)} planned minutes). The full Pomodoro was not counted.`,
+              `زووتر تەواوت کرد. تەنها کاتی ڕاستەقینەی خوێندنت پاشەکەوت کرا (لە کۆی ${Math.floor(focusDuration / 60)} خولەکی پلانکراو). وەک پۆمۆدۆرۆی تەواو هەژمار نەکرا.`,
+            )}
+          </p>
+        )}
+
+        {!completedEarly && (
         <p>
           {interruptionCount}{' '}
           {t('interruptions')} ·{' '}
@@ -876,6 +978,7 @@ export default function Timer({
           {pauseSecs}s{' '}
           {t('paused')}
         </p>
+        )}
 
         <div className="timer-v5-actions">
           <button
@@ -1098,7 +1201,45 @@ export default function Timer({
             {t('reset')}
           </button>
         )}
+
+        {isFocus && (isStudying || isPaused) && !showEarlyFinishConfirm && (
+          <button
+            type="button"
+            className="timer-v5-secondary timer-v5-finish-early"
+            onClick={() => setShowEarlyFinishConfirm(true)}
+          >
+            <Check size={16} />
+            {tr('Finish early', 'زووتر تەواوکردن')}
+          </button>
+        )}
       </div>
+
+      {isFocus && (isStudying || isPaused) && showEarlyFinishConfirm && (
+        <div className="timer-v5-early-confirm" role="group"
+          aria-label={tr('Confirm early finish', 'پشتڕاستکردنەوەی تەواوکردنی زوو')}
+        >
+          <strong>{tr('Finished your subject?', 'بابەتەکەت تەواو کرد؟')}</strong>
+          <p>
+            {tr(
+              'Save the time you actually studied and end this timer. The unused minutes will not count.',
+              'تەنها ئەو کاتەی بەڕاستی خوێندووتە پاشەکەوت بکە و کاتژمێرەکە کۆتایی پێ بهێنە. خولەکە بەکارنەهاتووەکان هەژمار ناکرێن.',
+            )}
+          </p>
+          <div className="timer-v5-early-confirm-actions">
+            <button type="button" className="timer-v5-secondary"
+              onClick={() => setShowEarlyFinishConfirm(false)}
+            >
+              {tr('Keep studying', 'بەردەوام بە لە خوێندن')}
+            </button>
+            <button type="button" className="cyber-btn"
+              onClick={handleFinishEarly}
+            >
+              <Check size={16} />
+              {tr('Finish & save', 'تەواوکردن و پاشەکەوتکردن')}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
