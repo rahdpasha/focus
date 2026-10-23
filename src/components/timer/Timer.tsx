@@ -968,8 +968,9 @@ export default function Timer({
               `زووتر تەواوت کرد. تەنها کاتی ڕاستەقینەی خوێندنت پاشەکەوت کرا (لە کۆی ${Math.floor(focusDuration / 60)} خولەکی پلانکراو). وەک پۆمۆدۆرۆی تەواو هەژمار نەکرا.`,
             )}
           </p>
-        )
+        )}
 
+        {!completedEarly && (
         <p>
           {interruptionCount}{' '}
           {t('interruptions')} ·{' '}
@@ -977,6 +978,7 @@ export default function Timer({
           {pauseSecs}s{' '}
           {t('paused')}
         </p>
+        )}
 
         <div className="timer-v5-actions">
           <button
