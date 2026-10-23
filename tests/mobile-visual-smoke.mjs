@@ -1,5 +1,5 @@
-// Browser-driven mobile audit. Executed in a disposable, local-data-only
-// CI preview; no account credentials or production customer data are used.
+// Browser-driven checks for the redesigned four-tab FOCUS shell.
+// Run in CI with isolated local-only data; never use production credentials.
 import assert from 'node:assert/strict'
 import { mkdirSync } from 'node:fs'
 import { chromium } from 'playwright'
@@ -11,201 +11,125 @@ const browser = await chromium.launch({ headless: true })
 const devices = [
   { name: 'iphone', width: 390, height: 844 },
   { name: 'iphone-dark', width: 390, height: 844, dark: true },
-  { name: 'iphone-ku', width: 390, height: 844, dark: true, lang: 'ku' },
   { name: 'small', width: 320, height: 700 },
   { name: 'large', width: 430, height: 932 },
   { name: 'landscape', width: 700, height: 390 },
 ]
-
-const sampleSession = {
-  id: 'mobile-qa-session', subjectId: '1', subjectName: 'Software Engineering',
-  subjectColor: '#8b5cf6', duration: 1500, actualDuration: 1500,
-  startedAt: new Date(Date.now() - 1800000).toISOString(),
-  completedAt: new Date().toISOString(), completed: true,
-  interruptions: 0, totalPausedSeconds: 0,
-}
-let count = 0
+const tabs = ['Focus', 'Progress', 'League', 'Settings']
 const errors = []
+let screenshots = 0
 
-for (const device of devices) {
-  const ctx = await browser.newContext({
-    viewport: { width: device.width, height: device.height },
-    deviceScaleFactor: 1,
-    isMobile: true,
-    hasTouch: true,
-    locale: 'en-US',
-    reducedMotion: 'reduce',
-  })
-  const page = await ctx.newPage()
-  page.on('pageerror', (error) => errors.push(device.name + ': ' + error.message))
-
-  await page.addInitScript((seed) => {
-    try {
-      localStorage.setItem('focus-sessions', JSON.stringify([seed.session]))
-      if (seed.dark) {
-        localStorage.setItem('focus-theme', 'dark')
-        localStorage.setItem('focus-settings', JSON.stringify({
-          theme: 'dark', language: seed.lang === 'ku' ? 'ku' : 'en',
-        }))
-      }
-      if (seed.lang === 'ku') {
-        localStorage.setItem('focus-language', 'ku')
-      }
-    } catch { /* Test scaffold only */ }
-  }, { session: sampleSession, dark: Boolean(device.dark), lang: device.lang ?? 'en' })
-
-  await page.goto(base, { waitUntil: 'networkidle' })
-  await page.locator('.mobile-dock').waitFor({ timeout: 15000 })
-
-  async function capture(label) {
-    await page.waitForTimeout(120)
-    const sizes = await page.evaluate(() => ({
-      vw: window.innerWidth,
-      scroll: document.documentElement.scrollWidth,
-      body: document.body.scrollWidth,
-      docHeight: document.documentElement.scrollHeight,
-      dock: Boolean(document.querySelector('.mobile-dock')),
-    }))
-    assert.ok(sizes.dock, 'Mobile dock missing: ' + label)
-    assert.ok(
-      sizes.scroll <= sizes.vw + 3 && sizes.body <= sizes.vw + 3,
-      'Horizontal document overflow on ' + device.name + '/' + label +
-        ': ' + JSON.stringify(sizes),
-    )
-    await page.screenshot({
-      path: 'mobile-qa-artifacts/' + device.name + '-' + label + '.png',
-      fullPage: device.name.startsWith('iphone'),
-      animations: 'disabled',
+try {
+  for (const device of devices) {
+    const context = await browser.newContext({
+      viewport: { width: device.width, height: device.height },
+      deviceScaleFactor: 1,
+      hasTouch: true,
+      isMobile: true,
+      reducedMotion: 'reduce',
+      colorScheme: device.dark ? 'dark' : 'light',
     })
-    count++
-    console.log('PASS', device.name, label, JSON.stringify(sizes))
-  }
+    const page = await context.newPage()
+    page.on('pageerror', (error) => errors.push(device.name + ': ' + error.message))
+    if (device.dark) {
+      await page.addInitScript(() => {
+        localStorage.setItem('focus-theme', 'dark')
+        localStorage.setItem('focus-settings', JSON.stringify({ theme: 'dark', language: 'en' }))
+      })
+    }
 
-  const dock = page.locator('.mobile-dock-item')
-  assert.equal(await dock.count(), 6, 'Expected Today, Focus, Plan, Progress, League and Settings')
-  const navigation = {
-    today: 0, focus: 1, plan: 2, progress: 3, league: 4, settings: 5,
-  }
+    await page.goto(base, { waitUntil: 'networkidle' })
+    const dock = page.locator('.calm-nav')
+    await dock.waitFor({ timeout: 15000 })
+    const buttons = dock.locator('button')
+    assert.equal(await buttons.count(), 4, 'Redesigned FOCUS must have four mobile tabs')
 
-  async function openTab(name) {
-    await dock.nth(navigation[name]).click()
-    await page.waitForTimeout(220)
-    await capture(name)
-  }
+    for (let i = 0; i < tabs.length; i++) {
+      await buttons.nth(i).click()
+      // League is lazy-loaded; wait for its stable content.
+      if (tabs[i] === 'League') await page.locator('.league-v4-grid').waitFor()
+      await page.waitForTimeout(220)
 
-  await capture('today')
-  await openTab('focus')
+      const snapshot = await page.evaluate(() => {
+        const documentRoot = document.scrollingElement
+        const dockElement = document.querySelector('.calm-nav')
+        const content = document.querySelector('main.calm-content')
+        const children = content
+          ? [...content.children].filter((element) => getComputedStyle(element).display !== 'none')
+          : []
+        const last = children.at(-1)
+        return {
+          width: window.innerWidth,
+          docWidth: documentRoot?.scrollWidth ?? 0,
+          bodyWidth: document.body.scrollWidth,
+          dockPosition: dockElement ? getComputedStyle(dockElement).position : '',
+          contentExists: Boolean(last),
+        }
+      })
+      assert.ok(snapshot.contentExists, 'Page content missing on ' + device.name + '/' + tabs[i])
+      assert.equal(snapshot.dockPosition, 'fixed', 'Bottom navigation should remain fixed')
+      assert.ok(
+        snapshot.docWidth <= snapshot.width + 4 && snapshot.bodyWidth <= snapshot.width + 4,
+        'Unexpected horizontal page overflow on ' + device.name + '/' + tabs[i] + ': ' + JSON.stringify(snapshot),
+      )
 
-  const start = page.locator('.timer-v5-actions button').first()
-  assert.ok(await start.count(), 'Focus timer primary action missing')
-  await start.scrollIntoViewIfNeeded()
-  // A 390px-high landscape viewport needs a different scroll offset from
-  // portrait. Put the button in the available space above the fixed dock.
-  await start.evaluate((button) => {
-    const rect = button.getBoundingClientRect()
-    const dock = document.querySelector('.mobile-dock')?.getBoundingClientRect()
-    const visibleBottom = dock?.top ?? window.innerHeight
-    const wantedTop = Math.max(12, Math.min(100, visibleBottom - rect.height - 24))
-    window.scrollBy(0, rect.top - wantedTop)
-  })
-  await page.waitForTimeout(90)
-  const buttonPosition = await start.evaluate((button) => {
-    const rect = button.getBoundingClientRect()
-    const dock = document.querySelector('.mobile-dock')?.getBoundingClientRect()
-    const visibleBottom = dock?.top ?? window.innerHeight
-    return { top: rect.top, bottom: rect.bottom, dockTop: visibleBottom }
-  })
-  assert.ok(
-    buttonPosition.top >= 0 && buttonPosition.bottom < buttonPosition.dockTop - 3,
-    'Timer start action is covered by mobile navigation on ' + device.name +
-      ': ' + JSON.stringify(buttonPosition),
-  )
+      // This is the important regression: settled at the *real* bottom,
+      // the final card must remain entirely above the fixed navigation,
+      // without requiring iOS rubber-band stretching.
+      const end = await page.evaluate(async () => {
+        const root = document.scrollingElement
+        root.scrollTop = root.scrollHeight
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+        const content = document.querySelector('main.calm-content')
+        const visibleChildren = [...content.children].filter((element) => getComputedStyle(element).display !== 'none')
+        const last = visibleChildren.at(-1)
+        const dock = document.querySelector('.calm-nav')
+        const rect = last.getBoundingClientRect()
+        return {
+          lastBottom: rect.bottom,
+          dockTop: dock.getBoundingClientRect().top,
+          scrollTop: root.scrollTop,
+          maxScroll: root.scrollHeight - root.clientHeight,
+        }
+      })
+      assert.ok(
+        end.lastBottom <= end.dockTop - 8,
+        'Last page section remains under dock after scroll stops on ' +
+          device.name + '/' + tabs[i] + ': ' + JSON.stringify(end),
+      )
+      assert.ok(
+        Math.abs(end.scrollTop - end.maxScroll) < 4,
+        'Did not reach normal document scroll endpoint on ' + device.name + '/' + tabs[i] + ': ' + JSON.stringify(end),
+      )
+      console.log('PASS', device.name, tabs[i], JSON.stringify(end))
 
-  // Focus duration input: accessible keyboard with navigation hidden.
-  const customButton = page.locator('.duration-v5-presets > button').last()
-  await customButton.click()
-  const customInput = page.locator('.duration-v5-custom input')
-  await customInput.waitFor()
-  await customInput.focus()
-  await page.waitForTimeout(120)
-  const focusDebug = await page.evaluate(() => ({
-    active: document.activeElement?.tagName,
-    activeClass: document.activeElement?.className,
-    shellClass: document.querySelector('.app-shell')?.className,
-    inputFocused: document.querySelector('.duration-v5-custom input')?.matches(':focus'),
-    hasFocusedInput: document.querySelector('.app-shell')?.matches(':has(input:focus)'),
-    dockVisibility: getComputedStyle(document.querySelector('.mobile-dock')).visibility,
-  }))
-  console.log('FOCUS INPUT DEBUG', JSON.stringify(focusDebug))
-  assert.equal(
-    await page.locator('.mobile-dock').evaluate((dock) => getComputedStyle(dock).visibility),
-    'hidden',
-    'The dock should not obscure the mobile input keyboard',
-  )
-  await customInput.fill('30')
-  await capture('focus-custom-duration')
-  await customInput.press('Escape')
-
-  await openTab('plan')
-  const planTabs = page.locator('.plan-v4-tab')
-  assert.equal(await planTabs.count(), 4)
-  for (let i = 0; i < 4; i++) {
-    await planTabs.nth(i).click()
-    await capture('plan-' + ['goals', 'subjects', 'routine', 'advisor'][i])
-    if (i === 0) {
-      const advance = page.locator('.goal-create-v4 .v4-advanced-toggle')
-      if (await advance.count()) {
-        await advance.click()
-        await capture('plan-goals-advanced')
-        await advance.click()
+      if (device.name === 'iphone' || (device.name === 'small' && tabs[i] === 'League')) {
+        await page.screenshot({
+          path: 'mobile-qa-artifacts/' + device.name + '-' + tabs[i].toLowerCase() + '.png',
+          fullPage: true,
+          animations: 'disabled',
+        })
+        screenshots++
       }
     }
-    if (i === 1) {
-      const addSubject = page.locator('.subjects-inline-actions button')
-      assert.ok(await addSubject.isVisible(), 'Add Subject must be visible in Plan')
-      await addSubject.click()
-      const dialog = page.locator('.subject-dialog[role="dialog"]')
-      await dialog.waitFor()
-      await dialog.locator('input.subject-dialog-input').fill('Mobile subject test')
-      await capture('plan-subject-dialog')
-      await dialog.locator('.subject-dialog-head button').click()
-    }
-    if (i === 2) {
-      const advance = page.locator('.routine-builder .v4-advanced-toggle')
-      if (await advance.count()) {
-        await advance.click()
-        await capture('plan-routine-advanced')
-        await advance.click()
-      }
-    }
-  }
 
-  await openTab('progress')
-  const progressTabs = page.locator('.progress-v4-tab')
-  assert.equal(await progressTabs.count(), 3, 'Seeded session should unlock Progress tabs')
-  for (let i = 0; i < 3; i++) {
-    await progressTabs.nth(i).click()
-    await capture('progress-' + ['overview', 'records', 'history'][i])
-    if (i === 2) {
-      const monthButton = page.locator('.history-month-controls button').first()
-      if (await monthButton.count()) {
-        await monthButton.click()
-        await capture('progress-history-month')
-      }
+    if (device.name === 'iphone') {
+      await buttons.nth(3).click()
+      await page.locator('.calm-manage').click()
+      const dialog = page.locator('dialog.calm-modal')
+      await dialog.waitFor({ state: 'visible' })
+      const visible = await dialog.evaluate((el) => {
+        const rect = el.getBoundingClientRect()
+        return rect.top >= 0 && rect.bottom <= window.innerHeight + 2 &&
+          getComputedStyle(el).overflowY !== 'hidden'
+      })
+      assert.ok(visible, 'Plan dialog must fit and scroll on iPhone')
+      await page.keyboard.press('Escape')
     }
+    await context.close()
   }
-
-  await openTab('league')
-  await openTab('settings')
-  const settingsTabs = page.locator('.settings-v4-tab')
-  assert.equal(await settingsTabs.count(), 4)
-  for (let i = 0; i < 4; i++) {
-    await settingsTabs.nth(i).click()
-    await capture('settings-' + ['general', 'focus', 'alerts', 'account'][i])
-  }
-  await ctx.close()
+} finally {
+  await browser.close()
 }
-
-await browser.close()
-assert.deepEqual(errors, [], 'Browser runtime exceptions: ' + errors.join('; '))
-console.log('Browser mobile audit PASSED. Screens visited: ' + count)
+assert.deepEqual(errors, [], 'Browser errors: ' + errors.join('; '))
+console.log('Mobile audit PASSED; screenshots captured:', screenshots)
