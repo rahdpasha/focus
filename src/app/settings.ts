@@ -19,7 +19,7 @@ export interface AppSettings {
 }
 
 export const defaultSettings: AppSettings = {
-  theme: 'system',
+  theme: 'light',
   customThemePack: null,
   language: 'en',
   shortBreak: 5,

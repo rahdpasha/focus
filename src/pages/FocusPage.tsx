@@ -1,39 +1,20 @@
-import {
-  BookOpen,
-  Headphones,
-  Sparkles,
-  Volume2,
-  VolumeX,
-} from 'lucide-react'
-import {
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import { createClientId } from '../utils/clientId'
+import { useCallback, useRef, useState } from 'react'
+import { Plus, BookOpen, Flame, ArrowUpRight, Check, Headphones } from 'lucide-react'
 import Timer from '../components/timer/Timer'
-import type {
-  Subject,
-  StudySession,
-  Subtask,
-} from '../types'
-import type {
-  RoutineSessionContext,
-} from '../storage/types'
-import {
-  useI18n,
-} from '../useI18n'
-import PageContainer from './PageContainer'
-import PageHeader from '../components/layout/PageHeader'
+import type { Subject, StudySession, Subtask } from '../types'
+import type { RoutineItem, RoutineSessionContext } from '../storage/types'
+import { useI18n } from '../useI18n'
 import { supabase } from '../api/supabaseClient'
-import {
-  getStudyAdvisor,
-} from '../utils/studyAdvisor'
-import {
-  ambientAudio,
-  type AmbientSoundType,
-} from '../utils/ambientAudio'
-
+import { ambientAudio, type AmbientSoundType } from '../utils/ambientAudio'
+import { getRoutineItemsForDate, getRoutineMinutesForDate, toRoutineDateKey } from '../utils/routine'
+import { getFocusSummary } from '../utils/focusSummary'
 interface FocusPageProps {
+  onActivityChange: (active: boolean) => void
+  dailyGoal: number
+  routineItems: RoutineItem[]
+  onStartRoutine: (id?: string, minutes?: number, context?: RoutineSessionContext) => void
+  onManage: () => void
   userId?: string | null
   activeSubject:
     | Subject
@@ -59,58 +40,21 @@ interface FocusPageProps {
   onAddSubjectRequest?: () => void
 }
 
-const ambientOptions: Array<{
-  value: AmbientSoundType
-  label: string
-  labelKu: string
-}> = [
-  {
-    value: 'off',
-    label: 'Off',
-    labelKu: 'کوژاوە',
-  },
-  {
-    value: 'brown',
-    label: 'Brown',
-    labelKu: 'براون',
-  },
-  {
-    value: 'pink',
-    label: 'Pink',
-    labelKu: 'پینک',
-  },
-  {
-    value: 'white',
-    label: 'White',
-    labelKu: 'وایت',
-  },
-  {
-    value: 'binaural',
-    label: 'Alpha',
-    labelKu: 'ئەلفا',
-  },
-]
 
-export default function FocusPage({
-  userId,
-  activeSubject,
-  subjects = [],
-  sessions = [],
-  weeklyGoal = 1050,
-  shortBreak,
-  longBreak,
-  sessionsBeforeLongBreak,
-  autoStartBreak,
-  soundEnabled,
-  soundVolume,
-  notificationsEnabled,
-  initialFocusMinutes,
-  routineContext,
-  onAddSession,
-  onSelectSubject,
-  onAddSubjectRequest,
-}: FocusPageProps) {
+export default function FocusPage({ userId, activeSubject, subjects = [], sessions = [], dailyGoal, routineItems, onStartRoutine, onManage, shortBreak, longBreak, sessionsBeforeLongBreak, autoStartBreak, soundEnabled, soundVolume, notificationsEnabled, onActivityChange, initialFocusMinutes, routineContext, onAddSession, onSelectSubject, onAddSubjectRequest }: FocusPageProps) {
   const { t, tr } = useI18n()
+  const [timerBusy, setTimerBusy] = useState(false)
+  const targetSubject = activeSubject ?? subjects[0]
+  const [boundSubject, setBoundSubject] = useState<Subject | undefined>()
+  const sessionSubject = boundSubject ?? targetSubject
+  const handleActivity = useCallback((active: boolean) => { setTimerBusy(active); onActivityChange(active); setBoundSubject(previous => active ? (previous ?? targetSubject) : undefined) }, [targetSubject, onActivityChange])
+  const [sessionNotes, setSessionNotes] = useState('')
+  const [subtasks, setSubtasks] = useState<Subtask[]>([])
+  const [step, setStep] = useState('')
+  const [ambient, setAmbient] = useState<AmbientSoundType>('off')
+  const summary = getFocusSummary(sessions)
+  const routine = getRoutineItemsForDate(routineItems, new Date())
+  const resetIntent = () => { setSessionNotes(''); setSubtasks([]) }
   const pushJobQueue = useRef<Promise<unknown>>(Promise.resolve())
 
   function queueTimerJob(run: () => Promise<unknown>) {
@@ -134,9 +78,9 @@ export default function FocusPage({
 
   function scheduleTimerJob(startedAt: Date, sessionClientId: string, seconds: number, endAt: number) {
     const client = supabase
-    if (!client || !userId || !targetSubject) return
-    const subjectId = targetSubject.id
-    const subjectName = targetSubject.name
+    if (!client || !userId || !sessionSubject) return
+    const subjectId = sessionSubject.id
+    const subjectName = sessionSubject.name
     queueTimerJob(async () => {
       const { error } = await client.from('focus_timer_jobs').upsert({
         user_id: userId,
@@ -152,214 +96,23 @@ export default function FocusPage({
     })
   }
 
-  const [
-    ambientSound,
-    setAmbientSound,
-  ] =
-    useState<AmbientSoundType>(
-      'off',
-    )
-  const [
-    sessionNotes,
-    setSessionNotes,
-  ] = useState('')
-  const [
-    subtasks,
-    setSubtasks,
-  ] = useState<Subtask[]>([])
-  const [
-    subtaskDraft,
-    setSubtaskDraft,
-  ] = useState('')
 
-  const advisor =
-    getStudyAdvisor(
-      sessions,
-      subjects,
-      weeklyGoal,
-    )
-
-  const advisorSummary =
-    advisor.recommendation.type === 'unstudiedSubject'
-      ? tr(
-          `${advisor.recommendation.subjectName ?? ''} has not been studied this week.`,
-          `${advisor.recommendation.subjectName ?? ''} ئەم هەفتەیە نەخوێندراوەتەوە.`,
-        )
-      : advisor.recommendation.type === 'understudiedSubject'
-        ? tr(
-            `${advisor.recommendation.subjectName ?? ''} is receiving very little study time.`,
-            `${advisor.recommendation.subjectName ?? ''} کاتی خوێندنی زۆر کەمی پێدراوە.`,
-          )
-        : advisor.recommendation.type === 'shortSessions'
-          ? tr(
-              `Your average session is ${advisor.evidence.find((item) => item.label === 'averageSessionMinutes')?.value ?? 0} minutes; a focused 25-minute block is recommended.`,
-              'ناوەندی سێشنەکانت کورتە؛ بلۆکێکی ٢٥ خولەکی سەرنج پێشنیار دەکرێت.',
-            )
-          : advisor.recommendation.type === 'weeklyGoal'
-            ? tr(
-                `You are ${advisor.recommendation.remainingMinutes ?? 0} minutes short of your weekly goal.`,
-                `${advisor.recommendation.remainingMinutes ?? 0} خولەک لە ئامانجی هەفتانەت کەمە.`,
-              )
-            : advisor.recommendation.type === 'maintain'
-              ? tr(
-                  advisor.summary,
-                  'ڕێتمی خوێندنت باشە. بە هەمان خێرایی بەردەوام بە.',
-                )
-              : tr(
-                  advisor.summary,
-                  'یەک سێشنی سەرنج دەست پێ بکە تا FOCUS داتای پێویست بۆ ڕێنماییت هەبێت.',
-                )
-
-  const targetSubject =
-    activeSubject ??
-    subjects[0]
-
-  const handleSoundChange = (
-    sound: AmbientSoundType,
-  ) => {
-    setAmbientSound(sound)
-
-    if (sound === 'off') {
-      ambientAudio.stop()
-      return
-    }
-
-    ambientAudio.play(
-      sound,
-      soundVolume / 100,
-    )
-  }
-
-  const addSubtask = () => {
-    const text =
-      subtaskDraft.trim()
-
-    if (!text) return
-
-    setSubtasks(
-      (current) => [
-        ...current,
-        {
-          id:
-            'task-' +
-            Date.now(),
-          text,
-          completed:
-            false,
-        },
-      ],
-    )
-
-    setSubtaskDraft('')
-  }
-
-  const resetIntent = () => {
-    setSessionNotes('')
-    setSubtasks([])
-    setSubtaskDraft('')
-  }
-
-  useEffect(() => {
-    return () => {
-      ambientAudio.stop()
-    }
-  }, [])
-
-  return (
-    <PageContainer>
-      <PageHeader
-        compact
-        title={t('focus')}
-        description={t(
-          'focusPageQuestion',
-        )}
-      />
-
-      {subjects.length === 0 ? (
-        <section className="glass-panel focus-first-subject">
-          <div className="focus-first-subject-icon">
-            <BookOpen size={22} />
-          </div>
-
-          <div>
-            <div className="eyebrow">
-              {tr('First step', 'هەنگاوی یەکەم')}
-            </div>
-            <h2>
-              {tr(
-                'Add a subject before you start.',
-                'پێش دەستپێکردن بابەتێک زیاد بکە.',
-              )}
-            </h2>
-            <p>
-              {tr(
-                'FOCUS needs a subject so your timer session can be saved, planned, and counted in progress.',
-                'FOCUS پێویستی بە بابەتێک هەیە تا سێشنی کاتژمێرەکەت پاشەکەوت بکرێت، پلان بۆ دابنرێت و لە پێشکەوتندا هەژمار بکرێت.',
-              )}
-            </p>
-          </div>
-
-          {onAddSubjectRequest && (
-            <button
-              type="button"
-              className="cyber-btn"
-              onClick={onAddSubjectRequest}
-            >
-              {tr(
-                'Add your first subject',
-                'یەکەم بابەتت زیاد بکە',
-              )}
-            </button>
-          )}
-        </section>
-      ) : (
-      <div className="focus-workspace">
-        <section className="glass-panel focus-timer-stage">
-          <div className="focus-stage-head">
-            <div>
-              <div className="eyebrow">
-                {tr('Current session', 'سێشنی ئێستا')}
-              </div>
-              <h2>
-                {targetSubject
-                  ?.name ??
-                  t(
-                    'selectSubject',
-                  )}
-              </h2>
-            </div>
-
-            {targetSubject && (
-              <span
-                className="focus-subject-pill"
-                style={{
-                  borderColor:
-                    targetSubject.color,
-                  color:
-                    targetSubject.color,
-                }}
-              >
-                <span
-                  style={{
-                    background:
-                      targetSubject.color,
-                  }}
-                />
-                {tr('Ready', 'ئامادە')}
-              </span>
-            )}
-          </div>
-
-          <div className="focus-timer-wrap">
+  return <div className="calm-focus">
+    <header className="calm-page-heading"><div><span className="calm-eyebrow">{tr('MAKE A LITTLE ROOM', 'کەمێک کات بۆ خۆت')}</span><h1>{tr('Ready to focus?', 'ئامادەیت بۆ سەرنج؟')}</h1></div><span className="calm-streak"><Flame size={17} />{summary.streak} {tr('day streak', 'ڕۆژ بەردەوامی')}</span></header>
+    <div className="calm-focus-grid">
+      <section className="calm-timer-card">
+        <div className="calm-subject-picker"><BookOpen size={18} /><select aria-label={t('selectSubject')} value={targetSubject?.id ?? ''} disabled={timerBusy} onChange={e => onSelectSubject?.(e.target.value)}>{!subjects.length && <option value="">{tr('Choose a subject', 'بابەتێک هەڵبژێرە')}</option>}{subjects.map(subject => <option key={subject.id} value={subject.id}>{subject.name}</option>)}</select><button disabled={timerBusy} onClick={onAddSubjectRequest} aria-label={t('addSubject')}><Plus size={19} /></button></div>
+        {sessionSubject ? <div className="calm-timer-body">
             <Timer
+              persistenceKey={`focus.activeTimer.v1:${userId ?? "local"}`}
               subjectName={
-                targetSubject?.name ||
+                sessionSubject?.name ||
                 t(
                   'selectSubject',
                 )
               }
               subjectColor={
-                targetSubject?.color ||
+                sessionSubject?.color ||
                 '#8b5cf6'
               }
               shortBreakMinutes={
@@ -389,6 +142,7 @@ export default function FocusPage({
               onComplete={() =>
                 ambientAudio.stop()
               }
+              onActivityChange={handleActivity}
               onSessionStart={scheduleTimerJob}
               onSessionPause={(id, paused, interruptions) =>
                 changeTimerJob(id, { status: 'paused', total_paused_seconds: paused, interruptions })
@@ -406,11 +160,12 @@ export default function FocusPage({
                 totalPausedSeconds,
                 startedAt,
                 sessionClientId,
+                completedAt,
               ) => {
                 ambientAudio.stop()
 
                 if (
-                  !targetSubject
+                  !sessionSubject
                 ) {
                   console.warn(
                     '[FocusPage] Cannot save session: No subjects exist.',
@@ -421,16 +176,15 @@ export default function FocusPage({
                 onAddSession({
                   id: sessionClientId,
                   subjectId:
-                    targetSubject.id,
+                    sessionSubject.id,
                   subjectName:
-                    targetSubject.name,
+                    sessionSubject.name,
                   subjectColor:
-                    targetSubject.color,
+                    sessionSubject.color,
                   duration,
                   actualDuration,
                   startedAt,
-                  completedAt:
-                    new Date(),
+                  completedAt: completedAt ?? new Date(),
                   completed,
                   interruptions,
                   totalPausedSeconds,
@@ -453,317 +207,14 @@ export default function FocusPage({
                 resetIntent()
               }}
             />
-          </div>
-
-          <details className="focus-audio focus-audio-v4">
-            <summary className="focus-audio-label">
-              <span className="focus-audio-summary-title">
-                {ambientSound ===
-                'off' ? (
-                  <VolumeX
-                    size={16}
-                  />
-                ) : (
-                  <Volume2
-                    size={16}
-                  />
-                )}
-                <span>
-                  {tr('Ambient audio', 'دەنگی ژینگە')}
-                </span>
-              </span>
-
-              <small>
-                {ambientSound === 'off'
-                  ? tr('Off', 'کوژاوە')
-                  : ambientSound === 'brown'
-                    ? tr('Brown', 'براون')
-                    : ambientSound === 'pink'
-                      ? tr('Pink', 'پینک')
-                      : ambientSound === 'white'
-                        ? tr('White', 'سپێ')
-                        : tr('Alpha', 'ئەلفا')}
-              </small>
-            </summary>
-
-            <div className="focus-audio-options">
-              {ambientOptions.map(
-                (option) => (
-                  <button
-                    key={
-                      option.value
-                    }
-                    type="button"
-                    className={
-                      ambientSound ===
-                      option.value
-                        ? 'active'
-                        : ''
-                    }
-                    onClick={() =>
-                      handleSoundChange(
-                        option.value,
-                      )
-                    }
-                  >
-                    {
-                      option.value === 'off'
-                        ? tr('Off', 'کوژاوە')
-                        : option.value === 'brown'
-                          ? tr('Brown', 'براون')
-                          : option.value === 'pink'
-                            ? tr('Pink', 'پینک')
-                            : option.value === 'white'
-                              ? tr('White', 'سپێ')
-                              : tr('Alpha', 'ئەلفا')
-                    }
-                  </button>
-                ),
-              )}
-            </div>
-          </details>
-        </section>
-
-        <aside className="focus-side-stack">
-          <details className="glass-panel focus-advisor-card focus-advisor-v4">
-            <summary className="focus-card-title focus-advisor-summary">
-              <span className="focus-advisor-summary-title">
-                <Sparkles
-                  size={16}
-                />
-                <span>
-                  {tr('Smart cue', 'ئاماژەی زیرەک')}
-                </span>
-              </span>
-
-              <small>
-                {advisor.priority === 'high'
-                  ? tr('High priority', 'گرنگی زۆر')
-                  : advisor.priority === 'medium'
-                    ? tr('Medium priority', 'گرنگی ناوەند')
-                    : tr('Low priority', 'گرنگی کەم')}
-              </small>
-            </summary>
-
-            <p>
-              {advisorSummary}
-            </p>
-
-            {advisor.action
-              .subjectId &&
-              advisor.action
-                .subjectId !==
-                targetSubject?.id &&
-              onSelectSubject && (
-                <button
-                  type="button"
-                  className="focus-switch-subject"
-                  onClick={() =>
-                    advisor.action
-                      .subjectId &&
-                    onSelectSubject(
-                      advisor.action
-                        .subjectId,
-                    )
-                  }
-                >
-                  {tr('Switch to', 'بگۆڕە بۆ')}{' '}
-                  {advisor.action
-                    .subjectName ??
-                    tr('recommended subject', 'بابەتی پێشنیارکراو')}
-                </button>
-              )}
-          </details>
-
-          <details className="glass-panel focus-intent-card focus-intent-v4">
-            <summary className="focus-card-title focus-intent-summary">
-              <span className="focus-intent-summary-title">
-                <Headphones
-                  size={16}
-                />
-                <span>
-                  {tr('Session notes & steps', 'تێبینی و هەنگاوەکانی سێشن')}
-                </span>
-              </span>
-              <small>
-                {tr('Optional', 'ئارەزوومەندانە')}
-              </small>
-            </summary>
-
-            <p className="focus-intent-helper">
-              {tr('Add a note or a few small steps only when they help you focus.', 'تەنها کاتێک یارمەتیت دەدات بۆ سەرنج، تێبینی یان چەند هەنگاوێکی بچووک زیاد بکە.')}
-            </p>
-
-            <textarea
-              value={
-                sessionNotes
-              }
-              onChange={(
-                event,
-              ) =>
-                setSessionNotes(
-                  event.target
-                    .value,
-                )
-              }
-              placeholder={tr('What are you trying to finish, understand, or practice?', 'دەتەوێت چی تەواو بکەیت، تێبگەیت یان ڕاهێنان بکەیت؟')}
-              rows={3}
-              maxLength={1000}
-              className="focus-intent-notes"
-            />
-
-            <div className="focus-checklist">
-              {subtasks.map(
-                (task) => (
-                  <label
-                    key={
-                      task.id
-                    }
-                    className="focus-checklist-item"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={
-                        task.completed
-                      }
-                      onChange={(
-                        event,
-                      ) => {
-                        setSubtasks(
-                          (
-                            current,
-                          ) =>
-                            current.map(
-                              (
-                                item,
-                              ) =>
-                                item.id ===
-                                task.id
-                                  ? {
-                                      ...item,
-                                      completed:
-                                        event
-                                          .target
-                                          .checked,
-                                    }
-                                  : item,
-                            ),
-                        )
-                      }}
-                    />
-
-                    <span
-                      className={
-                        task.completed
-                          ? 'focus-checklist-text complete'
-                          : 'focus-checklist-text'
-                      }
-                    >
-                      {
-                        task.text
-                      }
-                    </span>
-
-                    <button
-                      type="button"
-                      aria-label={tr('Remove checklist item', 'لابردنی خاڵی لیست')}
-                      className="focus-checklist-remove"
-                      onClick={() =>
-                        setSubtasks(
-                          (
-                            current,
-                          ) =>
-                            current.filter(
-                              (
-                                item,
-                              ) =>
-                                item.id !==
-                                task.id,
-                            ),
-                        )
-                      }
-                    >
-                      ×
-                    </button>
-                  </label>
-                ),
-              )}
-
-              <div className="focus-checklist-compose">
-                <input
-                  value={
-                    subtaskDraft
-                  }
-                  onChange={(
-                    event,
-                  ) =>
-                    setSubtaskDraft(
-                      event.target
-                        .value,
-                    )
-                  }
-                  onKeyDown={(
-                    event,
-                  ) => {
-                    if (
-                      event.key ===
-                      'Enter'
-                    ) {
-                      event.preventDefault()
-                      addSubtask()
-                    }
-                  }}
-                  placeholder={tr('Add a small step', 'هەنگاوێکی بچووک زیاد بکە')}
-                  maxLength={160}
-                />
-
-                <button
-                  type="button"
-                  className="cyber-btn"
-                  onClick={
-                    addSubtask
-                  }
-                  disabled={
-                    !subtaskDraft.trim()
-                  }
-                >
-                  {tr('Add', 'زیادکردن')}
-                </button>
-              </div>
-            </div>
-
-            <div className="focus-intent-meta">
-              <span>
-                {
-                  subtasks.filter(
-                    (task) =>
-                      task.completed,
-                  ).length
-                }
-                /
-                {
-                  subtasks.length
-                }{' '}
-                {tr('completed', 'تەواوکراو')}
-              </span>
-
-              {(sessionNotes ||
-                subtasks.length >
-                  0) && (
-                <button
-                  type="button"
-                  onClick={
-                    resetIntent
-                  }
-                >
-                  {tr('Clear', 'پاککردنەوە')}
-                </button>
-              )}
-            </div>
-          </details>
-        </aside>
-      </div>
-      )}
-    </PageContainer>
-  )
+        </div> : <div className="calm-empty-timer"><div className="calm-empty-ring"><strong>25:00</strong><span>{tr('Room for your next idea', 'شوێنێک بۆ بیرۆکەی داهاتووت')}</span></div><button className="cyber-btn" onClick={onAddSubjectRequest}><Plus size={18}/>{tr('Add your first subject', 'یەکەم بابەتت زیاد بکە')}</button></div>}
+        <details className="calm-session-options"><summary><Headphones size={16}/>{tr('Sound & notes', 'دەنگ و تێبینی')}</summary><label>{tr('Background sound', 'دەنگی پاشبنەما')}<select value={ambient} onChange={e => { const value = e.target.value as AmbientSoundType; setAmbient(value); if(value === 'off') ambientAudio.stop(); else ambientAudio.play(value, soundVolume / 100) }}><option value="off">{tr('Off','کوژاوە')}</option><option value="brown">{tr('Brown noise','دەنگی براون')}</option><option value="pink">{tr('Pink noise','دەنگی پینک')}</option><option value="white">{tr('White noise','دەنگی سپی')}</option><option value="binaural">{tr('Alpha','ئەلفا')}</option></select></label><label>{tr('Session note', 'تێبینی سێشن')}<textarea rows={2} value={sessionNotes} onChange={e => setSessionNotes(e.target.value)} maxLength={1000}/></label><div className="calm-checklist">{subtasks.map(task => <label key={task.id}><input type="checkbox" checked={task.completed} onChange={e => setSubtasks(items => items.map(item => item.id === task.id ? {...item, completed: e.target.checked} : item))}/>{task.text}<button onClick={() => setSubtasks(items => items.filter(item => item.id !== task.id))} aria-label={tr('Remove step','لابردنی هەنگاو')}>×</button></label>)}<form onSubmit={e => { e.preventDefault(); if(step.trim()) {setSubtasks(items => [...items,{id:createClientId(),text:step.trim(),completed:false}]);setStep('')} }}><input aria-label={tr('Add a step','زیادکردنی هەنگاو')} placeholder={tr('Add a step','زیادکردنی هەنگاو')} value={step} onChange={e => setStep(e.target.value)} maxLength={160}/><button disabled={!step.trim()}>{tr('Add','زیادکردن')}</button></form></div></details>
+      </section>
+      <aside className="calm-focus-aside">
+        <section className="calm-today"><span className="calm-eyebrow">{tr('TODAY', 'ئەمڕۆ')}</span><div className="calm-today-value"><strong>{summary.todayMinutes}</strong><span>{tr('minutes focused', 'خولەک سەرنج')}</span></div><progress value={summary.todayMinutes} max={Math.max(dailyGoal, summary.todayMinutes, 1)} aria-label={tr('Daily goal', 'ئامانجی ڕۆژانە')}/><div className="calm-between"><span>{summary.todaySessions} {tr('sessions', 'سێشن')}</span><span>{dailyGoal} {tr('min goal', 'خولەک ئامانج')}</span></div></section>
+        <section className="calm-plan"><div className="calm-between"><h2>{tr('Your study rhythm', 'ڕێتمی خوێندنت')}</h2><button onClick={onManage} aria-label={tr('Manage study plan','ڕێکخستنی پلانی خوێندن')}><ArrowUpRight size={19}/></button></div>{routine.length ? routine.map(item => {const done = getRoutineMinutesForDate(item, sessions, new Date()) >= item.targetMinutes; return <button className="calm-routine" key={item.id} disabled={timerBusy || !subjects.some(s => s.id === item.subjectId)} onClick={() => onStartRoutine(item.subjectId, item.targetMinutes, { itemId: item.id, routineDate: toRoutineDateKey(new Date()) })}><span className={done ? 'routine-check done' : 'routine-check'}>{done && <Check size={14}/>}</span><span><strong>{item.title}</strong><small>{item.mode === 'fixed' ? tr('Fixed','جێگیر') : tr('Rotation','خولانەوە')}</small></span><span>{item.targetMinutes}m</span></button>}) : <><p>{tr('Choose one subject, or set up a simple rotation.', 'بابەتێک هەڵبژێرە، یان خولانەوەیەکی سادە ڕێکبخە.')}</p><button className="calm-text-button" onClick={onManage}>{tr('Set up a study plan', 'پلانی خوێندن ڕێکبخە')} →</button></>}</section>
+        <p className="calm-quiet-note">{tr('One session is a good start.', 'یەک سێشن دەستپێکێکی باشە.')}</p>
+      </aside>
+    </div>
+  </div>
 }

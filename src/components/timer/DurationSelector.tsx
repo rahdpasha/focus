@@ -8,7 +8,6 @@ interface DurationSelectorProps {
 }
 
 const durations = [
-  { label: '10 sec', value: 10 },
   { label: '25 min', value: 25 * 60 },
   { label: '45 min', value: 45 * 60 },
   { label: '60 min', value: 60 * 60 },

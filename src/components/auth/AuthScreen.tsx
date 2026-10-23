@@ -165,15 +165,15 @@ export default function AuthScreen() {
 
             <h1>
               {tr(
-                'Build a system you can actually return to.',
-                'سیستەمێک دروست بکە کە بتوانیت بەردەوام بگەڕێیتەوە بۆی.',
+                'Make room for focus.',
+                'شوێنێک بۆ سەرنج بکەرەوە.',
               )}
             </h1>
 
             <p>
               {tr(
-                'Focus sessions, plans, routines, progress and guidance stay connected in one calm workspace.',
-                'سێشنەکانی سەرنج، پلان، ڕوتین، پێشکەوتن و ڕێنمایی هەموویان لە یەک شوێنی ئارامدا پێکەوە دەمێننەوە.',
+                'Choose a subject. Find your rhythm. See your progress.',
+                'بابەتێک هەڵبژێرە. ڕێتمی خۆت بدۆزەرەوە. پێشکەوتنت ببینە.',
               )}
             </p>
           </div>

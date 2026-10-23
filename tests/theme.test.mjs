@@ -125,7 +125,7 @@ test('settings accept a validated custom theme and reject invalid custom mode', 
     customThemePack: null,
   })
 
-  assert.equal(rejected.theme, 'system')
+  assert.equal(rejected.theme, 'light')
   assert.equal(
     rejected.customThemePack,
     null,

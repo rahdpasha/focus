@@ -41,9 +41,9 @@ export function pausedFromClock(
   return previousSeconds + Math.max(0, Math.floor((now - startedAt) / 1000))
 }
 
-export function readTimerSnapshot(subjectName: string): TimerSnapshot | null {
+export function readTimerSnapshot(subjectName: string, storageKey = TIMER_STORAGE_KEY): TimerSnapshot | null {
   try {
-    const raw = localStorage.getItem(TIMER_STORAGE_KEY)
+    const raw = localStorage.getItem(storageKey)
     if (!raw) return null
 
     const value: unknown = JSON.parse(raw)
@@ -87,9 +87,9 @@ export function readTimerSnapshot(subjectName: string): TimerSnapshot | null {
   }
 }
 
-export function writeTimerSnapshot(snapshot: TimerSnapshot): void {
+export function writeTimerSnapshot(snapshot: TimerSnapshot, storageKey = TIMER_STORAGE_KEY): void {
   try {
-    localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(snapshot))
+    localStorage.setItem(storageKey, JSON.stringify(snapshot))
   } catch {
     // An unavailable storage API must never block the timer controls.
   }

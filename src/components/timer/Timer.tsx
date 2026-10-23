@@ -1,3 +1,4 @@
+import { createClientId } from '../../utils/clientId'
 import { useEffect, useRef, useState, useCallback, type CSSProperties } from 'react'
 import {
   Play,
@@ -13,9 +14,11 @@ import {
   remainingFromClock,
   writeTimerSnapshot,
   type TimerMode,
+  TIMER_STORAGE_KEY,
 } from '../../utils/timerPersistence'
 
 interface TimerProps {
+  persistenceKey?: string
   subjectName: string
   subjectColor: string
 
@@ -27,6 +30,7 @@ interface TimerProps {
   soundVolume: number
   notificationsEnabled: boolean
 
+  onActivityChange?: (active: boolean) => void
   onComplete: () => void
   onSessionStart?: (startedAt: Date, sessionClientId: string, plannedSeconds: number, endAt: number) => void
   onSessionPause?: (sessionClientId: string, pausedSeconds: number, interruptions: number) => void
@@ -42,11 +46,13 @@ interface TimerProps {
     interruptions: number,
     totalPausedSeconds: number,
     startedAt: Date,
-    sessionClientId: string
+    sessionClientId: string,
+    completedAt?: Date
   ) => void
 }
 
 export default function Timer({
+  persistenceKey = TIMER_STORAGE_KEY,
   subjectName,
   subjectColor,
   shortBreakMinutes,
@@ -56,6 +62,7 @@ export default function Timer({
   soundEnabled,
   soundVolume,
   notificationsEnabled,
+  onActivityChange,
   onComplete,
   onSessionStart,
   onSessionPause,
@@ -70,7 +77,7 @@ export default function Timer({
   const initialSeconds = Math.max(1, initialFocusMinutes) * 60
   // Restore a saved session when returning from another page, refreshing,
   // or reopening the installed app. A deadline survives suspended JS timers.
-  const [restored] = useState(() => readTimerSnapshot(subjectName))
+  const [restored] = useState(() => readTimerSnapshot(subjectName, persistenceKey))
   const [focusDuration, setFocusDuration] = useState(restored?.focusDuration ?? initialSeconds)
   const [duration, setDuration] = useState(restored?.duration ?? initialSeconds)
   const [timeRemaining, setTimeRemaining] = useState(() =>
@@ -98,14 +105,6 @@ export default function Timer({
 
   const [showComplete, setShowComplete] =
     useState(false)
-
-  const [
-    completionCountdown,
-    setCompletionCountdown,
-  ] = useState(0)
-
-  const completionTimeoutRef =
-    useRef<number | null>(null)
 
   const [pausedSeconds, setPausedSeconds] =
     useState(() => restored?.isPaused
@@ -139,6 +138,8 @@ export default function Timer({
     restored?.sessionClientId ??
     (restored?.sessionStartedAt ? 's' + restored.sessionStartedAt : null)
   )
+
+  useEffect(() => { onActivityChange?.(isStudying || isPaused) }, [isStudying, isPaused, onActivityChange])
 
   const isFocus = mode === 'focus'
 
@@ -335,8 +336,9 @@ export default function Timer({
       pauseStartedAt: pauseStartedAtRef.current,
       pauseBaseSeconds: pauseBaseSecondsRef.current,
       interruptionCount,
-    })
+    }, persistenceKey)
   }, [
+    persistenceKey,
     subjectName, focusDuration, duration, timeRemaining, mode,
     completedFocusSessions, isStudying, isPaused,
     pausedSeconds, interruptionCount,
@@ -371,14 +373,6 @@ export default function Timer({
       return
     }
 
-    if (
-      notificationsEnabled &&
-      'Notification' in window &&
-      Notification.permission === 'default'
-    ) {
-      void Notification.requestPermission()
-    }
-
     timerEndRef.current =
       Date.now() +
       timeRemaining * 1000
@@ -386,7 +380,7 @@ export default function Timer({
     if (isFocus && sessionStartedAtRef.current === null) {
       const startedAt = new Date()
       sessionStartedAtRef.current = startedAt
-      sessionClientIdRef.current = 's' + startedAt.getTime() + '-' + crypto.randomUUID().slice(0, 8)
+      sessionClientIdRef.current = 's' + startedAt.getTime() + '-' + createClientId().slice(0, 8)
       onSessionStart?.(
         startedAt,
         sessionClientIdRef.current,
@@ -552,6 +546,7 @@ export default function Timer({
         pausedSeconds,
         sessionStartedAtRef.current ?? new Date(),
         sessionClientIdRef.current ?? ('s' + startedAt.getTime()),
+        new Date(timerEndRef.current ?? Date.now()),
       )
       if (sessionClientIdRef.current) {
         onSessionCompleted?.(sessionClientIdRef.current)
@@ -615,43 +610,12 @@ export default function Timer({
       }
 
       finishedRef.current = true
+      // Persist completion immediately. A display countdown used to delay the
+      // write and could be suspended between expiry and saving.
+      if (isFocus) finishFocusSession()
+      else finishBreak()
       clearTimer()
 
-      setCompletionCountdown(3)
-
-      let count = 3
-
-      const countdown = () => {
-        count -= 1
-
-        if (count <= 0) {
-          completionTimeoutRef.current = null
-          setCompletionCountdown(0)
-
-          if (isFocus) {
-            finishFocusSession()
-          } else {
-            finishBreak()
-          }
-
-          finishedRef.current = false
-          return
-        }
-
-        setCompletionCountdown(count)
-
-        completionTimeoutRef.current =
-          window.setTimeout(
-            countdown,
-            1000
-          )
-      }
-
-      completionTimeoutRef.current =
-        window.setTimeout(
-          countdown,
-          1000
-        )
     }, [
       clearTimer,
       isFocus,
@@ -833,13 +797,7 @@ export default function Timer({
       // and clearing the saved deadline would restart a running session.
       if (intervalRef.current !== null) clearInterval(intervalRef.current)
 
-      if (
-        completionTimeoutRef.current !== null
-      ) {
-        clearTimeout(
-          completionTimeoutRef.current
-        )
-      }
+
     }
   }, [])
 
@@ -883,21 +841,6 @@ export default function Timer({
     completedFocusSessions >=
     sessionsBeforeLongBreak
 
-  if (completionCountdown > 0) {
-    return (
-      <div className="timer-v5-completion-countdown">
-        <span>
-          {isFocus
-            ? t('sequenceComplete')
-            : t('breakComplete')}
-        </span>
-
-        <strong className="mono">
-          {completionCountdown}
-        </strong>
-      </div>
-    )
-  }
 
   if (
     showComplete &&
@@ -1097,9 +1040,7 @@ export default function Timer({
           >
             <Play size={16} />
             {isFocus
-              ? t(
-                  'initiateSequence',
-                )
+              ? tr('Start focus', 'دەستپێکردنی سەرنج')
               : t(
                   'startBreak',
                 )}

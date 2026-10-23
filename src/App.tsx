@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import AppShell from './components/layout/AppShell'
-import Dashboard from './components/dashboard/Dashboard'
 import Settings from './components/settings/Settings'
 import PageHeader from './components/layout/PageHeader'
 import PageContainer from './pages/PageContainer'
@@ -13,9 +12,10 @@ import type { Page } from './app/navigation'
 import type { TranslationKey } from './translations'
 import type { AuthState } from './auth/types'
 import FocusPage from './pages/FocusPage'
-import PlanPage from './pages/PlanPage'
+const PlanPage = lazy(() => import('./pages/PlanPage'))
+import Modal from './components/layout/Modal'
 import ProgressPage from './pages/ProgressPage'
-import LeaguePage from './pages/LeaguePage'
+const LeaguePage = lazy(() => import('./pages/LeaguePage'))
 import { useFocusData } from './hooks/useFocusData'
 import type { RoutineSessionContext } from './storage/types'
 
@@ -62,7 +62,7 @@ function AuthenticatedApp({
   t: Translate
   auth: AuthState & ReturnType<typeof useAuth>
 }) {
-  const [page, setPage] = useState<Page>('dashboard')
+  const [page, setPage] = useState<Page>('focus')
   const [recommendedMinutes, setRecommendedMinutes] =
     useState<number | undefined>()
   const [
@@ -71,15 +71,9 @@ function AuthenticatedApp({
   ] = useState<
     RoutineSessionContext | undefined
   >()
-  const [
-    planSubjectCreateRequest,
-    setPlanSubjectCreateRequest,
-  ] = useState(0)
-  const [
-    subjectCreateReturnPage,
-    setSubjectCreateReturnPage,
-  ] = useState<'dashboard' | 'focus' | null>(null)
-
+  const [timerActive, setTimerActive] = useState(false)
+  const [showSubjectCreator, setShowSubjectCreator] = useState(false)
+  const [subjectName, setSubjectName] = useState('')
   const data = useFocusData(
     t,
     undefined,
@@ -152,6 +146,7 @@ function AuthenticatedApp({
     minutes?: number,
     routineContext?: RoutineSessionContext,
   ) => {
+    if (timerActive) { setPage('focus'); return }
     if (subjectId) {
       data.selectSubject(subjectId)
     }
@@ -168,75 +163,39 @@ function AuthenticatedApp({
     color: string,
   ) => {
     data.addSubject(name, color)
-    setPage('dashboard')
+    setPage('focus')
   }
 
   const handleSelectSubject = (
     id: string | null,
   ) => {
     data.selectSubject(id)
-    setPage('dashboard')
+    setPage('focus')
   }
 
-  const openSubjectCreator = (
-    returnPage: 'dashboard' | 'focus',
-  ) => {
-    setSubjectCreateReturnPage(
-      returnPage,
-    )
-    setPlanSubjectCreateRequest(
-      (value) => value + 1,
-    )
-    setPage('plan')
-  }
+  const openSubjectCreator = () => { setSubjectName(''); setShowSubjectCreator(true) }
 
   return (
     <AppShell
       page={page}
-      onPageChange={(nextPage) => {
-        if (nextPage !== 'focus') {
-          setRecommendedMinutes(
-            undefined,
-          )
-          setRoutineSessionContext(
-            undefined,
-          )
-        }
-
-        setPage(nextPage)
-      }}
+      onPageChange={setPage}
       subjects={data.subjects}
       activeSubjectId={data.activeSubjectId}
       onSelectSubject={handleSelectSubject}
       onAddSubject={handleAddSubject}
       onDeleteSubject={data.deleteSubject}
     >
-      {page === 'dashboard' && (
-        <Dashboard
-          subjects={data.subjects}
-          sessions={data.sessions}
-          dailyGoal={data.dailyGoal}
-          weeklyGoal={data.weeklyGoal}
-          routineItems={data.routineItems}
-          advancedGoals={data.advancedGoals}
-          onStartRecommendedSession={
-            startRecommendedSession
-          }
-          onAddSubjectRequest={() =>
-            openSubjectCreator(
-              'dashboard',
-            )
-          }
-        />
-      )}
-
-      {page === 'focus' && (
-        <FocusPage
+      {<div hidden={page !== 'focus'}><FocusPage
           userId={auth.session?.user.id ?? null}
           activeSubject={activeSubject}
           subjects={data.subjects}
           sessions={data.sessions}
           weeklyGoal={data.weeklyGoal}
+          onActivityChange={setTimerActive}
+          dailyGoal={data.dailyGoal}
+          routineItems={data.routineItems}
+          onStartRoutine={startRecommendedSession}
+          onManage={() => setPage('plan')}
           shortBreak={data.settings.shortBreak}
           longBreak={data.settings.longBreak}
           sessionsBeforeLongBreak={
@@ -260,15 +219,12 @@ function AuthenticatedApp({
             )
           }}
           onAddSubjectRequest={() =>
-            openSubjectCreator(
-              'focus',
-            )
+            openSubjectCreator()
           }
-        />
-      )}
+        /></div>}
 
-      {page === 'plan' && (
-        <PlanPage
+      {page === 'plan' && (<Modal title={tr('Subjects & study plan', 'بابەتەکان و پلانی خوێندن')} onClose={() => setPage('focus')}><Suspense fallback={<p>{tr('Loading…','بارکردن…')}</p>}>
+        {timerActive ? <p>{tr('Finish or reset your session before editing your study plan.', 'پێش گۆڕینی پلانی خوێندن، سێشنەکەت تەواو بکە یان ڕێکی بخەرەوە.')}</p> : <PlanPage
           subjects={data.subjects}
           activeSubjectId={data.activeSubjectId}
           sessions={data.sessions}
@@ -288,21 +244,9 @@ function AuthenticatedApp({
           onUpdateRoutineItem={data.updateRoutineItem}
           onDeleteRoutineItem={data.deleteRoutineItem}
           onStartSession={startRecommendedSession}
-          subjectCreateRequestKey={
-            planSubjectCreateRequest
-          }
-          onExternalSubjectCreated={() => {
-            const returnPage =
-              subjectCreateReturnPage
-            setSubjectCreateReturnPage(
-              null,
-            )
-            if (returnPage) {
-              setPage(returnPage)
-            }
-          }}
         />
-      )}
+        }
+      </Suspense></Modal>)}
 
       {page === 'progress' && (
         <ProgressPage
@@ -317,24 +261,22 @@ function AuthenticatedApp({
         />
       )}
 
-      {page === 'league' && (
+      {page === 'league' && (<Suspense fallback={<p>{tr('Loading league…', 'پێشبڕکێ بار دەکرێت…')}</p>}>
         <LeaguePage
           userId={auth.session?.user.id ?? null}
           displayName={auth.session?.user.displayName}
         />
-      )}
+      </Suspense>)}
 
       {page === 'settings' && (
         <PageContainer>
           <PageHeader
             compact
             title={t('settings')}
-            description={tr(
-              'Shape how FOCUS looks, feels, syncs, and supports your daily work.',
-              'ڕووکار، هەست، هاوکاتبوون و شێوازی یارمەتیدانی FOCUS بۆ کاری ڕۆژانەت ڕێکبخە.',
-            )}
+            description={tr('Make it yours.', 'بە خواستی خۆت ڕێکی بخە.')}
           />
 
+          <button className="calm-manage" onClick={() => setPage('plan')}>{tr('Subjects & study plan', 'بابەتەکان و پلانی خوێندن')} →</button>
           <Settings
             userId={auth.session?.user.id ?? null}
             settings={data.settings}
@@ -371,6 +313,7 @@ function AuthenticatedApp({
           />
         </PageContainer>
       )}
+      {showSubjectCreator && <Modal title={t('addSubject')} onClose={() => setShowSubjectCreator(false)}><form className="calm-subject-form" onSubmit={event => { event.preventDefault(); if (!subjectName.trim()) return; data.addSubject(subjectName.trim(), '#24766a'); setShowSubjectCreator(false) }}><label>{t('subjectName')}<input autoFocus value={subjectName} onChange={event => setSubjectName(event.target.value)} maxLength={80} required /></label><button className="cyber-btn" disabled={!subjectName.trim()}>{t('addSubject')}</button></form></Modal>}
     </AppShell>
   )
 }

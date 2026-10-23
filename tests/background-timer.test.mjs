@@ -56,3 +56,15 @@ test('a running timer can be reloaded for its matching subject', () => {
     globalThis.localStorage = original
   }
 })
+
+test('timer snapshots are isolated by account storage key', () => {
+  const values = new Map()
+  const previous = globalThis.localStorage
+  globalThis.localStorage = { getItem:key=>values.get(key)??null, setItem:(key,value)=>values.set(key,value) }
+  try {
+    const snapshot = {version:1,subjectName:'OS',focusDuration:60,duration:60,timeRemaining:60,mode:'focus',completedFocusSessions:0,isStudying:false,isPaused:false,timerEndAt:null,sessionStartedAt:null,pausedSeconds:0,pauseStartedAt:null,pauseBaseSeconds:0,interruptionCount:0}
+    writeTimerSnapshot(snapshot,'user-a')
+    assert.equal(readTimerSnapshot('OS','user-b'),null)
+    assert.equal(readTimerSnapshot('OS','user-a')?.duration,60)
+  } finally { globalThis.localStorage = previous }
+})

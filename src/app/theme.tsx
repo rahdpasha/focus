@@ -32,9 +32,9 @@ function loadTheme(): ThemeMode {
     const value = localStorage.getItem(THEME_KEY)
     return value === 'light' || value === 'dark' || value === 'system' || value === 'black' || value === 'white' || value === 'custom'
       ? value
-      : 'system'
+      : 'light'
   } catch {
-    return 'system'
+    return 'light'
   }
 }
 

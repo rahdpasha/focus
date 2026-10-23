@@ -1,6 +1,5 @@
 import {
   BookOpen,
-  BrainCircuit,
   CalendarRange,
   Repeat2,
 } from 'lucide-react'
@@ -120,7 +119,7 @@ export default function PlanPage({
     useState<PlanSection>(
       subjectCreateRequestKey > 0
         ? 'subjects'
-        : 'plan',
+        : 'subjects',
     )
   const [
     subjectCreateRequest,
@@ -167,14 +166,7 @@ export default function PlanPage({
       ),
       icon: Repeat2,
     },
-    {
-      id: 'advisor' as const,
-      label: tr(
-        'Advisor',
-        'ڕاوێژکار',
-      ),
-      icon: BrainCircuit,
-    },
+
   ]
 
   return (

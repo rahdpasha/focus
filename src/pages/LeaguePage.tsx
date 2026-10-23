@@ -457,7 +457,7 @@ export default function LeaguePage({
     return (
       <PageContainer>
         <PageHeader
-          title={tr('FOCUS League', 'پێشبڕکێی FOCUS')}
+          title={tr('Better, together.', 'پێکەوە باشتر دەبین.')}
           description={tr('Turn focused time into visible progress.', 'کاتی سەرنج بگۆڕە بە پێشکەوتنێکی دیار.')}
         />
         <div className="glass-panel league-v4-signed-out">
@@ -796,8 +796,8 @@ export default function LeaguePage({
   return (
     <PageContainer>
       <PageHeader
-        title={tr('FOCUS League', 'پێشبڕکێی FOCUS')}
-        description={tr('A competitive layer for consistency. Build points, climb the board, and protect your momentum.', 'پێشبڕکێیەک بۆ بەردەوامی. خاڵ کۆبکەرەوە، لە ڕیزبەندی بەرزببەوە و ڕێتمەکەت بپارێزە.')}
+        title={tr('Better, together.', 'پێکەوە باشتر دەبین.')}
+        description={tr('A little friendly competition.', 'کەمێک پێشبڕکێی دۆستانە.')}
       />
 
       {lastWeekWinnerNames && (
@@ -867,7 +867,7 @@ export default function LeaguePage({
         </section>
       )}
 
-      <section className="league-v4-hero">
+      <details className="league-v4-hero calm-disclosure"><summary>{tr("Scoring & your rank", "خاڵەکان و پلەکەت")}</summary>
         <div className="league-v4-orbit league-v4-orbit-a" />
         <div className="league-v4-orbit league-v4-orbit-b" />
 
@@ -936,7 +936,7 @@ export default function LeaguePage({
             </span>
           </div>
         </div>
-      </section>
+      </details>
 
       <div className="league-v4-period-bar">
         <div>
@@ -960,7 +960,7 @@ export default function LeaguePage({
         </div>
       </div>
 
-      <section className="league-v4-podium-shell">
+      <details className="league-v4-podium-shell calm-disclosure"><summary>{tr("This week’s leaders", "سەرپێشەکانی ئەم هەفتەیە")}</summary>
         <div className="league-v4-section-head">
           <div>
             <span>{tr('Podium', 'سەکۆ')}</span>
@@ -1050,10 +1050,10 @@ export default function LeaguePage({
             </article>
           ))}
         </div>
-      </section>
+      </details>
 
       {period === 'week' && entries.length > 0 && (
-        <section className="league-v4-title-race">
+        <details className="league-v4-title-race calm-disclosure"><summary>{tr("Weekly race", "پێشبڕکێی هەفتانە")}</summary>
           <div className="league-v4-title-race-head">
             <div>
               <span>{tr('Live title race', 'پێشبڕکێی ڕاستەوخۆی ناونیشان')}</span>
@@ -1119,11 +1119,11 @@ export default function LeaguePage({
               )
             })}
           </div>
-        </section>
+        </details>
       )}
 
       {seasonEntries.length > 0 && (
-        <section className="league-v4-season-race">
+        <details className="league-v4-season-race calm-disclosure"><summary>{tr("Season results", "ئەنجامی وەرز")}</summary>
           <div className="league-v4-season-head">
             <div>
               <span>
@@ -1220,7 +1220,7 @@ export default function LeaguePage({
                   )}
             </span>
           </div>
-        </section>
+        </details>
       )}
 
       <div className="league-v4-grid">
@@ -1307,7 +1307,7 @@ export default function LeaguePage({
 
         <aside className="league-v4-side">
           {profile.optIn && (
-            <section className="league-v4-champion-profile">
+            <details className="league-v4-champion-profile calm-disclosure"><summary>{tr("Your achievements", "دەستکەوتەکانت")}</summary>
               <div className="league-v4-champion-profile-head">
                 <div>
                   <span>{tr('Champion profile', 'پڕۆفایلی پاڵەوان')}</span>
@@ -1398,7 +1398,7 @@ export default function LeaguePage({
                   </>
                 )}
               </div>
-            </section>
+            </details>
           )}
 
           <section className="league-v4-command">
@@ -1554,7 +1554,7 @@ export default function LeaguePage({
             </div>
           </section>
 
-          <section className="league-v4-champions">
+          <details className="league-v4-champions calm-disclosure"><summary>{tr("Previous champions", "پاڵەوانەکانی پێشوو")}</summary>
             <div className="league-v4-section-head compact">
               <div>
                 <span>{tr('Previous results', 'ئەنجامەکانی پێشوو')}</span>
@@ -1695,10 +1695,10 @@ export default function LeaguePage({
                   ))}
               </div>
             )}
-          </section>
+          </details>
 
           {championHallRows.length > 0 && (
-            <section className="league-v4-hall-of-champions">
+            <details className="league-v4-hall-of-champions calm-disclosure"><summary>{tr("Hall of champions", "پاڵەوانەکان")}</summary>
               <div className="league-v4-section-head compact">
                 <div>
                   <span>
@@ -1769,7 +1769,7 @@ export default function LeaguePage({
                   </div>
                 ))}
               </div>
-            </section>
+            </details>
           )}
 
           {message && (
