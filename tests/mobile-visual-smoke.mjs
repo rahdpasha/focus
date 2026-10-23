@@ -47,7 +47,13 @@ try {
     for (let i = 0; i < tabs.length; i++) {
       await buttons.nth(i).click()
       // League is lazy-loaded; wait for its stable content.
-      if (tabs[i] === 'League') await page.locator('.league-v4-grid').waitFor()
+      if (tabs[i] === 'League') {
+        // CI intentionally disables Supabase, so League shows its signed-out
+        // entry screen. Authenticated standings were tested on a real device.
+        await page.locator('.league-v4-signed-out, .league-v4-grid').first().waitFor()
+        const signedOut = await page.locator('.league-v4-signed-out').count()
+        assert.equal(signedOut, 1, 'Local-only browser audit should not sign in to League')
+      }
       await page.waitForTimeout(220)
 
       const snapshot = await page.evaluate(() => {
