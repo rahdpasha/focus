@@ -12,5 +12,13 @@ test('mobile layout reserves safe area and keyboard access', () => {
   assert.match(css, /:has\(input:focus,textarea:focus,select:focus\)/)
 })
 test('PWA refreshes the redesigned assets', () => {
-  assert.match(readFileSync('public/sw.js','utf8'), /focus-pwa-v8-calm/)
+  assert.match(readFileSync('public/sw.js','utf8'), /focus-pwa-v9-mobile-scroll/)
+})
+
+test('iPhone pages remain document-scrollable and end above the bottom nav', () => {
+  assert.match(css, /Mobile Safari \/ installed PWA: the document is the single vertical scroller/)
+  assert.match(css, /\.calm-content\s*\{[^}]*padding-bottom:\s*calc\(170px\s*\+\s*env\(safe-area-inset-bottom,\s*0px\)\)\s*!important/s)
+  assert.match(css, /\.calm-app\s*\{[^}]*min-height:\s*100svh;[^}]*overflow:\s*visible;/s)
+  assert.match(css, /\.calm-nav\s*\{[^}]*bottom:\s*0;[^}]*padding-bottom:\s*calc\(10px\s*\+\s*env\(safe-area-inset-bottom,\s*0px\)\);/s)
+  assert.match(css, /max-height:\s*520px/)
 })
