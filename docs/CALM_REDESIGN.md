@@ -23,10 +23,15 @@
 - Targeted ESLint checks passed for changed core components.
 - Browser checked desktop Focus and Progress; mobile 390px layout, completion, subject creation dialog, Settings, dark mode and Sorani RTL. Mobile RTL document width matched viewport width.
 - Browser functional checks used local-only test data; no fake sessions were added to Supabase.
-- No authenticated end-to-end cloud write or physical iPhone/Android push-delivery test was performed. A signed-in device check remains necessary before production rollout.
+- No authenticated end-to-end cloud write or physical iPhone/Android push-delivery test was performed. A physical-device check remains necessary to verify OS push delivery.
 
 ## Background limits
 A browser can suspend JavaScript when backgrounded or closed. Server completion works only after its timer job reaches Supabase. Web push requires installation on iPhone Home Screen, permission, network connectivity and a registered subscription. OS notification settings can delay/suppress alerts. The 15-second scheduler is not an exact-second alarm. Offline starts cannot be guaranteed to notify while closed. Auto-started break notifications still depend on client execution.
 
 ## Review
 Preview uses the existing Supabase integration and real account data after sign-in. Edits made while reviewing therefore affect that account. Production remains unchanged. Branch: redesign/focus-calm.
+
+## Final release polish
+- User approved the preview for completion.
+- Installed-app splash colors match the light design; browser theme color follows appearance.
+- Production release retains the existing database, authentication and scoring rules.

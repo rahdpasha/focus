@@ -72,6 +72,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     const apply = () => {
       const root = document.documentElement
+      const syncBrowserTheme = () => {
+        const color = getComputedStyle(root).getPropertyValue('--void-bg').trim()
+        if (color) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', color)
+      }
 
       if (
         theme === 'custom' &&
@@ -87,6 +91,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           root,
           customThemePack,
         )
+        syncBrowserTheme()
         return
       }
 
@@ -113,6 +118,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       } else {
         clearThemeTokens(root)
       }
+      syncBrowserTheme()
     }
 
     apply()

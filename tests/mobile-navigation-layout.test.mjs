@@ -12,5 +12,5 @@ test('mobile layout reserves safe area and keyboard access', () => {
   assert.match(css, /:has\(input:focus,textarea:focus,select:focus\)/)
 })
 test('PWA refreshes the redesigned assets', () => {
-  assert.match(readFileSync('public/sw.js','utf8'), /focus-pwa-v7-calm/)
+  assert.match(readFileSync('public/sw.js','utf8'), /focus-pwa-v8-calm/)
 })
