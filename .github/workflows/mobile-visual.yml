@@ -49,11 +49,21 @@ jobs:
       - name: Browse six pages and nested mobile screens
         run: node tests/mobile-visual-smoke.mjs
 
+      - name: Verify Appearance interactions and capture theme screenshots
+        env:
+          FOCUS_TEST_URL: http://127.0.0.1:4175
+        run: node tests/appearance-browser.mjs
+
       - name: Upload screenshots for review
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mobile-screenshots
-          path: mobile-qa-artifacts/
+          path: |
+            mobile-qa-artifacts/
+            qa/after-original-green.png
+            qa/after-midnight.png
+            qa/after-custom-mobile.png
+            qa/after-custom-rtl.png
           if-no-files-found: ignore
           retention-days: 7

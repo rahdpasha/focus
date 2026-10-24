@@ -276,6 +276,7 @@ export function loadSettings(): AppSettings {
       theme:
         stored.theme ??
         (legacyTheme === "dark" ||
+        legacyTheme === "green" ||
         legacyTheme === "light" ||
         legacyTheme === "system" ||
         legacyTheme === "black" ||

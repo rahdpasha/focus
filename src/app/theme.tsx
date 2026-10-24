@@ -8,16 +8,20 @@ import {
 } from 'react'
 import {
   applyThemeTokenPack,
-  clearThemeTokens,
   MONOCHROME_THEME_PACKS,
   normalizeThemeTokenPack,
   type ThemeTokenPack,
 } from './themeTokens'
 
-export type ThemeMode = 'dark' | 'light' | 'system' | 'black' | 'white' | 'custom'
+import { BUILTIN_PACKS, createThemePack, paletteFromPack, contrast } from './appearance'
+
+export type BackgroundMotion = 'off' | 'subtle' | 'normal'
+export type ThemeMode = 'dark' | 'light' | 'green' | 'system' | 'black' | 'white' | 'custom'
 
 type ThemeContextValue = {
   theme: ThemeMode
+  motion: BackgroundMotion
+  setMotion: (motion: BackgroundMotion) => void
   customThemePack: ThemeTokenPack | null
   setTheme: (theme: ThemeMode) => void
   setCustomThemePack: (pack: ThemeTokenPack | null) => void
@@ -30,7 +34,7 @@ export const ThemeContext = createContext<ThemeContextValue | null>(null)
 function loadTheme(): ThemeMode {
   try {
     const value = localStorage.getItem(THEME_KEY)
-    return value === 'light' || value === 'dark' || value === 'system' || value === 'black' || value === 'white' || value === 'custom'
+    return value === 'light' || value === 'green' || value === 'dark' || value === 'system' || value === 'black' || value === 'white' || value === 'custom'
       ? value
       : 'light'
   } catch {
@@ -58,12 +62,16 @@ function resolveTheme(theme: ThemeMode): ThemeMode {
 
 function resolveColorScheme(theme: ThemeMode): 'dark' | 'light' {
   const resolved = resolveTheme(theme)
-  return resolved === 'light' || resolved === 'white'
+  return resolved === 'light' || resolved === 'green' || resolved === 'white'
     ? 'light'
     : 'dark'
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [motion, setMotionState] = useState<BackgroundMotion>(() => {
+    try { const saved = localStorage.getItem('focus-background-motion'); return saved === 'off' || saved === 'normal' ? saved : 'subtle' } catch { return 'subtle' }
+  })
+  const setMotion = (next: BackgroundMotion) => { setMotionState(next); try { localStorage.setItem('focus-background-motion', next) } catch { /* Device storage unavailable. */ } }
   const [theme, setThemeState] = useState<ThemeMode>(loadTheme)
   const [customThemePack, setCustomThemePackState] = useState<ThemeTokenPack | null>(loadThemePack)
 
@@ -73,6 +81,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const apply = () => {
       const root = document.documentElement
       const syncBrowserTheme = () => {
+        const styles = getComputedStyle(root)
+        const accent = styles.getPropertyValue('--primary').trim()
+        root.style.setProperty('--on-primary', contrast(accent, '#ffffff') >= contrast(accent, '#000000') ? '#ffffff' : '#000000')
         const color = getComputedStyle(root).getPropertyValue('--void-bg').trim()
         if (color) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', color)
       }
@@ -81,16 +92,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         theme === 'custom' &&
         customThemePack
       ) {
-        root.setAttribute(
-          'data-theme',
-          customThemePack.base,
-        )
-        root.style.colorScheme =
-          customThemePack.base
+        const effectivePack = createThemePack(paletteFromPack(customThemePack), customThemePack.name)
+        root.setAttribute('data-theme', effectivePack.base)
+        root.style.colorScheme = effectivePack.base
         applyThemeTokenPack(
           root,
-          customThemePack,
+          effectivePack,
         )
+        root.dataset.appearance = 'custom'
         syncBrowserTheme()
         return
       }
@@ -102,6 +111,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         'data-theme',
         resolved,
       )
+      root.dataset.appearance = resolved
       root.style.colorScheme =
         resolveColorScheme(theme)
 
@@ -116,7 +126,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           ],
         )
       } else {
-        clearThemeTokens(root)
+        applyThemeTokenPack(root, BUILTIN_PACKS[resolved === 'green' ? 'green' : resolved === 'light' ? 'light' : 'dark'])
       }
       syncBrowserTheme()
     }
@@ -165,11 +175,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       theme,
+      motion,
+      setMotion,
       customThemePack,
       setTheme,
       setCustomThemePack,
     }),
-    [theme, customThemePack],
+    [theme, customThemePack, motion],
   )
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

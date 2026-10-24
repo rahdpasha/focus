@@ -12,7 +12,7 @@ test('mobile layout reserves safe area and keyboard access', () => {
   assert.match(css, /:has\(input:focus,textarea:focus,select:focus\)/)
 })
 test('PWA refreshes the redesigned assets', () => {
-  assert.match(readFileSync('public/sw.js','utf8'), /focus-pwa-v10-advisor-access/)
+  assert.match(readFileSync('public/sw.js','utf8'), /focus-pwa-v12-original-green/)
 })
 
 test('iPhone pages remain document-scrollable and end above the bottom nav', () => {
