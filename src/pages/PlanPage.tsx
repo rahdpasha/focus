@@ -2,6 +2,7 @@ import {
   BookOpen,
   CalendarRange,
   Repeat2,
+  BrainCircuit,
 } from 'lucide-react'
 import { useState } from 'react'
 import type {
@@ -88,6 +89,7 @@ interface PlanPageProps {
     routineContext?: RoutineSessionContext,
   ) => void
   subjectCreateRequestKey?: number
+  initialSection?: PlanSection
   onExternalSubjectCreated?: () => void
 }
 
@@ -112,14 +114,13 @@ export default function PlanPage({
   onDeleteRoutineItem,
   onStartSession,
   subjectCreateRequestKey = 0,
+  initialSection = 'subjects',
   onExternalSubjectCreated,
 }: PlanPageProps) {
   const { tr } = useI18n()
   const [section, setSection] =
     useState<PlanSection>(
-      subjectCreateRequestKey > 0
-        ? 'subjects'
-        : 'subjects',
+      subjectCreateRequestKey > 0 ? 'subjects' : initialSection,
     )
   const [
     subjectCreateRequest,
@@ -166,7 +167,11 @@ export default function PlanPage({
       ),
       icon: Repeat2,
     },
-
+    {
+      id: 'advisor' as const,
+      label: tr('AI Advisor', 'ڕاوێژکاری زیرەک'),
+      icon: BrainCircuit,
+    },
   ]
 
   return (

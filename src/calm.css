@@ -154,3 +154,29 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{
     flex: 1 1 130px;
   }
 }
+
+
+/* Quick access to the existing AI Advisor without adding another main tab. */
+.calm-advisor-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  min-height: 60px;
+  padding: 15px 17px;
+  border: 1px solid var(--primary-border);
+  border-radius: 13px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: start;
+}
+.calm-advisor-link > span { flex: 1; min-width: 0; }
+.calm-advisor-link:hover:not(:disabled) {
+  border-color: var(--primary);
+}
+@media (max-width: 380px) {
+  .calm-advisor-link { padding: 13px; font-size: 13px; }
+}
