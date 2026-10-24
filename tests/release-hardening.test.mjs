@@ -336,5 +336,8 @@ test('secondary tools remain accessible without extra top-level pages', () => {
   assert.match(app, /hidden=\{page !== 'focus'\}/)
   for (const feature of ['HistoryPage','RecordsPage','Statistics']) assert.match(progress,new RegExp(feature))
   for (const feature of ['SubjectsPage','RoutinePage','StudyPlanPage']) assert.match(plan,new RegExp(feature))
-  assert.doesNotMatch(plan, /id: 'advisor'/)
+  // Advisor remains a nested tool, not a fifth top-level page.
+  assert.match(plan, /id: 'advisor'/)
+  assert.match(plan, /<AdvisorPage/)
+  assert.match(app, /onAdvisor=\{openAdvisor\}/)
 })
