@@ -1,6 +1,6 @@
 import { createClientId } from '../utils/clientId'
 import { useCallback, useRef, useState } from 'react'
-import { Plus, BookOpen, Flame, ArrowUpRight, Check, Headphones } from 'lucide-react'
+import { Plus, BookOpen, Flame, ArrowUpRight, Check, Headphones, BrainCircuit } from 'lucide-react'
 import Timer from '../components/timer/Timer'
 import type { Subject, StudySession, Subtask } from '../types'
 import type { RoutineItem, RoutineSessionContext } from '../storage/types'
@@ -15,6 +15,7 @@ interface FocusPageProps {
   routineItems: RoutineItem[]
   onStartRoutine: (id?: string, minutes?: number, context?: RoutineSessionContext) => void
   onManage: () => void
+  onAdvisor: () => void
   userId?: string | null
   activeSubject:
     | Subject
@@ -41,7 +42,7 @@ interface FocusPageProps {
 }
 
 
-export default function FocusPage({ userId, activeSubject, subjects = [], sessions = [], dailyGoal, routineItems, onStartRoutine, onManage, shortBreak, longBreak, sessionsBeforeLongBreak, autoStartBreak, soundEnabled, soundVolume, notificationsEnabled, onActivityChange, initialFocusMinutes, routineContext, onAddSession, onSelectSubject, onAddSubjectRequest }: FocusPageProps) {
+export default function FocusPage({ userId, activeSubject, subjects = [], sessions = [], dailyGoal, routineItems, onStartRoutine, onManage, onAdvisor, shortBreak, longBreak, sessionsBeforeLongBreak, autoStartBreak, soundEnabled, soundVolume, notificationsEnabled, onActivityChange, initialFocusMinutes, routineContext, onAddSession, onSelectSubject, onAddSubjectRequest }: FocusPageProps) {
   const { t, tr } = useI18n()
   const [timerBusy, setTimerBusy] = useState(false)
   const targetSubject = activeSubject ?? subjects[0]
@@ -212,6 +213,11 @@ export default function FocusPage({ userId, activeSubject, subjects = [], sessio
       </section>
       <aside className="calm-focus-aside">
         <section className="calm-today"><span className="calm-eyebrow">{tr('TODAY', 'ئەمڕۆ')}</span><div className="calm-today-value"><strong>{summary.todayMinutes}</strong><span>{tr('minutes focused', 'خولەک سەرنج')}</span></div><progress value={summary.todayMinutes} max={Math.max(dailyGoal, summary.todayMinutes, 1)} aria-label={tr('Daily goal', 'ئامانجی ڕۆژانە')}/><div className="calm-between"><span>{summary.todaySessions} {tr('sessions', 'سێشن')}</span><span>{dailyGoal} {tr('min goal', 'خولەک ئامانج')}</span></div></section>
+        <button type="button" className="calm-advisor-link" onClick={onAdvisor} disabled={timerBusy}>
+          <BrainCircuit size={19} aria-hidden="true" />
+          <span>{tr('Ask AI Advisor', 'پرسیار لە ڕاوێژکاری زیرەک بکە')}</span>
+          <ArrowUpRight size={17} aria-hidden="true" />
+        </button>
         <section className="calm-plan"><div className="calm-between"><h2>{tr('Your study rhythm', 'ڕێتمی خوێندنت')}</h2><button onClick={onManage} aria-label={tr('Manage study plan','ڕێکخستنی پلانی خوێندن')}><ArrowUpRight size={19}/></button></div>{routine.length ? routine.map(item => {const done = getRoutineMinutesForDate(item, sessions, new Date()) >= item.targetMinutes; return <button className="calm-routine" key={item.id} disabled={timerBusy || !subjects.some(s => s.id === item.subjectId)} onClick={() => onStartRoutine(item.subjectId, item.targetMinutes, { itemId: item.id, routineDate: toRoutineDateKey(new Date()) })}><span className={done ? 'routine-check done' : 'routine-check'}>{done && <Check size={14}/>}</span><span><strong>{item.title}</strong><small>{item.mode === 'fixed' ? tr('Fixed','جێگیر') : tr('Rotation','خولانەوە')}</small></span><span>{item.targetMinutes}m</span></button>}) : <><p>{tr('Choose one subject, or set up a simple rotation.', 'بابەتێک هەڵبژێرە، یان خولانەوەیەکی سادە ڕێکبخە.')}</p><button className="calm-text-button" onClick={onManage}>{tr('Set up a study plan', 'پلانی خوێندن ڕێکبخە')} →</button></>}</section>
         <p className="calm-quiet-note">{tr('One session is a good start.', 'یەک سێشن دەستپێکێکی باشە.')}</p>
       </aside>
