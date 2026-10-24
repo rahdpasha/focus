@@ -1,0 +1,30 @@
+name: Source ZIP export
+on:
+  push:
+    branches:
+      - artifact/export-latest-source-20261024
+permissions:
+  contents: read
+jobs:
+  export-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout snapshot tooling
+        uses: actions/checkout@v4
+      - name: Fetch canonical main branch
+        run: |
+          git fetch --no-tags --depth=1 origin main
+          echo "Packaging source commit $(git rev-parse origin/main)"
+      - name: Package exact main-branch source as ZIP
+        run: |
+          git archive --format=zip --prefix=FOCUS/ origin/main -o FOCUS_latest_main.zip
+          unzip -t FOCUS_latest_main.zip | tail -1
+          ls -lh FOCUS_latest_main.zip
+      - name: Upload FOCUS source ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: focus-source-zip
+          path: FOCUS_latest_main.zip
+          if-no-files-found: error
+          retention-days: 3
