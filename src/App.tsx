@@ -63,6 +63,7 @@ function AuthenticatedApp({
   auth: AuthState & ReturnType<typeof useAuth>
 }) {
   const [page, setPage] = useState<Page>('focus')
+  const [planEntry, setPlanEntry] = useState<'subjects' | 'advisor'>('subjects')
   const [recommendedMinutes, setRecommendedMinutes] =
     useState<number | undefined>()
   const [
@@ -174,6 +175,8 @@ function AuthenticatedApp({
   }
 
   const openSubjectCreator = () => { setSubjectName(''); setShowSubjectCreator(true) }
+  const openPlan = () => { setPlanEntry('subjects'); setPage('plan') }
+  const openAdvisor = () => { setPlanEntry('advisor'); setPage('plan') }
 
   return (
     <AppShell
@@ -195,7 +198,8 @@ function AuthenticatedApp({
           dailyGoal={data.dailyGoal}
           routineItems={data.routineItems}
           onStartRoutine={startRecommendedSession}
-          onManage={() => setPage('plan')}
+          onManage={openPlan}
+          onAdvisor={openAdvisor}
           shortBreak={data.settings.shortBreak}
           longBreak={data.settings.longBreak}
           sessionsBeforeLongBreak={
@@ -225,6 +229,7 @@ function AuthenticatedApp({
 
       {page === 'plan' && (<Modal title={tr('Subjects & study plan', 'بابەتەکان و پلانی خوێندن')} onClose={() => setPage('focus')}><Suspense fallback={<p>{tr('Loading…','بارکردن…')}</p>}>
         {timerActive ? <p>{tr('Finish or reset your session before editing your study plan.', 'پێش گۆڕینی پلانی خوێندن، سێشنەکەت تەواو بکە یان ڕێکی بخەرەوە.')}</p> : <PlanPage
+          initialSection={planEntry}
           subjects={data.subjects}
           activeSubjectId={data.activeSubjectId}
           sessions={data.sessions}
@@ -276,7 +281,7 @@ function AuthenticatedApp({
             description={tr('Make it yours.', 'بە خواستی خۆت ڕێکی بخە.')}
           />
 
-          <button className="calm-manage" onClick={() => setPage('plan')}>{tr('Subjects & study plan', 'بابەتەکان و پلانی خوێندن')} →</button>
+          <button className="calm-manage" onClick={openPlan}>{tr('Subjects & study plan', 'بابەتەکان و پلانی خوێندن')} →</button>
           <Settings
             userId={auth.session?.user.id ?? null}
             settings={data.settings}
