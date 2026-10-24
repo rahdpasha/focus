@@ -1,3 +1,5 @@
+import ThemeEditor, { ThemeSample } from './ThemeEditor'
+import { BUILTIN_PACKS, createThemePack, paletteFromPack } from '../../app/appearance'
 import {
   Bell,
   BellOff,
@@ -6,6 +8,7 @@ import {
   Database,
   Download,
   Languages,
+  Leaf,
   LogOut,
   Monitor,
   Moon,
@@ -20,6 +23,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
 } from 'react'
 import {
   useI18n,
@@ -74,6 +78,9 @@ interface SettingsProps {
   onSignOut?: () => void
 }
 
+const systemLightQuery = window.matchMedia('(prefers-color-scheme: light)')
+const subscribeSystemTheme = (listener: () => void) => { systemLightQuery.addEventListener('change', listener); return () => systemLightQuery.removeEventListener('change', listener) }
+
 const themeOptions: Array<{
   value: ThemeMode
   label: string
@@ -85,6 +92,12 @@ const themeOptions: Array<{
     label: 'System',
     labelKu: 'سیستەم',
     icon: Monitor,
+  },
+  {
+    value: 'green',
+    label: 'Original Green',
+    labelKu: 'سەوزی ڕەسەن',
+    icon: Leaf,
   },
   {
     value: 'dark',
@@ -132,6 +145,7 @@ export default function Settings({
   onImportData,
   onSignOut,
 }: SettingsProps) {
+  const systemLight = useSyncExternalStore(subscribeSystemTheme, () => systemLightQuery.matches)
   const fileInputRef =
     useRef<HTMLInputElement>(
       null,
@@ -140,6 +154,7 @@ export default function Settings({
     useRef<HTMLInputElement>(
       null,
     )
+  const [editingTheme, setEditingTheme] = useState(false)
   const [settingsSection, setSettingsSection] =
     useState<'general' | 'focus' | 'alerts' | 'account'>('general')
   const [pushStatus, setPushStatus] = useState<
@@ -162,7 +177,7 @@ export default function Settings({
   } = useI18n()
 
   const {
-    theme,
+    theme, motion, setMotion,
   } = useTheme()
 
   // Prepare the push manager before the user taps the permission button.
@@ -220,12 +235,7 @@ export default function Settings({
   const effectivePushStatus =
     !userId || !supportsBackgroundPush() ? 'unavailable' : pushStatus
 
-  const selectedThemePack =
-    theme === 'black'
-      ? MONOCHROME_THEME_PACKS.black
-      : theme === 'white'
-        ? MONOCHROME_THEME_PACKS.white
-        : settings.customThemePack
+  const selectedThemePack = theme === 'custom' ? settings.customThemePack : theme === 'black' || theme === 'white' ? MONOCHROME_THEME_PACKS[theme] : BUILTIN_PACKS[theme === 'green' ? 'green' : theme === 'light' || (theme === 'system' && systemLight) ? 'light' : 'dark']
 
   const exportThemePack = () => {
     if (!selectedThemePack) return
@@ -273,12 +283,13 @@ export default function Settings({
 
       onSettingChange(
         'customThemePack',
-        pack,
+        createThemePack(paletteFromPack(pack), pack.name),
       )
       onSettingChange(
         'theme',
         'custom',
       )
+      setEditingTheme(false)
     } catch {
       setThemePackError(
         tr('Could not read this theme pack.', 'نەتوانرا ئەم پاکێجی ڕووکارە بخوێندرێتەوە.'),
@@ -332,7 +343,7 @@ export default function Settings({
               {t('appearance')}
             </h2>
             <p>
-              {tr('FOCUS follows your system by default. Switch to a curated light, dark, or monochrome mode whenever you want a different atmosphere.', 'FOCUS بە بنەڕەت ڕووکارەکەی سیستەمەکەت بەکاردهێنێت. هەر کاتێک بتەوێت دەتوانیت بگۆڕیت بۆ ڕووناک، تاریک یان ڕەنگ‌تاک.')}
+              {tr('Choose the calming Original Green, a beautiful Midnight, or another look that helps you focus.', 'سەوزی ئارامبەخش، نیوەشەوی جوان یان ڕووکارێکی تر هەڵبژێرە کە یارمەتیت دەدات سەرنج بدەیت.')}
             </p>
           </div>
         </div>
@@ -357,9 +368,6 @@ export default function Settings({
                   const active =
                     theme ===
                     option.value
-                  const disabled =
-                    option.value === 'custom' &&
-                    !settings.customThemePack
 
                   return (
                     <button
@@ -368,6 +376,7 @@ export default function Settings({
                       }
                       type="button"
                       className={[
+                        'appearance-choice',
                         active ? 'active' : '',
                         `theme-option-${option.value}`,
                       ]
@@ -376,29 +385,29 @@ export default function Settings({
                       aria-pressed={
                         active
                       }
-                      disabled={disabled}
-                      onClick={() =>
-                        onSettingChange(
-                          'theme',
-                          option.value,
-                        )
-                      }
+                      onClick={() => {
+                        if (option.value === 'custom') setEditingTheme(true)
+                        else { setEditingTheme(false); onSettingChange('theme', option.value) }
+                      }}
                     >
-                      <Icon
-                        size={15}
-                      />
+                      <ThemeSample compact palette={paletteFromPack(option.value === 'custom' ? settings.customThemePack : option.value === 'black' || option.value === 'white' ? MONOCHROME_THEME_PACKS[option.value] : BUILTIN_PACKS[option.value === 'green' ? 'green' : option.value === 'light' || (option.value === 'system' && systemLight) ? 'light' : 'dark'])} />
+                      <span className="appearance-choice-label"><Icon size={15} />
                       {
                         option.value === 'custom' &&
                         settings.customThemePack
                           ? settings.customThemePack.name
                           : tr(option.label, option.labelKu)
                       }
+                      <span className="theme-selected">{active ? '✓' : ''}</span></span>
                     </button>
                   )
                 },
               )}
             </div>
 
+            {editingTheme && <ThemeEditor saved={settings.customThemePack} onCancel={() => setEditingTheme(false)} onSave={pack => { onSettingChange('customThemePack', pack); onSettingChange('theme', 'custom'); setEditingTheme(false) }} />}
+            <div className="appearance-motion"><span>{tr('Background motion', 'جووڵەی پاشبنەما')}</span><div role="group" aria-label={tr('Background motion', 'جووڵەی پاشبنەما')}>{(['off', 'subtle', 'normal'] as const).map((value, i) => <button type="button" key={value} aria-pressed={motion === value} onClick={() => setMotion(value)}>{tr(['Off', 'Subtle', 'Normal'][i], ['کوژاوە', 'هێواش', 'ئاسایی'][i])}</button>)}</div></div>
+            <small className="appearance-motion-hint">{tr('Subtle is recommended. Saved on this device; reduced motion is always respected.', 'جووڵەی هێواش پێشنیار دەکرێت. لە ئامێرەکەت پاشەکەوت دەبێت؛ کەمکردنەوەی جووڵە ڕەچاو دەکرێت.')}</small>
             <div className="settings-theme-actions">
               <button
                 type="button"

@@ -1,7 +1,7 @@
 import type { Subject, StudySession } from '../types'
 import type { AppSettings } from '../app/settings'
 import { normalizeSettings } from '../app/settings'
-import { normalizeThemeTokenPack } from '../app/themeTokens'
+import { deserializeCloudAppearance, serializeCloudAppearance } from '../app/themePersistence'
 import { supabase } from '../api/supabaseClient'
 import type { WeeklyGoalMap } from '../utils/goalHistory'
 import type { AdvancedGoal, FocusDataSnapshot, RoutineItem } from './types'
@@ -333,16 +333,18 @@ export async function loadSupabaseSnapshot(
         row.created_at,
     }))
 
+  const cloudAppearance = deserializeCloudAppearance(
+    settingsRow?.theme ?? 'light',
+    settingsRow?.custom_theme_pack ?? null,
+  )
   const settings: AppSettings =
     normalizeSettings(
       settingsRow
         ? {
             theme:
-              settingsRow.theme,
+              cloudAppearance.theme,
             customThemePack:
-              normalizeThemeTokenPack(
-                settingsRow.custom_theme_pack,
-              ),
+              cloudAppearance.customThemePack,
             language:
               settingsRow.language,
             shortBreak:
@@ -782,6 +784,7 @@ export async function saveSupabaseSnapshot(
     if (error) throw error
   }
 
+  const cloudAppearance = serializeCloudAppearance(snapshot.settings)
   const { error: settingsError } =
     await client
       .from('user_settings')
@@ -789,9 +792,9 @@ export async function saveSupabaseSnapshot(
         {
           user_id: userId,
           theme:
-            snapshot.settings.theme,
+            cloudAppearance.theme,
           custom_theme_pack:
-            snapshot.settings.customThemePack,
+            cloudAppearance.customThemePack,
           language:
             snapshot.settings.language,
           short_break_minutes:

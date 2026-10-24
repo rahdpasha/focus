@@ -2,6 +2,8 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import './calm.css'
+import './appearance.css'
+import LivingBackground from './components/layout/LivingBackground'
 import App from './App.tsx'
 import { I18nProvider } from './i18n'
 import { ThemeProvider } from './app/theme'
@@ -12,6 +14,7 @@ createRoot(
 ).render(
   <StrictMode>
     <ThemeProvider>
+      <LivingBackground />
       <I18nProvider>
         <AppErrorBoundary>
           <App />
