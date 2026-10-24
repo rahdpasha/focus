@@ -86,6 +86,7 @@ try {
     const { page, context } = await open(width)
     for (const theme of ['green', 'dark', 'light', 'black', 'white']) {
       await settings(page); await page.locator('.theme-option-' + theme).click()
+      await page.waitForFunction(expected => document.documentElement.dataset.appearance === expected, theme)
       if (theme === 'black') assert.equal(await token(page, '--void-bg'), '#000000')
       if (theme === 'white') assert.equal(await token(page, '--void-bg'), '#ffffff')
       for (let tab = 0; tab < 4; tab++) {
