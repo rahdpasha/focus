@@ -195,6 +195,7 @@ function defaultProfile(displayName?: string): LeagueProfile {
     optIn: false,
     timezone:
       Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+    inactiveRemovedAt: null,
     avatarSeed: name,
   }
 }
@@ -432,6 +433,7 @@ export default function LeaguePage({
       await saveLeagueProfile(userId, profile)
 
       if (profile.optIn) {
+        setProfile((current) => ({ ...current, inactiveRemovedAt: null }))
         await refreshLeagueHistory(90)
       }
 
@@ -1483,7 +1485,9 @@ export default function LeaguePage({
                     {tr('Join when you want competition.', 'کاتێک پێشبڕکێت دەوێت بەشدار بە.')}
                   </strong>
                   <span>
-                    {tr('Your study data stays private. Only your public name and League totals appear in the standings.', 'داتای خوێندنت تایبەت دەمێنێتەوە. تەنها ناوی گشتی و کۆی داتای پێشبڕکێ لە ڕیزبەندیدا دەردەکەوێت.')}
+                    {profile.inactiveRemovedAt
+                      ? tr('You were automatically removed after 10 days without a completed focus session. Rejoin to return to the standings. Your study history is still saved.', 'دوای ١٠ ڕۆژ بێ سێشنی تەواوکراوی سەرنج بە شێوەیەکی خۆکار لە پێشبڕکێ لابراویت. دووبارە بەشدار بە بۆ گەڕانەوە بۆ ڕیزبەندی. مێژووی خوێندنت هێشتا پاشەکەوتە.')
+                      : tr('Your study data stays private. Only your public name and League totals appear in the standings.', 'داتای خوێندنت تایبەت دەمێنێتەوە. تەنها ناوی گشتی و کۆی داتای پێشبڕکێ لە ڕیزبەندیدا دەردەکەوێت.')}
                   </span>
                 </div>
               </div>
