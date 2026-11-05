@@ -6,6 +6,7 @@ export interface LeagueProfile {
   publicName: string
   optIn: boolean
   timezone: string
+  inactiveRemovedAt: string | null
   avatarSeed: string
 }
 
@@ -74,7 +75,7 @@ export async function loadLeagueProfile(
   const { data, error } = await client
     .from('profiles')
     .select(
-      'public_name, display_name, leaderboard_opt_in, timezone, avatar_seed',
+      'public_name, display_name, leaderboard_opt_in, timezone, avatar_seed, league_inactive_removed_at',
     )
     .eq('id', userId)
     .maybeSingle()
@@ -91,6 +92,7 @@ export async function loadLeagueProfile(
       fallbackName,
     optIn: Boolean(data?.leaderboard_opt_in),
     timezone: data?.timezone || timezone,
+    inactiveRemovedAt: data?.league_inactive_removed_at ?? null,
     avatarSeed:
       data?.avatar_seed ||
       data?.public_name ||
