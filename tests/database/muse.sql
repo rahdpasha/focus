@@ -12,7 +12,7 @@ grant execute on function auth.uid() to anon, authenticated;
 insert into auth.users values
  ('00000000-0000-0000-0000-000000000001'),
  ('00000000-0000-0000-0000-000000000002');
-\ir ../../supabase/migrations/20261108000001_muse_foundation.sql
+\ir ../../supabase/migrations/20261108224112_muse_foundation.sql
 
 set role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', false);
