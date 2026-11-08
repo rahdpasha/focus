@@ -180,3 +180,11 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{
 @media (max-width: 380px) {
   .calm-advisor-link { padding: 13px; font-size: 13px; }
 }
+
+/* FOCUS + MUSE: one account and shell. Original FOCUS navigation stays intact. */
+.experience-switch{display:flex;gap:3px;border:1px solid var(--card-border);border-radius:10px;padding:3px;background:var(--card-bg)}
+.experience-switch button{border:0;border-radius:7px;background:none;color:var(--text-secondary);padding:10px 12px;font-size:10px;letter-spacing:1px;min-height:38px;font-weight:700}
+.experience-switch button[aria-pressed=true]{background:var(--primary-soft);color:var(--primary)}
+.calm-topbar{gap:14px}.calm-nav{gap:3px}.calm-nav button{padding-inline:12px}.calm-date{margin-inline-start:auto}
+@media(max-width:1050px) and (min-width:769px){.calm-date{display:none}.calm-topbar{padding-inline:24px}.calm-nav button{padding-inline:9px;font-size:12px}}
+@media(max-width:768px){.calm-topbar .experience-switch{margin-inline-start:auto}.calm-topbar .calm-date{display:none}.experience-switch button{padding:9px 12px}.calm-app:has(.muse:not([hidden])) .muse-header{margin-top:0}}

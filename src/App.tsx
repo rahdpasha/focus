@@ -12,6 +12,8 @@ import type { Page } from './app/navigation'
 import type { TranslationKey } from './translations'
 import type { AuthState } from './auth/types'
 import FocusPage from './pages/FocusPage'
+const MusePage = lazy(() => import('./muse/MusePage'))
+const MuseAdvisor = lazy(() => import('./pages/AdvisorPage'))
 const PlanPage = lazy(() => import('./pages/PlanPage'))
 import Modal from './components/layout/Modal'
 import ProgressPage from './pages/ProgressPage'
@@ -62,6 +64,7 @@ function AuthenticatedApp({
   t: Translate
   auth: AuthState & ReturnType<typeof useAuth>
 }) {
+  const [museVisited, setMuseVisited] = useState(false)
   const [page, setPage] = useState<Page>('focus')
   const [planEntry, setPlanEntry] = useState<'subjects' | 'advisor'>('subjects')
   const [recommendedMinutes, setRecommendedMinutes] =
@@ -181,7 +184,7 @@ function AuthenticatedApp({
   return (
     <AppShell
       page={page}
-      onPageChange={setPage}
+      onPageChange={next => { if (next === 'muse') setMuseVisited(true); setPage(next) }}
       subjects={data.subjects}
       activeSubjectId={data.activeSubjectId}
       onSelectSubject={handleSelectSubject}
@@ -252,6 +255,21 @@ function AuthenticatedApp({
         />
         }
       </Suspense></Modal>)}
+
+      {museVisited && <div hidden={page !== 'muse'}><Suspense fallback={<p>{tr('Loading Muse…','میوز بار دەکرێت…')}</p>}><MusePage
+        userId={auth.session?.user.id ?? null}
+        displayName={auth.session?.user.displayName}
+        studyMinutes={Math.round(data.sessions.filter(session => session.completed && new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Baghdad' }).format(new Date(session.completedAt)) === new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Baghdad' }).format(new Date())).reduce((sum, session) => sum + session.actualDuration, 0) / 60)}
+        onFocus={() => setPage('focus')}
+        onSettings={() => setPage('settings')}
+        advisor={timerActive ? <p>{tr('Your focus session is running. Finish it before changing your study plan.','سێشنی سەرنجەکەت بەردەوامە. پێش گۆڕینی پلان تەواوی بکە.')} <button className="cyber-btn" onClick={() => setPage('focus')}>{tr('Back to timer','گەڕانەوە بۆ کاتژمێر')}</button></p> : <MuseAdvisor
+          sessions={data.sessions} subjects={data.subjects} dailyGoal={data.dailyGoal} weeklyGoal={data.weeklyGoal}
+          advancedGoals={data.advancedGoals} routineItems={data.routineItems}
+          onStartSession={startRecommendedSession} onDailyGoalChange={data.setDailyGoal}
+          onAddAdvancedGoal={data.addAdvancedGoal} onAddRoutineItem={data.addRoutineItem}
+          onUpdateAdvancedGoal={data.updateAdvancedGoal} onUpdateRoutineItem={data.updateRoutineItem}
+        />}
+      /></Suspense></div>}
 
       {page === 'progress' && (
         <ProgressPage
