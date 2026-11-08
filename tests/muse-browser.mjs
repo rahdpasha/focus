@@ -33,6 +33,7 @@ try {
     await page.reload({ waitUntil: 'networkidle' })
     await page.getByRole('button', { name: 'MUSE', exact: true }).click()
     await muse.getByRole('button', { name: 'My life', exact: true }).click()
+    await muse.locator('.history-row summary').click()
     await muse.getByRole('button', { name: 'Mark found', exact: true }).waitFor()
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('focus:muse:v1:local')))
     assert.equal(saved.state.outings[0].state, 'finished')
