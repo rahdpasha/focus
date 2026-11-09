@@ -44,6 +44,13 @@ try {
       assert.ok(surface.bottomPadding < 100, 'Muse should not keep the FOCUS bottom dock spacer')
       assert.equal(surface.emptyBorder, '0px', 'Muse empty state should not show a dashed frame')
       assert.equal(surface.footerVisible, false, 'Mobile Muse should omit decorative footer')
+      const bodyEdges = await page.evaluate(() => {
+        const rect = document.querySelector('.muse').getBoundingClientRect()
+        const content = document.querySelector('main.calm-content').getBoundingClientRect()
+        return {left: rect.left, right: rect.right, contentLeft: content.left, contentRight: content.right, viewport: innerWidth}
+      })
+      assert.ok(bodyEdges.left >= 0 && bodyEdges.right <= bodyEdges.viewport + 1,
+        'Muse should fit entirely inside the phone: ' + JSON.stringify(bodyEdges))
       assert.equal(await muse.locator('.muse-greeting-desktop').isVisible(), false)
       await page.evaluate(() => window.scrollTo(0, 400))
       await page.waitForTimeout(80)
