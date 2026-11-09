@@ -79,6 +79,8 @@ export default function MusePage({
   const [page, setPage] = useState("today"),
     [modal, setModal] = useState<Modal>(null),
     [filter, setFilter] = useState("all"),
+    [historyOpen, setHistoryOpen] = useState(false),
+    [historyLimit, setHistoryLimit] = useState(6),
     [toast, setToast] = useState(""),
     [editing, setEditing] = useState<Task | null>(null),
     [editingTemplate, setEditingTemplate] = useState<Template | null>(null),
@@ -96,7 +98,13 @@ export default function MusePage({
       data.outings.find((o) => o.id === activeOutingId) ??
       data.outings.find((o) =>
         ["preparing", "out", "returning"].includes(o.state),
-      );
+      ),
+    ongoingOuting = data.outings.find((o) =>
+      ["preparing", "out", "returning"].includes(o.state),
+    ),
+    pastOutings = data.outings
+      .filter((o) => ["finished", "skipped"].includes(o.state))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   useEffect(() => {
     const id = setInterval(() => setClock(new Date()), 30000);
     return () => clearInterval(id);
@@ -1175,97 +1183,144 @@ export default function MusePage({
                     </div>
                   ))}
                 </div>
-                <div className="section-heading spaced">
-                  <h2>{t("Outing history", "مێژووی دەرچوون")}</h2>
-                </div>
-                {!data.outings.length ? (
-                  <p className="muted">
-                    {t(
-                      "Your actual outings will appear here.",
-                      "دەرچوونە ڕاستەقینەکانت لێرە دەردەکەون.",
-                    )}
-                  </p>
-                ) : (
-                  data.outings.map((o) => (
-                    <details className="history-row" key={o.id}>
-                      <summary>
-                        <span>
-                          <strong>{o.name}</strong>
-                          <small>{stampLabel(o.createdAt)}</small>
-                        </span>
-                        <span
-                          className={
-                            o.items.some((i) => i.returned === "missing")
-                              ? "missing-label"
-                              : "status-badge"
-                          }
-                        >
-                          {o.items.some((i) => i.returned === "missing")
-                            ? t("Missing item", "شتێک ونە")
-                            : statusName(o.state)}
-                        </span>
-                      </summary>
-                      <div className="history-content">
-                        {o.items.map((i) => (
-                          <div key={i.id}>
-                            <span>{i.name}</span>
-                            <span>
-                              {i.departure !== "ready"
-                                ? t(
-                                    "Not confirmed taken",
-                                    "بردنی پشتڕاست نەکراوەتەوە",
-                                  )
-                                : i.returned === "have"
-                                  ? t(
-                                      "Had it at return check",
-                                      "لە پشکنینی گەڕانەوەدا لای بوو",
-                                    )
-                                  : i.returned === "missing"
-                                    ? t("Missing", "ونە")
-                                    : i.returned === "na"
-                                      ? t("Not applicable", "پەیوەندی نییە")
-                                      : t(
-                                          "Return not checked",
-                                          "گەڕانەوە نەپشکنراوە",
-                                        )}
-                            </span>
-                            {i.returned === "missing" && (
-                              <button
-                                className="text-button"
-                                disabled={busy}
-                                onClick={() =>
-                                  patchOuting({
-                                    ...o,
-                                    items: o.items.map((v) =>
-                                      v.id === i.id
-                                        ? { ...v, returned: "have" }
-                                        : v,
-                                    ),
-                                  })
-                                }
-                              >
-                                {t("Mark found", "دۆزرایەوە")}
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                        {["preparing", "out", "returning"].includes(
-                          o.state,
-                        ) && (
-                          <button
-                            className="primary"
-                            onClick={() => {
-                              setActiveOutingId(o.id);
-                              setPage("today");
-                            }}
-                          >
-                            {t("Continue outing", "بەردەوامبوونی دەرچوون")}
-                          </button>
-                        )}
+                <section className="outing-history" aria-label={t("Outing history", "مێژووی دەرچوون")}>
+                  <div className="outing-history-heading">
+                    <h2>{t("Past outings", "دەرچوونەکانی پێشوو")}</h2>
+                    <button
+                      className="text-button outing-history-toggle"
+                      type="button"
+                      aria-expanded={historyOpen}
+                      aria-controls="muse-outing-history-entries"
+                      onClick={() => {
+                        setHistoryOpen(!historyOpen);
+                        setHistoryLimit(6);
+                      }}
+                    >
+                      {historyOpen
+                        ? t("Hide history", "شاردنەوەی مێژوو")
+                        : t("View history", "بینینی مێژوو")}
+                      <ArrowRight size={16} aria-hidden="true" />
+                    </button>
+                  </div>
+                  {ongoingOuting && (
+                    <div className="outing-history-active">
+                      <div>
+                        <strong>{ongoingOuting.name}</strong>
+                        <span>{statusName(ongoingOuting.state)}</span>
                       </div>
-                    </details>
-                  ))
-                )}
+                      <button
+                        type="button"
+                        className="text-button"
+                        onClick={() => {
+                          setActiveOutingId(ongoingOuting.id);
+                          setPage("today");
+                        }}
+                      >
+                        {t("Continue", "بەردەوامبە")}
+                        <ArrowRight size={15} aria-hidden="true" />
+                      </button>
+                    </div>
+                  )}
+                  {historyOpen && (
+                    <div id="muse-outing-history-entries">
+                      {!pastOutings.length ? (
+                        <p className="muted">{t("No past outings yet.", "هێشتا دەرچوونی پێشوو نییە.")}</p>
+                      ) : (
+                        <>
+                          {pastOutings.slice(0, historyLimit).map((o) => (
+                      <details className="history-row" key={o.id}>
+                        <summary>
+                          <span>
+                            <strong>{o.name}</strong>
+                            <small>{stampLabel(o.createdAt)}</small>
+                          </span>
+                          <span
+                            className={
+                              o.items.some((i) => i.returned === "missing")
+                                ? "missing-label"
+                                : "status-badge"
+                            }
+                          >
+                            {o.items.some((i) => i.returned === "missing")
+                              ? t("Missing item", "شتێک ونە")
+                              : statusName(o.state)}
+                          </span>
+                        </summary>
+                        <div className="history-content">
+                          {o.items.map((i) => (
+                            <div key={i.id}>
+                              <span>{i.name}</span>
+                              <span>
+                                {i.departure !== "ready"
+                                  ? t(
+                                      "Not confirmed taken",
+                                      "بردنی پشتڕاست نەکراوەتەوە",
+                                    )
+                                  : i.returned === "have"
+                                    ? t(
+                                        "Had it at return check",
+                                        "لە پشکنینی گەڕانەوەدا لای بوو",
+                                      )
+                                    : i.returned === "missing"
+                                      ? t("Missing", "ونە")
+                                      : i.returned === "na"
+                                        ? t("Not applicable", "پەیوەندی نییە")
+                                        : t(
+                                            "Return not checked",
+                                            "گەڕانەوە نەپشکنراوە",
+                                          )}
+                              </span>
+                              {i.returned === "missing" && (
+                                <button
+                                  className="text-button"
+                                  disabled={busy}
+                                  onClick={() =>
+                                    patchOuting({
+                                      ...o,
+                                      items: o.items.map((v) =>
+                                        v.id === i.id
+                                          ? { ...v, returned: "have" }
+                                          : v,
+                                      ),
+                                    })
+                                  }
+                                >
+                                  {t("Mark found", "دۆزرایەوە")}
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                          {["preparing", "out", "returning"].includes(
+                            o.state,
+                          ) && (
+                            <button
+                              className="primary"
+                              onClick={() => {
+                                setActiveOutingId(o.id);
+                                setPage("today");
+                              }}
+                            >
+                              {t("Continue outing", "بەردەوامبوونی دەرچوون")}
+                            </button>
+                          )}
+                        </div>
+                      </details>
+                          ))}
+                          {pastOutings.length > historyLimit && (
+                            <button
+                              type="button"
+                              className="text-button outing-history-more"
+                              onClick={() => setHistoryLimit((limit) => limit + 6)}
+                            >
+                              {t("Show more", "زیاتر پیشان بدە")}
+                              <ArrowRight size={15} aria-hidden="true" />
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+                </section>
               </>
             )}
             {page === "memory" && (
