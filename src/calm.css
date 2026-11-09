@@ -188,3 +188,140 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{
 .calm-topbar{gap:14px}.calm-nav{gap:3px}.calm-nav button{padding-inline:12px}.calm-date{margin-inline-start:auto}
 @media(max-width:1050px) and (min-width:769px){.calm-date{display:none}.calm-topbar{padding-inline:24px}.calm-nav button{padding-inline:9px;font-size:12px}}
 @media(max-width:768px){.calm-topbar .experience-switch{margin-inline-start:auto}.calm-topbar .calm-date{display:none}.experience-switch button{padding:9px 12px}.calm-app:has(.muse:not([hidden])) .muse-header{margin-top:0}}
+
+
+/* Phone-first FOCUS: show the subject, duration, timer and start button
+   without making the user scroll past desktop-sized controls.
+   Keep the existing four-tab dock and iPhone safe-area scroll protection. */
+@media (max-width: 768px) {
+  .calm-app .calm-topbar {
+    height: 60px;
+    padding: 0 6px;
+    margin: 0 12px;
+    gap: 8px;
+  }
+  .calm-app .calm-brand {
+    font-size: 21px;
+    letter-spacing: -1px;
+    gap: 8px;
+  }
+  .calm-app .calm-brand > span:first-child {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+  }
+  .calm-app .experience-switch {
+    flex: 0 0 auto;
+    margin-inline-start: auto;
+  }
+  .calm-app .experience-switch button {
+    min-height: 36px;
+    padding: 7px 12px;
+    font-size: 10px;
+    letter-spacing: .5px;
+  }
+  .calm-app .calm-content {
+    padding: 12px 14px calc(170px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .calm-app .calm-page-heading {
+    align-items: center;
+    flex-wrap: nowrap;
+    margin: 0 0 12px;
+    gap: 8px;
+  }
+  .calm-app .calm-page-heading .calm-eyebrow { display: none; }
+  .calm-app .calm-page-heading h1 {
+    font-size: clamp(20px, 5.7vw, 24px);
+    line-height: 1.25;
+    margin: 0;
+    letter-spacing: -.7px;
+  }
+  .calm-app .calm-page-heading .calm-streak {
+    margin: 0;
+    padding: 5px 8px;
+    font-size: 10px;
+    gap: 5px;
+  }
+  .calm-app .calm-focus-grid { gap: 14px; }
+  .calm-app .calm-timer-card {
+    padding: 12px 14px 10px;
+    border-radius: 17px;
+  }
+  .calm-app .calm-subject-picker {
+    gap: 8px;
+    padding-bottom: 7px;
+  }
+  .calm-app .calm-subject-picker select {
+    min-height: 40px;
+    font-size: 15px;
+  }
+  .calm-app .calm-subject-picker button {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+  }
+  .calm-app .calm-timer-body { padding: 8px 0 0; }
+  .calm-app .timer-v5-status {
+    min-height: 23px;
+    padding: 2px 6px;
+    margin: 0 0 6px;
+    font-size: 10px;
+  }
+  .calm-app .duration-v5-presets {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    padding: 3px;
+    width: 100%;
+  }
+  /* Undo the legacy 6-column nth-child spans that make the last preset
+     fill an extra row on real iPhones. */
+  .calm-app .duration-v5-presets > button,
+  .calm-app .duration-v5-presets > button:nth-child(n + 4) {
+    grid-column: auto;
+    min-width: 0;
+    width: 100%;
+    min-height: 42px;
+    padding: 6px 2px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .calm-app .timer-v5-ring {
+    width: min(230px, 64vw);
+    max-width: 100%;
+    margin: 5px auto 0;
+  }
+  .calm-app .timer-v5-time {
+    font-size: clamp(39px, 12vw, 54px);
+    letter-spacing: -2px;
+  }
+  .calm-app .timer-v5-mode {
+    margin-top: 4px;
+    font-size: 11px;
+    max-width: 165px;
+  }
+  .calm-app .timer-v5-actions {
+    gap: 8px;
+    margin: 4px auto 5px;
+  }
+  .calm-app .timer-v5-actions > button {
+    min-height: 46px;
+    flex: 1 1 136px;
+    min-width: 0;
+  }
+  .calm-app .calm-session-options { padding-top: 3px; }
+  .calm-app .calm-session-options summary { min-height: 40px; }
+  .calm-app .calm-focus-aside { gap: 12px; }
+  .calm-app .calm-today { padding: 16px; }
+  .calm-app .calm-nav button {
+    min-height: 48px;
+    padding-block: 5px;
+  }
+}
+@media (max-width: 360px) {
+  .calm-app .calm-content { padding-inline: 10px !important; }
+  .calm-app .calm-brand { font-size: 18px; gap: 6px; }
+  .calm-app .experience-switch button { padding-inline: 8px; font-size: 9px; }
+  .calm-app .calm-timer-card { padding-inline: 10px; }
+  .calm-app .calm-page-heading .calm-streak { font-size: 9px; }
+}
