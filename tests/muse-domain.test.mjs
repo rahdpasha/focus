@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   initialState,
+  exampleProfilePriorities,
+  displayProfilePriorities,
   createOuting,
   startOuting,
   finishOuting,
@@ -127,4 +129,34 @@ test("routine schema rejects invalid clock times and duplicate weekdays", () => 
   state.routines[0].departureTime = "08:00";
   state.routines[0].days = [1, 1];
   assert.equal(StateSchema.safeParse(state).success, false);
+});
+
+test("New Muse profiles use broadly relevant, editable starter examples", () => {
+  const profile = initialState().profile;
+  assert.equal(profile.name, "You");
+  assert.deepEqual(profile.priorities, [
+    "Take care of myself",
+    "Stay organized",
+    "Make progress on my goals",
+  ]);
+  assert.deepEqual(profile.priorities, [...exampleProfilePriorities]);
+  assert.equal(StateSchema.safeParse(initialState()).success, true);
+});
+
+test("Legacy student defaults display generically without overwriting personal entries", () => {
+  const legacy = [
+    "University responsibilities",
+    "Build strong engineering fundamentals",
+    "Improve my English",
+    "Becoming better",
+  ];
+  const snapshot = [...legacy];
+  assert.deepEqual(displayProfilePriorities(legacy), [
+    ...exampleProfilePriorities,
+    "Becoming better",
+  ]);
+  assert.deepEqual(legacy, snapshot, "display conversion should not modify saved data");
+  const personal = ["My children", "Volunteer in my community", "Train for a marathon"];
+  assert.deepEqual(displayProfilePriorities(personal), personal);
+  assert.deepEqual(displayProfilePriorities([]), []);
 });
