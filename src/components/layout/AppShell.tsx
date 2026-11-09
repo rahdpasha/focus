@@ -14,7 +14,7 @@ export default function AppShell({ page, onPageChange, children }: Props) {
     { page: 'settings' as const, label: tr('Settings', 'ڕێکخستنەکان'), icon: Settings },
   ]
   useEffect(() => { window.scrollTo(0, 0) }, [page])
-  return <div className="calm-app">
+  return <div className={inMuse ? "calm-app calm-app--muse" : "calm-app"}>
     <a className="skip-link" href="#focus-main">{tr('Skip to content', 'بڕۆ بۆ ناوەڕۆک')}</a>
     <header className="calm-topbar">
       <button className="calm-brand" onClick={() => onPageChange('focus')} aria-label={tr('Focus home', 'سەرەکی سەرنج')}><span><Leaf size={22} /></span>focus<span className="brand-dot">.</span></button>
