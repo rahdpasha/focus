@@ -722,12 +722,15 @@ export default function MusePage({
                       {t("Baghdad time", "کاتی بەغدا")}
                     </div>
                     <h1>
-                      {hour < 12
-                        ? t("Good morning", "بەیانی باش")
-                        : hour < 17
-                          ? t("Good afternoon", "نیوەڕۆ باش")
-                          : t("Good evening", "ئێوارە باش")}
-                      , {data.profile.name}
+                      <span className="muse-greeting-desktop">
+                        {hour < 12
+                          ? t("Good morning", "بەیانی باش")
+                          : hour < 17
+                            ? t("Good afternoon", "نیوەڕۆ باش")
+                            : t("Good evening", "ئێوارە باش")}
+                        , {data.profile.name}
+                      </span>
+                      <span className="muse-greeting-phone">{t("Your day", "ڕۆژەکەت")}</span>
                       <span className="greeting-dot">.</span>
                     </h1>
                     <p>
@@ -770,7 +773,7 @@ export default function MusePage({
                           )}
                     </p>
                     <button className="hero-cta" onClick={() => openCapture()}>
-                      {t("Get it off your mind", "بیخەرە دەرەوەی بیرت")}
+                      {t("Add a task", "ئەرکێک زیاد بکە")}
                       <ArrowUpRight size={18} />
                     </button>
                   </div>
@@ -797,7 +800,7 @@ export default function MusePage({
                     <section className="priorities-section">
                       <div className="section-heading">
                         <h2>
-                          {t("What matters today", "ئەوەی ئەمڕۆ گرنگە")}
+                          {t("Today's tasks", "ئەرکەکانی ئەمڕۆ")}
                           <span className="count">{openTasks.length}</span>
                         </h2>
                         <button
@@ -812,7 +815,7 @@ export default function MusePage({
                         <>
                           <p className="small-muted">
                             {t(
-                              "Overdue and due-today items first, then your important ones.",
+                              "Due tasks first, then your priorities.",
                               "سەرەتا دواکەوتوو و ئەوەی ئەمڕۆیە، پاشان گرنگەکان.",
                             )}
                           </p>
@@ -825,7 +828,7 @@ export default function MusePage({
                           >
                             <Plus size={16} />
                             {t(
-                              "Add a responsibility",
+                              "Add a task",
                               "زیادکردنی بەرپرسیارێتی",
                             )}
                           </button>
@@ -837,13 +840,13 @@ export default function MusePage({
                           </span>
                           <h3>
                             {t(
-                              "Nothing you have to hold onto.",
+                              "You're all caught up.",
                               "هیچ شتێک نییە لە بیرت بگریت.",
                             )}
                           </h3>
                           <p>
                             {t(
-                              "Add an assignment, a commitment, or something you want to follow through on.",
+                              "Add a task when something needs your attention.",
                               "ئەرکێک، بەڵێنێک یان شتێک زیاد بکە کە دەتەوێت تەواوی بکەیت.",
                             )}
                           </p>
@@ -853,7 +856,7 @@ export default function MusePage({
                           >
                             <Plus size={15} />
                             {t(
-                              "Add your first responsibility",
+                              "Add your first task",
                               "یەکەم بەرپرسیارێتیت زیاد بکە",
                             )}
                           </button>
@@ -1051,7 +1054,7 @@ export default function MusePage({
                   </div>
                   <button className="primary" onClick={() => openCapture()}>
                     <Plus size={17} />
-                    {t("Add responsibility", "زیادکردنی بەرپرسیارێتی")}
+                    {t("Add a task", "ئەرکێک زیاد بکە")}
                   </button>
                 </div>
                 <Routines
@@ -1266,7 +1269,7 @@ export default function MusePage({
                       {t("Remember with intention", "بە مەبەست بیر بکەوە")}
                     </span>
                     <h1>
-                      {t("What Muse knows", "ئەوەی میوز دەیزانێت")}
+                      {t("My memories", "بیرەوەرییەکانم")}
                       <span className="greeting-dot">.</span>
                     </h1>
                     <p>
@@ -1284,7 +1287,7 @@ export default function MusePage({
                     }}
                   >
                     <Plus size={16} />
-                    {t("Add a memory", "زیادکردنی بیرەوەری")}
+                    {t("Add memory", "بیرەوەری زیاد بکە")}
                   </button>
                 </div>
                 <div className="memory-info">
