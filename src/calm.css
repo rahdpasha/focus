@@ -440,9 +440,10 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{
    The header remains fixed, while the document is the only scroller. */
 @media (max-width: 768px) {
   .calm-app .calm-topbar {
-    min-height: calc(50px + env(safe-area-inset-top, 0px));
-    padding-top: calc(2px + env(safe-area-inset-top, 0px));
-    padding-bottom: 4px;
+    /* Let the native iPhone status area breathe; keep the switch pinned. */
+    min-height: calc(60px + env(safe-area-inset-top, 0px));
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+    padding-bottom: 6px;
     padding-inline:
       max(14px, env(safe-area-inset-left, 0px))
       max(14px, env(safe-area-inset-right, 0px));
@@ -476,7 +477,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{
     font-size: 10px;
   }
   .calm-app .calm-content {
-    padding-top: calc(61px + env(safe-area-inset-top, 0px)) !important;
+    padding-top: calc(76px + env(safe-area-inset-top, 0px)) !important;
   }
   /* MUSE does not have FOCUS's bottom tab dock. Its 170px spacer was
      responsible for the large empty gradient tail after the last panel. */

@@ -103,8 +103,16 @@ export default function MusePage({
     return () => clearInterval(id);
   }, []);
   useEffect(() => {
-    if (modal) dialogRef.current?.showModal();
-    else dialogRef.current?.close();
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (modal) {
+      if (!dialog.open) dialog.showModal();
+      // iOS can retain the scroll offset of a previously opened long modal,
+      // hiding its heading and close control beneath the status bar.
+      dialog.scrollTop = 0;
+    } else if (dialog.open) {
+      dialog.close();
+    }
   }, [modal]);
   useEffect(() => {
     if (!toast) return;

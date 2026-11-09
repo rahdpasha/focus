@@ -2132,3 +2132,45 @@
     min-width: 0;
   }
 }
+
+
+/* iPhone PWA and in-app Safari: keep the modal itself below the status bar.
+   Explicit inset positioning is safer than centered dialog margins when a
+   tall settings page opens while the document is scrolled underneath. */
+@media (max-width: 768px) {
+  .calm-app .muse dialog {
+    --muse-modal-top: max(68px, calc(env(safe-area-inset-top, 0px) + 12px));
+    --muse-modal-bottom: max(12px, calc(env(safe-area-inset-bottom, 0px) + 12px));
+    position: fixed;
+    inset-block-start: var(--muse-modal-top);
+    inset-block-end: auto;
+    inset-inline: 0;
+    box-sizing: border-box;
+    width: calc(100vw - 24px);
+    max-width: 540px;
+    height: auto;
+    max-height: calc(100dvh - var(--muse-modal-top) - var(--muse-modal-bottom));
+    margin: 0 auto;
+    padding: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: 18px;
+  }
+  .calm-app .muse dialog .modal-content {
+    padding: 20px 18px 26px;
+    min-width: 0;
+  }
+  .calm-app .muse dialog .modal-content h2 {
+    margin: 5px 0 16px;
+    padding-inline-end: 42px;
+    font-size: 20px;
+    line-height: 1.3;
+  }
+  .calm-app .muse dialog .modal-close {
+    top: 10px;
+    inset-inline-end: 10px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
