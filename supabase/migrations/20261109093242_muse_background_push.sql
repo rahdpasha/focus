@@ -107,27 +107,27 @@ end $$;
 revoke all on function public.muse_test_push(text) from public,anon;
 grant execute on function public.muse_test_push(text) to authenticated;
 
-create function private.muse_queue_due_push() returns void language plpgsql security definer set search_path='' as $$
+create function private.muse_queue_due_push(at_time timestamptz default now()) returns void language plpgsql security definer set search_path='' as $$
 declare sub record; candidate record; token text; used int;
 begin
  if not exists(select 1 from private.muse_push_config where enabled) then return; end if;
  -- Defaults protect attention. Never replay reminders from quiet hours in the morning.
- if extract(hour from now() at time zone 'Asia/Baghdad') between 7 and 21 then
+ if extract(hour from at_time at time zone 'Asia/Baghdad') between 7 and 21 then
   for sub in select p.id,w.state from public.focus_push_subscriptions p join public.muse_workspaces w on w.user_id=p.user_id where p.muse_enabled loop
-   select count(*) into used from private.muse_push_outbox where subscription_id=sub.id and kind<>'test' and (created_at at time zone 'Asia/Baghdad')::date=(now() at time zone 'Asia/Baghdad')::date;
-   for candidate in select * from private.muse_due(sub.state,now()) order by due_at,reminder_key loop
+   select count(*) into used from private.muse_push_outbox where subscription_id=sub.id and kind<>'test' and (created_at at time zone 'Asia/Baghdad')::date=(at_time at time zone 'Asia/Baghdad')::date;
+   for candidate in select * from private.muse_due(sub.state,at_time) order by due_at,reminder_key loop
     exit when used>=4;
     if extract(hour from candidate.due_at at time zone 'Asia/Baghdad') not between 7 and 21 then continue; end if;
-    insert into private.muse_push_outbox(subscription_id,reminder_key,kind,target_id,due_at,expires_at)
-    values(sub.id,candidate.reminder_key,candidate.kind,candidate.target_id,candidate.due_at,candidate.due_at+interval '30 minutes') on conflict do nothing;
+    insert into private.muse_push_outbox(subscription_id,reminder_key,kind,target_id,due_at,expires_at,created_at)
+    values(sub.id,candidate.reminder_key,candidate.kind,candidate.target_id,candidate.due_at,candidate.due_at+interval '30 minutes',at_time) on conflict do nothing;
     if found then used:=used+1; end if;
    end loop;
   end loop;
  end if;
  -- Expire bounded history; no endpoint or personal text is copied into the outbox.
- delete from private.muse_push_outbox where created_at<now()-interval '14 days';
- update private.muse_push_outbox set status='cancelled',lease=null where status in ('pending','sending') and expires_at<=now();
- if exists(select 1 from private.muse_push_outbox where due_at<=now() and expires_at>now() and attempts<3 and (status='pending' or (status='sending' and last_attempt_at<now()-interval '2 minutes'))) then
+ delete from private.muse_push_outbox where created_at<at_time-interval '14 days';
+ update private.muse_push_outbox set status='cancelled',lease=null where status in ('pending','sending') and expires_at<=at_time;
+ if exists(select 1 from private.muse_push_outbox where due_at<=at_time and expires_at>at_time and attempts<3 and (status='pending' or (status='sending' and last_attempt_at<at_time-interval '2 minutes'))) then
   select decrypted_secret into token from vault.decrypted_secrets where name='focus_push_dispatch_token';
   if token is not null then perform net.http_post(
    url:='https://rvzzieqynxybjccbutvs.supabase.co/functions/v1/focus-push-dispatch',
@@ -135,7 +135,7 @@ begin
   end if;
  end if;
 end $$;
-revoke all on function private.muse_queue_due_push() from public,anon,authenticated;
+revoke all on function private.muse_queue_due_push(timestamptz) from public,anon,authenticated;
 
 create function public.muse_claim_push_jobs(p_token text)
 returns table(outbox_id uuid,lease_id uuid,endpoint text,p256dh text,auth_key text,signing_jwk text,public_key text,kind text,target_id text,tag text,expires_at timestamptz)
@@ -148,7 +148,7 @@ begin
  for job in select o.*,p.endpoint,p.p256dh,p.auth_key,p.muse_enabled,w.state from private.muse_push_outbox o
  join public.focus_push_subscriptions p on p.id=o.subscription_id left join public.muse_workspaces w on w.user_id=p.user_id
  where o.due_at<=now() and o.expires_at>now() and o.attempts<3 and (o.status='pending' or (o.status='sending' and o.last_attempt_at<now()-interval '2 minutes'))
- order by o.due_at limit 50 for update of o skip locked loop
+ order by o.due_at limit 10 for update of o skip locked loop
   if not job.muse_enabled or (job.kind<>'test' and (extract(hour from now() at time zone 'Asia/Baghdad') not between 7 and 21 or
     not exists(select 1 from private.muse_due(job.state,now()) d where d.reminder_key=job.reminder_key))) then
    update private.muse_push_outbox set status='cancelled',lease=null where id=job.id; continue;

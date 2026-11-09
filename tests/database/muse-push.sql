@@ -76,3 +76,34 @@ begin
  if (select status from private.muse_push_outbox where id=previous)<>'cancelled' then raise exception 'Opt-out ignored'; end if;
 end $$;
 \echo 'PASS Muse push: scheduling, expiry, snooze, owner isolation, rate limits, worker auth, leases, deduplication, opt-out'
+
+-- Deterministic scheduler: quiet hours, freshness, daily cap, repeated cron ticks.
+do $$
+declare payload jsonb; total int;
+begin
+ update public.focus_push_subscriptions set muse_enabled=true where id='40000000-0000-0000-0000-000000000001';
+ payload:='{"profile":{},"memories":[],"templates":[],"routines":[],"routineOccurrences":[],"outings":[],"tasks":[]}'::jsonb;
+ for n in 1..8 loop
+  payload:=jsonb_set(payload,'{tasks}',(payload->'tasks')||jsonb_build_array(jsonb_build_object('id','cap-'||n,'done',false,'reminderStatus','pending','reminderAt','2030-01-07T06:00:00Z')));
+ end loop;
+ update public.muse_workspaces set state=payload where user_id='00000000-0000-0000-0000-000000000001';
+ perform private.muse_queue_due_push('2030-01-07T06:01:00Z');
+ select count(*) into total from private.muse_push_outbox where kind='task';
+ if total<>4 then raise exception 'Daily cap failed: %',total; end if;
+ -- created_at is server receipt time; set test records to simulated day for next tick.
+ update private.muse_push_outbox set created_at='2030-01-07T06:01:00Z' where kind='task';
+ perform private.muse_queue_due_push('2030-01-07T06:02:00Z');
+ if (select count(*) from private.muse_push_outbox where kind='task')<>4 then raise exception 'Repeated cron duplicated jobs'; end if;
+ delete from private.muse_push_outbox;
+ payload:=jsonb_set(payload,'{tasks}','[{"id":"quiet","done":false,"reminderStatus":"pending","reminderAt":"2030-01-07T03:50:00Z"}]');
+ update public.muse_workspaces set state=payload where user_id='00000000-0000-0000-0000-000000000001';
+ perform private.muse_queue_due_push('2030-01-07T03:51:00Z');
+ perform private.muse_queue_due_push('2030-01-07T04:01:00Z');
+ if exists(select 1 from private.muse_push_outbox) then raise exception 'Quiet reminder replayed after 07:00'; end if;
+ -- A completed task must be cancelled at claim time, even if already queued.
+ insert into private.muse_push_outbox(subscription_id,reminder_key,kind,target_id,due_at,expires_at) values
+ ('40000000-0000-0000-0000-000000000001','task:no-longer-pending:0','task','no-longer-pending',now()-interval '1 second',now()+interval '1 hour');
+ perform * from public.muse_claim_push_jobs('disposable-token-for-contract-tests-only');
+ if exists(select 1 from private.muse_push_outbox where status<>'cancelled') then raise exception 'Stale reminder sent'; end if;
+end $$;
+\echo 'PASS Muse scheduler: daily limit, quiet hours, no backlog, repeated ticks and cancellation'
