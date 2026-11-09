@@ -1797,3 +1797,162 @@
   display: flex;
   align-items: center;
 }
+
+
+/* MUSE on phones: one shared FOCUS/MUSE header, action-first Today, and
+   reachable tabs instead of a second desktop-style navigation header. */
+@media (max-width: 768px) {
+  .calm-app .muse { min-width: 0; }
+  /* FOCUS already supplies the app logo and experience switch above. */
+  .calm-app .muse .muse-header { display: none; }
+  .calm-app .muse .muse-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) 44px;
+    gap: 3px;
+    overflow: visible;
+    margin: 0 0 14px;
+    padding: 0 0 9px;
+    width: 100%;
+  }
+  .calm-app .muse .muse-tabs button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 53px;
+    gap: 3px;
+    padding: 6px 2px;
+    font-size: clamp(9px, 2.5vw, 11px);
+    line-height: 1.2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+  .calm-app .muse .muse-tabs button svg { flex-shrink: 0; }
+  .calm-app .muse .muse-tabs .muse-options {
+    margin: 0;
+    min-width: 44px;
+  }
+  .calm-app .muse .page-title {
+    gap: 10px;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+  .calm-app .muse .page-title > div:first-child { min-width: 0; }
+  .calm-app .muse .date-line {
+    font-size: 9px;
+    line-height: 1.4;
+    gap: 6px;
+    letter-spacing: .3px;
+  }
+  .calm-app .muse .page-title h1 {
+    font-size: clamp(20px, 5.5vw, 25px);
+    line-height: 1.27;
+    letter-spacing: -.6px;
+    margin-top: 6px;
+    overflow-wrap: anywhere;
+  }
+  .calm-app .muse .page-title p { display: none; }
+  .calm-app .muse .page-title > .outline {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    padding: 0;
+    margin: 0;
+    font-size: 0;
+    gap: 0;
+    flex: 0 0 44px;
+  }
+  .calm-app .muse .page-title > .outline svg { width: 19px; height: 19px; }
+  /* The headline and orbital illustration are decorative on a narrow screen.
+     Preserve the actual capture action, now a useful one-row quick add. */
+  .calm-app .muse .hero {
+    min-height: 0;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    border-radius: 14px;
+  }
+  .calm-app .muse .hero-copy { width: 100%; }
+  .calm-app .muse .hero-copy > .eyebrow,
+  .calm-app .muse .hero h2,
+  .calm-app .muse .hero p,
+  .calm-app .muse .hero-foot,
+  .calm-app .muse .orb-art { display: none; }
+  .calm-app .muse .hero-cta {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 44px;
+    margin: 0;
+    padding: 0 2px;
+    font-size: 14px;
+    gap: 8px;
+    text-align: start;
+  }
+  .calm-app .muse .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  .calm-app .muse .left-column,
+  .calm-app .muse .right-column { min-width: 0; }
+  .calm-app .muse .right-column {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    border-top: 1px solid var(--line);
+    padding: 18px 0 0;
+  }
+  .calm-app .muse .right-column .quiet-note { display: none; }
+  .calm-app .muse .section-heading { gap: 9px; }
+  .calm-app .muse .empty-tasks { padding: 18px 14px 20px; }
+  .calm-app .muse .page-footer { margin-top: 22px; }
+  /* iPhone modal: use an internal scroller, keep close and settings usable. */
+  .calm-app .muse dialog {
+    width: calc(100vw - 24px);
+    max-width: 540px;
+    max-height: calc(100dvh - 28px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: 16px;
+  }
+  .calm-app .muse .modal-content { padding: 20px 16px 24px; }
+  .calm-app .muse .modal-content h2 {
+    font-size: 21px;
+    line-height: 1.25;
+    margin: 7px 0 15px;
+    padding-inline-end: 36px;
+  }
+  .calm-app .muse .modal-close { top: 8px; inset-inline-end: 8px; }
+  .calm-app .muse .settings-section {
+    padding: 14px 0;
+    margin-bottom: 6px;
+  }
+  .calm-app .muse .settings-section p {
+    font-size: 12px;
+    line-height: 1.55;
+    margin: 8px 0;
+  }
+  .calm-app .muse .form-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 360px) {
+  .calm-app .muse .muse-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)) 40px; }
+  .calm-app .muse .muse-tabs button { font-size: 9px; }
+  .calm-app .muse .page-title h1 { font-size: 20px; }
+}
+
+/* Privacy caveats stay available without crowding the action-oriented screen. */
+.muse .muse-privacy-details {
+  margin-top: 12px;
+  padding: 2px 0 0;
+}
+.muse .muse-privacy-details summary {
+  width: fit-content;
+  padding: 7px 0;
+  cursor: pointer;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 600;
+}
+.muse .muse-privacy-details[open] > p {
+  margin-top: 7px;
+}

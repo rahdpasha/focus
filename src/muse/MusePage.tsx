@@ -1832,12 +1832,12 @@ export default function MusePage({
               <section className="settings-section">
                 <h3>
                   <Bell size={17} />
-                  {t("Notification readiness", "ئامادەیی ئاگادارکردنەوە")}
+                  {t("Reminders", "بیرخستنەوەکان")}
                 </h3>
                 <p>
                   {t(
-                    "Muse reminders appear while this screen is open. FOCUS timer alerts keep their existing behavior; Muse background schedules are not enabled yet.",
-                    "بیرخستنەوەی ناو ئەپ بەردەستە. ئاگادارکردنەوەی پاشبنەما هێشتا پەیوەست نەکراوە.",
+                    "Muse reminders work while the app is open. Background reminders are not available yet.",
+                    "بیرخستنەوەکانی میوز کاتێک ئەپەکە کراوەیە کار دەکەن. بیرخستنەوەی پاشبنەما هێشتا بەردەست نییە.",
                   )}
                 </p>
                 <button className="outline" onClick={testNotification}>
@@ -1848,12 +1848,15 @@ export default function MusePage({
                     {notification}
                   </p>
                 )}
-                <p className="small-muted">
-                  {t(
-                    "A test cannot prove exact delivery, sound, or reliability when the app is closed. Those need real-device testing after server setup.",
-                    "تاقیکردنەوەکە گەیاندنی ورد یان دەنگ پشتڕاست ناکاتەوە. تاقیکردنەوەی ئامێری ڕاستەقینە پێویستە.",
-                  )}
-                </p>
+                <details className="muse-privacy-details">
+                  <summary>{t("About notification testing", "دەربارەی تاقیکردنەوەی ئاگادارکردنەوە")}</summary>
+                  <p className="small-muted">
+                    {t(
+                      "A test cannot prove exact delivery, sound, or reliability when the app is closed. Those need real-device testing after server setup.",
+                      "تاقیکردنەوەکە گەیاندنی ورد یان دەنگ پشتڕاست ناکاتەوە. تاقیکردنەوەی ئامێری ڕاستەقینە پێویستە.",
+                    )}
+                  </p>
+                </details>
               </section>
               {(status === "conflict" || status === "error") && (
                 <section className="settings-section">
@@ -1894,20 +1897,23 @@ export default function MusePage({
                 </h3>
                 <p>
                   {t(
-                    "Muse uses your FOCUS account. A device copy lets you work offline; cloud sync uses the same Supabase project after its additive migration is applied. Muse memories are not sent to AI.",
-                    "میوز هەژماری فۆکەس بەکاردەهێنێت. کۆپییەکی ئامێر بۆ کاری بێ ئینتەرنێت هەیە. بیرەوەرییەکان بۆ AI نانێردرێن.",
+                    "Muse shares your FOCUS account, supports offline use, and does not send your saved memories to AI.",
+                    "میوز هەژماری فۆکەس بەکاردەهێنێت، بەبێ ئینتەرنێت کار دەکات و بیرەوەرییە پاشەکەوتکراوەکانت بۆ AI نانێرێت.",
                   )}
                 </p>
                 <button className="outline" onClick={exportData}>
                   <Download size={16} />
                   {t("Export my data", "هەناردەکردنی زانیارییەکانم")}
                 </button>
-                <p className="small-muted">
-                  {t(
-                    "Remove individual responsibilities, templates, or memories from their edit screens. Current context has manual retention in this phase.",
-                    "زانیارییەکان لە پەڕەی دەستکاریکردنیان بسڕەوە. پاراستنی زانیاری لەم قۆناغەدا دەستییە.",
-                  )}
-                </p>
+                <details className="muse-privacy-details">
+                  <summary>{t("Data and privacy details", "وردەکاریی داتا و تایبەتمەندی")}</summary>
+                  <p className="small-muted">
+                    {t(
+                      "Cloud sync uses the same Supabase project after the additive migration is applied. Remove individual responsibilities, templates, or memories from their edit screens. Current context has manual retention in this phase.",
+                      "هاوکاتکردنی هەور هەمان پڕۆژەی Supabase بەکاردەهێنێت دوای جێبەجێکردنی مایگرەیشن. زانیارییەکان لە پەڕەی دەستکاریکردنیان بسڕەوە. پاراستنی زانیاری لەم قۆناغەدا دەستییە.",
+                    )}
+                  </p>
+                </details>
               </section>
               <button
                 className="text-button"
