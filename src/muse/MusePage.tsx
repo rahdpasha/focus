@@ -1290,19 +1290,6 @@ export default function MusePage({
                               )}
                             </div>
                           ))}
-                          {["preparing", "out", "returning"].includes(
-                            o.state,
-                          ) && (
-                            <button
-                              className="primary"
-                              onClick={() => {
-                                setActiveOutingId(o.id);
-                                setPage("today");
-                              }}
-                            >
-                              {t("Continue outing", "بەردەوامبوونی دەرچوون")}
-                            </button>
-                          )}
                         </div>
                       </details>
                           ))}
