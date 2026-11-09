@@ -64,8 +64,20 @@ function AuthenticatedApp({
   t: Translate
   auth: AuthState & ReturnType<typeof useAuth>
 }) {
-  const [museVisited, setMuseVisited] = useState(false)
-  const [page, setPage] = useState<Page>('focus')
+  const [museVisited, setMuseVisited] = useState(() => window.location.hash.startsWith('#muse?'))
+  const [page, setPage] = useState<Page>(() => window.location.hash.startsWith('#muse?') ? 'muse' : 'focus')
+  useEffect(() => {
+    const openMuse = () => { if (window.location.hash.startsWith('#muse?')) { setMuseVisited(true); setPage('muse') } }
+    const receive = (event: MessageEvent) => {
+      if (event.data?.type === 'muse-open' && typeof event.data.hash === 'string' && event.data.hash.startsWith('#muse?')) {
+        window.location.hash = event.data.hash
+        openMuse()
+      }
+    }
+    window.addEventListener('hashchange', openMuse)
+    navigator.serviceWorker?.addEventListener('message', receive)
+    return () => { window.removeEventListener('hashchange', openMuse); navigator.serviceWorker?.removeEventListener('message', receive) }
+  }, [])
   const [planEntry, setPlanEntry] = useState<'subjects' | 'advisor'>('subjects')
   const [recommendedMinutes, setRecommendedMinutes] =
     useState<number | undefined>()

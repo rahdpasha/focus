@@ -58,6 +58,7 @@ import { useMuseWorkspace } from "./useMuseWorkspace";
 import { useI18n } from "../useI18n";
 import "./muse.css";
 import Routines from "./Routines";
+import PushSettings from "./PushSettings";
 
 export default function MusePage({
   userId,
@@ -119,6 +120,45 @@ export default function MusePage({
     const id = setTimeout(() => setToast(""), 4000);
     return () => clearTimeout(id);
   }, [toast]);
+  useEffect(() => {
+    // Synchronize navigation from the notification URL after account data loads.
+    function openNotification() {
+      if (!ready || !window.location.hash.startsWith("#muse?")) return;
+      const params = new URLSearchParams(window.location.hash.slice(6));
+      const kind = params.get("kind"),
+        target = params.get("target");
+      if (kind === "return" && data.outings.some((o) => o.id === target)) {
+        setActiveOutingId(target);
+        setPage("today");
+      } else if (kind === "task") {
+        const task = data.tasks.find((v) => v.id === target);
+        if (!task) return;
+        setEditing(task);
+        setModal("capture");
+      } else if (kind === "departure") {
+        if (!data.routines.some((v) => v.id === target)) return;
+        setPage("today");
+      } else if (kind !== "test") return;
+      window.history.replaceState(
+        null,
+        "",
+        window.location.pathname + window.location.search,
+      );
+      requestAnimationFrame(() => {
+        const id =
+          kind === "return"
+            ? `muse-outing-${target}`
+            : `muse-routine-${target}`;
+        const element = document.getElementById(id);
+        element?.scrollIntoView({ block: "center" });
+        element?.focus();
+      });
+    }
+    // External URL is the source of truth for this one-time navigation.
+    openNotification();
+    window.addEventListener("hashchange", openNotification);
+    return () => window.removeEventListener("hashchange", openNotification);
+  }, [ready, data.outings, data.tasks, data.routines]);
   async function save(next: Workspace, message = "") {
     const ok = await workspace.save(next);
     if (ok && message) setToast(message);
@@ -378,7 +418,11 @@ export default function MusePage({
         ? o.items.filter((i) => i.departure === "ready")
         : o.items;
     return (
-      <section className="outing-panel">
+      <section
+        className="outing-panel"
+        id={`muse-outing-${o.id}`}
+        tabIndex={-1}
+      >
         <div className="section-heading">
           <div>
             <span className="eyebrow">{statusName(o.state)}</span>
@@ -738,7 +782,9 @@ export default function MusePage({
                             : t("Good evening", "ئێوارە باش")}
                         , {data.profile.name}
                       </span>
-                      <span className="muse-greeting-phone">{t("Your day", "ڕۆژەکەت")}</span>
+                      <span className="muse-greeting-phone">
+                        {t("Your day", "ڕۆژەکەت")}
+                      </span>
                       <span className="greeting-dot">.</span>
                     </h1>
                     <p>
@@ -835,10 +881,7 @@ export default function MusePage({
                             onClick={() => openCapture()}
                           >
                             <Plus size={16} />
-                            {t(
-                              "Add a task",
-                              "زیادکردنی بەرپرسیارێتی",
-                            )}
+                            {t("Add a task", "زیادکردنی بەرپرسیارێتی")}
                           </button>
                         </>
                       ) : (
@@ -1840,6 +1883,7 @@ export default function MusePage({
                 {t("You are in control", "کۆنترۆڵ لە دەستی تۆیە")}
               </span>
               <h2>{t("Settings & privacy", "ڕێکخستن و تایبەتمەندی")}</h2>
+              <PushSettings key={userId ?? "local"} userId={userId} />
               <section className="settings-section">
                 <h3>
                   <Bell size={17} />
@@ -1860,7 +1904,12 @@ export default function MusePage({
                   </p>
                 )}
                 <details className="muse-privacy-details">
-                  <summary>{t("About notification testing", "دەربارەی تاقیکردنەوەی ئاگادارکردنەوە")}</summary>
+                  <summary>
+                    {t(
+                      "About notification testing",
+                      "دەربارەی تاقیکردنەوەی ئاگادارکردنەوە",
+                    )}
+                  </summary>
                   <p className="small-muted">
                     {t(
                       "A test cannot prove exact delivery, sound, or reliability when the app is closed. Those need real-device testing after server setup.",
@@ -1917,7 +1966,12 @@ export default function MusePage({
                   {t("Export my data", "هەناردەکردنی زانیارییەکانم")}
                 </button>
                 <details className="muse-privacy-details">
-                  <summary>{t("Data and privacy details", "وردەکاریی داتا و تایبەتمەندی")}</summary>
+                  <summary>
+                    {t(
+                      "Data and privacy details",
+                      "وردەکاریی داتا و تایبەتمەندی",
+                    )}
+                  </summary>
                   <p className="small-muted">
                     {t(
                       "Cloud sync uses the same Supabase project after the additive migration is applied. Remove individual responsibilities, templates, or memories from their edit screens. Current context has manual retention in this phase.",

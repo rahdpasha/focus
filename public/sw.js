@@ -1,6 +1,8 @@
-const CACHE_NAME = 'focus-pwa-v16-reliable-home-updates'
+importScripts('/muse-notifications.js')
+const CACHE_NAME = 'focus-pwa-v17-muse-push'
 const STATIC_FILES = [
   '/manifest.webmanifest',
+  '/muse-notifications.js',
   '/favicon.svg',
   '/icon-192.png',
   '/icon-512.png',
@@ -85,6 +87,13 @@ self.addEventListener('fetch', (event) => {
  * briefly on receipt of a remote push from APNs.
  */
 self.addEventListener('push', (event) => {
+  let payload = null
+  try { payload = event.data ? event.data.json() : null } catch { /* Legacy empty FOCUS pushes remain supported. */ }
+  const muse = self.museNotification(payload, Date.now())
+  if (muse) {
+    event.waitUntil(self.registration.showNotification(muse.title, muse.options))
+    return
+  }
   event.waitUntil(
     self.registration.showNotification('FOCUS · Session finished', {
       body: 'Your focus session is complete. Great work! Time for a break.',
@@ -99,12 +108,15 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
   event.waitUntil((async () => {
+    const requested = event.notification.data?.url
+    const url = typeof requested === 'string' && requested.startsWith('/#muse?') ? requested : '/'
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
     for (const client of windows) {
       if (client.url.startsWith(self.location.origin) && 'focus' in client) {
+        if (url !== '/') client.postMessage({ type: 'muse-open', hash: url.slice(1) })
         return client.focus()
       }
     }
-    return self.clients.openWindow('/')
+    return self.clients.openWindow(url)
   })())
 })

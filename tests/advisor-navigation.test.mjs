@@ -24,5 +24,5 @@ test('Focus home links directly to Advisor with the correct initial tab', () => 
 
 test('restored Advisor shortcut remains responsive and visible', () => {
   assert.match(css, /\.calm-advisor-link\s*\{/)
-  assert.match(readFileSync('public/sw.js','utf8'), /focus-pwa-v16-reliable-home-updates/)
+  assert.match(readFileSync('public/sw.js','utf8'), /focus-pwa-v17-muse-push/)
 })
