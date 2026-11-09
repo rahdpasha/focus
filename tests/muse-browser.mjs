@@ -37,7 +37,7 @@ try {
           scrollTop: document.scrollingElement.scrollTop,
         }
       })
-      assert.ok(sticky.scrollTop > 50 && sticky.position === 'sticky' && Math.abs(sticky.top) <= 2, 'Muse switch must stay visible during scroll: ' + JSON.stringify(sticky))
+      assert.ok(sticky.scrollTop > 50 && sticky.position === 'fixed' && Math.abs(sticky.top) <= 2, 'Muse switch must stay visible during scroll: ' + JSON.stringify(sticky))
       assert.ok(sticky.right <= sticky.width + 1, 'Muse switch clipped on phone')
       await page.evaluate(() => window.scrollTo(0, 0))
       const metrics = await page.evaluate(() => ({
