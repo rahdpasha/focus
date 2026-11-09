@@ -102,3 +102,31 @@ export function hasFocusBackgroundPush(): boolean {
     Notification.permission === 'granted',
   )
 }
+
+/** Reuses the same device subscription. Muse must be enabled explicitly. */
+export async function enableMuseBackgroundPush(userId: string): Promise<void> {
+  if (!supportsBackgroundPush() || !supabase || !readyRegistration) throw new Error('Open FOCUS from your Home Screen and try again.')
+  // subscribe stays directly on the user gesture; never request permission on mount.
+  const subscription = await (existingSubscription ? Promise.resolve(existingSubscription) : readyRegistration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: decodeVapidKey(VAPID_PUBLIC_KEY) }))
+  const keys = subscription.toJSON().keys
+  if (!keys?.p256dh || !keys.auth) throw new Error('This device did not provide encryption keys.')
+  const { error } = await supabase.from('focus_push_subscriptions').upsert({ user_id: userId, endpoint: subscription.endpoint, p256dh: keys.p256dh, auth_key: keys.auth, muse_enabled: true }, { onConflict: 'endpoint' })
+  if (error) throw new Error('Muse alerts could not be enabled. Please retry after signing in.')
+  existingSubscription = subscription
+}
+export async function musePushDeviceState(userId: string) {
+  if (!supabase || !existingSubscription) return { enabled: false }
+  const { data, error } = await supabase.from('focus_push_subscriptions').select('muse_enabled').eq('user_id', userId).eq('endpoint', existingSubscription.endpoint).maybeSingle()
+  if (error) throw new Error('Could not check Muse alerts.')
+  return { enabled: Boolean(data?.muse_enabled && hasFocusBackgroundPush()) }
+}
+export async function disableMuseBackgroundPush(userId: string) {
+  if (!supabase || !existingSubscription) return
+  const { error } = await supabase.from('focus_push_subscriptions').update({ muse_enabled: false }).eq('user_id', userId).eq('endpoint', existingSubscription.endpoint)
+  if (error) throw new Error('Could not turn off Muse alerts.')
+}
+export async function testMuseBackgroundPush() {
+  if (!supabase || !existingSubscription) throw new Error('Enable Muse alerts first.')
+  const { error } = await supabase.rpc('muse_test_push', { p_endpoint: existingSubscription.endpoint })
+  if (error) throw new Error('Could not schedule a test. Limit: three tests per hour.')
+}

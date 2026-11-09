@@ -1,0 +1,22 @@
+name: Muse push worker
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  worker:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.5.6
+      - name: Check and test sender without real subscriptions
+        run: |
+          mkdir -p /tmp/muse-edge-check
+          cp -R supabase/functions/_shared supabase/functions/focus-push-dispatch /tmp/muse-edge-check/
+          cd /tmp/muse-edge-check
+          deno check --node-modules-dir=auto focus-push-dispatch/index.ts
+          deno test --node-modules-dir=auto --allow-env _shared/muse-push.test.ts

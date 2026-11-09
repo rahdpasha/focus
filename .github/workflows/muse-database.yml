@@ -31,4 +31,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Test Muse migration with isolated identities
-        run: psql -X -v ON_ERROR_STOP=1 -f tests/database/muse.sql
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f tests/database/muse.sql
+          psql -X -v ON_ERROR_STOP=1 -f tests/database/muse-push.sql

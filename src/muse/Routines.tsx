@@ -87,7 +87,8 @@ export default function Routines({
           `دڵنیایت لە سڕینەوەی «${routine.name}»؟ بیرخستنەوەکانی داهاتوو دەوەستن، بەڵام مێژووی دەرچوونەکانت دەمێنێتەوە.`,
         ),
       )
-    ) return;
+    )
+      return;
     setError("");
     const saved = await save({
       ...data,
@@ -101,7 +102,13 @@ export default function Routines({
     if (saved && editing !== "new" && editing?.id === routine.id) {
       setEditing(null);
     }
-    if (!saved) setError(t("Could not delete this routine. Try again.", "نەتوانرا ئەم ڕۆتینە بسڕدرێتەوە. دووبارە هەوڵ بدە."));
+    if (!saved)
+      setError(
+        t(
+          "Could not delete this routine. Try again.",
+          "نەتوانرا ئەم ڕۆتینە بسڕدرێتەوە. دووبارە هەوڵ بدە.",
+        ),
+      );
   }
   const draft = editing && editing !== "new" ? editing : null;
   if (!manage && !planned.length) return null;
@@ -133,8 +140,8 @@ export default function Routines({
       </div>
       <p className="muted">
         {t(
-          "Kurdistan time · Reminders appear while Muse is open. No alerts when closed yet.",
-          "کاتی کوردستان · بیرخستنەوەکان کاتێک میوز کراوەیە دەردەکەون. کاتێک داخراوە هێشتا کار ناکەن.",
+          "Kurdistan time · Reminders appear while Muse is open. Enable background alerts in Muse settings.",
+          "کاتی کوردستان · بیرخستنەوەی ناو ئەپ بەردەستە. ئاگادارکردنەوەی پاشبنەما لە ڕێکخستنەکان چالاک بکە.",
         )}
       </p>
       {error && <p role="alert">{error}</p>}
@@ -287,7 +294,12 @@ export default function Routines({
         </>
       ) : (
         planned.map(({ routine, key, due }) => (
-          <div className="routine-row" key={key}>
+          <div
+            className="routine-row"
+            key={key}
+            id={`muse-routine-${routine.id}`}
+            tabIndex={-1}
+          >
             <div>
               <strong>{routine.name}</strong>
               <p>

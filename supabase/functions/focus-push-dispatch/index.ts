@@ -2,6 +2,7 @@
 // Called by the database cron only when at least one due notification exists.
 // No user data or VAPID private key is embedded in this source file.
 import { createClient } from 'npm:@supabase/supabase-js@2.116.0'
+import { sendMusePush, type MuseDelivery } from '../_shared/muse-push.ts'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -121,5 +122,20 @@ Deno.serve(async (request: Request) => {
     if (ok) delivered++
   }
 
-  return Response.json({ processed: (data ?? []).length, delivered })
+  // Missing Muse migration must not interrupt existing FOCUS timer deliveries.
+  const { data: museJobs, error: museError } = await supabase.rpc('muse_claim_push_jobs', { p_token: token })
+  let museAccepted = 0
+  if (museError) console.error('Muse claim unavailable:', museError.code)
+  for (const job of (museJobs ?? []) as MuseDelivery[]) {
+    let result = { accepted: false, permanent: false }
+    try { result = await sendMusePush(job) }
+    catch { console.error('Muse push attempt failed') }
+    const { error: ackError } = await supabase.rpc('muse_ack_push_job', {
+      p_token: token, p_outbox_id: job.outbox_id, p_lease: job.lease_id,
+      p_accepted: result.accepted, p_permanent_failure: result.permanent,
+    })
+    if (ackError) console.error('Muse acknowledgement failed:', ackError.code)
+    if (result.accepted) museAccepted++
+  }
+  return Response.json({ processed: (data ?? []).length, delivered, museProcessed: (museJobs ?? []).length, museAccepted })
 })
