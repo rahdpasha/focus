@@ -14,6 +14,20 @@ try {
     await page.goto(process.env.FOCUS_TEST_URL || 'http://127.0.0.1:4175', { waitUntil: 'networkidle' })
     await page.getByRole('button', { name: 'MUSE', exact: true }).click()
     const muse = page.locator('.muse')
+    if (width <= 390) {
+      // An actual phone width should lead with tasks/actions, not a second
+      // desktop header and a giant decorative hero.
+      await muse.locator('.hero-cta').waitFor()
+      assert.equal(await muse.locator('.muse-header').isVisible(), false)
+      const hero = await muse.locator('.hero').boundingBox()
+      assert.ok(hero && hero.height < 110, 'Muse mobile quick capture should be compact')
+      assert.equal(await muse.locator('.muse-tabs button').count(), 5)
+      const metrics = await page.evaluate(() => ({
+        window: innerWidth,
+        document: document.documentElement.scrollWidth,
+      }))
+      assert.ok(metrics.document <= metrics.window + 4, 'MUSE mobile has horizontal overflow')
+    }
     await muse.getByRole('button', { name: 'Start an outing', exact: true }).click()
     await page.getByRole('dialog').getByRole('button', { name: /University/ }).click()
     const rows = muse.locator('.checklist-row')
