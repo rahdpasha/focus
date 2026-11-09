@@ -107,8 +107,8 @@ export default function Routines({
       </div>
       <p className="muted">
         {t(
-          "Baghdad time · Reminders appear in Muse while open. No closed-app alerts yet.",
-          "کاتی بەغدا · بیرخستنەوەکان لە ناو Muse دەردەکەون کاتێک کراوەیە. هێشتا لە کاتی داخستن کار ناکەن.",
+          "Kurdistan time · Reminders appear while Muse is open. No alerts when closed yet.",
+          "کاتی کوردستان · بیرخستنەوەکان کاتێک میوز کراوەیە دەردەکەون. کاتێک داخراوە هێشتا کار ناکەن.",
         )}
       </p>
       {error && <p role="alert">{error}</p>}
