@@ -44,6 +44,34 @@ try {
     const buttons = dock.locator('button')
     assert.equal(await buttons.count(), 4, 'Redesigned FOCUS must have four mobile tabs')
 
+    if (device.width <= 430 && device.height > 520) {
+      await page.evaluate(() => window.scrollTo(0, 360))
+      await page.waitForTimeout(90)
+      const phoneShell = await page.evaluate(() => {
+        const header = document.querySelector('.calm-topbar')
+        const switcher = document.querySelector('.experience-switch')
+        const dock = document.querySelector('.calm-nav')
+        const h = header.getBoundingClientRect()
+        const s = switcher.getBoundingClientRect()
+        const d = dock.getBoundingClientRect()
+        return {
+          sticky: getComputedStyle(header).position,
+          headerTop: h.top, headerRight: h.right, switchRight: s.right,
+          dockBottom: d.bottom, dockTop: d.top, viewport: innerHeight,
+          docWidth: document.documentElement.scrollWidth, width: innerWidth,
+          scrollTop: document.scrollingElement.scrollTop,
+        }
+      })
+      assert.equal(phoneShell.sticky, 'sticky', 'FOCUS/MUSE switch header should stay sticky on phones')
+      assert.ok(phoneShell.scrollTop > 50, 'Phone audit must actually scroll before checking sticky switch')
+      assert.ok(Math.abs(phoneShell.headerTop) <= 2, 'Sticky switch moved off-screen: ' + JSON.stringify(phoneShell))
+      assert.ok(phoneShell.switchRight <= phoneShell.width + 1, 'Switcher clipped by right edge')
+      assert.ok(phoneShell.headerRight <= phoneShell.width + 1, 'Header is wider than viewport')
+      assert.ok(Math.abs(phoneShell.dockBottom - phoneShell.viewport) <= 2, 'Fixed bottom dock escaped the viewport')
+      assert.ok(phoneShell.docWidth <= phoneShell.width + 4, 'Phone has horizontal overflow')
+      await page.evaluate(() => window.scrollTo(0, 0))
+    }
+
     for (let i = 0; i < tabs.length; i++) {
       await buttons.nth(i).click()
       // League is lazy-loaded; wait for its stable content.
