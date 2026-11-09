@@ -2198,3 +2198,65 @@
     font-size: 12px;
   }
 }
+
+/* History stays available without filling the My Life screen. */
+.muse .outing-history {
+  margin-block: 22px 28px;
+  min-width: 0;
+}
+.muse .outing-history-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding-block: 8px;
+}
+.muse .outing-history-heading h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+.muse .outing-history-toggle,
+.muse .outing-history-more {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 4px;
+}
+.muse .outing-history-toggle[aria-expanded="true"] svg {
+  transform: rotate(90deg);
+}
+.muse .outing-history-active {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-block: 9px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.muse .outing-history-active > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.muse .outing-history-active strong { font-size: 14px; }
+.muse .outing-history-active span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.muse .outing-history-active button { flex-shrink: 0; }
+.muse #muse-outing-history-entries {
+  padding: 4px 0 12px;
+}
+.muse #muse-outing-history-entries .history-row summary {
+  min-height: 56px;
+}
+@media (max-width: 768px) {
+  .calm-app .muse .outing-history { margin-block: 16px 22px; }
+  .calm-app .muse .outing-history-heading h2 { font-size: 15px; }
+  .calm-app .muse .outing-history-toggle { font-size: 12px; }
+}
