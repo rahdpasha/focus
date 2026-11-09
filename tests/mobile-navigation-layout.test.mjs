@@ -12,7 +12,7 @@ test('mobile layout reserves safe area and keyboard access', () => {
   assert.match(css, /:has\(input:focus,textarea:focus,select:focus\)/)
 })
 test('PWA refreshes the redesigned assets', () => {
-  assert.match(readFileSync('public/sw.js','utf8'), /focus-pwa-v15-kurdistan-routines-delete/)
+  assert.match(readFileSync('public/sw.js','utf8'), /focus-pwa-v16-reliable-home-updates/)
 })
 
 test('iPhone pages remain document-scrollable and end above the bottom nav', () => {
@@ -58,4 +58,17 @@ test('MUSE displays Kurdistan rather than Baghdad in time and reminder labels', 
   assert.doesNotMatch(routines, /Baghdad time|کاتی بەغدا/)
   // Keep the correct IANA identifier for reliable UTC+3 wall-clock reminders.
   assert.ok(musePage.includes('timeZone: "Asia/Baghdad"'))
+})
+
+test('the Home Screen update check compares live bundles and never force-reloads', () => {
+  const source = readFileSync('src/components/system/PwaUpdateNotice.tsx', 'utf8')
+  const main = readFileSync('src/main.tsx', 'utf8')
+  assert.ok(main.includes('<PwaUpdateNotice />'), 'PWA updates are checked even on signed-out screens')
+  assert.ok(source.includes("document.addEventListener('visibilitychange', onVisibility)"))
+  assert.ok(source.includes("window.addEventListener('online', onResume)"))
+  assert.ok(source.includes("fetch('/index.html', { cache: 'no-store' })"))
+  assert.ok(source.includes("navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })"))
+  assert.ok(source.includes('new URL(remote, location.href).pathname !== new URL(local, location.href).pathname'))
+  assert.ok(source.includes('onClick={() => window.location.reload()}'))
+  assert.ok(!source.includes("if (updateAvailable) window.location.reload()"), 'Never interrupt a live timer')
 })

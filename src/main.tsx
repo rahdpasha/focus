@@ -8,6 +8,7 @@ import App from './App.tsx'
 import { I18nProvider } from './i18n'
 import { ThemeProvider } from './app/theme'
 import AppErrorBoundary from './components/system/AppErrorBoundary'
+import PwaUpdateNotice from './components/system/PwaUpdateNotice'
 
 createRoot(
   document.getElementById('root')!
@@ -19,15 +20,9 @@ createRoot(
         <AppErrorBoundary>
           <App />
         </AppErrorBoundary>
+        <PwaUpdateNotice />
       </I18nProvider>
     </ThemeProvider>
   </StrictMode>,
 )
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    void navigator.serviceWorker.register(
-      '/sw.js'
-    )
-  })
-}

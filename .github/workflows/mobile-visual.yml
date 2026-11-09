@@ -52,6 +52,9 @@ jobs:
       - name: Verify Muse belongings and persistence
         run: node tests/muse-browser.mjs
 
+      - name: Verify Home Screen app recognizes new deployed builds
+        run: node tests/pwa-update-browser.mjs
+
       - name: Verify Appearance interactions and capture theme screenshots
         env:
           FOCUS_TEST_URL: http://127.0.0.1:4175
