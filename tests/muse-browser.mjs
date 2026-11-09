@@ -144,8 +144,19 @@ try {
     await page.reload({ waitUntil: 'networkidle' })
     await page.getByRole('button', { name: 'MUSE', exact: true }).click()
     await muse.getByRole('button', { name: 'My life', exact: true }).click()
+    const historyToggle = muse.getByRole('button', { name: 'View history', exact: true })
+    await historyToggle.waitFor()
+    assert.equal(await historyToggle.getAttribute('aria-expanded'), 'false')
+    assert.equal(await muse.locator('.history-row').count(), 0,
+      'Previous outings must not flood My life by default')
+    await historyToggle.click()
+    assert.equal(await muse.locator('.history-row').count(), 1,
+      'History appears only after choosing View history')
     await muse.locator('.history-row summary').click()
     await muse.getByRole('button', { name: 'Mark found', exact: true }).waitFor()
+    await muse.getByRole('button', { name: 'Hide history', exact: true }).click()
+    assert.equal(await muse.locator('.history-row').count(), 0,
+      'Hide history should collapse past outings without deleting them')
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('focus:muse:v1:local')))
     assert.equal(saved.state.outings[0].state, 'finished')
     assert.equal(saved.state.outings[0].items[0].returned, 'missing')
