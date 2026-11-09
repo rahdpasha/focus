@@ -1956,3 +1956,115 @@
 .muse .muse-privacy-details[open] > p {
   margin-top: 7px;
 }
+
+
+/* Keep the personalized desktop greeting; phones lead with the task list. */
+.muse .muse-greeting-phone { display: none; }
+
+/* Consistent side gutters and readable, unclipped controls on actual phones. */
+@media (max-width: 768px) {
+  .calm-app .muse {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: clip;
+  }
+  .calm-app .muse .muse-greeting-desktop { display: none; }
+  .calm-app .muse .muse-greeting-phone { display: inline; }
+  .calm-app .muse :is(
+    .muse-tabs, .muse-body, .page-title, .dashboard-grid,
+    .left-column, .right-column, .priorities-section,
+    .list-panel, .routine-panel, .section-heading,
+    .hero, .memory-info
+  ) {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .calm-app .muse .muse-tabs {
+    width: 100%;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) 40px;
+    gap: 2px;
+    margin-bottom: 12px;
+  }
+  .calm-app .muse .muse-tabs button {
+    min-height: 56px;
+    padding: 6px 1px;
+    font-size: clamp(9px, 2.5vw, 11px);
+    line-height: 1.25;
+    overflow: hidden;
+  }
+  .calm-app .muse .muse-tabs .muse-options { min-width: 40px; }
+  .calm-app .muse .page-title h1 {
+    font-size: clamp(21px, 6vw, 26px);
+    line-height: 1.25;
+  }
+  .calm-app .muse .page-title .eyebrow {
+    font-size: 9px;
+    letter-spacing: .35px;
+  }
+  .calm-app .muse .page-title .date-line {
+    font-size: 10px;
+    letter-spacing: 0;
+    gap: 5px;
+  }
+  .calm-app .muse .page-title > .primary {
+    min-height: 44px;
+    max-width: 45%;
+    min-width: 0;
+    padding: 9px;
+    font-size: 11px;
+    white-space: normal;
+    text-align: center;
+  }
+  .calm-app .muse .hero { margin-bottom: 17px; }
+  .calm-app .muse .dashboard-grid { gap: 17px; }
+  .calm-app .muse .section-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .calm-app .muse .section-heading h2 {
+    min-width: 0;
+    font-size: 17px;
+    line-height: 1.35;
+  }
+  .calm-app .muse .section-heading .text-button {
+    flex: 0 0 auto;
+    min-height: 40px;
+    font-size: 12px;
+  }
+  .calm-app .muse .task-detail > span { font-size: 14px; }
+  .calm-app .muse .empty-tasks { padding: 18px 14px; }
+  .calm-app .muse .empty-tasks p {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .calm-app .muse .routine-panel,
+  .calm-app .muse .list-panel { padding: 14px; }
+  .calm-app .muse .memory-info { gap: 10px; padding: 14px; }
+  .calm-app .muse .memory-info p { font-size: 12px; line-height: 1.6; }
+  .calm-app .muse dialog {
+    box-sizing: border-box;
+    width: calc(100vw - 24px);
+    max-width: 540px;
+    max-height: calc(100dvh - 28px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+  }
+  .calm-app .muse dialog .modal-content {
+    min-width: 0;
+    padding: 20px 16px 24px;
+  }
+}
+@media (max-width: 360px) {
+  .calm-app .muse .muse-tabs {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) 38px;
+  }
+  .calm-app .muse .muse-tabs .muse-options { min-width: 38px; }
+  .calm-app .muse .page-title > .primary { font-size: 10px; }
+}

@@ -99,7 +99,7 @@ export default function FocusPage({ userId, activeSubject, subjects = [], sessio
 
 
   return <div className="calm-focus">
-    <header className="calm-page-heading"><div><span className="calm-eyebrow">{tr('MAKE A LITTLE ROOM', 'کەمێک کات بۆ خۆت')}</span><h1>{tr('Ready to focus?', 'ئامادەیت بۆ سەرنج؟')}</h1></div><span className="calm-streak"><Flame size={17} />{summary.streak} {tr('day streak', 'ڕۆژ بەردەوامی')}</span></header>
+    <header className="calm-page-heading"><div><span className="calm-eyebrow">{tr('STUDY SESSION', 'کاتی خوێندن')}</span><h1>{tr('Focus time', 'کاتی سەرنج')}</h1></div><span className="calm-streak"><Flame size={17} />{summary.streak} {tr('day streak', 'ڕۆژ بەردەوامی')}</span></header>
     <div className="calm-focus-grid">
       <section className="calm-timer-card">
         <div className="calm-subject-picker"><BookOpen size={18} /><select aria-label={t('selectSubject')} value={targetSubject?.id ?? ''} disabled={timerBusy} onChange={e => onSelectSubject?.(e.target.value)}>{!subjects.length && <option value="">{tr('Choose a subject', 'بابەتێک هەڵبژێرە')}</option>}{subjects.map(subject => <option key={subject.id} value={subject.id}>{subject.name}</option>)}</select><button disabled={timerBusy} onClick={onAddSubjectRequest} aria-label={t('addSubject')}><Plus size={19} /></button></div>
