@@ -63,6 +63,8 @@ try {
         }
       })
       assert.equal(phoneShell.sticky, 'fixed', 'FOCUS/MUSE switch must stay fixed on phones')
+      const topBarHeight = await page.locator('.calm-topbar').evaluate(el => el.getBoundingClientRect().height)
+      assert.ok(topBarHeight <= 68, 'Mobile header should be compact: ' + topBarHeight)
       assert.ok(phoneShell.scrollTop > 50, 'Phone audit must actually scroll before checking sticky switch')
       assert.ok(Math.abs(phoneShell.headerTop) <= 2, 'Sticky switch moved off-screen: ' + JSON.stringify(phoneShell))
       assert.ok(phoneShell.switchRight <= phoneShell.width + 1, 'Switcher clipped by right edge')
