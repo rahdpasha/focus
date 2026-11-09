@@ -48,3 +48,14 @@ test('iPhone header offset and MUSE settings safe-area rules stay in sync', () =
   assert.ok(museCss.includes('max-height: calc(100dvh - var(--muse-modal-top) - var(--muse-modal-bottom));'))
   assert.ok(musePage.includes('dialog.scrollTop = 0;'))
 })
+
+test('MUSE displays Kurdistan rather than Baghdad in time and reminder labels', () => {
+  const musePage = readFileSync('src/muse/MusePage.tsx', 'utf8')
+  const routines = readFileSync('src/muse/Routines.tsx', 'utf8')
+  assert.ok(musePage.includes('t("Kurdistan time", "کاتی کوردستان")'))
+  assert.ok(routines.includes('Kurdistan time · Reminders appear while Muse is open.'))
+  assert.doesNotMatch(musePage, /"Reminder time in Baghdad"|"Time zone: Asia\/Baghdad|کاتی بەغدا|کاتی بەغدان/)
+  assert.doesNotMatch(routines, /Baghdad time|کاتی بەغدا/)
+  // Keep the correct IANA identifier for reliable UTC+3 wall-clock reminders.
+  assert.ok(musePage.includes('timeZone: "Asia/Baghdad"'))
+})
