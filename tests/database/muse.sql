@@ -13,6 +13,7 @@ insert into auth.users values
  ('00000000-0000-0000-0000-000000000001'),
  ('00000000-0000-0000-0000-000000000002');
 \ir ../../supabase/migrations/20261108224112_muse_foundation.sql
+\ir ../../supabase/migrations/20261109091650_muse_routine_compatibility.sql
 
 set role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', false);
@@ -89,3 +90,28 @@ begin
   if (select state->'profile'->>'name' from public.muse_workspaces where user_id='00000000-0000-0000-0000-000000000001') <> 'Alice' then raise exception 'Alice data changed'; end if;
 end $$;
 \echo 'PASS: ownership, anonymous denial, missing identity, direct-write denial, retries, stale writes and payload limits'
+
+set role authenticated;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', false);
+do $$
+declare payload jsonb;
+begin
+  select state into payload from public.muse_workspaces;
+  payload := payload || '{"routines":[{"id":"weekly"}],"routineOccurrences":[]}'::jsonb;
+  perform public.muse_save_workspace(payload, 1, '10000000-0000-0000-0000-000000000005');
+  begin
+    perform public.muse_save_workspace(payload - 'routines' - 'routineOccurrences', 2, '10000000-0000-0000-0000-000000000006');
+    raise exception 'Old client erased new fields';
+  exception when serialization_failure then null;
+  end;
+  if (select revision from public.muse_workspaces) <> 2 then raise exception 'Rejected downgrade changed revision'; end if;
+  if (select state->'routines' from public.muse_workspaces) <> '[{"id":"weekly"}]'::jsonb then raise exception 'Routine was lost'; end if;
+  begin
+    perform public.muse_save_workspace(jsonb_set(payload, '{routines}', 'null'), 2, '10000000-0000-0000-0000-000000000007');
+    raise exception 'Invalid routines accepted';
+  exception when invalid_parameter_value then null;
+  end;
+  perform public.muse_save_workspace(payload, 2, '10000000-0000-0000-0000-000000000008');
+end $$;
+reset role;
+\echo 'PASS: legacy client downgrade blocked; upgraded client can save'

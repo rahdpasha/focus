@@ -57,6 +57,7 @@ type Modal =
 import { useMuseWorkspace } from "./useMuseWorkspace";
 import { useI18n } from "../useI18n";
 import "./muse.css";
+import Routines from "./Routines";
 
 export default function MusePage({
   userId,
@@ -397,6 +398,34 @@ export default function MusePage({
         </p>
         {o.state === "out" ? (
           <>
+            {o.returnReminderAt && (
+              <div className="reminder-banner">
+                <p>
+                  {o.returnReminderAt <= clock.toISOString()
+                    ? t(
+                        "Time to check your belongings.",
+                        "کاتی پشکنینی شتەکانتە.",
+                      )
+                    : t("Return check", "پشکنینی گەڕانەوە")}{" "}
+                  · {stampLabel(o.returnReminderAt)}
+                </p>
+                {o.returnReminderAt <= clock.toISOString() && (
+                  <button
+                    disabled={busy}
+                    onClick={() =>
+                      patchOuting({
+                        ...o,
+                        returnReminderAt: new Date(
+                          Date.now() + 15 * 60000,
+                        ).toISOString(),
+                      })
+                    }
+                  >
+                    {t("Snooze 15 min", "دواخستن ١٥ خولەک")}
+                  </button>
+                )}
+              </div>
+            )}
             <div className="taken-items">
               {o.items
                 .filter((i) => i.departure === "ready")
@@ -831,6 +860,13 @@ export default function MusePage({
                         </div>
                       )}
                     </section>
+                    <Routines
+                      data={data}
+                      busy={busy}
+                      now={clock}
+                      save={save}
+                      onStarted={setActiveOutingId}
+                    />
                     {current &&
                     ["preparing", "out", "returning"].includes(
                       current.state,
@@ -1018,6 +1054,17 @@ export default function MusePage({
                     {t("Add responsibility", "زیادکردنی بەرپرسیارێتی")}
                   </button>
                 </div>
+                <Routines
+                  manage
+                  data={data}
+                  busy={busy}
+                  now={clock}
+                  save={save}
+                  onStarted={(id) => {
+                    setActiveOutingId(id);
+                    setPage("today");
+                  }}
+                />
                 <div className="filter-bar">
                   {[
                     "all",

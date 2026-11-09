@@ -46,12 +46,45 @@ export const StateSchema = z.object({
   templates: z
     .array(z.object({ id, name: text, items: z.array(text).min(1).max(30) }))
     .max(30),
+  routines: z
+    .array(
+      z.object({
+        id,
+        templateId: id,
+        name: text,
+        days: z
+          .array(z.number().int().min(0).max(6))
+          .min(1)
+          .max(7)
+          .refine((days) => new Set(days).size === days.length),
+        departureTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+        returnTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+        enabled: z.boolean(),
+      }),
+    )
+    .max(30)
+    .default([]),
+  routineOccurrences: z
+    .array(
+      z.object({
+        key: id,
+        routineId: id,
+        date,
+        status: z.enum(["snoozed", "skipped", "started"]),
+        snoozedUntil: stamp.nullable(),
+        outingId: id.nullable(),
+      }),
+    )
+    .max(500)
+    .default([]),
   outings: z
     .array(
       z.object({
         id,
         name: text,
         templateId: id.nullable(),
+        occurrenceKey: id.nullable().default(null),
+        returnReminderAt: stamp.nullable().default(null),
         state: z.enum(["preparing", "out", "returning", "finished", "skipped"]),
         createdAt: stamp,
         startedAt: stamp.nullable(),
@@ -85,6 +118,8 @@ export function initialState(): Workspace {
         "Improve my English",
       ],
     },
+    routines: [],
+    routineOccurrences: [],
     tasks: [],
     memories: [],
     templates: [
@@ -115,6 +150,8 @@ export function createOuting(
     id: crypto.randomUUID(),
     name: template.name,
     templateId: template.id,
+    occurrenceKey: null,
+    returnReminderAt: null,
     state: "preparing",
     createdAt: now,
     startedAt: null,
