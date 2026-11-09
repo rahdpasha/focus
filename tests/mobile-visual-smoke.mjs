@@ -62,7 +62,7 @@ try {
           scrollTop: document.scrollingElement.scrollTop,
         }
       })
-      assert.equal(phoneShell.sticky, 'sticky', 'FOCUS/MUSE switch header should stay sticky on phones')
+      assert.equal(phoneShell.sticky, 'fixed', 'FOCUS/MUSE switch must stay fixed on phones')
       assert.ok(phoneShell.scrollTop > 50, 'Phone audit must actually scroll before checking sticky switch')
       assert.ok(Math.abs(phoneShell.headerTop) <= 2, 'Sticky switch moved off-screen: ' + JSON.stringify(phoneShell))
       assert.ok(phoneShell.switchRight <= phoneShell.width + 1, 'Switcher clipped by right edge')
