@@ -74,6 +74,37 @@ try {
       }))
       assert.ok(metrics.document <= metrics.window + 4, 'MUSE mobile has horizontal overflow')
     }
+    // The iPhone settings modal must open below the status bar, even when
+    // the page was previously scrolled and the dialog was opened before.
+    if (width <= 390) {
+      await muse.locator('.muse-options').click()
+      const settingsDialog = page.locator('.muse dialog[open]')
+      await settingsDialog.waitFor()
+      const modalBounds = await settingsDialog.evaluate(el => {
+        const dialog = el.getBoundingClientRect()
+        const title = el.querySelector('.modal-content h2').getBoundingClientRect()
+        const close = el.querySelector('.modal-close').getBoundingClientRect()
+        return {
+          modalTop: dialog.top, modalBottom: dialog.bottom,
+          titleTop: title.top, closeTop: close.top, closeBottom: close.bottom,
+          viewportHeight: innerHeight, scrollTop: el.scrollTop,
+          maxScroll: el.scrollHeight - el.clientHeight,
+        }
+      })
+      assert.ok(modalBounds.modalTop >= 65, 'Settings modal should start below phone status area: ' + JSON.stringify(modalBounds))
+      assert.ok(modalBounds.titleTop >= modalBounds.modalTop && modalBounds.titleTop < modalBounds.viewportHeight,
+        'Settings title is clipped: ' + JSON.stringify(modalBounds))
+      assert.ok(modalBounds.closeTop >= modalBounds.modalTop && modalBounds.closeBottom <= modalBounds.viewportHeight,
+        'Settings close control is clipped: ' + JSON.stringify(modalBounds))
+      assert.ok(modalBounds.modalBottom <= modalBounds.viewportHeight - 8,
+        'Settings should fit within viewport: ' + JSON.stringify(modalBounds))
+      await settingsDialog.evaluate(el => { el.scrollTop = Math.min(250, el.scrollHeight - el.clientHeight) })
+      await page.keyboard.press('Escape')
+      await muse.locator('.muse-options').click()
+      const reopenedTop = await settingsDialog.evaluate(el => el.scrollTop)
+      assert.equal(reopenedTop, 0, 'Reopened settings must start at the title, not the previous scroll position')
+      await page.keyboard.press('Escape')
+    }
     await muse.getByRole('button', { name: 'Start an outing', exact: true }).click()
     await page.getByRole('dialog').getByRole('button', { name: /University/ }).click()
     const rows = muse.locator('.checklist-row')
