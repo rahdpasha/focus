@@ -38,3 +38,13 @@ test('MUSE phone interface keeps the real actions ahead of decorative copy', () 
   assert.match(museCss, /\.calm-app \.muse \.muse-tabs\s*\{/)
   assert.ok(museCss.includes('max-height: calc(100dvh - 28px)'))
 })
+
+test('iPhone header offset and MUSE settings safe-area rules stay in sync', () => {
+  const museCss = readFileSync('src/muse/muse.css', 'utf8')
+  const musePage = readFileSync('src/muse/MusePage.tsx', 'utf8')
+  assert.ok(css.includes('padding-top: calc(10px + env(safe-area-inset-top, 0px));'))
+  assert.ok(css.includes('padding-top: calc(76px + env(safe-area-inset-top, 0px)) !important;'))
+  assert.ok(museCss.includes('--muse-modal-top: max(68px, calc(env(safe-area-inset-top, 0px) + 12px));'))
+  assert.ok(museCss.includes('max-height: calc(100dvh - var(--muse-modal-top) - var(--muse-modal-bottom));'))
+  assert.ok(musePage.includes('dialog.scrollTop = 0;'))
+})
