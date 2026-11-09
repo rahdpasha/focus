@@ -5,3 +5,4 @@ export type Page =
   | 'progress'
   | 'league'
   | 'settings'
+  | 'muse'

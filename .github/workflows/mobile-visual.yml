@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   mobile-browser:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 18
     steps:
       - name: Checkout
@@ -48,6 +48,9 @@ jobs:
 
       - name: Browse six pages and nested mobile screens
         run: node tests/mobile-visual-smoke.mjs
+
+      - name: Verify Muse belongings and persistence
+        run: node tests/muse-browser.mjs
 
       - name: Verify Appearance interactions and capture theme screenshots
         env:
