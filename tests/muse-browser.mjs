@@ -23,6 +23,34 @@ try {
       assert.ok(hero && hero.height < 110, 'Muse mobile quick capture should be compact')
       assert.equal(await muse.locator('.muse-tabs button').count(), 5)
       assert.equal(await muse.locator('.muse-greeting-phone').isVisible(), true)
+      const surface = await page.evaluate(() => {
+        const el = document.querySelector('.muse')
+        const shell = document.querySelector('.calm-app')
+        const content = document.querySelector('main.calm-content')
+        const footer = document.querySelector('.muse .page-footer')
+        const emptyTasks = document.querySelector('.muse .empty-tasks')
+        return {
+          museMode: shell.classList.contains('calm-app--muse'),
+          background: getComputedStyle(el).backgroundColor,
+          overflow: getComputedStyle(el).overflowX,
+          bottomPadding: parseFloat(getComputedStyle(content).paddingBottom),
+          emptyBorder: emptyTasks ? getComputedStyle(emptyTasks).borderTopWidth : null,
+          footerVisible: footer ? getComputedStyle(footer).display !== 'none' : false,
+        }
+      })
+      assert.equal(surface.museMode, true, 'Muse should use its own shell layout')
+      assert.equal(surface.background, 'rgba(0, 0, 0, 0)', 'Muse root should not paint a cut-off dark rectangle')
+      assert.equal(surface.overflow, 'visible', 'Muse page should not clip vertical content')
+      assert.ok(surface.bottomPadding < 100, 'Muse should not keep the FOCUS bottom dock spacer')
+      assert.equal(surface.emptyBorder, '0px', 'Muse empty state should not show a dashed frame')
+      assert.equal(surface.footerVisible, false, 'Mobile Muse should omit decorative footer')
+      const bodyEdges = await page.evaluate(() => {
+        const rect = document.querySelector('.muse').getBoundingClientRect()
+        const content = document.querySelector('main.calm-content').getBoundingClientRect()
+        return {left: rect.left, right: rect.right, contentLeft: content.left, contentRight: content.right, viewport: innerWidth}
+      })
+      assert.ok(bodyEdges.left >= 0 && bodyEdges.right <= bodyEdges.viewport + 1,
+        'Muse should fit entirely inside the phone: ' + JSON.stringify(bodyEdges))
       assert.equal(await muse.locator('.muse-greeting-desktop').isVisible(), false)
       await page.evaluate(() => window.scrollTo(0, 400))
       await page.waitForTimeout(80)

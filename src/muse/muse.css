@@ -2068,3 +2068,67 @@
   .calm-app .muse .muse-tabs .muse-options { min-width: 38px; }
   .calm-app .muse .page-title > .primary { font-size: 10px; }
 }
+
+
+/* The old MUSE page painted an opaque rectangle inside FOCUS's transparent
+   themed canvas. Let the living background run continuously to the page end. */
+@media (max-width: 768px) {
+  .calm-app--muse .muse {
+    background: transparent;
+    background-image: none;
+    min-height: 0;
+    overflow: visible;
+    isolation: auto;
+  }
+  .calm-app--muse .muse .muse-body,
+  .calm-app--muse .muse .dashboard-grid,
+  .calm-app--muse .muse .left-column,
+  .calm-app--muse .muse .right-column {
+    background: transparent;
+    min-width: 0;
+    width: 100%;
+  }
+  .calm-app--muse .muse .muse-tabs {
+    border-bottom: 0;
+    padding-bottom: 0;
+    margin-bottom: 15px;
+    background: transparent;
+  }
+  .calm-app--muse .muse .muse-tabs button[aria-current] {
+    border-radius: 12px;
+  }
+  .calm-app--muse .muse .page-title { margin-bottom: 14px; }
+  .calm-app--muse .muse .empty-tasks {
+    border: 0;
+    border-radius: 15px;
+    background: var(--primary-soft);
+    padding: 15px 16px;
+  }
+  .calm-app--muse .muse .empty-symbol {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 8px;
+  }
+  .calm-app--muse .muse .empty-tasks h3 { margin-top: 0; }
+  .calm-app--muse .muse .empty-tasks p {
+    margin: 6px auto 0;
+    line-height: 1.5;
+  }
+  /* The primary Add task action is already immediately above the task list. */
+  .calm-app--muse .muse .empty-tasks > .text-button { display: none; }
+  .calm-app--muse .muse .right-column {
+    border-top-color: color-mix(in srgb, var(--line) 50%, transparent);
+  }
+  .calm-app--muse .muse .page-footer { display: none; }
+  .calm-app--muse .muse .list-panel,
+  .calm-app--muse .muse .routine-panel,
+  .calm-app--muse .muse .outing-panel {
+    max-width: 100%;
+    min-width: 0;
+  }
+  .calm-app--muse .muse .routine-row,
+  .calm-app--muse .muse .checklist-row,
+  .calm-app--muse .muse .task-row {
+    min-width: 0;
+  }
+}
