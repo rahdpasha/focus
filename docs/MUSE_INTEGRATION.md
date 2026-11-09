@@ -37,12 +37,13 @@ midnight or later routine edits. No departure answer implies possession on retur
 The existing one-active-outing rule still applies. Routines and occurrence responses
 use the same account/offline/conflict/export path as other Muse data.
 
-**Release prerequisite:** apply `20261109091650_muse_routine_compatibility.sql`
+**Release prerequisite:** apply `20261109092423_muse_routine_compatibility.sql`
 before enabling routine writes on a shared account. Its invoker trigger rejects
 older clients that omit already-stored routine fields; no table access is expanded.
 Old tabs must refresh before saving Muse again. Test using disposable local data
-until this safeguard is installed. The migration is prepared, not applied to the
-live database by this change.
+until this safeguard is installed. The migration was applied with user approval on November 9, 2026.
+Live verification confirms the trigger is enabled, runs as invoker, and grants
+no direct execution to anonymous or authenticated API roles.
 
 **Delivery boundary:** these are in-app reminders, not remote push jobs. No new
 browser permission, notification subscription, cron, paid service or background

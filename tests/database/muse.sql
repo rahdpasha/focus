@@ -13,7 +13,7 @@ insert into auth.users values
  ('00000000-0000-0000-0000-000000000001'),
  ('00000000-0000-0000-0000-000000000002');
 \ir ../../supabase/migrations/20261108224112_muse_foundation.sql
-\ir ../../supabase/migrations/20261109091650_muse_routine_compatibility.sql
+\ir ../../supabase/migrations/20261109092423_muse_routine_compatibility.sql
 
 set role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', false);
