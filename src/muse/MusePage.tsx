@@ -1492,8 +1492,8 @@ export default function MusePage({
                 </summary>
                 <p className="small-muted">
                   {t(
-                    "Shown when Muse is open. Closed-app alerts are not configured. All times are Asia/Baghdad.",
-                    "کاتێک میوز کراوەیە پیشان دەدرێت. هەموو کاتەکان کاتی بەغدان.",
+                    "Shown while Muse is open. Closed-app alerts are not enabled yet. All times use Kurdistan time (UTC+3).",
+                    "کاتێک میوز کراوەیە پیشان دەدرێت. هێشتا ئاگادارکردنەوە لە کاتی داخستن کار ناکات. هەموو کاتەکان بە کاتی کوردستانن.",
                   )}
                 </p>
                 {editing?.reminderAt && <p>{stampLabel(editing.reminderAt)}</p>}
@@ -1501,8 +1501,8 @@ export default function MusePage({
                   type="datetime-local"
                   name="reminder"
                   aria-label={t(
-                    "Reminder time in Baghdad",
-                    "کاتی بیرخستنەوە بە کاتی بەغدا",
+                    "Reminder time in Kurdistan",
+                    "کاتی بیرخستنەوە بە کاتی کوردستان",
                   )}
                 />
                 {editing?.reminderAt && (
@@ -1825,8 +1825,8 @@ export default function MusePage({
               </label>
               <p className="small-muted">
                 {t(
-                  "Time zone: Asia/Baghdad. Language and appearance are shared with FOCUS Settings.",
-                  "ناوچەی کاتی: بەغدا. ناوەڕۆکی کەسی بە زمانی نووسینی خۆت دەمێنێتەوە.",
+                  "Time zone: Kurdistan (UTC+3). Language and appearance are shared with FOCUS Settings.",
+                  "ناوچەی کاتی: کوردستان (UTC+3). زمان و ڕووکاری ئەپ لەگەڵ ڕێکخستنەکانی فۆکەس هاوبەشن.",
                 )}
               </p>
               <button className="primary full-width" disabled={busy}>
