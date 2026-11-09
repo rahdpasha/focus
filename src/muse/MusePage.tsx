@@ -727,7 +727,7 @@ export default function MusePage({
                         timeZone: "Asia/Baghdad",
                       }).format(clock)}
                       <span>·</span>
-                      {t("Baghdad time", "کاتی بەغدا")}
+                      {t("Kurdistan time", "کاتی کوردستان")}
                     </div>
                     <h1>
                       <span className="muse-greeting-desktop">
