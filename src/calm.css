@@ -434,3 +434,66 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{
     padding-inline: 8px;
   }
 }
+
+
+/* Mobile polish: compact status-bar-aware header and true full-height MUSE.
+   The header remains fixed, while the document is the only scroller. */
+@media (max-width: 768px) {
+  .calm-app .calm-topbar {
+    min-height: calc(50px + env(safe-area-inset-top, 0px));
+    padding-top: calc(2px + env(safe-area-inset-top, 0px));
+    padding-bottom: 4px;
+    padding-inline:
+      max(14px, env(safe-area-inset-left, 0px))
+      max(14px, env(safe-area-inset-right, 0px));
+    gap: 8px;
+    border-bottom-color: color-mix(in srgb, var(--card-border) 55%, transparent);
+  }
+  .calm-app .calm-brand {
+    min-height: 42px;
+    gap: 7px;
+    font-size: 19px;
+    letter-spacing: -1px;
+  }
+  .calm-app .calm-brand > span:first-child {
+    width: 29px;
+    height: 29px;
+    flex-basis: 29px;
+    border-radius: 10px;
+  }
+  .calm-app .calm-brand > span:first-child svg {
+    width: 19px;
+    height: 19px;
+  }
+  .calm-app .experience-switch {
+    border-radius: 10px;
+    padding: 2px;
+  }
+  .calm-app .experience-switch button {
+    min-width: 62px;
+    min-height: 36px;
+    padding: 7px 10px;
+    font-size: 10px;
+  }
+  .calm-app .calm-content {
+    padding-top: calc(61px + env(safe-area-inset-top, 0px)) !important;
+  }
+  /* MUSE does not have FOCUS's bottom tab dock. Its 170px spacer was
+     responsible for the large empty gradient tail after the last panel. */
+  .calm-app--muse .calm-content {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .calm-app--muse .calm-content > div,
+  .calm-app--muse .muse {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+}
+@media (max-width: 360px) {
+  .calm-app .calm-brand { font-size: 18px; }
+  .calm-app .experience-switch button {
+    min-width: 54px;
+    padding-inline: 7px;
+  }
+}
