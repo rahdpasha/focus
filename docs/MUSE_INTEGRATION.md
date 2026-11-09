@@ -58,7 +58,7 @@ Platform references checked November 9, 2026:
 - https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Offline_and_background_operation
 - https://webkit.org/blog/13878/web-push-for-web-apps-on-ios-and-ipados/
 
-## Background reminders (prepared release)
+## Background reminders
 
 The opt-in Muse push pipeline reuses `focus_push_subscriptions`, the existing
 VAPID identity in Vault, and `focus-push-dispatch`. Existing empty-payload FOCUS
@@ -110,5 +110,18 @@ this release: that would invalidate FOCUS subscriptions.
 Validation includes disposable database ownership/token/lease/rate-limit tests,
 calendar/snooze/expiry tests, encrypted request tests using synthetic keys and a
 mock transport, and service-worker legacy/routing/privacy tests. These checks
-are not a substitute for physical-device receipt testing. This pipeline is
-prepared; it is not activated by committing these files.
+are not a substitute for physical-device receipt testing. The migration was applied with explicit user approval as
+`20261109143141_muse_background_push.sql` on November 9, 2026, and the shared
+Edge dispatcher was deployed as version 4. Device alerts remain opt-in; physical
+device receipt is still unverified.
+
+Security review of the deployed schema: the two private tables intentionally
+have deny-by-default RLS and no client policies/grants. Supabase reports this as
+[an informational advisory](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).
+The two authenticated wrapper RPCs intentionally use SECURITY DEFINER to read
+only deployment readiness or enqueue an owner-scoped, rate-limited test; both
+check `auth.uid()` and have an empty search path. Supabase reports their
+[authenticated execution](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable).
+Private claim/ack RPCs are service-role-only and additionally verify the Vault
+secret. No client role can claim signing material. Existing unrelated advisory
+findings were not changed by this release.

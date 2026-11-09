@@ -13,7 +13,7 @@ alter table public.focus_push_subscriptions enable row level security;
 create policy own_subs on public.focus_push_subscriptions for all to authenticated using(auth.uid()=user_id) with check(auth.uid()=user_id);
 grant select,insert,update,delete on public.focus_push_subscriptions to authenticated;
 create function public.focus_vapid_public_key() returns text language sql as $$select 'public-test-key'::text$$;
-\ir ../../supabase/migrations/20261109093242_muse_background_push.sql
+\ir ../../supabase/migrations/20261109143141_muse_background_push.sql
 
 do $$
 declare state jsonb := '{"routines":[{"id":"uni","enabled":true,"days":[0,1,2,3,4],"departureTime":"08:00"}],"outings":[],"tasks":[],"routineOccurrences":[]}';
