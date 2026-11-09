@@ -22,6 +22,24 @@ try {
       const hero = await muse.locator('.hero').boundingBox()
       assert.ok(hero && hero.height < 110, 'Muse mobile quick capture should be compact')
       assert.equal(await muse.locator('.muse-tabs button').count(), 5)
+      assert.equal(await muse.locator('.muse-greeting-phone').isVisible(), true)
+      assert.equal(await muse.locator('.muse-greeting-desktop').isVisible(), false)
+      await page.evaluate(() => window.scrollTo(0, 400))
+      await page.waitForTimeout(80)
+      const sticky = await page.evaluate(() => {
+        const header = document.querySelector('.calm-topbar')
+        const switcher = document.querySelector('.experience-switch')
+        return {
+          top: header.getBoundingClientRect().top,
+          position: getComputedStyle(header).position,
+          right: switcher.getBoundingClientRect().right,
+          width: innerWidth,
+          scrollTop: document.scrollingElement.scrollTop,
+        }
+      })
+      assert.ok(sticky.scrollTop > 50 && sticky.position === 'sticky' && Math.abs(sticky.top) <= 2, 'Muse switch must stay visible during scroll: ' + JSON.stringify(sticky))
+      assert.ok(sticky.right <= sticky.width + 1, 'Muse switch clipped on phone')
+      await page.evaluate(() => window.scrollTo(0, 0))
       const metrics = await page.evaluate(() => ({
         window: innerWidth,
         document: document.documentElement.scrollWidth,
