@@ -354,10 +354,11 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{
       max(16px, env(safe-area-inset-left, 0px));
     gap: 10px;
     border-bottom: 1px solid var(--card-border);
-    background: var(--card-bg);
-    background: color-mix(in srgb, var(--card-bg) 94%, transparent);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    /* Do not backdrop-filter this ancestor: Safari would position the
+       fixed bottom dock relative to the header instead of the viewport. */
+    background: var(--void-bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
   .calm-app .calm-brand {
     flex: 0 1 auto;
