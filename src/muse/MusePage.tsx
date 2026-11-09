@@ -1824,8 +1824,8 @@ export default function MusePage({
               </label>
               <p className="small-muted">
                 {t(
-                  "These are starter examples. Change them to whatever matters to you.",
-                  "ئەمانە تەنها نموونەی سەرەتایین. بیانیگۆڕە بۆ ئەو شتانەی کە بۆ تۆ گرنگن.",
+                  "Make these priorities your own. You can edit them anytime.",
+                  "ئەم ئەولەویەتانە بە دڵی خۆت ڕێک بخە. هەر کاتێک دەتوانیت بیانیگۆڕیت.",
                 )}
               </p>
               <p className="small-muted">
