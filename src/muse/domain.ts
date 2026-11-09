@@ -107,16 +107,41 @@ export type Workspace = z.infer<typeof StateSchema>;
 export type Task = Workspace["tasks"][number];
 export type Outing = Workspace["outings"][number];
 export type Template = Workspace["templates"][number];
+
+/** Neutral starting examples, not assumptions about a person's education or job. */
+export const exampleProfilePriorities = [
+  "Take care of myself",
+  "Stay organized",
+  "Make progress on my goals",
+] as const;
+
+const oldProfileDefaults = [
+  "University responsibilities",
+  "Build strong engineering fundamentals",
+  "Improve my English",
+] as const;
+
+/**
+ * An older MUSE release pre-filled three student/engineering priorities.
+ * Show neutral examples for that exact old prefix while keeping any extra
+ * user-written priorities. This is display-only: no account data, local cache
+ * or cloud workspace is overwritten without the user's Save profile action.
+ */
+export function displayProfilePriorities(priorities: readonly string[]): string[] {
+  const startsWithOldDefaults =
+    priorities.length >= oldProfileDefaults.length &&
+    oldProfileDefaults.every((value, index) => priorities[index] === value);
+  return startsWithOldDefaults
+    ? [...exampleProfilePriorities, ...priorities.slice(oldProfileDefaults.length)]
+    : [...priorities];
+}
+
 export function initialState(): Workspace {
   return {
     profile: {
       name: "You",
       timezone: "Asia/Baghdad",
-      priorities: [
-        "University responsibilities",
-        "Build strong engineering fundamentals",
-        "Improve my English",
-      ],
+      priorities: [...exampleProfilePriorities],
     },
     routines: [],
     routineOccurrences: [],

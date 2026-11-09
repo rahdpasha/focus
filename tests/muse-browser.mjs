@@ -105,6 +105,26 @@ try {
       assert.equal(reopenedTop, 0, 'Reopened settings must start at the title, not the previous scroll position')
       await page.keyboard.press('Escape')
     }
+    if (width === 390) {
+      await muse.getByRole('button', { name: 'Memory', exact: true }).click()
+      const summary = muse.locator('.profile-summary')
+      assert.match(await summary.innerText(), /Take care of myself/)
+      assert.match(await summary.innerText(), /Stay organized/)
+      await summary.getByRole('button', { name: 'Edit profile' }).click()
+      const profileDialog = muse.locator('dialog[open]')
+      assert.match(await profileDialog.locator('textarea[name="priorities"]').inputValue(),
+        /Make progress on my goals/)
+      await profileDialog.locator('input[name="name"]').fill('Example Person')
+      await profileDialog.locator('textarea[name="priorities"]').fill('Care for my family\nKeep active')
+      await profileDialog.getByRole('button', { name: 'Save profile' }).click()
+      await summary.getByText('Example Person').waitFor()
+      assert.match(await summary.innerText(), /Care for my family · Keep active/)
+      await page.reload({ waitUntil: 'networkidle' })
+      await page.getByRole('button', { name: 'MUSE', exact: true }).click()
+      await muse.getByRole('button', { name: 'Memory', exact: true }).click()
+      assert.match(await muse.locator('.profile-summary').innerText(), /Care for my family · Keep active/)
+      await muse.getByRole('button', { name: 'Today', exact: true }).click()
+    }
     await muse.getByRole('button', { name: 'Start an outing', exact: true }).click()
     await page.getByRole('dialog').getByRole('button', { name: /University/ }).click()
     const rows = muse.locator('.checklist-row')

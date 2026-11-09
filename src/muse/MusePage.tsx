@@ -27,8 +27,6 @@ import {
   Bell,
   AlertCircle,
   Globe2,
-  GraduationCap,
-  Code2,
   Heart,
   MessageCircle,
   CheckCircle2,
@@ -40,6 +38,7 @@ import {
   localDate,
   rankTasks,
   wallToInstant,
+  displayProfilePriorities,
   type Workspace,
   type Task,
   type Outing,
@@ -994,13 +993,13 @@ export default function MusePage({
                         )}
                       </h2>
                       <div className="directions">
-                        {data.profile.priorities.map((p, i) => {
+                        {displayProfilePriorities(data.profile.priorities).map((p, i) => {
                           const Icon = [
-                            GraduationCap,
-                            Code2,
-                            MessageCircle,
                             Heart,
+                            CheckCircle2,
                             Leaf,
+                            MessageCircle,
+                            Sun,
                           ][i];
                           return (
                             <div key={i}>
@@ -1312,13 +1311,13 @@ export default function MusePage({
                     {t("Profile & priorities", "پرۆفایل و ئەولەویەتەکان")}
                   </span>
                   <h2>{data.profile.name}</h2>
-                  <p>{data.profile.priorities.join(" · ")}</p>
+                  <p>{displayProfilePriorities(data.profile.priorities).join(" · ")}</p>
                   <button
                     className="text-button"
                     onClick={() => setModal("profile")}
                   >
                     <Pencil size={14} />
-                    {t("Review profile", "پێداچوونەوەی پرۆفایل")}
+                    {t("Edit profile", "دەستکاریکردنی پرۆفایل")}
                   </button>
                 </section>
                 {data.memories.length ? (
@@ -1820,9 +1819,15 @@ export default function MusePage({
                   name="priorities"
                   rows={5}
                   maxLength={1500}
-                  defaultValue={data.profile.priorities.join("\n")}
+                  defaultValue={displayProfilePriorities(data.profile.priorities).join("\n")}
                 />
               </label>
+              <p className="small-muted">
+                {t(
+                  "Make these priorities your own. You can edit them anytime.",
+                  "ئەم ئەولەویەتانە بە دڵی خۆت ڕێک بخە. هەر کاتێک دەتوانیت بیانیگۆڕیت.",
+                )}
+              </p>
               <p className="small-muted">
                 {t(
                   "Time zone: Kurdistan (UTC+3). Language and appearance are shared with FOCUS Settings.",
