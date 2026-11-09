@@ -77,6 +77,32 @@ export default function Routines({
       setError("");
     }
   }
+  async function deleteRoutine(routine: Routine) {
+    if (busy) return;
+    // A recurring schedule can be removed without erasing completed outings.
+    if (
+      !window.confirm(
+        t(
+          `Delete "${routine.name}"? This stops future reminders. Your outing history stays.`,
+          `دڵنیایت لە سڕینەوەی «${routine.name}»؟ بیرخستنەوەکانی داهاتوو دەوەستن، بەڵام مێژووی دەرچوونەکانت دەمێنێتەوە.`,
+        ),
+      )
+    ) return;
+    setError("");
+    const saved = await save({
+      ...data,
+      routines: data.routines.filter((r) => r.id !== routine.id),
+      // Drop an obsolete pending snooze, but retain completed occurrence
+      // records and all outings for history/auditing.
+      routineOccurrences: data.routineOccurrences.filter(
+        (o) => o.routineId !== routine.id || o.status !== "snoozed",
+      ),
+    });
+    if (saved && editing !== "new" && editing?.id === routine.id) {
+      setEditing(null);
+    }
+    if (!saved) setError(t("Could not delete this routine. Try again.", "نەتوانرا ئەم ڕۆتینە بسڕدرێتەوە. دووبارە هەوڵ بدە."));
+  }
   const draft = editing && editing !== "new" ? editing : null;
   if (!manage && !planned.length) return null;
   return (
@@ -159,6 +185,15 @@ export default function Routines({
                   {r.enabled
                     ? t("Pause", "ڕاگرتن")
                     : t("Resume", "بەردەوامبوون")}
+                </button>
+                <button
+                  type="button"
+                  className="routine-delete"
+                  disabled={busy}
+                  aria-label={t(`Delete ${r.name}`, `سڕینەوەی ${r.name}`)}
+                  onClick={() => void deleteRoutine(r)}
+                >
+                  {t("Delete", "سڕینەوە")}
                 </button>
               </div>
             </div>

@@ -147,6 +147,27 @@ try {
     assert.equal(routineSaved.state.routineOccurrences[0].outingId, routineSaved.state.outings[0].id)
     assert.ok(routineSaved.state.outings[0].returnReminderAt)
     assert.ok(routineSaved.state.outings[0].items.every(i => i.returned === 'unanswered'))
+    // A routine can be deleted on My life, after confirmation, while
+    // its already-started outing and occurrence history remain intact.
+    const routineId = routineSaved.state.routines[0].id
+    await muse.getByRole('button', { name: 'My life', exact: true }).click()
+    const scheduledRoutine = muse.locator('.routine-panel .routine-row').filter({ hasText: 'Daily bag check' })
+    assert.equal(await scheduledRoutine.count(), 1)
+    page.once('dialog', dialog => dialog.dismiss())
+    await scheduledRoutine.getByRole('button', { name: 'Delete Daily bag check' }).click()
+    assert.equal(await scheduledRoutine.count(), 1, 'Cancel should leave the routine unchanged')
+    page.once('dialog', dialog => dialog.accept())
+    await scheduledRoutine.getByRole('button', { name: 'Delete Daily bag check' }).click()
+    assert.equal(await scheduledRoutine.count(), 0, 'Confirmed delete should remove the recurring schedule')
+    await page.reload({ waitUntil: 'networkidle' })
+    await page.getByRole('button', { name: 'MUSE', exact: true }).click()
+    await muse.getByRole('button', { name: 'My life', exact: true }).click()
+    assert.equal(await muse.getByRole('button', { name: 'Delete Daily bag check' }).count(), 0)
+    const afterDelete = await page.evaluate(() => JSON.parse(localStorage.getItem('focus:muse:v1:local')))
+    assert.ok(!afterDelete.state.routines.some(r => r.id === routineId), 'Deleted schedule must stay deleted after reload')
+    assert.ok(afterDelete.state.outings.length >= 1, 'Deleting a routine must keep outing history')
+    assert.ok(afterDelete.state.routineOccurrences.some(o => o.routineId === routineId && o.status === 'started'),
+      'Deleting a routine must keep past completed occurrence records')
     for (const name of ['Today', 'My life', 'Memory', 'Assistant']) {
       await muse.getByRole('button', { name, exact: true }).click()
       const bounds = await page.evaluate(() => ({ width: innerWidth, content: document.documentElement.scrollWidth }))

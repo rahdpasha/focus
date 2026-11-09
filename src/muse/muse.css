@@ -2174,3 +2174,27 @@
     min-height: 40px;
   }
 }
+
+/* A visible but secondary destructive action for recurring routines. */
+.muse .routine-actions .routine-delete {
+  color: var(--danger, #bb7272);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  min-height: 40px;
+}
+.muse .routine-actions .routine-delete:hover {
+  border-color: var(--line);
+  background: var(--sidebar);
+}
+@media (max-width: 768px) {
+  .calm-app .muse .routine-actions {
+    width: 100%;
+    gap: 6px;
+  }
+  .calm-app .muse .routine-actions button {
+    min-height: 44px;
+    padding: 9px 12px;
+    font-size: 12px;
+  }
+}

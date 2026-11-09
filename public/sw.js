@@ -1,4 +1,4 @@
-const CACHE_NAME = 'focus-pwa-v14-muse-routines'
+const CACHE_NAME = 'focus-pwa-v15-kurdistan-routines-delete'
 const STATIC_FILES = [
   '/manifest.webmanifest',
   '/favicon.svg',
