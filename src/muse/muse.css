@@ -1939,3 +1939,20 @@
   .calm-app .muse .muse-tabs button { font-size: 9px; }
   .calm-app .muse .page-title h1 { font-size: 20px; }
 }
+
+/* Privacy caveats stay available without crowding the action-oriented screen. */
+.muse .muse-privacy-details {
+  margin-top: 12px;
+  padding: 2px 0 0;
+}
+.muse .muse-privacy-details summary {
+  width: fit-content;
+  padding: 7px 0;
+  cursor: pointer;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 600;
+}
+.muse .muse-privacy-details[open] > p {
+  margin-top: 7px;
+}
