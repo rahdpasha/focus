@@ -22,3 +22,19 @@ test('iPhone pages remain document-scrollable and end above the bottom nav', () 
   assert.match(css, /\.calm-nav\s*\{[^}]*bottom:\s*0;[^}]*padding-bottom:\s*calc\(10px\s*\+\s*env\(safe-area-inset-bottom,\s*0px\)\);/s)
   assert.match(css, /max-height:\s*520px/)
 })
+
+test('FOCUS phone timer presents all four duration choices in one compact row', () => {
+  assert.match(css, /Phone-first FOCUS:/)
+  assert.match(css, /\.calm-app \.duration-v5-presets > button:nth-child\(n \+ 4\)/)
+  assert.match(css, /grid-column:\s*auto/)
+  assert.match(css, /width:\s*min\(230px, 64vw\)/)
+})
+
+test('MUSE phone interface keeps the real actions ahead of decorative copy', () => {
+  const museCss = readFileSync('src/muse/muse.css', 'utf8')
+  assert.match(museCss, /MUSE on phones:/)
+  assert.match(museCss, /\.calm-app \.muse \.muse-header\s*\{\s*display:\s*none/)
+  assert.match(museCss, /\.calm-app \.muse \.hero-cta\s*\{/)
+  assert.match(museCss, /\.calm-app \.muse \.muse-tabs\s*\{/)
+  assert.match(museCss, /max-height:\s*calc\(100dvh - 28px\)/)
+})
