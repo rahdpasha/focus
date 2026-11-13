@@ -1,7 +1,8 @@
 import { createClientId } from '../utils/clientId'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Plus, BookOpen, Flame, ArrowUpRight, Check, Headphones, BrainCircuit } from 'lucide-react'
 import Timer from '../components/timer/Timer'
+import { readTimerSnapshot } from '../utils/timerPersistence'
 import type { Subject, StudySession, Subtask } from '../types'
 import type { RoutineItem, RoutineSessionContext } from '../storage/types'
 import { useI18n } from '../useI18n'
@@ -45,10 +46,28 @@ interface FocusPageProps {
 export default function FocusPage({ userId, activeSubject, subjects = [], sessions = [], dailyGoal, routineItems, onStartRoutine, onManage, onAdvisor, shortBreak, longBreak, sessionsBeforeLongBreak, autoStartBreak, soundEnabled, soundVolume, notificationsEnabled, onActivityChange, initialFocusMinutes, routineContext, onAddSession, onSelectSubject, onAddSubjectRequest }: FocusPageProps) {
   const { t, tr } = useI18n()
   const [timerBusy, setTimerBusy] = useState(false)
+  const persistenceKey = `focus.activeTimer.v1:${userId ?? "local"}`
+  const [restoredSubjectName, setRestoredSubjectName] = useState(() => {
+    const saved = readTimerSnapshot(undefined, persistenceKey)
+    return saved && (saved.isStudying || saved.isPaused || saved.isCompleted)
+      ? saved.subjectName : null
+  })
   const targetSubject = activeSubject ?? subjects[0]
+  const savedSubject = subjects.find(subject => subject.name === restoredSubjectName)
   const [boundSubject, setBoundSubject] = useState<Subject | undefined>()
-  const sessionSubject = boundSubject ?? targetSubject
-  const handleActivity = useCallback((active: boolean) => { setTimerBusy(active); onActivityChange(active); setBoundSubject(previous => active ? (previous ?? targetSubject) : undefined) }, [targetSubject, onActivityChange])
+  const sessionSubject = boundSubject ?? savedSubject ?? targetSubject
+  const handleActivity = useCallback((active: boolean) => {
+    setTimerBusy(active)
+    onActivityChange(active)
+    setBoundSubject(previous => active ? (previous ?? savedSubject ?? targetSubject) : undefined)
+  }, [targetSubject, savedSubject, onActivityChange])
+  useEffect(() => {
+    // An in-progress session takes priority over a different selected subject
+    // restored by account/cloud hydration after a device restart.
+    if (savedSubject && targetSubject?.id !== savedSubject.id) {
+      onSelectSubject?.(savedSubject.id)
+    }
+  }, [savedSubject, targetSubject?.id, onSelectSubject])
   const [sessionNotes, setSessionNotes] = useState('')
   const [subtasks, setSubtasks] = useState<Subtask[]>([])
   const [step, setStep] = useState('')
@@ -102,10 +121,10 @@ export default function FocusPage({ userId, activeSubject, subjects = [], sessio
     <header className="calm-page-heading"><div><span className="calm-eyebrow">{tr('STUDY SESSION', 'کاتی خوێندن')}</span><h1>{tr('Focus time', 'کاتی سەرنج')}</h1></div><span className="calm-streak"><Flame size={17} />{summary.streak} {tr('day streak', 'ڕۆژ بەردەوامی')}</span></header>
     <div className="calm-focus-grid">
       <section className="calm-timer-card">
-        <div className="calm-subject-picker"><BookOpen size={18} /><select aria-label={t('selectSubject')} value={targetSubject?.id ?? ''} disabled={timerBusy} onChange={e => onSelectSubject?.(e.target.value)}>{!subjects.length && <option value="">{tr('Choose a subject', 'بابەتێک هەڵبژێرە')}</option>}{subjects.map(subject => <option key={subject.id} value={subject.id}>{subject.name}</option>)}</select><button disabled={timerBusy} onClick={onAddSubjectRequest} aria-label={t('addSubject')}><Plus size={19} /></button></div>
+        <div className="calm-subject-picker"><BookOpen size={18} /><select aria-label={t('selectSubject')} value={sessionSubject?.id ?? ''} disabled={timerBusy} onChange={e => { setRestoredSubjectName(null); onSelectSubject?.(e.target.value) }}>{!subjects.length && <option value="">{tr('Choose a subject', 'بابەتێک هەڵبژێرە')}</option>}{subjects.map(subject => <option key={subject.id} value={subject.id}>{subject.name}</option>)}</select><button disabled={timerBusy} onClick={onAddSubjectRequest} aria-label={t('addSubject')}><Plus size={19} /></button></div>
         {sessionSubject ? <div className="calm-timer-body">
             <Timer
-              persistenceKey={`focus.activeTimer.v1:${userId ?? "local"}`}
+              persistenceKey={persistenceKey}
               subjectName={
                 sessionSubject?.name ||
                 t(

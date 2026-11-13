@@ -68,3 +68,82 @@ test('timer snapshots are isolated by account storage key', () => {
     assert.equal(readTimerSnapshot('OS','user-a')?.duration,60)
   } finally { globalThis.localStorage = previous }
 })
+
+test('timer recovers a still-running subject even if the selected subject changed', () => {
+  const values = new Map()
+  const previous = globalThis.localStorage
+  globalThis.localStorage = {
+    getItem: key => values.get(key) ?? null,
+    setItem: (key, value) => { values.set(key, value) },
+  }
+  try {
+    const now = 1_900_000_000_000
+    const start = now - 10 * 60_000
+    const snapshot = {
+      version: 1, subjectName: 'Operating Systems',
+      sessionClientId: 's-restore-me',
+      focusDuration: 1500, duration: 1500, timeRemaining: 1500,
+      mode: 'focus', completedFocusSessions: 1,
+      isStudying: true, isPaused: false,
+      timerEndAt: start + 1500 * 1000, sessionStartedAt: start,
+      pausedSeconds: 0, pauseStartedAt: null, pauseBaseSeconds: 0,
+      interruptionCount: 0,
+    }
+    writeTimerSnapshot(snapshot)
+    assert.equal(readTimerSnapshot()?.subjectName, 'Operating Systems')
+    assert.equal(remainingFromClock(readTimerSnapshot().timerEndAt, 1500, now), 900)
+    assert.equal(remainingFromClock(readTimerSnapshot().timerEndAt, 1500, now + 20 * 60_000), 0)
+    assert.equal(readTimerSnapshot('English'), null, 'Explicit subject lookup remains strict')
+  } finally {
+    globalThis.localStorage = previous
+  }
+})
+
+test('paused sessions survive shutdowns longer than a day without being discarded', () => {
+  const values = new Map()
+  const previous = globalThis.localStorage
+  globalThis.localStorage = {
+    getItem: key => values.get(key) ?? null,
+    setItem: (key, value) => { values.set(key, value) },
+  }
+  try {
+    const pausedAt = 1_900_000_000_000
+    const snapshot = {
+      version: 1, subjectName: 'English', focusDuration: 1500, duration: 1500,
+      timeRemaining: 600, mode: 'focus', completedFocusSessions: 0,
+      isStudying: false, isPaused: true, timerEndAt: null,
+      sessionStartedAt: pausedAt - 900_000, pausedSeconds: 172800,
+      pauseStartedAt: pausedAt, pauseBaseSeconds: 172800, interruptionCount: 1,
+    }
+    writeTimerSnapshot(snapshot)
+    assert.equal(readTimerSnapshot('English').isPaused, true)
+    assert.equal(pausedFromClock(pausedAt, 172800, pausedAt + 3 * 86400_000), 5 * 86400)
+  } finally {
+    globalThis.localStorage = previous
+  }
+})
+
+test('finished sessions carry a completed marker and do not reload as a frozen active timer', () => {
+  const values = new Map()
+  const previous = globalThis.localStorage
+  globalThis.localStorage = {
+    getItem: key => values.get(key) ?? null,
+    setItem: (key, value) => { values.set(key, value) },
+  }
+  try {
+    writeTimerSnapshot({
+      version: 1, subjectName: 'OS', focusDuration: 1500, duration: 1500,
+      timeRemaining: 0, mode: 'focus', completedFocusSessions: 1,
+      isStudying: false, isPaused: false, isCompleted: true,
+      lastCompletedSeconds: 1500, timerEndAt: null,
+      sessionStartedAt: 1_900_000_000_000, pausedSeconds: 0,
+      pauseStartedAt: null, pauseBaseSeconds: 0, interruptionCount: 0,
+    })
+    const saved = readTimerSnapshot('OS')
+    assert.equal(saved.isCompleted, true)
+    assert.equal(saved.isStudying, false)
+    assert.equal(saved.lastCompletedSeconds, 1500)
+  } finally {
+    globalThis.localStorage = previous
+  }
+})

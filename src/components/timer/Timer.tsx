@@ -103,16 +103,16 @@ export default function Timer({
     useState(restored?.isPaused ?? false)
 
   const [isCompleted, setIsCompleted] =
-    useState(false)
+    useState(restored?.isCompleted ?? false)
 
   const [showComplete, setShowComplete] =
-    useState(false)
+    useState(restored?.isCompleted && restored?.mode === 'focus' ? true : false)
 
   const [showEarlyFinishConfirm, setShowEarlyFinishConfirm] =
     useState(false)
   const [completedEarly, setCompletedEarly] = useState(false)
   const [lastCompletedSeconds, setLastCompletedSeconds] =
-    useState<number | null>(null)
+    useState<number | null>(restored?.lastCompletedSeconds ?? null)
 
   const [pausedSeconds, setPausedSeconds] =
     useState(() => restored?.isPaused
@@ -135,7 +135,7 @@ export default function Timer({
     useRef(restored?.pauseBaseSeconds ?? 0)
 
   const finishedRef =
-    useRef(false)
+    useRef(restored?.isCompleted ?? false)
 
   const sessionStartedAtRef =
     useRef<Date | null>(restored?.sessionStartedAt
@@ -341,13 +341,44 @@ export default function Timer({
       pauseStartedAt: pauseStartedAtRef.current,
       pauseBaseSeconds: pauseBaseSecondsRef.current,
       interruptionCount,
+      isCompleted,
+      lastCompletedSeconds,
     }, persistenceKey)
   }, [
     persistenceKey,
     subjectName, focusDuration, duration, timeRemaining, mode,
     completedFocusSessions, isStudying, isPaused,
     pausedSeconds, interruptionCount,
+    isCompleted, lastCompletedSeconds,
   ])
+
+  // Store critical transitions synchronously. An abrupt shutdown does not
+  // give React effects time to flush a recently started or paused session.
+  const persistTransition = (
+    changes: Partial<import('../../utils/timerPersistence').TimerSnapshot>,
+  ) => {
+    writeTimerSnapshot({
+      version: 1,
+      subjectName,
+      sessionClientId: sessionClientIdRef.current,
+      focusDuration,
+      duration,
+      timeRemaining,
+      mode,
+      completedFocusSessions,
+      isStudying,
+      isPaused,
+      timerEndAt: timerEndRef.current,
+      sessionStartedAt: sessionStartedAtRef.current?.getTime() ?? null,
+      pausedSeconds,
+      pauseStartedAt: pauseStartedAtRef.current,
+      pauseBaseSeconds: pauseBaseSecondsRef.current,
+      interruptionCount,
+      isCompleted,
+      lastCompletedSeconds,
+      ...changes,
+    }, persistenceKey)
+  }
 
   const handleDurationChange = (
     newDuration: number
@@ -397,6 +428,13 @@ export default function Timer({
       )
     }
 
+    persistTransition({
+      isStudying: true, isPaused: false, isCompleted: false,
+      timerEndAt: timerEndRef.current,
+      sessionStartedAt: sessionStartedAtRef.current?.getTime() ?? null,
+      sessionClientId: sessionClientIdRef.current,
+      pauseStartedAt: null, lastCompletedSeconds: null,
+    })
     setIsStudying(true)
     setIsPaused(false)
     setIsCompleted(false)
@@ -409,19 +447,9 @@ export default function Timer({
       return
     }
 
-    if (timerEndRef.current !== null) {
-      const remaining = Math.max(
-        0,
-        Math.ceil(
-          (timerEndRef.current -
-            Date.now()) /
-            1000
-        )
-      )
-
-      setTimeRemaining(remaining)
-      timerEndRef.current = null
-    }
+    const remaining = remainingFromClock(timerEndRef.current, timeRemaining)
+    setTimeRemaining(remaining)
+    timerEndRef.current = null
 
     setIsStudying(false)
     setIsPaused(true)
@@ -438,6 +466,13 @@ export default function Timer({
 
     pauseBaseSecondsRef.current = pausedSeconds
     pauseStartedAtRef.current = Date.now()
+    persistTransition({
+      isStudying: false, isPaused: true, timerEndAt: null,
+      timeRemaining: remaining,
+      pauseStartedAt: pauseStartedAtRef.current,
+      pauseBaseSeconds: pauseBaseSecondsRef.current,
+      interruptionCount: isFocus ? interruptionCount + 1 : interruptionCount,
+    })
   }
 
   const resumeTimer = () => {
@@ -469,6 +504,13 @@ export default function Timer({
       setPausedSeconds(total)
       pauseStartedAtRef.current = null
     }
+    persistTransition({
+      isStudying: true, isPaused: false,
+      timerEndAt: timerEndRef.current,
+      pauseStartedAt: null,
+      pausedSeconds: pauseBaseSecondsRef.current,
+      pauseBaseSeconds: pauseBaseSecondsRef.current,
+    })
   }
 
   const resetTimer = () => {
@@ -490,6 +532,14 @@ export default function Timer({
     setTimeRemaining(focusDuration)
 
     resetTracking()
+    persistTransition({
+      isStudying: false, isPaused: false, isCompleted: false,
+      mode: 'focus', timeRemaining: focusDuration, duration: focusDuration,
+      timerEndAt: null, sessionStartedAt: null,
+      sessionClientId: null, lastCompletedSeconds: null,
+      pausedSeconds: 0, pauseStartedAt: null, pauseBaseSeconds: 0,
+      interruptionCount: 0,
+    })
   }
 
   const startBreak = useCallback(
@@ -519,12 +569,22 @@ export default function Timer({
       setLastCompletedSeconds(null)
 
       resetTracking()
+      timerEndRef.current = autoStart ? Date.now() + breakDuration * 1000 : null
+      persistTransition({
+        mode: breakMode, duration: breakDuration, timeRemaining: breakDuration,
+        isStudying: autoStart, isPaused: false, isCompleted: false,
+        timerEndAt: timerEndRef.current,
+        sessionStartedAt: null, sessionClientId: null,
+        pausedSeconds: 0, pauseStartedAt: null, pauseBaseSeconds: 0,
+        interruptionCount: 0, lastCompletedSeconds: null,
+      })
     },
     [
       clearTimer,
       longBreakMinutes,
       shortBreakMinutes,
       resetTracking,
+      persistTransition,
     ]
   )
 
@@ -574,6 +634,14 @@ export default function Timer({
         (previous) => previous + 1
       )
 
+      // A completed session must not be restored as a frozen 00:00 timer.
+      // Persist the completion marker synchronously after recording the session.
+      persistTransition({
+        isStudying: false, isPaused: false, isCompleted: true,
+        timeRemaining: 0, timerEndAt: null,
+        completedFocusSessions: completedFocusSessions + 1,
+        lastCompletedSeconds: actualDuration,
+      })
       setIsStudying(false)
       setIsPaused(false)
       setIsCompleted(true)
@@ -587,6 +655,8 @@ export default function Timer({
       onComplete,
       onSessionEnd,
       onSessionCompleted,
+      completedFocusSessions,
+      persistTransition,
     ])
 
   // Early completion is a completed *study log*, not a completed Pomodoro.
@@ -673,7 +743,7 @@ export default function Timer({
 
     setIsStudying(false)
     setIsPaused(false)
-    setIsCompleted(true)
+    setIsCompleted(false)
     setShowComplete(false)
 
     if (wasLongBreak) {
@@ -685,13 +755,23 @@ export default function Timer({
     setTimeRemaining(focusDuration)
 
     resetTracking()
+    persistTransition({
+      mode: 'focus', duration: focusDuration, timeRemaining: focusDuration,
+      isStudying: false, isPaused: false, isCompleted: false,
+      timerEndAt: null, sessionStartedAt: null, sessionClientId: null,
+      pausedSeconds: 0, pauseStartedAt: null, pauseBaseSeconds: 0,
+      interruptionCount: 0, lastCompletedSeconds: null,
+      completedFocusSessions: wasLongBreak ? 0 : completedFocusSessions,
+    })
   }, [
     clearTimer,
     focusDuration,
     mode,
+    completedFocusSessions,
     playCompletionSound,
     sendCompletionNotification,
     resetTracking,
+    persistTransition,
   ])
 
   const handleTimerFinished =
@@ -805,14 +885,9 @@ export default function Timer({
 
     
 
-    const timeout =
-      window.setTimeout(() => {
-        handleTimerFinished()
-      }, 0)
-
-    return () => {
-      clearTimeout(timeout)
-    }
+    // The device can reopen *after* the deadline. Finish the restored
+    // session immediately, even if a timer callback never fired at 00:00.
+    handleTimerFinished()
   }, [
     isStudying,
     timeRemaining,
