@@ -211,6 +211,10 @@ export default function Timer({
         return
       }
 
+      // Safari can refuse to create or start an AudioContext when a device
+      // wakes from shutdown without a user gesture. Sound is optional: never
+      // let audio failure stop the session from being saved.
+      try {
       const context =
         new AudioContextClass()
 
@@ -251,8 +255,11 @@ export default function Timer({
       )
 
       window.setTimeout(() => {
-        void context.close()
+        void context.close().catch(() => {})
       }, 900)
+      } catch (error) {
+        console.warn('[FOCUS] Completion sound unavailable:', error)
+      }
     },
     [soundEnabled, soundVolume]
   )
@@ -781,11 +788,17 @@ export default function Timer({
       }
 
       finishedRef.current = true
-      // Persist completion immediately. A display countdown used to delay the
-      // write and could be suspended between expiry and saving.
-      if (isFocus) finishFocusSession()
-      else finishBreak()
-      clearTimer()
+      // Optional browser APIs (especially Safari audio after shutdown) must
+      // never make an expired countdown permanently unfinishable.
+      try {
+        if (isFocus) finishFocusSession()
+        else finishBreak()
+      } catch (error) {
+        finishedRef.current = false
+        console.error('[FOCUS] Could not finish timer; it can be retried:', error)
+      } finally {
+        clearTimer()
+      }
 
     }, [
       clearTimer,
@@ -1246,6 +1259,19 @@ export default function Timer({
           >
             <Play size={16} />
             {t('resume')}
+          </button>
+        ) : isStudying && timeRemaining <= 0 ? (
+          <button
+            type="button"
+            className="cyber-btn timer-v5-primary"
+            onClick={() => {
+              // A recovery path for old snapshots stranded at 00:00.
+              finishedRef.current = false
+              handleTimerFinished()
+            }}
+          >
+            <Check size={16} />
+            {tr('Finish session', 'تەواوکردنی سێشن')}
           </button>
         ) : (
           <button
