@@ -569,12 +569,22 @@ export default function Timer({
       setLastCompletedSeconds(null)
 
       resetTracking()
+      timerEndRef.current = autoStart ? Date.now() + breakDuration * 1000 : null
+      persistTransition({
+        mode: breakMode, duration: breakDuration, timeRemaining: breakDuration,
+        isStudying: autoStart, isPaused: false, isCompleted: false,
+        timerEndAt: timerEndRef.current,
+        sessionStartedAt: null, sessionClientId: null,
+        pausedSeconds: 0, pauseStartedAt: null, pauseBaseSeconds: 0,
+        interruptionCount: 0, lastCompletedSeconds: null,
+      })
     },
     [
       clearTimer,
       longBreakMinutes,
       shortBreakMinutes,
       resetTracking,
+      persistTransition,
     ]
   )
 
@@ -733,7 +743,7 @@ export default function Timer({
 
     setIsStudying(false)
     setIsPaused(false)
-    setIsCompleted(true)
+    setIsCompleted(false)
     setShowComplete(false)
 
     if (wasLongBreak) {
@@ -745,13 +755,23 @@ export default function Timer({
     setTimeRemaining(focusDuration)
 
     resetTracking()
+    persistTransition({
+      mode: 'focus', duration: focusDuration, timeRemaining: focusDuration,
+      isStudying: false, isPaused: false, isCompleted: false,
+      timerEndAt: null, sessionStartedAt: null, sessionClientId: null,
+      pausedSeconds: 0, pauseStartedAt: null, pauseBaseSeconds: 0,
+      interruptionCount: 0, lastCompletedSeconds: null,
+      completedFocusSessions: wasLongBreak ? 0 : completedFocusSessions,
+    })
   }, [
     clearTimer,
     focusDuration,
     mode,
+    completedFocusSessions,
     playCompletionSound,
     sendCompletionNotification,
     resetTracking,
+    persistTransition,
   ])
 
   const handleTimerFinished =
@@ -865,14 +885,9 @@ export default function Timer({
 
     
 
-    const timeout =
-      window.setTimeout(() => {
-        handleTimerFinished()
-      }, 0)
-
-    return () => {
-      clearTimeout(timeout)
-    }
+    // The device can reopen *after* the deadline. Finish the restored
+    // session immediately, even if a timer callback never fired at 00:00.
+    handleTimerFinished()
   }, [
     isStudying,
     timeRemaining,
