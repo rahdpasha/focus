@@ -17,6 +17,8 @@ export interface TimerSnapshot {
   pauseStartedAt: number | null
   pauseBaseSeconds: number
   interruptionCount: number
+  isCompleted?: boolean
+  lastCompletedSeconds?: number | null
 }
 
 export const TIMER_STORAGE_KEY = 'focus.activeTimer.v1'
@@ -71,6 +73,8 @@ export function readTimerSnapshot(subjectName?: string, storageKey = TIMER_STORA
       !validSeconds(snapshot.pauseBaseSeconds, 366 * 86400) ||
       !validSeconds(snapshot.interruptionCount) ||
       !validSeconds(snapshot.completedFocusSessions) ||
+      (snapshot.isCompleted !== undefined && typeof snapshot.isCompleted !== 'boolean') ||
+      (snapshot.lastCompletedSeconds != null && !validSeconds(snapshot.lastCompletedSeconds)) ||
       typeof snapshot.isStudying !== 'boolean' ||
       typeof snapshot.isPaused !== 'boolean' ||
       !validTimestamp(snapshot.timerEndAt) ||
