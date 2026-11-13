@@ -41,7 +41,7 @@ export function pausedFromClock(
   return previousSeconds + Math.max(0, Math.floor((now - startedAt) / 1000))
 }
 
-export function readTimerSnapshot(subjectName: string, storageKey = TIMER_STORAGE_KEY): TimerSnapshot | null {
+export function readTimerSnapshot(subjectName?: string, storageKey = TIMER_STORAGE_KEY): TimerSnapshot | null {
   try {
     const raw = localStorage.getItem(storageKey)
     if (!raw) return null
@@ -49,14 +49,16 @@ export function readTimerSnapshot(subjectName: string, storageKey = TIMER_STORAG
     const value: unknown = JSON.parse(raw)
     if (!value || typeof value !== 'object') return null
     const snapshot = value as Partial<TimerSnapshot>
-    const validSeconds = (n: unknown) =>
-      typeof n === 'number' && Number.isInteger(n) && n >= 0 && n <= 86400
+    const validSeconds = (n: unknown, limit = 86400) =>
+      typeof n === 'number' && Number.isInteger(n) && n >= 0 && n <= limit
     const validTimestamp = (n: unknown) =>
       n === null || (typeof n === 'number' && Number.isFinite(n) && n > 0)
 
     if (
       snapshot.version !== 1 ||
-      snapshot.subjectName !== subjectName ||
+      typeof snapshot.subjectName !== 'string' ||
+      !snapshot.subjectName.trim() ||
+      (subjectName !== undefined && snapshot.subjectName !== subjectName) ||
       (snapshot.sessionClientId != null && typeof snapshot.sessionClientId !== 'string') ||
       !['focus', 'shortBreak', 'longBreak'].includes(snapshot.mode ?? '') ||
       !validSeconds(snapshot.focusDuration) ||
@@ -65,8 +67,8 @@ export function readTimerSnapshot(subjectName: string, storageKey = TIMER_STORAG
       snapshot.duration === 0 ||
       !validSeconds(snapshot.timeRemaining) ||
       (snapshot.timeRemaining ?? 0) > (snapshot.duration ?? 0) ||
-      !validSeconds(snapshot.pausedSeconds) ||
-      !validSeconds(snapshot.pauseBaseSeconds) ||
+      !validSeconds(snapshot.pausedSeconds, 366 * 86400) ||
+      !validSeconds(snapshot.pauseBaseSeconds, 366 * 86400) ||
       !validSeconds(snapshot.interruptionCount) ||
       !validSeconds(snapshot.completedFocusSessions) ||
       typeof snapshot.isStudying !== 'boolean' ||
