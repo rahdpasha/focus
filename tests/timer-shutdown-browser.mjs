@@ -32,6 +32,16 @@ try {
     assert.equal(resumed.timerEndAt, initial.timerEndAt)
 
     // Simulate powering back on after the scheduled deadline has passed.
+    // Safari may deny audio initialization after a reboot. Even a failed
+    // completion sound must not trap the expired timer at 00:00 / Pause.
+    await page.addInitScript(() => {
+      Object.defineProperty(window, 'AudioContext', {
+        configurable: true,
+        value: class {
+          constructor() { throw new Error('AudioContext blocked on wake') }
+        },
+      })
+    })
     await page.evaluate(key => {
       const saved = JSON.parse(localStorage.getItem(key))
       saved.timerEndAt = Date.now() - 5000
@@ -43,7 +53,7 @@ try {
     await page.locator('.timer-v5-complete').waitFor({ timeout: 15000 })
     const finished = await page.evaluate(key => JSON.parse(localStorage.getItem(key)), key)
     assert.equal(finished.isStudying, false, 'Expired session must not remain active')
-    assert.equal(finished.isCompleted, true, 'Completion must be durable')
+    assert.equal(finished.isCompleted, true, 'Completion must be durable even when Safari audio fails')
     assert.equal(finished.timeRemaining, 0, 'Expired focus time must be zero')
     assert.equal(finished.sessionClientId, initial.sessionClientId)
 
