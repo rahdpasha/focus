@@ -60,6 +60,7 @@ import Routines from "./Routines";
 import PushSettings from "./PushSettings";
 import DailyOverview from "./DailyOverview";
 import LearningDiscoveries from "./LearningDiscoveries";
+import { learningTopics, type LearningPreference } from "./learningTopics";
 
 export default function MusePage({
   userId,
@@ -76,6 +77,22 @@ export default function MusePage({
   onFocus: () => void;
   onSettings: () => void;
 }) {
+  const learningKey = `muse-learning-topic:${userId ?? "local"}`;
+  const [learningOverride, setLearningOverride] = useState<{ key: string; value: LearningPreference }>();
+  let learningPreference: LearningPreference = "choose";
+  if (learningOverride?.key === learningKey) {
+    learningPreference = learningOverride.value;
+  } else {
+    try {
+      const saved = localStorage.getItem(learningKey);
+      learningPreference = saved === "hidden" ? "hidden" : learningTopics.find(([id]) => id === saved)?.[0] ?? "choose";
+    } catch { /* Preferences remain usable when storage is unavailable. */ }
+  }
+  function changeLearningPreference(value: LearningPreference) {
+    setLearningOverride({ key: learningKey, value });
+    try { localStorage.setItem(learningKey, value); } catch { /* Keep the current choice in memory. */ }
+  }
+
   const workspace = useMuseWorkspace(userId, displayName);
   const { data, ready, busy, error, status, retry } = workspace;
   const { language, tr: t } = useI18n();
@@ -1072,7 +1089,7 @@ export default function MusePage({
                     </section>
                     <DailyOverview tasks={data.tasks} now={clock} onOpen={openCapture}
                       onViewAll={() => { setFilter("all"); setPage("life"); }} />
-                    <LearningDiscoveries />
+                    <LearningDiscoveries preference={learningPreference} onChange={changeLearningPreference} />
                   </aside>
                 </div>
               </>
@@ -1915,6 +1932,11 @@ export default function MusePage({
                 {t("You are in control", "کۆنترۆڵ لە دەستی تۆیە")}
               </span>
               <h2>{t("Settings & privacy", "ڕێکخستن و تایبەتمەندی")}</h2>
+              {learningPreference === "hidden" && (
+                <button className="outline" onClick={() => changeLearningPreference("choose")}>
+                  {t("Show optional learning", "پیشاندانی فێربوونی ئارەزوومەندانە")}
+                </button>
+              )}
               <PushSettings key={userId ?? "local"} userId={userId} />
               <section className="settings-section">
                 <h3>

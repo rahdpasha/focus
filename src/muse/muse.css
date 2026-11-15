@@ -2272,3 +2272,6 @@
 
 .muse .muse-morning-priority { margin-block-end: 18px; overflow-wrap: anywhere; }
 .muse .muse-morning-priority button { white-space: normal; text-align: start; }
+
+.muse .muse-learning-topic { display: grid; gap: 6px; margin-block-start: 14px; }
+.muse .muse-learning-topic select { width: 100%; min-width: 0; }
