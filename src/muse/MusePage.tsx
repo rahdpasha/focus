@@ -58,6 +58,7 @@ import { useI18n } from "../useI18n";
 import "./muse.css";
 import Routines from "./Routines";
 import PushSettings from "./PushSettings";
+import DailyOverview from "./DailyOverview";
 
 export default function MusePage({
   userId,
@@ -1068,26 +1069,8 @@ export default function MusePage({
                         <ArrowUpRight size={14} />
                       </button>
                     </section>
-                    <section className="quiet-note">
-                      <span className="tiny-leaf">
-                        <Sparkles size={19} />
-                      </span>
-                      <h3>
-                        {t(
-                          "Useful, when it’s ready.",
-                          "سوودبەخش، کاتێک ئامادەیە.",
-                        )}
-                      </h3>
-                      <p>
-                        {t(
-                          "Your sourced morning briefing comes in a later phase. For now, we’re building a dependable foundation.",
-                          "پوختەی بەیانی لە قۆناغێکی دواتر دێت. ئێستا بنەمایەکی متمانەپێکراو دروست دەکەین.",
-                        )}
-                      </p>
-                      <span className="phase-tag">
-                        {t("FOUNDATION · PHASE 01", "بنەما · قۆناغی ٠١")}
-                      </span>
-                    </section>
+                    <DailyOverview tasks={data.tasks} now={clock} onOpen={openCapture}
+                      onViewAll={() => { setFilter("all"); setPage("life"); }} />
                   </aside>
                 </div>
               </>
