@@ -59,6 +59,8 @@ import "./muse.css";
 import Routines from "./Routines";
 import PushSettings from "./PushSettings";
 import DailyOverview from "./DailyOverview";
+import WeeklyReview from "./WeeklyReview";
+import type { StudySession } from "../types";
 import LearningDiscoveries from "./LearningDiscoveries";
 import { learningTopics, type LearningPreference } from "./learningTopics";
 
@@ -67,6 +69,7 @@ export default function MusePage({
   displayName,
   advisor,
   studyMinutes,
+  studySessions,
   onFocus,
   onSettings,
 }: {
@@ -74,6 +77,7 @@ export default function MusePage({
   displayName?: string;
   advisor: ReactNode;
   studyMinutes: number;
+  studySessions: StudySession[];
   onFocus: () => void;
   onSettings: () => void;
 }) {
@@ -1094,6 +1098,12 @@ export default function MusePage({
                     </section>
                     <DailyOverview tasks={data.tasks} now={clock} onOpen={openCapture}
                       onViewAll={() => { setFilter("all"); setPage("life"); }} />
+                    <WeeklyReview now={clock} tasks={data.tasks} sessions={studySessions}
+                      plan={data.profile.weeklyPlan} busy={busy} onOpen={openCapture}
+                      onSave={(weeklyPlan) => save(
+                        { ...data, profile: { ...data.profile, weeklyPlan } },
+                        t("Weekly priorities saved", "ئەولەویەتە هەفتانەکان پاشەکەوت کران"),
+                      )} />
                     <LearningDiscoveries now={clock} preference={learningPreference} onChange={changeLearningPreference} />
                   </aside>
                 </div>

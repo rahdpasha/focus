@@ -14,6 +14,7 @@ export const StateSchema = z.object({
     name: z.string().trim().min(1).max(50),
     timezone: z.literal("Asia/Baghdad"),
     briefingAlerts: z.boolean().optional(),
+    weeklyPlan: z.object({ week: date, priorities: z.array(z.string().trim().max(300)).length(3) }).optional(),
     priorities: z.array(text).max(5),
   }),
   tasks: z

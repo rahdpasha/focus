@@ -271,6 +271,7 @@ function AuthenticatedApp({
       {museVisited && <div hidden={page !== 'muse'}><Suspense fallback={<p>{tr('Loading Muse…','میوز بار دەکرێت…')}</p>}><MusePage
         userId={auth.session?.user.id ?? null}
         displayName={auth.session?.user.displayName}
+        studySessions={data.sessions}
         studyMinutes={Math.round(data.sessions.filter(session => session.completed && new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Baghdad' }).format(new Date(session.completedAt)) === new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Baghdad' }).format(new Date())).reduce((sum, session) => sum + session.actualDuration, 0) / 60)}
         onFocus={() => setPage('focus')}
         onSettings={() => setPage('settings')}
