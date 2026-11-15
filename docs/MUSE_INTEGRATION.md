@@ -4,7 +4,9 @@ Muse is part of the existing FOCUS React/Vite app. It shares login, language, th
 
 Implemented: responsibilities, in-app reminders, priorities, editable memory, outing templates, linked departure/return snapshots, missing-item tracking, export, account-scoped local persistence, optional Supabase sync with revision checks.
 
-Not yet enabled: recurring background alerts, general assistant AI, briefings, discoveries, opportunities, weekly reviews. Existing timer pushes are unchanged. Notification diagnostics do not establish background reliability.
+Background routine, task and return alerts are now live with device opt-in. The user confirmed receiving the background test with sound. This confirms that device test, not guaranteed future delivery.
+
+Not yet enabled: general assistant AI, sourced news briefings, discoveries, opportunities, weekly reviews. Existing timer pushes are unchanged. Notification diagnostics do not establish background reliability.
 
 Production build and all 83 tests pass. Browser verified integrated Muse Today and original Focus screen in local mode. Live cloud sync and mobile notification tests remain outstanding.
 
@@ -125,3 +127,7 @@ check `auth.uid()` and have an empty search path. Supabase reports their
 Private claim/ack RPCs are service-role-only and additionally verify the Vault
 secret. No client role can claim signing material. Existing unrelated advisory
 findings were not changed by this release.
+
+## Daily overview
+
+Today replaces the future-briefing placeholder with at most three unfinished dated responsibilities, including goals and events. It uses the Kurdistan calendar day and a three-day lookahead, ordered by saved date and importance for ties. Past dates ask for review rather than claiming the event was missed. Tapping opens the existing editor; My life remains the full list. No extra notification, AI request, schema or personal-data storage is introduced. This is an on-open personal overview, not the scheduled 7:30 sourced briefing.

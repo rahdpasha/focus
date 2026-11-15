@@ -2260,3 +2260,8 @@
   .calm-app .muse .outing-history-heading h2 { font-size: 15px; }
   .calm-app .muse .outing-history-toggle { font-size: 12px; }
 }
+
+.muse .muse-daily-overview ul { list-style: none; padding: 0; margin: 16px 0; }
+.muse .muse-daily-overview li + li { margin-top: 12px; }
+.muse .muse-daily-overview li button { display: flex; flex-direction: column; align-items: flex-start; text-align: start; width: 100%; gap: 4px; white-space: normal; overflow-wrap: anywhere; }
+.muse .muse-daily-overview li span { font-size: 12px; opacity: .8; }
