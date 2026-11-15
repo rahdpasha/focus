@@ -2265,3 +2265,7 @@
 .muse .muse-daily-overview li + li { margin-top: 12px; }
 .muse .muse-daily-overview li button { display: flex; flex-direction: column; align-items: flex-start; text-align: start; width: 100%; gap: 4px; white-space: normal; overflow-wrap: anywhere; }
 .muse .muse-daily-overview li span { font-size: 12px; opacity: .8; }
+
+.muse .muse-learning summary { cursor: pointer; font-weight: 600; }
+.muse .muse-learning article { margin-block-start: 16px; overflow-wrap: anywhere; }
+.muse .muse-learning a { color: inherit; text-decoration: underline; }
