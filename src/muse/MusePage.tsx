@@ -59,7 +59,8 @@ import "./muse.css";
 import Routines from "./Routines";
 import PushSettings from "./PushSettings";
 import DailyOverview from "./DailyOverview";
-import LearningDiscoveries, { learningTopics, type LearningPreference } from "./LearningDiscoveries";
+import LearningDiscoveries from "./LearningDiscoveries";
+import { learningTopics, type LearningPreference } from "./learningTopics";
 
 export default function MusePage({
   userId,
