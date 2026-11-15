@@ -2275,3 +2275,9 @@
 
 .muse .muse-learning-topic { display: grid; gap: 6px; margin-block-start: 14px; }
 .muse .muse-learning-topic select { width: 100%; min-width: 0; }
+
+.muse .muse-weekly-review { min-width: 0; overflow-wrap: anywhere; padding: 18px; }
+.muse .muse-weekly-review summary { cursor: pointer; font-weight: 600; }
+.muse .muse-weekly-review form,
+.muse .muse-weekly-review label { display: grid; gap: 8px; }
+.muse .muse-weekly-review input { width: 100%; min-width: 0; }
