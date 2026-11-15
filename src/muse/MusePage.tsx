@@ -164,6 +164,9 @@ export default function MusePage({
       } else if (kind === "departure") {
         if (!data.routines.some((v) => v.id === target)) return;
         setPage("today");
+      } else if (kind === "briefing") {
+        setModal(null);
+        setPage("today");
       } else if (kind !== "test") return;
       window.history.replaceState(
         null,
@@ -174,7 +177,9 @@ export default function MusePage({
         const id =
           kind === "return"
             ? `muse-outing-${target}`
-            : `muse-routine-${target}`;
+            : kind === "briefing"
+              ? "muse-daily-overview"
+              : `muse-routine-${target}`;
         const element = document.getElementById(id);
         element?.scrollIntoView({ block: "center" });
         element?.focus();
@@ -1938,6 +1943,28 @@ export default function MusePage({
                 </button>
               )}
               <PushSettings key={userId ?? "local"} userId={userId} />
+              {userId && (
+                <section className="settings-section">
+                  <h3>{t("Morning briefing alert", "ئاگادارکردنەوەی پوختەی بەیانی")}</h3>
+                  <p>{t(
+                    "Around 7:30 AM Kurdistan time on devices with Muse alerts enabled, when you have a priority to review.",
+                    "نزیکەی ٧:٣٠ی بەیانی بە کاتی کوردستان، لەسەر ئامێرەکانی ئاگادارکردنەوەی میوز، کاتێک ئەولەویەتێکت بۆ پێداچوونەوە هەیە.",
+                  )}</p>
+                  <button
+                    className="outline"
+                    disabled={busy || !ready}
+                    aria-pressed={data.profile.briefingAlerts === true}
+                    onClick={() => void save({
+                      ...data,
+                      profile: { ...data.profile, briefingAlerts: !data.profile.briefingAlerts },
+                    })}
+                  >
+                    {data.profile.briefingAlerts
+                      ? t("Turn briefing alert off", "ناچالاککردنی ئاگادارکردنەوەی پوختە")
+                      : t("Turn briefing alert on", "چالاککردنی ئاگادارکردنەوەی پوختە")}
+                  </button>
+                </section>
+              )}
               <section className="settings-section">
                 <h3>
                   <Bell size={17} />
@@ -1945,8 +1972,8 @@ export default function MusePage({
                 </h3>
                 <p>
                   {t(
-                    "Muse reminders work while the app is open. Background reminders are not available yet.",
-                    "بیرخستنەوەکانی میوز کاتێک ئەپەکە کراوەیە کار دەکەن. بیرخستنەوەی پاشبنەما هێشتا بەردەست نییە.",
+                    "Test the reminder shown while Muse is open.",
+                    "بیرخستنەوەکە تاقی بکەرەوە کاتێک میوز کراوەیە.",
                   )}
                 </p>
                 <button className="outline" onClick={testNotification}>

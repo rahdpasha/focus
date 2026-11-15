@@ -107,3 +107,26 @@ begin
  if exists(select 1 from private.muse_push_outbox where status<>'cancelled') then raise exception 'Stale reminder sent'; end if;
 end $$;
 \echo 'PASS Muse scheduler: daily limit, quiet hours, no backlog, repeated ticks and cancellation'
+
+\ir ../../supabase/migrations/20261115151100_muse_briefing_alert.sql
+
+do $$
+declare state jsonb := '{"profile":{"briefingAlerts":true},"tasks":[{"kind":"event","done":false,"due":"2026-11-16"}]}';
+begin
+ if exists(select 1 from private.muse_due(state,'2026-11-15T04:29:59Z')) then
+  raise exception 'Briefing sent before 07:30 Kurdistan time';
+ end if;
+ if not exists(select 1 from private.muse_due(state,'2026-11-15T04:30:00Z')
+  where kind='briefing' and reminder_key='briefing:2026-11-15' and target_id='') then
+  raise exception 'Briefing missing at 07:30 Kurdistan time';
+ end if;
+ if exists(select 1 from private.muse_due(state,'2026-11-15T04:40:00Z')) then
+  raise exception 'Stale briefing is still due';
+ end if;
+ if exists(select 1 from private.muse_due(jsonb_set(state,'{profile,briefingAlerts}','false'),'2026-11-15T04:30:00Z')) then
+  raise exception 'Disabled briefing is still due';
+ end if;
+ if exists(select 1 from private.muse_due(jsonb_set(state,'{tasks,0,done}','true'),'2026-11-15T04:30:00Z')) then
+  raise exception 'Briefing sends with no open priority';
+ end if;
+end $$;
