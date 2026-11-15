@@ -59,6 +59,7 @@ import "./muse.css";
 import Routines from "./Routines";
 import PushSettings from "./PushSettings";
 import DailyOverview from "./DailyOverview";
+import LearningDiscoveries from "./LearningDiscoveries";
 
 export default function MusePage({
   userId,
@@ -1071,6 +1072,7 @@ export default function MusePage({
                     </section>
                     <DailyOverview tasks={data.tasks} now={clock} onOpen={openCapture}
                       onViewAll={() => { setFilter("all"); setPage("life"); }} />
+                    <LearningDiscoveries />
                   </aside>
                 </div>
               </>
