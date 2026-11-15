@@ -1,3 +1,4 @@
+import { localDate } from "./domain";
 import { useI18n } from "../useI18n";
 
 import { learningTopics, type LearningPreference } from "./learningTopics";
@@ -49,13 +50,17 @@ const resources = [
   },
 ] as const;
 
-export default function LearningDiscoveries({ preference, onChange }: {
+export default function LearningDiscoveries({ preference, onChange, now }: {
   preference: LearningPreference;
+  now: Date;
   onChange: (value: LearningPreference) => void;
 }) {
   const { tr: t } = useI18n();
 
   if (preference === "hidden") return null;
+
+  const today = localDate(now);
+  const showUpdate = preference === "software" && today >= "2026-11-10" && today <= "2026-11-20";
 
   return (
     <details className="quiet-note muse-learning">
@@ -75,6 +80,22 @@ export default function LearningDiscoveries({ preference, onChange }: {
           <option value="hidden">{t("Hide optional learning", "شاردنەوەی فێربوونی ئارەزوومەندانە")}</option>
         </select>
       </label>
+      {showUpdate && (
+        <article>
+          <h3>{t("Technology update", "نوێکاریی تەکنەلۆژیا")}</h3>
+          <p>{t(
+            "On 10 November, OpenAI’s JavaScript SDK added TypeScript types for asynchronous function tools.",
+            "لە ١٠ی تشرینی دووەم، SDKی جاڤاسکریپتی OpenAI جۆرەکانی TypeScriptی بۆ ئامرازە ناهاوکاتەکانی فانکشن زیاد کرد.",
+          )}</p>
+          <p>{t(
+            "This matters if your TypeScript project uses the Responses API and defines async tools. Review the release notes before your next SDK upgrade.",
+            "ئەگەر پڕۆژەی TypeScriptـەکەت Responses API و ئامرازی ناهاوکات بەکار دەهێنێت، پێش نوێکردنەوەی SDK تێبینییەکانی وەشان بخوێنەوە.",
+          )}</p>
+          <a href="https://github.com/openai/openai-node/releases/tag/v7.55.0" target="_blank" rel="noopener noreferrer">
+            {t("Official release notes", "تێبینییە فەرمییەکانی وەشان")} · OpenAI
+          </a>
+        </article>
+      )}
       {resources.filter(({ topic }) => topic === preference).map(({ url, source, title, why, practice }) => (
         <article key={url}>
           <h3>{t(title[0], title[1])}</h3>

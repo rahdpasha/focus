@@ -1094,7 +1094,7 @@ export default function MusePage({
                     </section>
                     <DailyOverview tasks={data.tasks} now={clock} onOpen={openCapture}
                       onViewAll={() => { setFilter("all"); setPage("life"); }} />
-                    <LearningDiscoveries preference={learningPreference} onChange={changeLearningPreference} />
+                    <LearningDiscoveries now={clock} preference={learningPreference} onChange={changeLearningPreference} />
                   </aside>
                 </div>
               </>
