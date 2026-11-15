@@ -2,12 +2,13 @@
 (function (root) {
   root.museNotification = function (payload, now) {
     if (!payload || payload.type !== 'muse') return null;
-    const kind = ['departure', 'return', 'task', 'test'].includes(payload.kind) ? payload.kind : 'task';
+    const kind = ['departure', 'return', 'task', 'test', 'briefing'].includes(payload.kind) ? payload.kind : 'task';
     const target = typeof payload.target === 'string' ? payload.target.slice(0, 100) : '';
     const messages = {
       departure: 'Before you go: open your belongings checklist.',
       return: 'Time to check the belongings you took.',
       task: 'You have a reminder to review.',
+      briefing: 'Your morning briefing is ready.',
       test: 'Your Muse test reached this device.',
     };
     const expired = !Number.isFinite(Date.parse(payload.expiresAt)) || Date.parse(payload.expiresAt) <= now;

@@ -12,7 +12,7 @@ export default function DailyOverview({ tasks, now, onOpen, onViewAll }: {
   const date = (value: string) => new Intl.DateTimeFormat(language === "ku" ? "ckb" : "en-GB", {
     day: "numeric", month: "short", timeZone: "Asia/Baghdad",
   }).format(new Date(`${value}T12:00:00Z`));
-  return <section className="quiet-note muse-daily-overview" aria-label={t("Daily overview", "پوختەی ڕۆژانە")}>
+  return <section id="muse-daily-overview" tabIndex={-1} className="quiet-note muse-daily-overview" aria-label={t("Daily overview", "پوختەی ڕۆژانە")}>
     {priority && (
       <div className="muse-morning-priority">
         <h3>{t("Morning briefing", "پوختەی بەیانی")}</h3>
@@ -21,7 +21,7 @@ export default function DailyOverview({ tasks, now, onOpen, onViewAll }: {
           : priority.due === overview.today
             ? t("Make time for this today.", "ئەمڕۆ کات بۆ ئەمە دابنێ.")
             : priority.due
-              ? t("Prepare for this tomorrow.", "بۆ ئەمەی سبەی ئامادەبە.")
+              ? t("Prepare for tomorrow.", "بۆ سبەی ئامادەبە.")
               : t("You marked this as important.", "ئەمەت بە گرنگ دیاری کردووە.")}</p>
         <button className="text-button" onClick={() => onOpen(priority)}>{priority.title}</button>
       </div>

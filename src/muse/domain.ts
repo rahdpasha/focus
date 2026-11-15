@@ -13,6 +13,7 @@ export const StateSchema = z.object({
   profile: z.object({
     name: z.string().trim().min(1).max(50),
     timezone: z.literal("Asia/Baghdad"),
+    briefingAlerts: z.boolean().optional(),
     priorities: z.array(text).max(5),
   }),
   tasks: z

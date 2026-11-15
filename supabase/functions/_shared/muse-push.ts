@@ -2,7 +2,7 @@
 import webpush from 'npm:web-push@3.6.7'
 export type MuseDelivery = {
  outbox_id: string; lease_id: string; endpoint: string; p256dh: string; auth_key: string;
- signing_jwk: string; public_key: string; kind: 'departure' | 'return' | 'task' | 'test';
+ signing_jwk: string; public_key: string; kind: 'departure' | 'return' | 'task' | 'test' | 'briefing';
  target_id: string; tag: string; expires_at: string;
 }
 export function trustedEndpoint(endpoint: string): boolean {
