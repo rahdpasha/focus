@@ -1902,7 +1902,7 @@
     border-top: 1px solid var(--line);
     padding: 18px 0 0;
   }
-  .calm-app .muse .right-column .quiet-note { display: none; }
+  .calm-app .muse .right-column .quiet-note:not(.muse-daily-overview, .muse-learning) { display: none; }
   .calm-app .muse .section-heading { gap: 9px; }
   .calm-app .muse .empty-tasks { padding: 18px 14px 20px; }
   .calm-app .muse .page-footer { margin-top: 22px; }
