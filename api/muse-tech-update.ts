@@ -1,4 +1,18 @@
-import { isRecentRelease, nodeReleaseSchema, type NodeRelease } from "../src/muse/nodeRelease.ts";
+import { z } from "zod";
+
+const nodeReleaseSchema = z.object({
+  version: z.string().regex(/^v\d{1,3}\.\d{1,4}\.\d{1,4}$/),
+  date: z.string().date(),
+  security: z.boolean(),
+});
+
+type NodeRelease = z.infer<typeof nodeReleaseSchema>;
+
+function isRecentRelease(date: string, now: Date) {
+  const today = Date.parse(now.toISOString().slice(0, 10));
+  const age = today - Date.parse(date);
+  return age >= 0 && age < 7 * 86400000;
+}
 
 const source = "https://nodejs.org/dist/index.json";
 const publicCache = { "Cache-Control": "public, max-age=300, s-maxage=3600" };
