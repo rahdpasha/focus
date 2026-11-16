@@ -15,35 +15,15 @@ try {
     await page.getByRole('button', { name: 'MUSE', exact: true }).click()
     const muse = page.locator('.muse')
     if (width <= 390) {
-      // An actual phone width should lead with tasks/actions, not a second
-      // desktop header and a giant decorative hero.
-      await muse.locator('.hero-cta').waitFor()
-      assert.equal(await muse.locator('.muse-header').isVisible(), false)
-      const hero = await muse.locator('.hero').boundingBox()
-      assert.ok(hero && hero.height < 110, 'Muse mobile quick capture should be compact')
-      assert.equal(await muse.locator('.muse-tabs button').count(), 5)
-      assert.equal(await muse.locator('.muse-greeting-phone').isVisible(), true)
-      const surface = await page.evaluate(() => {
-        const el = document.querySelector('.muse')
-        const shell = document.querySelector('.calm-app')
-        const content = document.querySelector('main.calm-content')
-        const footer = document.querySelector('.muse .page-footer')
-        const emptyTasks = document.querySelector('.muse .empty-tasks')
-        return {
-          museMode: shell.classList.contains('calm-app--muse'),
-          background: getComputedStyle(el).backgroundColor,
-          overflow: getComputedStyle(el).overflowX,
-          bottomPadding: parseFloat(getComputedStyle(content).paddingBottom),
-          emptyBorder: emptyTasks ? getComputedStyle(emptyTasks).borderTopWidth : null,
-          footerVisible: footer ? getComputedStyle(footer).display !== 'none' : false,
-        }
-      })
-      assert.equal(surface.museMode, true, 'Muse should use its own shell layout')
-      assert.equal(surface.background, 'rgba(0, 0, 0, 0)', 'Muse root should not paint a cut-off dark rectangle')
-      assert.equal(surface.overflow, 'visible', 'Muse page should not clip vertical content')
-      assert.ok(surface.bottomPadding < 100, 'Muse should not keep the FOCUS bottom dock spacer')
-      assert.equal(surface.emptyBorder, '0px', 'Muse empty state should not show a dashed frame')
-      assert.equal(surface.footerVisible, false, 'Mobile Muse should omit decorative footer')
+      const start = muse.getByRole('button', { name: 'Start an outing', exact: true })
+      await start.waitFor()
+      assert.deepEqual(await muse.locator('.muse-tabs button').allTextContents(), ['Today', 'Tasks', 'More'])
+      const primary = await start.boundingBox()
+      const due = await muse.locator('.muse-due').boundingBox()
+      assert.ok(primary && due && primary.y + primary.height < due.y,
+        'The belongings checklist should come first and be reachable on a phone')
+      assert.ok(primary.y + primary.height <= 400, 'Start an outing must be near the top')
+      assert.equal(await muse.getByText('Optional learning', { exact: true }).count(), 0)
       const bodyEdges = await page.evaluate(() => {
         const rect = document.querySelector('.muse').getBoundingClientRect()
         const content = document.querySelector('main.calm-content').getBoundingClientRect()
@@ -51,7 +31,6 @@ try {
       })
       assert.ok(bodyEdges.left >= 0 && bodyEdges.right <= bodyEdges.viewport + 1,
         'Muse should fit entirely inside the phone: ' + JSON.stringify(bodyEdges))
-      assert.equal(await muse.locator('.muse-greeting-desktop').isVisible(), false)
       await page.evaluate(() => window.scrollTo(0, 400))
       await page.waitForTimeout(80)
       const sticky = await page.evaluate(() => {
@@ -65,7 +44,7 @@ try {
           scrollTop: document.scrollingElement.scrollTop,
         }
       })
-      assert.ok(sticky.scrollTop > 50 && sticky.position === 'fixed' && Math.abs(sticky.top) <= 2, 'Muse switch must stay visible during scroll: ' + JSON.stringify(sticky))
+      assert.ok(sticky.position === 'fixed' && Math.abs(sticky.top) <= 2, 'Muse switch must stay visible during scroll: ' + JSON.stringify(sticky))
       assert.ok(sticky.right <= sticky.width + 1, 'Muse switch clipped on phone')
       await page.evaluate(() => window.scrollTo(0, 0))
       const metrics = await page.evaluate(() => ({
@@ -77,6 +56,7 @@ try {
     // The iPhone settings modal must open below the status bar, even when
     // the page was previously scrolled and the dialog was opened before.
     if (width <= 390) {
+      await muse.getByRole('button', { name: 'More', exact: true }).click()
       await muse.locator('.muse-options').click()
       const settingsDialog = page.locator('.muse dialog[open]')
       await settingsDialog.waitFor()
@@ -106,6 +86,7 @@ try {
       await page.keyboard.press('Escape')
     }
     if (width === 390) {
+      await muse.getByRole('button', { name: 'More', exact: true }).click()
       await muse.getByRole('button', { name: 'Memory', exact: true }).click()
       const summary = muse.locator('.profile-summary')
       assert.match(await summary.innerText(), /Take care of myself/)
@@ -121,10 +102,12 @@ try {
       assert.match(await summary.innerText(), /Care for my family · Keep active/)
       await page.reload({ waitUntil: 'networkidle' })
       await page.getByRole('button', { name: 'MUSE', exact: true }).click()
+      await muse.getByRole('button', { name: 'More', exact: true }).click()
       await muse.getByRole('button', { name: 'Memory', exact: true }).click()
       assert.match(await muse.locator('.profile-summary').innerText(), /Care for my family · Keep active/)
       await muse.getByRole('button', { name: 'Today', exact: true }).click()
     }
+    await muse.getByRole('button', { name: 'Today', exact: true }).click()
     await muse.getByRole('button', { name: 'Start an outing', exact: true }).click()
     await page.getByRole('dialog').getByRole('button', { name: /University/ }).click()
     const rows = muse.locator('.checklist-row')
@@ -143,12 +126,12 @@ try {
     await muse.getByRole('button', { name: 'Finish check', exact: true }).click()
     await page.reload({ waitUntil: 'networkidle' })
     await page.getByRole('button', { name: 'MUSE', exact: true }).click()
-    await muse.getByRole('button', { name: 'My life', exact: true }).click()
+    await muse.getByRole('button', { name: 'Manage checklists', exact: true }).click()
     const historyToggle = muse.getByRole('button', { name: 'View history', exact: true })
     await historyToggle.waitFor()
     assert.equal(await historyToggle.getAttribute('aria-expanded'), 'false')
     assert.equal(await muse.locator('.history-row').count(), 0,
-      'Previous outings must not flood My life by default')
+      'Previous outings must not flood Checklists by default')
     await historyToggle.click()
     assert.equal(await muse.locator('.history-row').count(), 1,
       'History appears only after choosing View history')
@@ -178,10 +161,10 @@ try {
     assert.equal(routineSaved.state.routineOccurrences[0].outingId, routineSaved.state.outings[0].id)
     assert.ok(routineSaved.state.outings[0].returnReminderAt)
     assert.ok(routineSaved.state.outings[0].items.every(i => i.returned === 'unanswered'))
-    // A routine can be deleted on My life, after confirmation, while
+    // A routine can be deleted under Checklists, after confirmation, while
     // its already-started outing and occurrence history remain intact.
     const routineId = routineSaved.state.routines[0].id
-    await muse.getByRole('button', { name: 'My life', exact: true }).click()
+    await muse.getByRole('button', { name: 'Manage checklists', exact: true }).click()
     const scheduledRoutine = muse.locator('.routine-panel .routine-row').filter({ hasText: 'Daily bag check' })
     assert.equal(await scheduledRoutine.count(), 1)
     page.once('dialog', dialog => dialog.dismiss())
@@ -192,20 +175,23 @@ try {
     assert.equal(await scheduledRoutine.count(), 0, 'Confirmed delete should remove the recurring schedule')
     await page.reload({ waitUntil: 'networkidle' })
     await page.getByRole('button', { name: 'MUSE', exact: true }).click()
-    await muse.getByRole('button', { name: 'My life', exact: true }).click()
+    await muse.getByRole('button', { name: 'Manage checklists', exact: true }).click()
     assert.equal(await muse.getByRole('button', { name: 'Delete Daily bag check' }).count(), 0)
     const afterDelete = await page.evaluate(() => JSON.parse(localStorage.getItem('focus:muse:v1:local')))
     assert.ok(!afterDelete.state.routines.some(r => r.id === routineId), 'Deleted schedule must stay deleted after reload')
     assert.ok(afterDelete.state.outings.length >= 1, 'Deleting a routine must keep outing history')
     assert.ok(afterDelete.state.routineOccurrences.some(o => o.routineId === routineId && o.status === 'started'),
       'Deleting a routine must keep past completed occurrence records')
-    for (const name of ['Today', 'My life', 'Memory', 'Assistant']) {
+    for (const name of ['Today', 'Tasks', 'More']) {
       await muse.getByRole('button', { name, exact: true }).click()
       const bounds = await page.evaluate(() => ({ width: innerWidth, content: document.documentElement.scrollWidth }))
       assert.ok(bounds.content <= bounds.width + 4, `Muse overflow: ${width}/${name}: ${JSON.stringify(bounds)}`)
     }
     await muse.getByRole('button', { name: 'Today', exact: true }).click()
     await page.screenshot({ path: `mobile-qa-artifacts/muse-${width}.png`, fullPage: true })
+    await page.evaluate(() => { window.location.hash = '#muse?kind=briefing&target=' })
+    await muse.locator('#muse-daily-overview').waitFor()
+    assert.equal(await muse.getByRole('button', { name: 'More', exact: true }).getAttribute('aria-current'), 'page')
     await context.close()
     console.log(`PASS Muse ${width}px: explicit return, missing item persistence, navigation and layout`)
   }

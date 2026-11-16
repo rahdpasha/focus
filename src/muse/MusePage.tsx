@@ -6,18 +6,16 @@ import {
   type FormEvent,
 } from "react";
 import {
-  ArrowUpRight,
   ArrowRight,
-  ArrowLeft,
   Check,
-  CheckCheck,
   Circle,
   Plus,
   X,
   Sun,
   Settings2,
+  ListTodo,
+  Ellipsis,
   Sparkles,
-  Leaf,
   Backpack,
   BookOpen,
   ShieldCheck,
@@ -27,8 +25,6 @@ import {
   Bell,
   AlertCircle,
   Globe2,
-  Heart,
-  MessageCircle,
   CheckCircle2,
 } from "lucide-react";
 import {
@@ -51,7 +47,6 @@ type Modal =
   | "memory"
   | "profile"
   | "settings"
-  | "ask"
   | null;
 import { useMuseWorkspace } from "./useMuseWorkspace";
 import { useI18n } from "../useI18n";
@@ -69,17 +64,13 @@ export default function MusePage({
   userId,
   displayName,
   advisor,
-  studyMinutes,
   studySessions,
-  onFocus,
   onSettings,
 }: {
   userId: string | null;
   displayName?: string;
   advisor: ReactNode;
-  studyMinutes: number;
   studySessions: StudySession[];
-  onFocus: () => void;
   onSettings: () => void;
 }) {
   const learningKey = `muse-learning-topic:${userId ?? "local"}`;
@@ -117,8 +108,11 @@ export default function MusePage({
     [activeOutingId, setActiveOutingId] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const ku = language === "ku";
+  const currentTab = page === "checklists" ? "today"
+    : page === "memory" || page === "assistant" ? "more"
+    : page;
   const today = localDate(clock),
-    openTasks = rankTasks(data.tasks, today),
+    dueTasks = rankTasks(data.tasks, today).filter((task) => task.due && task.due <= today),
     current =
       data.outings.find((o) => o.id === activeOutingId) ??
       data.outings.find((o) =>
@@ -171,7 +165,7 @@ export default function MusePage({
         setPage("today");
       } else if (kind === "briefing") {
         setModal(null);
-        setPage("today");
+        setPage("more");
       } else if (kind !== "test") return;
       window.history.replaceState(
         null,
@@ -386,13 +380,6 @@ export default function MusePage({
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
-  const hour = Number(
-    new Intl.DateTimeFormat("en", {
-      hour: "numeric",
-      hourCycle: "h23",
-      timeZone: "Asia/Baghdad",
-    }).format(clock),
-  );
   function renderTaskRow(task: Task) {
     return (
       <div key={task.id} className={"task-row " + (task.done ? "done" : "")}>
@@ -471,16 +458,16 @@ export default function MusePage({
         <p className="muted">
           {preparing
             ? t(
-                "Tell Muse what you are taking. Nothing is checked for you.",
+                "Mark what you’re taking.",
                 "دیاری بکە چی لەگەڵ خۆت دەبەیت.",
               )
             : returning
               ? t(
-                  "Check the things you took. This confirms what you have now, not that you arrived home.",
-                  "ئەو شتانە بپشکنە کە بردووتن. ئەمە گەیشتن بە ماڵ پشتڕاست ناکاتەوە.",
+                  "Mark what you still have with you.",
+                  "دیاری بکە چی هێشتا لەگەڵتە.",
                 )
               : t(
-                  "Your departure is saved. When you are ready, check that everything is still with you.",
+                  "Check your belongings when you’re ready.",
                   "دەرچوونەکەت پاشەکەوت کرا. لە کاتی گەڕانەوە شتەکانت بپشکنە.",
                 )}
         </p>
@@ -720,49 +707,24 @@ export default function MusePage({
   }
   return (
     <section className="muse">
-      <header className="muse-header">
-        <div>
-          <span className="eyebrow">
-            {t("FOCUS + MUSE · ONE WORKSPACE", "فۆکەس + میوز · یەک شوێن")}
-          </span>
-          <strong className="muse-wordmark">
-            muse<span>.</span>
-          </strong>
-        </div>
-        <button className="outline" onClick={onFocus}>
-          <ArrowLeft size={15} />
-          {t("Back to focus", "گەڕانەوە بۆ سەرنج")}
-        </button>
-      </header>
       <nav
         className="muse-tabs"
         aria-label={t("Muse navigation", "ڕێنیشاندەری میوز")}
       >
         {[
           { id: "today", en: "Today", ku: "ئەمڕۆ", icon: Sun },
-          { id: "life", en: "My life", ku: "ژیانم", icon: Backpack },
-          { id: "memory", en: "Memory", ku: "بیرگە", icon: BookOpen },
-          { id: "assistant", en: "Assistant", ku: "یاریدەدەر", icon: Sparkles },
+          { id: "life", en: "Tasks", ku: "ئەرکەکان", icon: ListTodo },
+          { id: "more", en: "More", ku: "زیاتر", icon: Ellipsis },
         ].map((n) => (
           <button
             key={n.id}
-            aria-current={page === n.id ? "page" : undefined}
+            aria-current={currentTab === n.id ? "page" : undefined}
             onClick={() => setPage(n.id)}
           >
             <n.icon size={17} />
             {t(n.en, n.ku)}
           </button>
         ))}
-        <button
-          className="muse-options"
-          aria-label={t(
-            "Muse privacy and sync",
-            "تایبەتمەندی و هاوکاتکردنی میوز",
-          )}
-          onClick={() => setModal("settings")}
-        >
-          <Settings2 size={17} />
-        </button>
       </nav>
       <div className="muse-body">
         {error && (
@@ -781,8 +743,7 @@ export default function MusePage({
         )}
         {!ready ? (
           <div className="loading-state">
-            <Leaf size={38} />
-            <h1>{t("A little room for you.", "کەمێک شوێن بۆ تۆ.")}</h1>
+            <h1>{t("Loading Muse", "میوز بار دەکرێت")}</h1>
             <p>
               {error
                 ? t(
@@ -795,356 +756,147 @@ export default function MusePage({
         ) : (
           <>
             {page === "today" && (
-              <>
-                <div className="page-title">
-                  <div>
-                    <div className="eyebrow date-line">
-                      <span className="live-dot" />
-                      {new Intl.DateTimeFormat(ku ? "ckb" : "en-GB", {
-                        weekday: "long",
-                        month: "long",
-                        day: "numeric",
-                        timeZone: "Asia/Baghdad",
-                      }).format(clock)}
-                      <span>·</span>
-                      {t("Kurdistan time", "کاتی کوردستان")}
-                    </div>
-                    <h1>
-                      <span className="muse-greeting-desktop">
-                        {hour < 12
-                          ? t("Good morning", "بەیانی باش")
-                          : hour < 17
-                            ? t("Good afternoon", "نیوەڕۆ باش")
-                            : t("Good evening", "ئێوارە باش")}
-                        , {data.profile.name}
-                      </span>
-                      <span className="muse-greeting-phone">
-                        {t("Your day", "ڕۆژەکەت")}
-                      </span>
-                      <span className="greeting-dot">.</span>
-                    </h1>
-                    <p>
-                      {t(
-                        "Let’s make room for what matters today.",
-                        "با شوێن بۆ ئەوە بکەینەوە کە ئەمڕۆ گرنگە.",
-                      )}
-                    </p>
-                  </div>
-                  <button className="outline" onClick={() => setModal("ask")}>
-                    <Sparkles size={16} />
-                    {t("Ask Muse", "لە میوز بپرسە")}
-                  </button>
+              <div className="muse-today">
+                <div className="muse-today-heading">
+                  <h1>{t("Today", "ئەمڕۆ")}</h1>
+                  <time dateTime={today} title={t("Kurdistan time", "کاتی کوردستان")}>
+                    {new Intl.DateTimeFormat(ku ? "ckb" : "en-GB", {
+                      weekday: "short", day: "numeric", month: "short", timeZone: "Asia/Baghdad",
+                    }).format(clock)}
+                  </time>
                 </div>
-                <section className="hero">
-                  <div className="hero-copy">
-                    <span className="eyebrow">
-                      {t(
-                        "A calmer kind of productive",
-                        "بەرهەمدارییەکی ئارامتر",
-                      )}
-                    </span>
-                    <h2>
-                      {openTasks.length
-                        ? t("One thing at a time.", "یەک شت لە هەر کاتێکدا.")
-                        : t(
-                            "A clear mind.\nA little more space.",
-                            "بیرێکی ڕوون.\nکەمێک شوێنی زیاتر.",
-                          )}
-                    </h2>
-                    <p>
-                      {openTasks.length
-                        ? t(
-                            `${openTasks.length} open ${openTasks.length === 1 ? "responsibility" : "responsibilities"}. Choose what deserves your attention; the rest can wait.`,
-                            `${openTasks.length} بەرپرسیارێتی کراوە. دیاری بکە چی شایەنی سەرنجتە.`,
-                          )
-                        : t(
-                            "You don’t need to plan your whole life.\nJust put down the next thing on your mind.",
-                            "پێویست ناکات پلانی هەموو ژیانت دابنێیت.\nتەنها شتی داهاتووی ناو بیرت تۆمار بکە.",
-                          )}
-                    </p>
-                    <button className="hero-cta" onClick={() => openCapture()}>
-                      {t("Add a task", "ئەرکێک زیاد بکە")}
-                      <ArrowUpRight size={18} />
+                {current &&
+                ["preparing", "out", "returning"].includes(
+                  current.state,
+                ) ? (
+                  renderOutingView(current)
+                ) : (
+                  <section className="muse-checklist-start">
+                    <h2>{t("Belongings checklist", "لیستی شتەکان")}</h2>
+                    <button className="primary" onClick={() => setModal("outing")}>
+                      <Backpack size={18} aria-hidden="true" />
+                      {t("Start an outing", "دەستپێکردنی دەرچوون")}
                     </button>
-                  </div>
-                  <div className="orb-art" aria-hidden="true">
-                    <div className="orbit o1" />
-                    <div className="orbit o2" />
-                    <div className="orbit o3" />
-                    <div className="orb">
-                      <Leaf size={64} strokeWidth={0.7} />
-                    </div>
-                    <span className="orbit-speck s1" />
-                    <span className="orbit-speck s2" />
-                    <span className="orbit-speck s3" />
-                  </div>
-                  <span className="hero-foot">
-                    {t(
-                      "LESS NOISE. MORE INTENTION.",
-                      "دەنگی کەمتر. مەبەستی زیاتر.",
-                    )}
-                  </span>
-                </section>
-                <div className="dashboard-grid">
-                  <div className="left-column">
-                    <section className="priorities-section">
-                      <div className="section-heading">
-                        <h2>
-                          {t("Today's tasks", "ئەرکەکانی ئەمڕۆ")}
-                          <span className="count">{openTasks.length}</span>
-                        </h2>
-                        <button
-                          className="text-button"
-                          onClick={() => setPage("life")}
-                        >
-                          {t("View all", "هەمووی ببینە")}
-                          <ArrowRight size={14} />
-                        </button>
-                      </div>
-                      {openTasks.length ? (
-                        <>
-                          <p className="small-muted">
-                            {t(
-                              "Due tasks first, then your priorities.",
-                              "سەرەتا دواکەوتوو و ئەوەی ئەمڕۆیە، پاشان گرنگەکان.",
-                            )}
-                          </p>
-                          {openTasks
-                            .slice(0, 3)
-                            .map((task) => renderTaskRow(task))}
-                          <button
-                            className="add-line"
-                            onClick={() => openCapture()}
-                          >
-                            <Plus size={16} />
-                            {t("Add a task", "زیادکردنی بەرپرسیارێتی")}
-                          </button>
-                        </>
-                      ) : (
-                        <div className="empty-tasks">
-                          <span className="empty-symbol">
-                            <CheckCheck size={23} />
-                          </span>
-                          <h3>
-                            {t(
-                              "You're all caught up.",
-                              "هیچ شتێک نییە لە بیرت بگریت.",
-                            )}
-                          </h3>
-                          <p>
-                            {t(
-                              "Add a task when something needs your attention.",
-                              "ئەرکێک، بەڵێنێک یان شتێک زیاد بکە کە دەتەوێت تەواوی بکەیت.",
-                            )}
-                          </p>
-                          <button
-                            className="text-button"
-                            onClick={() => openCapture()}
-                          >
-                            <Plus size={15} />
-                            {t(
-                              "Add your first task",
-                              "یەکەم بەرپرسیارێتیت زیاد بکە",
-                            )}
-                          </button>
-                        </div>
-                      )}
-                    </section>
-                    <Routines
-                      data={data}
-                      busy={busy}
-                      now={clock}
-                      save={save}
-                      onStarted={setActiveOutingId}
-                    />
-                    {current &&
-                    ["preparing", "out", "returning"].includes(
-                      current.state,
-                    ) ? (
-                      renderOutingView(current)
-                    ) : (
-                      <section className="departure-card">
-                        <div className="round-icon">
-                          <Backpack size={23} />
-                        </div>
-                        <div>
-                          <span className="eyebrow">
-                            {t("Before you go", "پێش ئەوەی بڕۆیت")}
-                          </span>
-                          <h2>
-                            {t("Everything with you?", "هەموو شتێکت لەگەڵە؟")}
-                          </h2>
-                          <p>
-                            {t(
-                              "A quick check now. One less worry later.",
-                              "پشکنینێکی خێرا ئێستا. نیگەرانییەکی کەمتر دواتر.",
-                            )}
-                          </p>
-                        </div>
-                        <button
-                          className="primary"
-                          onClick={() => setModal("outing")}
-                        >
-                          {t("Start an outing", "دەستپێکردنی دەرچوون")}
-                          <ArrowRight size={16} />
-                        </button>
-                      </section>
-                    )}
-                    {data.tasks
-                      .filter(
-                        (v) =>
-                          !v.done &&
-                          v.reminderAt &&
-                          v.reminderStatus === "pending" &&
-                          v.reminderAt <= clock.toISOString(),
-                      )
-                      .map((v) => (
-                        <div className="reminder-banner" key={v.id}>
-                          <Bell size={19} />
-                          <div>
-                            <strong>{v.title}</strong>
-                            <small>
-                              {t("In-app reminder", "بیرخستنەوەی ناو ئەپ")}
-                            </small>
-                          </div>
-                          <button
-                            className="text-button"
-                            disabled={busy}
-                            onClick={() =>
-                              save({
-                                ...data,
-                                tasks: data.tasks.map((a) =>
-                                  a.id === v.id
-                                    ? {
-                                        ...a,
-                                        reminderAt: new Date(
-                                          Date.now() + 600000,
-                                        ).toISOString(),
-                                      }
-                                    : a,
-                                ),
-                              })
-                            }
-                          >
-                            {t("10 min", "١٠ خولەک")}
-                          </button>
-                          <button
-                            className="icon-button"
-                            aria-label={t(
-                              "Dismiss reminder",
-                              "لابردنی بیرخستنەوە",
-                            )}
-                            onClick={() =>
-                              save({
-                                ...data,
-                                tasks: data.tasks.map((a) =>
-                                  a.id === v.id
-                                    ? { ...a, reminderStatus: "dismissed" }
-                                    : a,
-                                ),
-                              })
-                            }
-                          >
-                            <X size={16} />
-                          </button>
-                        </div>
-                      ))}
-                  </div>
-                  <aside className="right-column">
-                    <section className="direction">
-                      <div className="muse-study-link">
-                        <span>
-                          {t(
-                            "From your FOCUS sessions",
-                            "لە سێشنەکانی فۆکەسەوە",
-                          )}
-                        </span>
-                        <strong>
-                          {studyMinutes} {t("min today", "خولەک ئەمڕۆ")}
-                        </strong>
-                      </div>
-                      <span className="eyebrow">
-                        {t("Your bigger picture", "وێنە گەورەکەت")}
-                      </span>
-                      <h2>
-                        {t(
-                          "A direction, not a race.",
-                          "ئاڕاستەیەک، نەک پێشبڕکێ.",
-                        )}
-                      </h2>
-                      <div className="directions">
-                        {displayProfilePriorities(data.profile.priorities).map((p, i) => {
-                          const Icon = [
-                            Heart,
-                            CheckCircle2,
-                            Leaf,
-                            MessageCircle,
-                            Sun,
-                          ][i];
-                          return (
-                            <div key={i}>
-                              <Icon size={18} />
-                              <span>{p}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                      <button
-                        className="text-button"
-                        onClick={() => setModal("profile")}
-                      >
-                        {t("Adjust my priorities", "ڕێکخستنی ئەولەویەتەکانم")}
-                        <ArrowUpRight size={14} />
-                      </button>
-                    </section>
-                    <DailyOverview tasks={data.tasks} now={clock} onOpen={openCapture}
-                      onViewAll={() => { setFilter("all"); setPage("life"); }} />
-                    <WeeklyReview now={clock} tasks={data.tasks} sessions={studySessions}
-                      plan={data.profile.weeklyPlan} busy={busy} onOpen={openCapture}
-                      onSave={(weeklyPlan) => save(
-                        { ...data, profile: { ...data.profile, weeklyPlan } },
-                        t("Weekly priorities saved", "ئەولەویەتە هەفتانەکان پاشەکەوت کران"),
-                      )} />
-                    <LearningDiscoveries now={clock} preference={learningPreference} onChange={changeLearningPreference} />
-                    <CareerOpportunities />
-                  </aside>
-                </div>
-              </>
-            )}
-            {page === "life" && (
-              <>
-                <div className="page-title">
-                  <div>
-                    <span className="eyebrow">
-                      {t("Everything in its place", "هەموو شتێک لە شوێنی خۆی")}
-                    </span>
-                    <h1>
-                      {t("My life", "ژیانم")}
-                      <span className="greeting-dot">.</span>
-                    </h1>
-                    <p>
-                      {t(
-                        "Responsibilities, intentions, and the things you take with you.",
-                        "بەرپرسیارێتی، مەبەست و ئەو شتانەی لەگەڵ خۆت دەیبەیت.",
-                      )}
-                    </p>
-                  </div>
-                  <button className="primary" onClick={() => openCapture()}>
-                    <Plus size={17} />
-                    {t("Add a task", "ئەرکێک زیاد بکە")}
-                  </button>
-                </div>
+                  </section>
+                )}
                 <Routines
-                  manage
                   data={data}
                   busy={busy}
                   now={clock}
                   save={save}
-                  onStarted={(id) => {
-                    setActiveOutingId(id);
-                    setPage("today");
-                  }}
+                  onStarted={setActiveOutingId}
                 />
+                <button className="text-button muse-manage-checklists" onClick={() => setPage("checklists")}>
+                  {t("Manage checklists", "ڕێکخستنی لیستەکان")}
+                  <ArrowRight size={15} aria-hidden="true" />
+                </button>
+                {data.tasks
+                  .filter(
+                    (v) =>
+                      !v.done &&
+                      v.reminderAt &&
+                      v.reminderStatus === "pending" &&
+                      v.reminderAt <= clock.toISOString(),
+                  )
+                  .map((v) => (
+                    <div className="reminder-banner" key={v.id}>
+                      <Bell size={19} />
+                      <div>
+                        <strong>{v.title}</strong>
+                        <small>
+                          {t("In-app reminder", "بیرخستنەوەی ناو ئەپ")}
+                        </small>
+                      </div>
+                      <button
+                        className="text-button"
+                        disabled={busy}
+                        onClick={() =>
+                          save({
+                            ...data,
+                            tasks: data.tasks.map((a) =>
+                              a.id === v.id
+                                ? {
+                                    ...a,
+                                    reminderAt: new Date(
+                                      Date.now() + 600000,
+                                    ).toISOString(),
+                                  }
+                                : a,
+                            ),
+                          })
+                        }
+                      >
+                        {t("10 min", "١٠ خولەک")}
+                      </button>
+                      <button
+                        className="icon-button"
+                        aria-label={t(
+                          "Dismiss reminder",
+                          "لابردنی بیرخستنەوە",
+                        )}
+                        onClick={() =>
+                          save({
+                            ...data,
+                            tasks: data.tasks.map((a) =>
+                              a.id === v.id
+                                ? { ...a, reminderStatus: "dismissed" }
+                                : a,
+                            ),
+                          })
+                        }
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                <section className="muse-due">
+                  <div className="section-heading">
+                    <h2>{t("Due today or earlier", "ئەوەی ئەمڕۆ یان پێشتر بەرواری هەیە")}</h2>
+                    <button className="outline" onClick={() => openCapture()}>
+                      <Plus size={16} aria-hidden="true" />
+                      {t("Add task", "زیادکردنی ئەرک")}
+                    </button>
+                  </div>
+                  {dueTasks.length
+                    ? dueTasks.slice(0, 3).map(renderTaskRow)
+                    : <p className="muted">{t("Nothing due today.", "ئەمڕۆ هیچ ئەرکێک بەرواری نییە.")}</p>}
+                  {dueTasks.length > 3 && (
+                    <button className="text-button" onClick={() => { setFilter("all"); setPage("life"); }}>
+                      {t("See all tasks", "بینینی هەموو ئەرکەکان")}
+                    </button>
+                  )}
+                </section>
+              </div>
+            )}
+            {page === "more" && (
+              <div className="muse-more">
+                <h1>{t("More", "زیاتر")}</h1>
+                <div className="muse-tool-list">
+                  <button className="outline" onClick={() => setPage("memory")}><BookOpen size={17} />{t("Memory", "بیرگە")}</button>
+                  <button className="outline" onClick={() => setPage("assistant")}><Sparkles size={17} />{t("Study advisor", "ڕاوێژکاری خوێندن")}</button>
+                  <button className="outline muse-options" onClick={() => setModal("settings")}><Settings2 size={17} />{t("Settings & privacy", "ڕێکخستن و تایبەتمەندی")}</button>
+                </div>
+                <DailyOverview tasks={data.tasks} now={clock} onOpen={openCapture}
+                  onViewAll={() => { setFilter("all"); setPage("life"); }} />
+                <WeeklyReview now={clock} tasks={data.tasks} sessions={studySessions}
+                  plan={data.profile.weeklyPlan} busy={busy} onOpen={openCapture}
+                  onSave={(weeklyPlan) => save(
+                    { ...data, profile: { ...data.profile, weeklyPlan } },
+                    t("Weekly priorities saved", "ئەولەویەتە هەفتانەکان پاشەکەوت کران"),
+                  )} />
+                <LearningDiscoveries now={clock} preference={learningPreference} onChange={changeLearningPreference} />
+                <CareerOpportunities />
+              </div>
+            )}
+            {page === "life" && (
+              <>
+                <div className="page-title">
+                  <h1>{t("Tasks", "ئەرکەکان")}</h1>
+                  <button className="primary" onClick={() => openCapture()}>
+                    <Plus size={17} aria-hidden="true" />
+                    {t("Add task", "زیادکردنی ئەرک")}
+                  </button>
+                </div>
                 <div className="filter-bar">
                   {[
                     "all",
@@ -1195,6 +947,24 @@ export default function MusePage({
                     </div>
                   )}
                 </section>
+              </>
+            )}
+            {page === "checklists" && (
+              <>
+                <div className="page-title">
+                  <h1>{t("Checklists", "لیستەکان")}</h1>
+                </div>
+                <Routines
+                  manage
+                  data={data}
+                  busy={busy}
+                  now={clock}
+                  save={save}
+                  onStarted={(id) => {
+                    setActiveOutingId(id);
+                    setPage("today");
+                  }}
+                />
                 <div className="section-heading spaced">
                   <div>
                     <span className="eyebrow">
@@ -1475,33 +1245,14 @@ export default function MusePage({
             )}
             {page === "assistant" && (
               <section className="muse-advisor">
-                <p className="memory-info">
-                  {t(
-                    "Your existing FOCUS study advisor, using the same account and study data. Personal-assistant research and tools will be added gradually.",
-                    "ڕاوێژکاری خوێندنی فۆکەس، بە هەمان هەژمار و داتای خوێندن. تایبەتمەندییە نوێکان بە قۆناغ زیاد دەکرێن.",
-                  )}
-                </p>
+                <h1>{t("Study advisor", "ڕاوێژکاری خوێندن")}</h1>
                 {advisor}
               </section>
             )}
-            <footer className="page-footer">
-              <span>
-                <Leaf size={13} />
-                {t(
-                  "A little more present. A little less overwhelmed.",
-                  "کەمێک ئامادەتر. کەمێک باری کەمتر.",
-                )}
-              </span>
-              <span>
-                {busy
-                  ? t("Saving…", "پاشەکەوتکردن…")
-                  : status === "synced"
-                    ? t(
-                        "Synced to FOCUS account",
-                        "هاوکاتکراو لەگەڵ هەژماری فۆکەس",
-                      )
-                    : t("Saved on this device", "پاشەکەوتکراو لەم ئامێرە")}
-              </span>
+            <footer className="muse-save-status">
+              {busy ? t("Saving…", "پاشەکەوتکردن…") : status === "synced"
+                ? t("Synced to FOCUS", "هاوکاتکراو لەگەڵ فۆکەس")
+                : t("Saved on this device", "پاشەکەوتکراو لەم ئامێرە")}
             </footer>
           </>
         )}
@@ -2086,63 +1837,6 @@ export default function MusePage({
                   "کردنەوەی ڕێکخستنە هاوبەشەکانی فۆکەس",
                 )}
               </button>
-            </>
-          )}
-          {modal === "ask" && (
-            <>
-              <span className="round-icon">
-                <Sparkles size={25} />
-              </span>
-              <h2>
-                {t(
-                  "Let’s start with what matters.",
-                  "با بەوە دەست پێ بکەین کە گرنگە.",
-                )}
-              </h2>
-              <p className="muted">
-                {t(
-                  "Your FOCUS study advisor is available here. Broader personal AI tools come later; responsibilities and belongings work now.",
-                  "گفتوگۆی زیرەکی دەستکردی میوز هێشتا پەیوەست نییە. بنەمای ئێستا بۆ تۆمارکردنی بەرپرسیارێتی و شتەکانتە.",
-                )}
-              </p>
-              <div className="outing-choices">
-                <button
-                  onClick={() => {
-                    setModal(null);
-                    setPage("assistant");
-                  }}
-                >
-                  <Sparkles size={22} />
-                  <span>
-                    {t("Open my study advisor", "کردنەوەی ڕاوێژکاری خوێندن")}
-                  </span>
-                  <ArrowRight size={16} />
-                </button>
-                <button onClick={() => openCapture()}>
-                  <Plus size={22} />
-                  <span>
-                    {t("Put something on my list", "شتێک زیاد بکە بۆ لیستەکەم")}
-                  </span>
-                  <ArrowRight size={16} />
-                </button>
-                <button onClick={() => setModal("outing")}>
-                  <Backpack size={22} />
-                  <span>
-                    {t("Help me get ready to leave", "یارمەتیم بدە بۆ دەرچوون")}
-                  </span>
-                  <ArrowRight size={16} />
-                </button>
-                <button onClick={() => setModal("profile")}>
-                  <Leaf size={22} />
-                  <span>
-                    {t(
-                      "Review what matters to me",
-                      "پێداچوونەوە بەوەی بۆ من گرنگە",
-                    )}
-                  </span>
-                  <ArrowRight size={16} />
-                </button>
-              </div>
             </>
           )}
           {error && (
