@@ -272,8 +272,6 @@ function AuthenticatedApp({
         userId={auth.session?.user.id ?? null}
         displayName={auth.session?.user.displayName}
         studySessions={data.sessions}
-        studyMinutes={Math.round(data.sessions.filter(session => session.completed && new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Baghdad' }).format(new Date(session.completedAt)) === new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Baghdad' }).format(new Date())).reduce((sum, session) => sum + session.actualDuration, 0) / 60)}
-        onFocus={() => setPage('focus')}
         onSettings={() => setPage('settings')}
         advisor={timerActive ? <p>{tr('Your focus session is running. Finish it before changing your study plan.','سێشنی سەرنجەکەت بەردەوامە. پێش گۆڕینی پلان تەواوی بکە.')} <button className="cyber-btn" onClick={() => setPage('focus')}>{tr('Back to timer','گەڕانەوە بۆ کاتژمێر')}</button></p> : <MuseAdvisor
           sessions={data.sessions} subjects={data.subjects} dailyGoal={data.dailyGoal} weeklyGoal={data.weeklyGoal}

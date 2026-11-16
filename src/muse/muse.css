@@ -2287,3 +2287,60 @@
 .muse .muse-opportunities article { margin-block-start: 16px; }
 .muse .muse-opportunities a { color: inherit; text-decoration: underline; }
 .muse .muse-opportunities-links { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+
+/* The same three destinations and reading order on phone and desktop. */
+.calm-app .muse .muse-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+.calm-app .muse .muse-tabs button {
+  flex-direction: row;
+  justify-content: center;
+  min-height: 44px;
+  gap: 6px;
+  padding: 6px;
+  font-size: 13px;
+}
+.muse .muse-today,
+.muse .muse-more {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.muse .muse-today-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.muse .muse-today-heading h1,
+.muse .muse-more h1 {
+  margin: 0;
+  font-size: clamp(24px, 5vw, 32px);
+}
+.muse .muse-today-heading time,
+.muse .muse-save-status { color: var(--muted); font-size: 13px; }
+.muse .muse-checklist-start,
+.muse .muse-due {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.muse .muse-checklist-start h2,
+.muse .muse-due h2 { margin: 0; font-size: 18px; }
+.muse .muse-today .primary,
+.muse .muse-today .outline,
+.muse .muse-tool-list button,
+.muse .checklist-row .segments button { min-height: 44px; }
+.muse .muse-checklist-start .primary { justify-content: center; width: 100%; }
+.muse .muse-manage-checklists { justify-self: start; min-height: 44px; }
+.muse .muse-due .section-heading { flex-wrap: wrap; }
+.muse .muse-due > p { margin: 0; }
+.muse .muse-tool-list { display: grid; gap: 8px; }
+.muse .muse-tool-list button { justify-content: start; width: 100%; }
+.muse .muse-save-status { margin-block: 20px 0; }
+.muse #muse-daily-overview { scroll-margin-top: 100px; }
