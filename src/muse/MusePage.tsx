@@ -60,6 +60,7 @@ import Routines from "./Routines";
 import PushSettings from "./PushSettings";
 import DailyOverview from "./DailyOverview";
 import WeeklyReview from "./WeeklyReview";
+import CareerOpportunities from "./CareerOpportunities";
 import type { StudySession } from "../types";
 import LearningDiscoveries from "./LearningDiscoveries";
 import { learningTopics, type LearningPreference } from "./learningTopics";
@@ -1105,6 +1106,7 @@ export default function MusePage({
                         t("Weekly priorities saved", "ئەولەویەتە هەفتانەکان پاشەکەوت کران"),
                       )} />
                     <LearningDiscoveries now={clock} preference={learningPreference} onChange={changeLearningPreference} />
+                    <CareerOpportunities />
                   </aside>
                 </div>
               </>
